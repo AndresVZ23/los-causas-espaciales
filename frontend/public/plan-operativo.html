@@ -1,0 +1,1294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Plan Operativo Dop</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;max-width:1600px;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+</head>
+<body>
+<iframe sandbox="allow-scripts" referrerpolicy="no-referrer" title="Plan Operativo Dop" srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Plan Operativo Dop&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(--background) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: light-dark(rgb(255 255 255), rgb(24 24 24));
+  --foreground: light-dark(rgb(26 28 31), rgb(255 255 255));
+  --card: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --card-foreground: var(--foreground);
+  --popover: light-dark(rgb(255 255 255), rgb(45 45 45));
+  --popover-foreground: var(--foreground);
+  --primary: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --primary-foreground: light-dark(rgb(255 255 255), rgb(13 13 13));
+  --secondary: light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%));
+  --secondary-foreground: var(--foreground);
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: light-dark(
+    rgb(26 28 31 / 49.4%),
+    rgb(255 255 255 / 49.8%)
+  );
+  --accent: light-dark(rgb(229 242 255), rgb(13 39 63));
+  --accent-foreground: var(--primary);
+  --destructive: light-dark(rgb(226 85 7), rgb(255 133 73));
+  --border: light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%));
+  --input: light-dark(
+    rgb(26 28 31 / 11.8%),
+    color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+  );
+  --ring: light-dark(rgb(51 156 255), rgb(131 195 255 / 76%));
+  --font-size-base: 14px;
+  --viz-series-1: var(--primary);
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans: -apple-system, system-ui, &quot;Segoe UI&quot;, sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 430;
+  --font-weight-medium: 500;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --radius: 12.5px;
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 1.6);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+  --color-background-primary: var(--background);
+  --color-text-primary: var(--foreground);
+  --color-border-secondary: var(--border);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  margin: 0;
+  padding: 5px;
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-normal);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: pointer;
+  font-weight: var(--viz-font-weight-medium);
+  text-decoration: none;
+  text-underline-offset: 2px;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+h3,
+h4,
+h5,
+h6 {
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
+}
+
+b,
+strong,
+th {
+  font-weight: var(--font-weight-medium);
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: superellipse(1.5);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+#widget &gt; :not(.card) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--popover-foreground);
+  background: var(--popover);
+  box-shadow: none;
+  font-size: var(--font-size-tooltip);
+  line-height: var(--line-height-tooltip);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.viz-badge {
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  color: var(--accent-foreground);
+  background: var(--accent);
+  font-weight: var(--font-weight-medium);
+}
+
+small,
+.text-small,
+.viz-badge {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+.btn {
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  min-height: 28px;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn-primary {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: padding-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: padding-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background: var(--secondary);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  padding: 0;
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  min-height: 26px;
+  margin-right: 8px;
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: 28px;
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: superellipse(1.5);
+}
+
+textarea.form-control {
+  height: auto;
+  min-height: 72px;
+  padding: 8px 10px;
+  resize: vertical;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  margin: 0;
+  padding: 0 32px 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-lg);
+  corner-shape: superellipse(1.5);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted-foreground) 50%),
+    linear-gradient(135deg, var(--muted-foreground) 50%, transparent 50%);
+  background-position:
+    calc(100% - 14px) 50%,
+    calc(100% - 10px) 50%;
+  background-repeat: no-repeat;
+  background-size: 4px 4px;
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-select:focus-visible {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-check {
+  display: flex;
+  min-height: 20px;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  border-color: var(--input);
+  border-radius: var(--radius-sm);
+  corner-shape: superellipse(1.5);
+  background-color: var(--secondary);
+  box-shadow: var(--shadow-sm);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:checked {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 2px solid var(--primary);
+  background:
+    radial-gradient(circle, var(--primary-foreground) 0 2.5px, transparent 3px),
+    var(--primary);
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--primary);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 28px;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  outline: none;
+  border: 0;
+  accent-color: var(--primary);
+  background: linear-gradient(
+      color-mix(in srgb, var(--foreground) 7%, transparent),
+      color-mix(in srgb, var(--foreground) 7%, transparent)
+    )
+    center / 100% 2px no-repeat;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-webkit-slider-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range::-moz-range-track {
+  height: 28px;
+  background: transparent;
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: light-dark(var(--primary-foreground), var(--foreground));
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  border-color: var(--ring);
+  box-shadow: inset 0 0 0 1px var(--ring);
+}
+
+.form-range:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+    [aria-pressed=&quot;true&quot;],
+    [aria-selected=&quot;true&quot;],
+    .is-selected
+  ) {
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+  background: var(--primary);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;div id=&quot;lce-roadmap&quot;&gt;
+  &lt;style&gt;
+    #lce-roadmap {
+      --lce-ok: var(--viz-series-1);
+      --lce-flow: var(--viz-series-2);
+      --lce-warn: var(--viz-series-3);
+      --lce-future: var(--viz-series-4);
+      color: var(--foreground);
+      display: grid;
+      gap: 28px;
+      width: 100%;
+    }
+    #lce-roadmap * { box-sizing: border-box; }
+    #lce-roadmap .roadmap-header,
+    #lce-roadmap .section-head,
+    #lce-roadmap .viz-row { justify-content: space-between; }
+    #lce-roadmap .roadmap-header { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+    #lce-roadmap .brand-lockup { display: grid; gap: 4px; }
+    #lce-roadmap .brand-lockup strong { letter-spacing: .06em; }
+    #lce-roadmap .brand-lockup span { color: var(--muted-foreground); }
+    #lce-roadmap .roadmap-nav { display: flex; gap: 18px; flex-wrap: wrap; }
+    #lce-roadmap .roadmap-nav a { color: var(--foreground); text-decoration: none; padding-block: 6px; border-bottom: 2px solid transparent; }
+    #lce-roadmap .roadmap-nav a:hover { border-color: var(--lce-flow); }
+    #lce-roadmap .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    #lce-roadmap .viz-stat { min-height: 116px; }
+    #lce-roadmap .phase-rail { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+    #lce-roadmap .phase-step { min-width: 0; min-height: 104px; display: grid; align-content: start; gap: 8px; text-align: left; }
+    #lce-roadmap .phase-step span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); }
+    #lce-roadmap .phase-step small { color: var(--muted-foreground); }
+    #lce-roadmap .phase-step[aria-pressed=&quot;true&quot;] { box-shadow: inset 0 -3px 0 var(--lce-flow); }
+    #lce-roadmap .phase-step[data-status=&quot;OPERATIVO&quot;] span { background: color-mix(in srgb, var(--lce-ok) 24%, transparent); }
+    #lce-roadmap .phase-step[data-status=&quot;PARCIAL&quot;] span { background: color-mix(in srgb, var(--lce-flow) 24%, transparent); }
+    #lce-roadmap .phase-step[data-status=&quot;PENDIENTE&quot;] span { background: color-mix(in srgb, var(--lce-warn) 24%, transparent); }
+    #lce-roadmap .phase-step[data-status=&quot;FUTURO&quot;] span { background: color-mix(in srgb, var(--lce-future) 24%, transparent); }
+    #lce-roadmap .phase-detail { display: grid; gap: 18px; }
+    #lce-roadmap .phase-title-row { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    #lce-roadmap .phase-title-row h2 { margin: 0; }
+    #lce-roadmap .detail-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; }
+    #lce-roadmap .detail-cell { min-width: 0; }
+    #lce-roadmap .detail-cell h3 { margin-top: 0; }
+    #lce-roadmap .detail-cell p,
+    #lce-roadmap .detail-cell li { color: var(--muted-foreground); }
+    #lce-roadmap .detail-cell ul { margin: 0; padding-left: 18px; }
+    #lce-roadmap .status-line { display: flex; gap: 8px; align-items: center; }
+    #lce-roadmap .status-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--lce-warn); }
+    #lce-roadmap .status-dot[data-status=&quot;OPERATIVO&quot;] { background: var(--lce-ok); }
+    #lce-roadmap .status-dot[data-status=&quot;PARCIAL&quot;] { background: var(--lce-flow); }
+    #lce-roadmap .status-dot[data-status=&quot;FUTURO&quot;] { background: var(--lce-future); }
+    #lce-roadmap .section-head { display: flex; gap: 16px; align-items: end; flex-wrap: wrap; }
+    #lce-roadmap .section-head h2,
+    #lce-roadmap .section-head p { margin: 0; }
+    #lce-roadmap .section-head p { color: var(--muted-foreground); }
+    #lce-roadmap .dop-shell { display: grid; gap: 18px; }
+    #lce-roadmap .dop-legend { display: flex; gap: 18px; flex-wrap: wrap; color: var(--muted-foreground); }
+    #lce-roadmap .dop-legend span { display: inline-flex; gap: 7px; align-items: center; }
+    #lce-roadmap .symbol { width: 14px; height: 14px; display: inline-block; border: 2px solid currentColor; }
+    #lce-roadmap .symbol.operation { border-radius: 50%; color: var(--lce-flow); }
+    #lce-roadmap .symbol.inspection { color: var(--lce-warn); }
+    #lce-roadmap .symbol.gate { transform: rotate(45deg); color: var(--lce-future); }
+    #lce-roadmap .dop-flow { display: grid; grid-template-columns: 1.1fr 34px 1fr 34px 1fr 34px 1.25fr 34px 1fr; align-items: stretch; gap: 0; }
+    #lce-roadmap .dop-stage { min-width: 0; display: grid; align-content: start; gap: 12px; padding: 16px 0; }
+    #lce-roadmap .dop-stage + .dop-arrow + .dop-stage { border-top: 1px solid var(--border); }
+    #lce-roadmap .dop-stage h3 { margin: 0; }
+    #lce-roadmap .dop-node { display: grid; gap: 5px; padding: 12px; background: color-mix(in srgb, var(--card) 74%, transparent); border-left: 2px solid var(--border); }
+    #lce-roadmap button.dop-node { width: 100%; color: var(--foreground); font: inherit; text-align: left; cursor: pointer; border-block: 0; border-right: 0; }
+    #lce-roadmap button.dop-node:hover,
+    #lce-roadmap button.dop-node[aria-pressed=&quot;true&quot;] { border-left-color: var(--lce-flow); background: var(--accent); color: var(--accent-foreground); }
+    #lce-roadmap .dop-node small { color: var(--muted-foreground); }
+    #lce-roadmap .dop-node strong { font-weight: 500; }
+    #lce-roadmap .dop-node.future { border-left-color: var(--lce-future); }
+    #lce-roadmap .dop-arrow { display: grid; place-items: center; color: var(--lce-flow); font-size: 22px; }
+    #lce-roadmap .model-detail { color: var(--muted-foreground); border-left: 2px solid var(--lce-flow); padding-left: 12px; }
+    #lce-roadmap .dependency-table { width: 100%; border-collapse: collapse; }
+    #lce-roadmap .dependency-table th,
+    #lce-roadmap .dependency-table td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    #lce-roadmap .dependency-table th { color: var(--muted-foreground); font-weight: 500; }
+    #lce-roadmap .dependency-table td:last-child { white-space: nowrap; }
+    #lce-roadmap .final-gates { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+    #lce-roadmap .final-gates section { border-top: 2px solid var(--border); padding-top: 14px; }
+    #lce-roadmap .final-gates h3 { margin-top: 0; }
+    #lce-roadmap .final-gates ul { padding-left: 18px; color: var(--muted-foreground); }
+    @media (max-width: 980px) {
+      #lce-roadmap .phase-rail { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      #lce-roadmap .detail-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #lce-roadmap .detail-cell:last-child { grid-column: 1 / -1; }
+      #lce-roadmap .dop-flow { grid-template-columns: 1fr; }
+      #lce-roadmap .dop-arrow { min-height: 34px; transform: rotate(90deg); }
+    }
+    @media (max-width: 620px) {
+      #lce-roadmap { gap: 22px; }
+      #lce-roadmap .summary-grid,
+      #lce-roadmap .final-gates { grid-template-columns: 1fr; }
+      #lce-roadmap .phase-rail { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #lce-roadmap .detail-grid { grid-template-columns: 1fr; }
+      #lce-roadmap .detail-cell:last-child { grid-column: auto; }
+      #lce-roadmap .dependency-table thead { display: none; }
+      #lce-roadmap .dependency-table,
+      #lce-roadmap .dependency-table tbody,
+      #lce-roadmap .dependency-table tr,
+      #lce-roadmap .dependency-table td { display: block; width: 100%; }
+      #lce-roadmap .dependency-table tr { padding: 10px 0; border-bottom: 1px solid var(--border); }
+      #lce-roadmap .dependency-table td { border: 0; padding: 4px 0; white-space: normal; }
+      #lce-roadmap .dependency-table td::before { content: attr(data-label) &quot;: &quot;; color: var(--muted-foreground); }
+    }
+  &lt;/style&gt;
+
+  &lt;header class=&quot;roadmap-header&quot;&gt;
+    &lt;div class=&quot;brand-lockup&quot;&gt;
+      &lt;strong&gt;LOS CAUSAS ESPACIALES&lt;/strong&gt;
+      &lt;span&gt;Observación de la Tierra e inteligencia para infraestructura&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;nav class=&quot;roadmap-nav&quot; aria-label=&quot;Secciones del plan&quot;&gt;
+      &lt;a href=&quot;#ruta&quot;&gt;Ruta&lt;/a&gt;
+      &lt;a href=&quot;#dop-neuronal&quot;&gt;DOP neuronal&lt;/a&gt;
+      &lt;a href=&quot;#criterios&quot;&gt;Criterios&lt;/a&gt;
+    &lt;/nav&gt;
+  &lt;/header&gt;
+
+  &lt;section class=&quot;summary-grid&quot; aria-label=&quot;Estado general del plan&quot;&gt;
+    &lt;div class=&quot;card viz-stat&quot;&gt;
+      &lt;span class=&quot;text-muted&quot;&gt;Estado actual&lt;/span&gt;
+      &lt;strong class=&quot;viz-stat-value&quot;&gt;Piloto solar funcional&lt;/strong&gt;
+      &lt;span class=&quot;text-small&quot;&gt;NASA POWER, estadística, VAN y exportación operativos&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;card viz-stat&quot;&gt;
+      &lt;span class=&quot;text-muted&quot;&gt;Próxima puerta&lt;/span&gt;
+      &lt;strong class=&quot;viz-stat-value&quot;&gt;Capas territoriales&lt;/strong&gt;
+      &lt;span class=&quot;text-small&quot;&gt;DEM, red eléctrica, ambiente, sociedad y patrimonio&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;card viz-stat&quot;&gt;
+      &lt;span class=&quot;text-muted&quot;&gt;Redes neuronales&lt;/span&gt;
+      &lt;strong class=&quot;viz-stat-value&quot;&gt;Futuro — no implementado&lt;/strong&gt;
+      &lt;span class=&quot;text-small&quot;&gt;Sólo después de datos, ground truth y baselines verificables&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;ruta&quot; aria-labelledby=&quot;route-heading&quot;&gt;
+    &lt;div class=&quot;section-head&quot;&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;route-heading&quot;&gt;Plan operativo&lt;/h2&gt;
+        &lt;p&gt;Seleccione una fase para revisar tareas, salida y criterio de aceptación.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;span class=&quot;viz-badge&quot;&gt;8 fases verificables&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;phase-rail&quot; role=&quot;group&quot; aria-label=&quot;Fases del proyecto&quot;&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;0&quot; data-status=&quot;OPERATIVO&quot; aria-pressed=&quot;true&quot;&gt;&lt;span&gt;1&lt;/span&gt;&lt;strong&gt;Fundación&lt;/strong&gt;&lt;small&gt;OPERATIVO&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;1&quot; data-status=&quot;OPERATIVO&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;2&lt;/span&gt;&lt;strong&gt;Datos NASA&lt;/strong&gt;&lt;small&gt;OPERATIVO&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;2&quot; data-status=&quot;OPERATIVO&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;3&lt;/span&gt;&lt;strong&gt;Ciencia&lt;/strong&gt;&lt;small&gt;OPERATIVO&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;3&quot; data-status=&quot;OPERATIVO&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;4&lt;/span&gt;&lt;strong&gt;Piloto solar&lt;/strong&gt;&lt;small&gt;OPERATIVO&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;4&quot; data-status=&quot;PENDIENTE&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;5&lt;/span&gt;&lt;strong&gt;Territorio&lt;/strong&gt;&lt;small&gt;PENDIENTE&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;5&quot; data-status=&quot;FUTURO&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;6&lt;/span&gt;&lt;strong&gt;Modelos neuronales&lt;/strong&gt;&lt;small&gt;FUTURO&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;6&quot; data-status=&quot;PENDIENTE&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;7&lt;/span&gt;&lt;strong&gt;Nuevos pilotos&lt;/strong&gt;&lt;small&gt;PENDIENTE&lt;/small&gt;&lt;/button&gt;
+      &lt;button class=&quot;btn phase-step&quot; type=&quot;button&quot; data-phase=&quot;7&quot; data-status=&quot;PENDIENTE&quot; aria-pressed=&quot;false&quot;&gt;&lt;span&gt;8&lt;/span&gt;&lt;strong&gt;Producción&lt;/strong&gt;&lt;small&gt;PENDIENTE&lt;/small&gt;&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;article class=&quot;card phase-detail&quot; aria-live=&quot;polite&quot;&gt;
+      &lt;div class=&quot;phase-title-row&quot;&gt;
+        &lt;div&gt;
+          &lt;span id=&quot;phase-number&quot; class=&quot;text-muted&quot;&gt;Fase 1&lt;/span&gt;
+          &lt;h2 id=&quot;phase-name&quot;&gt;Fundación técnica y contratos&lt;/h2&gt;
+        &lt;/div&gt;
+        &lt;div class=&quot;status-line&quot;&gt;&lt;span id=&quot;phase-dot&quot; class=&quot;status-dot&quot; data-status=&quot;OPERATIVO&quot;&gt;&lt;/span&gt;&lt;strong id=&quot;phase-status&quot;&gt;OPERATIVO&lt;/strong&gt;&lt;/div&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;detail-grid&quot;&gt;
+        &lt;section class=&quot;detail-cell&quot;&gt;&lt;h3&gt;Objetivo&lt;/h3&gt;&lt;p id=&quot;phase-objective&quot;&gt;&lt;/p&gt;&lt;/section&gt;
+        &lt;section class=&quot;detail-cell&quot;&gt;&lt;h3&gt;Insumos&lt;/h3&gt;&lt;ul id=&quot;phase-inputs&quot;&gt;&lt;/ul&gt;&lt;/section&gt;
+        &lt;section class=&quot;detail-cell&quot;&gt;&lt;h3&gt;Tareas&lt;/h3&gt;&lt;ul id=&quot;phase-tasks&quot;&gt;&lt;/ul&gt;&lt;/section&gt;
+        &lt;section class=&quot;detail-cell&quot;&gt;&lt;h3&gt;Resultado&lt;/h3&gt;&lt;p id=&quot;phase-output&quot;&gt;&lt;/p&gt;&lt;/section&gt;
+        &lt;section class=&quot;detail-cell&quot;&gt;&lt;h3&gt;Criterio de aceptación&lt;/h3&gt;&lt;p id=&quot;phase-gate&quot;&gt;&lt;/p&gt;&lt;/section&gt;
+      &lt;/div&gt;
+    &lt;/article&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;dop-neuronal&quot; class=&quot;dop-shell&quot; aria-labelledby=&quot;dop-heading&quot;&gt;
+    &lt;div class=&quot;section-head&quot;&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;dop-heading&quot;&gt;DOP neuronal&lt;/h2&gt;
+        &lt;p&gt;Diagrama de operaciones propuesto; los modelos están explícitamente fuera del estado operativo actual.&lt;/p&gt;
+      &lt;/div&gt;
+      &lt;span class=&quot;viz-badge&quot;&gt;FUTURO — NO IMPLEMENTADO&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;dop-legend&quot; aria-label=&quot;Símbolos del DOP&quot;&gt;
+      &lt;span&gt;&lt;i class=&quot;symbol operation&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Operación&lt;/span&gt;
+      &lt;span&gt;&lt;i class=&quot;symbol inspection&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Inspección&lt;/span&gt;
+      &lt;span&gt;&lt;i class=&quot;symbol gate&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt; Puerta de decisión&lt;/span&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;dop-flow&quot; role=&quot;group&quot; aria-label=&quot;Flujo de operaciones para modelos neuronales&quot;&gt;
+      &lt;section class=&quot;dop-stage&quot;&gt;
+        &lt;h3&gt;1 · Fuentes&lt;/h3&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;NASA / Earthdata&lt;/strong&gt;&lt;small&gt;POWER operativo; GPM, DEM y AppEEARS pendientes&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Capas oficiales del Perú&lt;/strong&gt;&lt;small&gt;Red, ambiente, patrimonio y sociedad pendientes de integración&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Supuestos del usuario&lt;/strong&gt;&lt;small&gt;Separados de observaciones y resultados de modelo&lt;/small&gt;&lt;/div&gt;
+      &lt;/section&gt;
+      &lt;div class=&quot;dop-arrow&quot; aria-hidden=&quot;true&quot;&gt;→&lt;/div&gt;
+      &lt;section class=&quot;dop-stage&quot;&gt;
+        &lt;h3&gt;2 · Procedencia y QA&lt;/h3&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Validación&lt;/strong&gt;&lt;small&gt;Producto, versión, unidad, CRS, tiempo, nodata y cobertura&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Registro trazable&lt;/strong&gt;&lt;small&gt;Fuente, fecha, transformación, caché y clasificación de procedencia&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Partición sin fuga&lt;/strong&gt;&lt;small&gt;Separación temporal y espacial antes de entrenar&lt;/small&gt;&lt;/div&gt;
+      &lt;/section&gt;
+      &lt;div class=&quot;dop-arrow&quot; aria-hidden=&quot;true&quot;&gt;→&lt;/div&gt;
+      &lt;section class=&quot;dop-stage&quot;&gt;
+        &lt;h3&gt;3 · Ingeniería y baseline&lt;/h3&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Características&lt;/strong&gt;&lt;small&gt;Series, relieve, distancia, cobertura y contexto sectorial&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Baseline obligatorio&lt;/strong&gt;&lt;small&gt;Comparar contra reglas, regresión, árboles y modelos estadísticos&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Gate de suficiencia&lt;/strong&gt;&lt;small&gt;Sin etiquetas y muestra suficiente no se autoriza una red neuronal&lt;/small&gt;&lt;/div&gt;
+      &lt;/section&gt;
+      &lt;div class=&quot;dop-arrow&quot; aria-hidden=&quot;true&quot;&gt;→&lt;/div&gt;
+      &lt;section class=&quot;dop-stage&quot;&gt;
+        &lt;h3&gt;4 · Modelos candidatos&lt;/h3&gt;
+        &lt;button class=&quot;dop-node future&quot; type=&quot;button&quot; data-model=&quot;temporal&quot; aria-pressed=&quot;true&quot;&gt;&lt;strong&gt;Modelo temporal&lt;/strong&gt;&lt;small&gt;TCN o Transformer temporal&lt;/small&gt;&lt;/button&gt;
+        &lt;button class=&quot;dop-node future&quot; type=&quot;button&quot; data-model=&quot;spatial&quot; aria-pressed=&quot;false&quot;&gt;&lt;strong&gt;Modelo geoespacial&lt;/strong&gt;&lt;small&gt;CNN/U-Net o GNN según geometría&lt;/small&gt;&lt;/button&gt;
+        &lt;button class=&quot;dop-node future&quot; type=&quot;button&quot; data-model=&quot;fusion&quot; aria-pressed=&quot;false&quot;&gt;&lt;strong&gt;Fusión inversión/riesgo&lt;/strong&gt;&lt;small&gt;Ensamble calibrado, no score opaco&lt;/small&gt;&lt;/button&gt;
+      &lt;/section&gt;
+      &lt;div class=&quot;dop-arrow&quot; aria-hidden=&quot;true&quot;&gt;→&lt;/div&gt;
+      &lt;section class=&quot;dop-stage&quot;&gt;
+        &lt;h3&gt;5 · Control y uso&lt;/h3&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Incertidumbre&lt;/strong&gt;&lt;small&gt;Calibración, intervalos, drift y validación fuera de muestra&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Explicabilidad&lt;/strong&gt;&lt;small&gt;Importancia, atribución y límites por caso&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Puerta de decisión humana&lt;/strong&gt;&lt;small&gt;El sistema prioriza estudios; no aprueba inversiones automáticamente&lt;/small&gt;&lt;/div&gt;
+        &lt;div class=&quot;dop-node&quot;&gt;&lt;strong&gt;Exportación&lt;/strong&gt;&lt;small&gt;Modelo, versión, entradas, procedencia, resultado y limitaciones&lt;/small&gt;&lt;/div&gt;
+      &lt;/section&gt;
+    &lt;/div&gt;
+    &lt;p id=&quot;model-detail&quot; class=&quot;model-detail&quot; aria-live=&quot;polite&quot;&gt;Temporal: sólo evaluar una TCN o Transformer temporal cuando existan series multivariadas consistentes, objetivo definido y partición temporal sin fuga.&lt;/p&gt;
+  &lt;/section&gt;
+
+  &lt;section aria-labelledby=&quot;dependencies-heading&quot;&gt;
+    &lt;div class=&quot;section-head&quot;&gt;
+      &lt;div&gt;
+        &lt;h2 id=&quot;dependencies-heading&quot;&gt;Dependencias principales&lt;/h2&gt;
+        &lt;p&gt;Cada fase comienza únicamente cuando su puerta anterior tiene evidencia verificable.&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;table class=&quot;dependency-table&quot;&gt;
+      &lt;thead&gt;&lt;tr&gt;&lt;th&gt;Fase&lt;/th&gt;&lt;th&gt;Depende de&lt;/th&gt;&lt;th&gt;Evidencia requerida&lt;/th&gt;&lt;th&gt;Estado&lt;/th&gt;&lt;/tr&gt;&lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;1 · Fundación&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;—&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Arquitectura, contratos, pruebas y estándares&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;OPERATIVO&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;2 · Datos NASA&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Fase 1&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Respuesta oficial, metadatos, caché y error controlado&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;OPERATIVO&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;3 · Ciencia&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Fase 2&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Contraste estadístico, geoespacial y financiero&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;OPERATIVO&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;4 · Piloto solar&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Fases 1–3&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Flujo navegador, API, exportación y disclaimer&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;OPERATIVO&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;5 · Territorio&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Licencias y fuentes oficiales&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;CRS, fecha, resolución, cobertura y QA por capa&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;PENDIENTE&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;6 · Modelos neuronales&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Fase 5 + etiquetas confiables&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Baseline, dataset versionado, validación externa y model card&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;FUTURO&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;7 · Nuevos pilotos&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Fase 5&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Casos vial e inmobiliario con criterios sectoriales&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;PENDIENTE&lt;/td&gt;&lt;/tr&gt;
+        &lt;tr&gt;&lt;td data-label=&quot;Fase&quot;&gt;8 · Producción&lt;/td&gt;&lt;td data-label=&quot;Depende de&quot;&gt;Pilotos aceptados&lt;/td&gt;&lt;td data-label=&quot;Evidencia&quot;&gt;Observabilidad, seguridad, backups y runbook&lt;/td&gt;&lt;td data-label=&quot;Estado&quot;&gt;PENDIENTE&lt;/td&gt;&lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;criterios&quot; aria-labelledby=&quot;criteria-heading&quot;&gt;
+    &lt;div class=&quot;section-head&quot;&gt;&lt;h2 id=&quot;criteria-heading&quot;&gt;Criterios de salida&lt;/h2&gt;&lt;/div&gt;
+    &lt;div class=&quot;final-gates&quot;&gt;
+      &lt;section&gt;&lt;h3&gt;Ciencia&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Fuentes y procedencia completas&lt;/li&gt;&lt;li&gt;Unidades, CRS, nodata y cobertura verificados&lt;/li&gt;&lt;li&gt;Resultados contrastados con una implementación independiente&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;
+      &lt;section&gt;&lt;h3&gt;Producto&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Estados vacío, carga, parcial, éxito y error&lt;/li&gt;&lt;li&gt;Pruebas automatizadas y navegador desktop/mobile&lt;/li&gt;&lt;li&gt;Exportación reproducible con limitaciones visibles&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;
+      &lt;section&gt;&lt;h3&gt;Comercial&lt;/h3&gt;&lt;ul&gt;&lt;li&gt;Supuestos editables y sensibilidades explícitas&lt;/li&gt;&lt;li&gt;Screening separado de factibilidad&lt;/li&gt;&lt;li&gt;Decisión final siempre sometida a revisión humana&lt;/li&gt;&lt;/ul&gt;&lt;/section&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+
+  &lt;script&gt;
+    (() =&gt; {
+      const root = document.getElementById(&#x27;lce-roadmap&#x27;);
+      const phases = [
+        {name:&#x27;Fundación técnica y contratos&#x27;,status:&#x27;OPERATIVO&#x27;,objective:&#x27;Establecer una arquitectura modular, contratos tipados y reglas permanentes de calidad.&#x27;,inputs:[&#x27;AGENTS.md y Skills&#x27;,&#x27;FastAPI y Next.js&#x27;,&#x27;Contratos Pydantic/TypeScript&#x27;],tasks:[&#x27;Separar conectores, dominio y presentación&#x27;,&#x27;Definir procedencia canónica&#x27;,&#x27;Configurar pruebas y Docker aislado&#x27;],output:&#x27;Base reproducible en puertos 3100 y 8000, sin interferir con MyFix.&#x27;,gate:&#x27;Backend, frontend y contenedores verificables; documentación y estados coherentes.&#x27;},
+        {name:&#x27;Integración NASA trazable&#x27;,status:&#x27;OPERATIVO&#x27;,objective:&#x27;Recuperar observaciones NASA reales sin sustituir fallos por datos ficticios.&#x27;,inputs:[&#x27;NASA POWER Daily API&#x27;,&#x27;Coordenadas WGS84&#x27;,&#x27;Parámetros y período&#x27;],tasks:[&#x27;Consulta multiparámetro&#x27;,&#x27;Validación de sentinelas y unidades&#x27;,&#x27;Caché inmutable y trazabilidad&#x27;],output:&#x27;Series diarias con REAL_DATA o CACHED_DATA y metadatos de origen.&#x27;,gate:&#x27;Respuesta oficial contrastada; faltantes, timeout y error del proveedor probados.&#x27;},
+        {name:&#x27;Motor científico reproducible&#x27;,status:&#x27;OPERATIVO&#x27;,objective:&#x27;Transformar series validadas en evidencia estadística, espacial y financiera auditable.&#x27;,inputs:[&#x27;Series NASA validadas&#x27;,&#x27;Geometrías WGS84&#x27;,&#x27;Supuestos del usuario&#x27;],tasks:[&#x27;Mann–Kendall y pendiente de Sen&#x27;,&#x27;BH, cobertura y autocorrelación&#x27;,&#x27;Geodesia y VAN independiente&#x27;],output:&#x27;Indicadores con efecto, incertidumbre, unidad, procedencia y limitaciones.&#x27;,gate:&#x27;Casos controlados e implementación independiente dentro de tolerancia.&#x27;},
+        {name:&#x27;Piloto solar extremo a extremo&#x27;,status:&#x27;OPERATIVO&#x27;,objective:&#x27;Demostrar una decisión preliminar útil sin exceder la evidencia disponible.&#x27;,inputs:[&#x27;Moquegua y Arequipa&#x27;,&#x27;Cuatro variables POWER&#x27;,&#x27;Supuestos financieros editables&#x27;],tasks:[&#x27;Ejecutar pipeline de nueve pasos&#x27;,&#x27;Comparar recurso solar&#x27;,&#x27;Mostrar brechas y exportar JSON&#x27;],output:&#x27;Screening solar funcional con resultados, cautelas y próximas diligencias.&#x27;,gate:&#x27;13 pruebas, build, auditoría, flujo desktop/mobile y consola sin errores.&#x27;},
+        {name:&#x27;Inteligencia territorial oficial&#x27;,status:&#x27;PENDIENTE&#x27;,objective:&#x27;Añadir las capas que permiten evaluar terreno, conexión y restricciones reales.&#x27;,inputs:[&#x27;DEM NASA/Earthdata&#x27;,&#x27;MINEM/COES&#x27;,&#x27;SERNANP/SENACE/Cultura&#x27;],tasks:[&#x27;Resolver licencias y fechas&#x27;,&#x27;Normalizar CRS y resolución&#x27;,&#x27;Implementar intersección y distancia&#x27;],output:&#x27;Matriz territorial por sitio, corredor o polígono con cobertura conocida.&#x27;,gate:&#x27;Cada capa tiene fuente, licencia, fecha, CRS, resolución, QA y prueba límite.&#x27;},
+        {name:&#x27;Investigación de modelos neuronales&#x27;,status:&#x27;FUTURO&#x27;,objective:&#x27;Determinar si una red neuronal aporta valor medible frente a baselines más simples.&#x27;,inputs:[&#x27;Dataset versionado&#x27;,&#x27;Etiquetas de resultados reales&#x27;,&#x27;Partición temporal y espacial&#x27;],tasks:[&#x27;Definir target y pérdida&#x27;,&#x27;Entrenar baselines primero&#x27;,&#x27;Validar calibración, drift y explicabilidad&#x27;],output:&#x27;Model card y decisión documentada: adoptar, iterar o descartar el modelo.&#x27;,gate:&#x27;Mejora fuera de muestra, incertidumbre calibrada, reproducibilidad y revisión humana.&#x27;},
+        {name:&#x27;Pilotos vial e inmobiliario&#x27;,status:&#x27;PENDIENTE&#x27;,objective:&#x27;Extender el motor común a corredores y polígonos con criterios sectoriales específicos.&#x27;,inputs:[&#x27;Capas de Fase 5&#x27;,&#x27;Corredor vial real&#x27;,&#x27;Polígono inmobiliario real&#x27;],tasks:[&#x27;Muestrear a lo largo del corredor&#x27;,&#x27;Analizar pendiente y restricciones&#x27;,&#x27;Definir riesgos y mitigaciones&#x27;],output:&#x27;Dos pilotos comparables con límites y exportaciones sectoriales.&#x27;,gate:&#x27;Casos reales, criterios de aceptación sectoriales y resultados revisados por expertos.&#x27;},
+        {name:&#x27;Producción, observabilidad y escala&#x27;,status:&#x27;PENDIENTE&#x27;,objective:&#x27;Operar la plataforma de forma segura, medible y recuperable.&#x27;,inputs:[&#x27;Pilotos aceptados&#x27;,&#x27;Infraestructura objetivo&#x27;,&#x27;Políticas de seguridad&#x27;],tasks:[&#x27;Persistencia y trabajos asíncronos&#x27;,&#x27;Observabilidad y alertas&#x27;,&#x27;Backups, runbook y despliegue&#x27;],output:&#x27;Servicio productivo con versionado de datos/modelos y operación documentada.&#x27;,gate:&#x27;SLO definidos, restauración probada, auditoría de seguridad y rollback verificable.&#x27;}
+      ];
+      const modelDetails = {
+        temporal:&#x27;Temporal: sólo evaluar una TCN o Transformer temporal cuando existan series multivariadas consistentes, objetivo definido y partición temporal sin fuga.&#x27;,
+        spatial:&#x27;Geoespacial: usar CNN/U-Net para rasters o GNN para redes/corredores únicamente cuando la representación y las etiquetas lo justifiquen.&#x27;,
+        fusion:&#x27;Fusión: combinar salidas calibradas y variables financieras con un ensamble explicable; si no supera el baseline, conservar el método simple.&#x27;
+      };
+      const list = (id, items) =&gt; { root.querySelector(id).innerHTML = items.map(item =&gt; `&lt;li&gt;${item}&lt;/li&gt;`).join(&#x27;&#x27;); };
+      const renderPhase = index =&gt; {
+        const phase = phases[index];
+        root.querySelector(&#x27;#phase-number&#x27;).textContent = `Fase ${index + 1}`;
+        root.querySelector(&#x27;#phase-name&#x27;).textContent = phase.name;
+        root.querySelector(&#x27;#phase-status&#x27;).textContent = phase.status;
+        root.querySelector(&#x27;#phase-dot&#x27;).dataset.status = phase.status;
+        root.querySelector(&#x27;#phase-objective&#x27;).textContent = phase.objective;
+        list(&#x27;#phase-inputs&#x27;, phase.inputs);
+        list(&#x27;#phase-tasks&#x27;, phase.tasks);
+        root.querySelector(&#x27;#phase-output&#x27;).textContent = phase.output;
+        root.querySelector(&#x27;#phase-gate&#x27;).textContent = phase.gate;
+        root.querySelectorAll(&#x27;[data-phase]&#x27;).forEach((button, buttonIndex) =&gt; button.setAttribute(&#x27;aria-pressed&#x27;, String(buttonIndex === index)));
+      };
+      root.querySelectorAll(&#x27;[data-phase]&#x27;).forEach(button =&gt; button.addEventListener(&#x27;click&#x27;, () =&gt; renderPhase(Number(button.dataset.phase))));
+      root.querySelectorAll(&#x27;[data-model]&#x27;).forEach(button =&gt; button.addEventListener(&#x27;click&#x27;, () =&gt; {
+        root.querySelectorAll(&#x27;[data-model]&#x27;).forEach(item =&gt; item.setAttribute(&#x27;aria-pressed&#x27;, String(item === button)));
+        root.querySelector(&#x27;#model-detail&#x27;).textContent = modelDetails[button.dataset.model];
+      }));
+      renderPhase(0);
+    })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script src=&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  if (window.FloatingUIDOM == null) {
+    return;
+  }
+  const { autoUpdate, computePosition, flip, offset, shift, size } =
+    window.FloatingUIDOM;
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+
+  const getTrigger = (target) =&gt;
+    target?.nodeType === Node.ELEMENT_NODE
+      ? target.closest(&quot;[data-tooltip]&quot;)
+      : null;
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    autoUpdateCleanup = autoUpdate(trigger, floating, () =&gt; {
+      updatePosition(trigger, floating);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handleLeave = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    const trigger = getTrigger(event.target);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    document.removeEventListener(&quot;pointerover&quot;, handlePointerOpen);
+    document.removeEventListener(&quot;pointerout&quot;, handleLeave);
+    document.removeEventListener(&quot;focusin&quot;, handleFocusIn);
+    document.removeEventListener(&quot;focusout&quot;, handleLeave);
+    document.removeEventListener(&quot;keydown&quot;, handleKeyDown);
+    document.removeEventListener(&quot;contextmenu&quot;, handleContextMenu);
+    tooltip = null;
+  };
+
+  document.addEventListener(&quot;pointerover&quot;, handlePointerOpen);
+  document.addEventListener(&quot;pointerout&quot;, handleLeave);
+  document.addEventListener(&quot;focusin&quot;, handleFocusIn);
+  document.addEventListener(&quot;focusout&quot;, handleLeave);
+  document.addEventListener(&quot;keydown&quot;, handleKeyDown);
+  document.addEventListener(&quot;contextmenu&quot;, handleContextMenu);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+</body>
+</html>

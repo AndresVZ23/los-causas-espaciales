@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ingeniería geoespacial"
+  short_description: "Valida CRS, geometrías y unidades espaciales"
+  default_prompt: "Use $geospatial-engineering para implementar y verificar este análisis espacial."

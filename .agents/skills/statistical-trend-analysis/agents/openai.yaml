@@ -1,0 +1,4 @@
+interface:
+  display_name: "Análisis estadístico de tendencias"
+  short_description: "Contrasta tendencias y significancia estadística"
+  default_prompt: "Use $statistical-trend-analysis para validar este análisis temporal."

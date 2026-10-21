@@ -1,0 +1,4 @@
+interface:
+  display_name: "NASA Earth Data"
+  short_description: "Valida e integra datos oficiales NASA"
+  default_prompt: "Use $nasa-earth-data para integrar y validar una fuente NASA."

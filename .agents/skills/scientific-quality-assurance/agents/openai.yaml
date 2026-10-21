@@ -1,0 +1,4 @@
+interface:
+  display_name: "Aseguramiento científico"
+  short_description: "Audita trazabilidad, pruebas y reproducibilidad"
+  default_prompt: "Use $scientific-quality-assurance para auditar esta funcionalidad científica."

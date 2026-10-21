@@ -1,0 +1,4 @@
+interface:
+  display_name: "Inversión en infraestructura"
+  short_description: "Evalúa escenarios técnicos y financieros"
+  default_prompt: "Use $infrastructure-investment para evaluar este escenario de inversión."
