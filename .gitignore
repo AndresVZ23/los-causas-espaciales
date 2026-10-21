@@ -7,3 +7,5 @@ backend/data/cache/
 frontend/node_modules/
 frontend/.next/
 coverage/
+.taste-skill/
+.impeccable/review/

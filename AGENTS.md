@@ -14,6 +14,9 @@ Puertos reservados:
 
 - UI nueva o rediseño: `frontend-app-builder` y `react-best-practices`.
 - QA visual o depuración de UI: `frontend-testing-debugging` y Browser.
+- Dirección visual de aplicaciones: `.agents/skills/design-taste-frontend`; ejecutar su lint e inspector en 1440, 768 y 390 px.
+- Sistema de diseño y patrones UX: `.agents/skills/ui-ux-pro-max`; persistir recomendaciones y justificar cualquier desviación por evidencia del producto.
+- Revisión de craft: `.agents/skills/impeccable`; mantener hooks desactivados salvo aprobación explícita y ejecutar el detector manual al finalizar cambios visuales.
 - shadcn/ui: `shadcn-best-practices`; usarla solo si existe `components.json` o se adopta shadcn explícitamente.
 - NASA/Earthdata: `.agents/skills/nasa-earth-data`.
 - CRS, geometrías, mapas o rasters: `.agents/skills/geospatial-engineering`.
@@ -92,7 +95,7 @@ Antes de cerrar un cambio aplicable:
 .\.venv\Scripts\python.exe -m pytest backend\tests -q
 cd frontend
 npm.cmd run build
-npm.cmd audit --audit-level=high
+npm.cmd audit --omit=dev
 ```
 
 Además:
@@ -119,4 +122,3 @@ Además:
 - Conservar comandos, versiones, parámetros, fuentes, fechas y resultados de verificación.
 - Cada análisis exportable debe incluir identificador, período, coordenadas, supuestos, procedencia, métodos, limitaciones y timestamp.
 - Mantener estados honestos para los siete módulos y las brechas territoriales.
-

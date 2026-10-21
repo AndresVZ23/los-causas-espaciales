@@ -54,5 +54,8 @@ npm.cmd run dev
 - `frontend/public/plan-operativo.html`: hoja de ruta interactiva, dependencias, puertas de calidad y DOP neuronal futuro.
 - `PROGRESS.md`: evidencia verificada, límites y backlog priorizado.
 - `docs/nasa-submission/`: materiales técnicos y de presentación para NASA Space Apps.
+- `DESIGN.md`: sistema visual normativo para nuevas pantallas.
+- `docs/design/VISUAL_REDESIGN.md`: auditoría antes/después, fidelity ledger y decisiones del workspace.
+- `docs/SKILLS_ACTIVE.md`: Skills instaladas, función y verificaciones realizadas.
 
 NASA POWER puede limitar solicitudes o devolver errores temporales. La aplicación conserva caché y procedencia, expone el error real y nunca reemplaza observaciones faltantes con valores fabricados.

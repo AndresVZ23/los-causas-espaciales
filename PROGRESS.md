@@ -51,6 +51,17 @@
 - Interacciones de fases y modelos verificadas mediante teclado y navegador; escritorio 1440×1000 y móvil 390×844 sin desbordamiento ni errores de consola.
 - La referencia visual se conserva en `docs/design/plan-operativo-concept.png` y la decisión arquitectónica en `ADR-007`.
 
+## Rediseño premium verificado
+
+- La interfaz principal ahora es un Earth Intelligence Workspace operativo, no una landing page.
+- Mapa central, procedencia, controles, pipeline, evidencia y decisión comparten una jerarquía técnica coherente.
+- Public Sans e IBM Plex Mono se sirven con `next/font`; no dependen de fuentes del sistema del visitante.
+- En móvil existe una barra persistente de cuatro destinos y acceso “Más” a los siete módulos.
+- El drawer móvil gestiona `inert`, `aria-hidden`, foco inicial, retorno de foco y cierre con Escape.
+- Cambiar a un módulo pendiente elimina el resultado solar previo para evitar atribución errónea.
+- Inspección visual final a 1440, 768 y 390 px: 0 errores y 0 advertencias.
+- Auditoría, prompt visual, capturas y fidelity ledger están en `docs/design/`.
+
 ## Brechas prioritarias
 
 1. Integrar un modelo digital de elevación para pendiente y orientación del terreno.
