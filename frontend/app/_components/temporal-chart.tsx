@@ -1,11 +1,37 @@
 "use client";
 
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { formatNumber } from "./format";
 
 type TemporalPoint = { year: number } & Record<string, number>;
 type Series = { key: string; label: string; color: string };
 
-export default function TemporalChart({ data, series }: { data: TemporalPoint[]; series: Series[] }) {
+function niceStep(raw: number) {
+  const power = 10 ** Math.floor(Math.log10(raw));
+  const scaled = raw / power;
+  return (scaled <= 1 ? 1 : scaled <= 2 ? 2 : scaled <= 5 ? 5 : 10) * power;
+}
+
+// Dominio legible sin exagerar: el tramo visible es al menos 1.6× el rango observado y 12 % del nivel medio,
+// y una magnitud no negativa nunca baja de cero.
+export function readableDomain(values: number[]) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const mid = (min + max) / 2;
+  const span = Math.max((max - min) * 1.6, Math.abs(mid) * 0.12, 0.1);
+  let low = mid - span / 2;
+  const high = mid + span / 2;
+  if (min >= 0 && low < 0) low = 0;
+  const step = niceStep((high - low) / 5);
+  const digits = Math.max(0, -Math.floor(Math.log10(step)));
+  const start = Math.floor(low / step) * step;
+  const end = Math.ceil(high / step) * step;
+  const ticks: number[] = [];
+  for (let tick = start; tick <= end + step / 2; tick += step) ticks.push(+tick.toFixed(digits));
+  return { domain: [ticks[0], ticks[ticks.length - 1]] as [number, number], ticks, digits };
+}
+
+export default function TemporalChart({ data, series, unit }: { data: TemporalPoint[]; series: Series[]; unit: string }) {
   if (!data.length) {
     return (
       <div className="temporalEmpty" role="status">
@@ -18,15 +44,19 @@ export default function TemporalChart({ data, series }: { data: TemporalPoint[];
     );
   }
 
+  const values = data.flatMap((point) => series.map((item) => point[item.key]).filter((value): value is number => typeof value === "number"));
+  const axis = readableDomain(values);
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={data} margin={{ top: 12, right: 20, left: -8, bottom: 0 }}>
+      <LineChart data={data} margin={{ top: 12, right: 20, left: 0, bottom: 0 }}>
         <CartesianGrid stroke="#2e3136" strokeDasharray="2 3" vertical />
         <XAxis dataKey="year" stroke="#9aa4ae" tickLine={false} axisLine={{ stroke: "#3a3f44" }} minTickGap={24} />
-        <YAxis stroke="#9aa4ae" tickLine={false} axisLine={false} width={42} tickFormatter={(value) => Number(value).toFixed(1)} />
+        <YAxis stroke="#9aa4ae" tickLine={false} axisLine={false} width={44} domain={axis.domain} ticks={axis.ticks} allowDataOverflow={false} tickFormatter={(value) => Number(value).toFixed(axis.digits)} />
         <Tooltip
           labelFormatter={(value) => `Año ${value}`}
-          contentStyle={{ background: "#101315", border: "1px solid #3a3f44", borderRadius: 2, fontFamily: "var(--font-data-mono)" }}
+          formatter={(value, name) => [`${formatNumber(Number(value), 3)} ${unit}`, name]}
+          contentStyle={{ background: "#101315", border: "1px solid #3a3f44", borderRadius: 2, fontFamily: "var(--font-data-mono)", fontSize: 11 }}
           cursor={{ stroke: "#38d9c3", strokeWidth: 1 }}
         />
         {series.map((item) => (

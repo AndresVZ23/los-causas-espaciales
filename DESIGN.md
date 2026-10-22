@@ -45,7 +45,7 @@ typography:
     lineHeight: 1.3
   data:
     fontFamily: "IBM Plex Mono, monospace"
-    fontSize: "10px"
+    fontSize: "10–12px"
     fontWeight: 500
     lineHeight: 1.35
 rounded:
@@ -153,7 +153,7 @@ La paleta usa negros verdosos y grafitos fríos como instrumento de trabajo; el 
 - **Title** (600, 14px, 1.3): títulos compactos de panel y bloques de resultado.
 - **Body** (400, 14px, 1.4): explicación, limitaciones y lectura continua.
 - **Label** (560, 11px, 1.3): navegación, acciones y controles.
-- **Data** (500, 9–11px, 1.35): coordenadas, fechas, fuentes, unidades, códigos y registros de proceso; usa cifras tabulares cuando corresponda.
+- **Data** (500, 10–12px, 1.35): coordenadas, fechas, fuentes, unidades, códigos y registros de proceso; usa cifras tabulares cuando corresponda. Ningún texto baja de 10 px.
 
 ### Named Rules
 
@@ -161,9 +161,9 @@ La paleta usa negros verdosos y grafitos fríos como instrumento de trabajo; el 
 
 ## Layout
 
-En escritorio, un masthead de 150 px combina marca, contexto, fechas y la clave de procedencia. Debajo, una retícula de 190 px para el rail y dos columnas de trabajo distribuye el primer viewport en mapa NASA GIBS, configuración, serie temporal anual y pipeline de nueve etapas. El rail recorre las tres filas del banco; el mapa y la configuración ocupan 355 px, la serie 265 px y el pipeline 110 px.
+En escritorio, un masthead de 89 px tiene dos filas: arriba, la marca en una línea (`h1`) con su lema, los filtros de región, fuente y fechas y el estado de NASA POWER con el identificador de ejecución; abajo, una franja de 30 px con la clave de procedencia. Debajo, una retícula de 190 px para el rail y dos columnas de trabajo distribuye el primer viewport en mapa NASA GIBS, configuración con lectura comparativa, serie temporal anual y pipeline de nueve etapas. El rail recorre las tres filas del banco; el mapa y la configuración ocupan 420 px, la serie 265 px y el pipeline 118 px.
 
-El sistema responde en `1180px`, `900px` y `560px`. Bajo 1180 px compacta el rail a 174 px y el masthead a 146 px. A 900 px o menos, el masthead pasa a 72 px, el banco se apila, el rail se convierte en drawer y aparece una navegación inferior fija de 66 px. El mapa precede a la configuración; los detalles de contexto y procedencia se trasladan junto a los controles; luego siguen la serie y el pipeline horizontal desplazable. Bajo 560 px, los editores de ubicación, resultados y tablas ajustan sus columnas sin ocultar estados.
+El sistema responde en `1180px`, `900px` y `560px`. Bajo 1180 px compacta el rail a 174 px, la marca a 250 px y la clave de procedencia a punto y código. A 900 px o menos, el masthead pasa a 56 px, el banco se apila, el rail se convierte en drawer y aparece una navegación inferior fija de 66 px. Tras una ejecución, la lectura comparativa encabeza el banco y recibe el desplazamiento; luego siguen el mapa, la configuración, la serie y el pipeline horizontal desplazable. Bajo 560 px, la tendencia de la lectura pasa a una segunda línea bajo cada sitio y los editores de ubicación, resultados y tablas ajustan sus columnas sin ocultar estados.
 
 En móvil, entradas, resúmenes y acciones usan objetivos táctiles de al menos 44 px. El contenido reserva espacio para la navegación inferior y las áreas desplazables conservan el orden operativo.
 
@@ -221,13 +221,21 @@ Blue Marble de NASA EOSDIS GIBS funciona como basemap raster estático y context
 
 El bloque compacto de relieve vive dentro de la configuración y mantiene separadas la evidencia cartográfica y las métricas. La vista previa pública puede activarse sobre el mapa, pero elevación, pendiente y orientación solo aparecen cuando el raster protegido fue descargado y validado. En ausencia de Earthdata Login, el bloque declara `METADATA_ONLY` / `DATA_UNAVAILABLE`, conserva enlaces DOI, tesela, CRS y resolución, y no infiere valores.
 
+### Comparative Reading
+
+Tabla compacta con todos los sitios ordenados por irradiancia histórica: orden, sitio con su trazo de serie, cobertura, irradiancia, tendencia y VAN condicionado. Debajo, la diferencia entre extremos y la advertencia de que el orden no es una recomendación; luego, en ámbar `USER_ASSUMPTION`, los supuestos con que se calculó el VAN y la acción “Editar supuestos”. Si los supuestos cambian después de ejecutar, la línea lo declara y pide recalcular. El trazo de cada sitio repite el color de su marcador y de su línea en la serie: cian para el sitio principal y blanco frío para el comparador.
+
 ### Temporal Series
 
-La gráfica anual usa retícula fina, ejes monoespaciados y líneas sin animación. Antes de ejecutar, conserva la retícula pero declara que la serie aún no está disponible; nunca rellena el espacio con datos ficticios.
+La gráfica anual usa retícula fina, ejes monoespaciados y líneas sin animación. La cabecera incluye la leyenda por sitio y la unidad de presentación. El eje vertical se ajusta al rango observado (al menos 1.6 veces el rango y 12 % del nivel medio, sin bajar de cero en magnitudes no negativas) y el pie lo declara. Antes de ejecutar, conserva la retícula pero declara que la serie aún no está disponible; nunca rellena el espacio con datos ficticios.
+
+### Units
+
+Las unidades de NASA POWER se presentan como `kWh/m²/día`, `°C`, `m/s` y `mm/día`. La procedencia y el JSON exportado conservan los códigos originales.
 
 ### Pipeline & Acquisition
 
-Nueve pasos numerados comparten una línea de 1 px y estados textuales. Durante la consulta, un segmento cian sólido de 1 px recorre el perímetro interior del mapa y el pipeline cambia a “EN CURSO”. Con `prefers-reduced-motion`, el segmento queda fijo en una posición de referencia y toda transición se reduce a 1 ms.
+Nueve pasos numerados comparten una línea de 1 px y estados textuales; los nombres pueden ocupar dos líneas y nunca se truncan. Un paso parcial usa anillo ámbar y la palabra “Parcial” bajo su nombre; el registro lateral lista primero los pasos no completados. Durante la consulta, un segmento cian sólido de 1 px recorre el perímetro interior del mapa y el pipeline cambia a “EN CURSO”. Con `prefers-reduced-motion`, el segmento queda fijo en una posición de referencia y toda transición se reduce a 1 ms.
 
 ## Do's and Don'ts
 

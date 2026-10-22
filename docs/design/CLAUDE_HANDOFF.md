@@ -42,6 +42,19 @@ Estos cambios deben vivir en una rama separada para no mezclar el rediseño con 
 
 La auditoría visual automatizada también señala microetiquetas, texto menor de 11 px, proximidad de texto a bordes y ausencia de un `h1` semántico en el workspace. Son coherentes con la deuda de densidad descrita arriba; deben resolverse sin abandonar el carácter de consola científica.
 
+### Resultado en la rama `claude/diseno-consola` (2026-10-22)
+
+1. **Hecho.** Dominio Y legible en `temporal-chart.tsx` (`readableDomain`): irradiancia 6.2–7.2, temperatura 4–14 y precipitación desde 0. Ticks en mono de 10 px y leyenda por sitio en la cabecera de la serie.
+2. **Hecho.** `format.ts` traduce unidades solo para presentación; procedencia y JSON exportado intactos. También se aplica a los hallazgos comparativos que redacta el backend.
+3. **Hecho.** Nuevo `site-verdict.tsx`: sitios ordenados, diferencia entre extremos (0.014 kWh/m²/día, 0.2 %), VAN junto a los supuestos realmente usados y aviso cuando se editan después de ejecutar. Ver ADR-010.
+4. **Hecho.** Masthead de 150 a 89 px, con `h1`; el banco gana 65 px (fila superior de 355 a 420 px).
+5. **Hecho.** Los nombres del pipeline ocupan dos líneas; el paso parcial tiene anillo ámbar y la palabra «Parcial».
+6. **Hecho.** En móvil la lectura encabeza el banco tras ejecutar y recibe el desplazamiento.
+
+Además: los tipos pasaron a `types.ts` y ningún texto baja de 10 px. Verificación: pytest 16/16, build aprobado, npm 0 vulnerabilidades, lint taste-skill 0 FAIL, Playwright a 1440/768/390 sin overflow ni errores de consola.
+
+**Abierto, pendiente de decisión:** el inspector taste-skill aún marca microetiquetas en mayúsculas espaciadas y texto de 10 px (pide ≥ 11 px). Ambos son rasgos deliberados de la consola en este `DESIGN.md`. Subirlos a 11 px exige volver a medir el primer viewport de escritorio.
+
 ## Archivos con mayor probabilidad de conflicto
 
 - `frontend/app/_components/workspace.tsx`

@@ -73,6 +73,13 @@
 - Recorrido funcional aprobado a 1440, 768 y 390 px. La auditoría visual automatizada más reciente conserva cuatro hallazgos de estilo preexistentes —microetiquetas, texto menor de 11 px, proximidad al borde y ausencia de `h1` en el workspace— como backlog explícito para la siguiente rama de diseño.
 - Auditoría, prompt visual, capturas y fidelity ledger están en `docs/design/`.
 
+## Pulido de consola (rama `claude/diseno-consola`)
+
+- La lectura comparativa ordena los sitios (Arequipa 1.º con 6.616 y Moquegua 2.º con 6.602 kWh/m²/día; diferencia de 0.2 %) y muestra el VAN junto a los supuestos con que se calculó.
+- La serie anual tiene leyenda por sitio y un eje vertical ajustado y declarado; las unidades se presentan en español.
+- Masthead de 89 px con `h1`; el paso parcial del pipeline es visible; en móvil la lectura encabeza el banco tras ejecutar.
+- Verificado con Playwright a 1440, 768 y 390 px: sin overflow, sin errores de consola, edición de supuestos y cambio de variable comprobados.
+
 ## Brechas prioritarias
 
 1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
