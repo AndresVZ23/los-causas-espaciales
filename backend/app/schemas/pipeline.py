@@ -47,6 +47,21 @@ class SolarScreeningRequest(BaseModel):
         return self
 
 
+class CurrentPeriod(BaseModel):
+    """El año en curso (incompleto) comparado con la misma ventana del calendario en los años completos."""
+
+    year: int
+    through: date = Field(description="Último día publicado por la fuente.")
+    days: int
+    value: float = Field(description="Media diaria del año en curso hasta `through`.")
+    baseline_mean: float = Field(description="Media de la misma ventana (1 de enero a `through`) en los años completos.")
+    baseline_years: str
+    anomaly: float
+    anomaly_percent: float | None = Field(description="None en escalas de intervalo, como la temperatura en °C.")
+    rank: int = Field(description="Posición del año en curso entre todos los años de la ventana, de mayor a menor.")
+    years_compared: int
+
+
 class VariableSummary(BaseModel):
     variable: str
     label: str
@@ -63,6 +78,8 @@ class VariableSummary(BaseModel):
     significant_after_bh: bool = False
     source: SourceMetadata
     annual_series: list[AnnualObservation]
+    last_valid_date: date | None = Field(default=None, description="Último día con dato publicado por la fuente (latencia del proveedor).")
+    current_period: CurrentPeriod | None = None
 
 
 class SolarFinancialProjection(BaseModel):

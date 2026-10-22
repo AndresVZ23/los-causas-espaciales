@@ -7,7 +7,18 @@ from scipy.stats import kendalltau, norm, rankdata, theilslopes
 from ..schemas.analysis import Observation, TrendResult
 
 
+MIN_YEAR_COVERAGE = 0.9
+
+
+def _days_in_year(year: int) -> int:
+    return 366 if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0 else 365
+
+
 def annual_means(observations: list[Observation]) -> list[Observation]:
+    """Medias anuales de una serie diaria, solo de años con al menos 90 % de días válidos.
+
+    Un año incompleto (como el año en curso) no es comparable: su media depende de qué estaciones cubre.
+    """
     grouped: dict[int, list[float]] = defaultdict(list)
     for item in observations:
         if np.isfinite(item.value):
@@ -15,8 +26,17 @@ def annual_means(observations: list[Observation]) -> list[Observation]:
     return [
         Observation(timestamp=date(year, 1, 1), value=float(np.mean(values)))
         for year, values in sorted(grouped.items())
-        if values
+        if len(values) >= MIN_YEAR_COVERAGE * _days_in_year(year)
     ]
+
+
+def partial_years(observations: list[Observation]) -> list[int]:
+    """Años con datos pero sin cobertura suficiente para entrar en la tendencia."""
+    counts: dict[int, int] = defaultdict(int)
+    for item in observations:
+        if np.isfinite(item.value):
+            counts[item.timestamp.year] += 1
+    return [year for year, count in sorted(counts.items()) if count < MIN_YEAR_COVERAGE * _days_in_year(year)]
 
 
 def mann_kendall_s(values: np.ndarray) -> int:
@@ -65,10 +85,18 @@ def _z_score(s: int, variance: float) -> float:
     return 0.0
 
 
-def analyze_trend(observations: list[Observation], alpha: float = 0.05) -> TrendResult:
-    annual = annual_means(observations)
+def analyze_trend(observations: list[Observation], alpha: float = 0.05, *, already_annual: bool = False) -> TrendResult:
+    """Tendencia sobre medias anuales de años completos.
+
+    `already_annual=True` indica que cada observación ya es un valor anual (por ejemplo, un índice ETCCDI).
+    """
+    annual = sorted(observations, key=lambda item: item.timestamp) if already_annual else annual_means(observations)
     method = "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales"
     limitations = ["Las estimaciones de grilla para un punto no sustituyen mediciones in situ."]
+    if not already_annual:
+        excluded = partial_years(observations)
+        if excluded:
+            limitations.append(f"Años incompletos excluidos de la tendencia: {', '.join(map(str, excluded))}.")
     if len(annual) < 5:
         return TrendResult(
             method=method,

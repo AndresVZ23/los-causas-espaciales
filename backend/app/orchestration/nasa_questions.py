@@ -15,6 +15,7 @@ from ..schemas.screening import NasaQuestionAnswer, QuestionStatus, TrendFinding
 
 INSUFFICIENT = "Evidencia insuficiente para establecer una tendencia estadísticamente significativa."
 AUTOCORRELATION_CAUTION = 0.3
+STRONG_EVIDENCE = 0.01
 
 
 @dataclass(frozen=True)
@@ -194,6 +195,14 @@ def _significant(findings: list[TrendFinding], sites: Sequence[SubjectSummaries]
         f"{item.autocorrelation_lag1_detrended if item.autocorrelation_lag1_detrended is not None else float('nan'):.2f}"
         for item in findings
     )
+    # Escala de evidencia explícita: lo que queda cerca del umbral se reporta como moderado y se pide confirmarlo.
+    strong = [item for item in findings if item.adjusted_p_value < STRONG_EVIDENCE]
+    moderate = [item for item in findings if item.adjusted_p_value >= STRONG_EVIDENCE]
+    if moderate:
+        answer += (
+            f" Evidencia fuerte (p BH < {STRONG_EVIDENCE}) en {len(strong)}; moderada en {len(moderate)} "
+            f"({join_es([f'{_lower_first(item.label)} en {item.site}' for item in moderate])}), que conviene confirmar con más años o con otra fuente."
+        )
     if years < 10:
         answer += f" La serie tiene {years} años, con potencia estadística baja."
         status = QuestionStatus.PARTIAL

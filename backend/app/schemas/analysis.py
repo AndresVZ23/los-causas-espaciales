@@ -70,6 +70,7 @@ class SourceMetadata(BaseModel):
     downloaded_at: datetime
     source_url: str
     provenance: Provenance
+    quality_notes: list[str] = Field(default_factory=list, description="Verificaciones o correcciones aplicadas a la respuesta del proveedor.")
 
 
 class AnalysisResponse(BaseModel):

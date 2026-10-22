@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-22T21:30:00Z",
+  updatedAt: "2026-10-22T23:30:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -208,7 +208,7 @@ window.DOP_DATA = {
       // Capa B
       { id: "b-trends", layer: "B", name: "Motor de tendencias", owner: "Claude", status: "VERIFICADO", detail: "Mann–Kendall con Hamed–Rao, Sen y Benjamini–Hochberg." },
       { id: "b-terrain", layer: "B", name: "Relieve y terreno", owner: "Codex", status: "LISTO_PARA_QA", dopNode: "dem", detail: "Elevación, pendiente y orientación por sujeto." },
-      { id: "b-hydro", layer: "B", name: "Extremos hidrometeorológicos", owner: "Claude", status: "PENDIENTE", detail: "Lluvia intensa, días sobre percentil y sequía, con su propia prueba de tendencia." },
+      { id: "b-hydro", layer: "B", name: "Extremos hidrometeorológicos", owner: "Claude", status: "LISTO_PARA_QA", detail: "Índices ETCCDI (RX1DAY, RX5DAY, R95P, PRCPTOT, R10MM, CDD) con Hamed–Rao y BH; falta contraste con IMERG o estaciones." },
       { id: "b-hazard", layer: "B", name: "Exposición a amenazas", owner: "Codex", status: "PENDIENTE", detail: "Superposición con capas oficiales; susceptibilidad, amenaza, exposición y riesgo son distintos." },
       { id: "b-constraints", layer: "B", name: "Restricciones territoriales", owner: "Codex", status: "PENDIENTE", detail: "Áreas protegidas, patrimonio y comunidades como alertas, no conclusiones legales." },
       { id: "b-environment", layer: "B", name: "Cambio de cobertura y vegetación", owner: "Codex", status: "PENDIENTE", detail: "Tendencias en índices de vegetación y agua." },
@@ -225,7 +225,7 @@ window.DOP_DATA = {
       { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
 
       // Resultados
-      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "EN_CURSO", detail: "Tendencias de POWER disponibles dentro del piloto solar; falta su pantalla propia." },
+      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "EN_CURSO", detail: "Endpoint climate-screening con tendencias, extremos y año en curso hasta hoy; falta su pantalla propia." },
       { id: "o-energy", layer: "out", group: "Módulos", name: "2 · Energía renovable", owner: "Claude", status: "VERIFICADO", detail: "Solar operativo; eólica e hidro pendientes." },
       { id: "o-hazards", layer: "out", group: "Módulos", name: "3 · Amenazas naturales", owner: "Claude", status: "PENDIENTE", detail: "Requiere capas de amenaza y extremos de lluvia." },
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },

@@ -20,6 +20,7 @@ CONTRACT_VERSION = "1.0"
 
 
 class Sector(StrEnum):
+    CLIMATE = "climate"
     SOLAR = "solar"
     ROAD = "road"
     REAL_ESTATE = "real_estate"

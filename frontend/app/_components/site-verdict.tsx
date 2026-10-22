@@ -15,6 +15,12 @@ export default function SiteVerdict({ result, staleAssumptions, onEditAssumption
   const delta = means[0] - means[means.length - 1];
   const deltaShare = means[means.length - 1] > 0 ? delta / means[means.length - 1] : null;
   const used: Assumptions = result.assumptions;
+  // Año en curso: no entra en la tendencia; se compara con la misma ventana del calendario en los años completos.
+  const periods = ranked.map((site) => ({ label: site.location.label, period: irradiance(site.variables).current_period })).filter((item) => item.period);
+  const first = periods[0]?.period;
+  const currentLine = first
+    ? `${first.year} hasta el ${new Date(`${first.through}T12:00:00`).toLocaleDateString("es-PE", { day: "numeric", month: "short" })}: ${periods.map(({ label, period }) => `${label} ${period!.anomaly_percent != null ? `${period!.anomaly_percent > 0 ? "+" : ""}${formatNumber(period!.anomaly_percent, 1)} %` : formatNumber(period!.anomaly, 2)}`).join(", ")} frente a ${first.baseline_years} en la misma ventana. El año en curso no entra en la tendencia.`
+    : null;
 
   return (
     <section className="verdict" aria-labelledby={headingId}>
@@ -45,6 +51,7 @@ export default function SiteVerdict({ result, staleAssumptions, onEditAssumption
           Diferencia entre extremos: <b>{formatNumber(delta, 3)} {unit}{deltaShare !== null ? ` (${formatPercent(deltaShare)})` : ""}</b>. El orden solo considera irradiancia histórica; no es una recomendación de inversión.
         </p>
       )}
+      {currentLine && <p className="verdictNote">{currentLine}</p>}
       <div className={`verdictAssumptions ${staleAssumptions ? "isStale" : ""}`}>
         <p>
           <span>{staleAssumptions ? "Supuestos editados · vuelva a ejecutar para recalcular el VAN" : "VAN calculado con USER_ASSUMPTION"}</span>

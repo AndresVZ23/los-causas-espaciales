@@ -87,6 +87,13 @@
 - NASADEM se integra al orquestador; su fallo no bloquea el screening. El parseo de NASA POWER deja de bloquear el bucle (ADR-013).
 - Backend: 20/20 pruebas, incluidas preguntas con y sin tendencia, caída de NASADEM y cobertura insuficiente.
 
+## Datos hasta hoy y módulo climático (ola 1)
+
+- Datos hasta hoy con la última fecha publicada por variable: meteorología hasta el 20-oct-2026 y radiación hasta el 31-jul-2026. Tendencias con años completos (2001–2025) y año en curso comparado aparte (ADR-017).
+- Defecto de NASA POWER detectado y controlado: precipitación × 24 al incluir días recientes; se verifica y corrige en cada consulta, y queda registrado en la procedencia.
+- Motor de extremos ETCCDI y endpoint `climate-screening` (ADR-018). Con datos reales hasta hoy, la lluvia máxima de 1 día sube con significancia en Moquegua (evidencia fuerte) y en Arequipa; la de 5 días, en Arequipa. En 2026, Moquegua va como el 3.er año más cálido y el de menos viento del registro, y Arequipa lleva 39 % más lluvia que el promedio del mismo período.
+- Backend: 55/55 pruebas.
+
 ## Contrato común entre sectores (C2)
 
 - `ScreeningEnvelope` v1.0 con esquema y ejemplo real en `docs/coordination/contracts/` (ADR-015); la respuesta solar lo cumple y sigue siendo compatible con la interfaz.

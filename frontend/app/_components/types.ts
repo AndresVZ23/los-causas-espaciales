@@ -7,12 +7,17 @@ export type Trend = {
   confidence_interval: [number, number] | null; significant: boolean;
   autocorrelation_lag1: number | null; autocorrelation_lag1_detrended?: number | null; interpretation: string; limitations: string[];
 };
-export type SourceMetadata = { dataset: string; version: string; downloaded_at: string; source_url: string; provenance: string; spatial_resolution: string };
+export type SourceMetadata = { dataset: string; version: string; downloaded_at: string; source_url: string; provenance: string; spatial_resolution: string; quality_notes?: string[] };
 export type VariableSummary = {
   variable: string; label: string; mean: number; minimum: number; maximum: number; unit: string; display_unit: string;
   valid_observations: number; completeness_percent: number; annual_variability_percent: number | null;
   trend: Trend; adjusted_p_value: number | null; significant_after_bh: boolean;
   annual_series: { year: number; value: number }[]; source: SourceMetadata;
+  last_valid_date?: string | null; current_period?: CurrentPeriod | null;
+};
+export type CurrentPeriod = {
+  year: number; through: string; days: number; value: number; baseline_mean: number; baseline_years: string;
+  anomaly: number; anomaly_percent: number | null; rank: number; years_compared: number;
 };
 export type SolarFinance = { specific_yield_kwh_kwp_year: number; annual_energy_mwh: number; annual_revenue_usd: number; npv_usd: number; formula: string; limitations: string[] };
 export type SiteResult = { location: Point; relative_solar_position: number; relative_position_text: string; variables: VariableSummary[]; finance: SolarFinance; opportunities: string[]; cautions: string[] };

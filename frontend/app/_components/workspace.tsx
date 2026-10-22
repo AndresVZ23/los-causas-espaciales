@@ -47,7 +47,9 @@ export default function Workspace() {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [sites, setSites] = useState<Point[]>(initialSites);
   const [startDate, setStartDate] = useState("2001-01-01");
-  const [endDate, setEndDate] = useState("2024-12-31");
+  // "Hasta" es siempre hoy (fecha local): se fija al montar para no desalinear el HTML prerenderizado con el navegador.
+  const [endDate, setEndDate] = useState("");
+  useEffect(() => { setEndDate(new Date().toLocaleDateString("en-CA")); }, []);
   const [assumptions, setAssumptions] = useState<Assumptions>(initialAssumptions);
   const [result, setResult] = useState<ScreeningResult | null>(null);
   const [terrainVisible, setTerrainVisible] = useState(true);
@@ -75,6 +77,15 @@ export default function Workspace() {
   const comparisonData = useMemo(() => result?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [result]);
   const selectedVariable = result ? getVariable(result.sites[0], activeVariable) : null;
   const selectedUnit = selectedVariable?.display_unit ?? "Media anual";
+  // Cada producto NASA se publica con su propia latencia: se muestra la fecha más antigua entre sitios, por grupo.
+  const dataThrough = useMemo(() => {
+    if (!result) return null;
+    const latest = (codes: string[]) => result.sites.flatMap((site) => site.variables.filter((v) => codes.includes(v.variable) && v.last_valid_date).map((v) => v.last_valid_date as string)).sort()[0];
+    const fmt = (iso?: string) => iso ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }) : null;
+    const meteo = fmt(latest(["T2M", "PRECTOTCORR", "WS10M"]));
+    const solar = fmt(latest(["ALLSKY_SFC_SW_DWN"]));
+    return [meteo && `Datos NASA hasta ${meteo}`, solar && solar !== meteo && `radiación hasta ${solar}`].filter(Boolean).join(" · ");
+  }, [result]);
   const staleAssumptions = result !== null && JSON.stringify(result.assumptions) !== JSON.stringify(assumptions);
   const selectedSources = useMemo(() => result?.sites.map((site) => ({ site: site.location.label, ...getVariable(site, activeVariable).source })) ?? [], [result, activeVariable]);
   const terrainOverlay = useMemo(() => {
@@ -203,7 +214,7 @@ export default function Workspace() {
             <label><span>Desde</span><input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
             <label><span>Hasta</span><input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
           </div>
-          <div className="systemLine"><b><i />NASA POWER operativo</b><small>{result ? `ID ${result.analysis_id}` : "Sin ejecución"}</small></div>
+          <div className="systemLine"><b><i />NASA POWER operativo</b><small>{dataThrough ?? "Datos hasta hoy · se actualizan en cada consulta"}</small><small>{result ? `ID ${result.analysis_id}` : "Sin ejecución"}</small></div>
         </section>
         <div className="provenanceStrip" role="list" aria-label="Clave de procedencia">
           <span className="provenanceTitle" aria-hidden="true">Procedencia</span>
@@ -264,7 +275,7 @@ export default function Workspace() {
                 </div>
               ))}
             </div>
-            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
+            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready || !endDate}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (
               !isMobile && <SiteVerdict result={result} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />

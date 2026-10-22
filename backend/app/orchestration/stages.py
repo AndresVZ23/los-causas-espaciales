@@ -85,6 +85,25 @@ def extraction_stage(subjects: Sequence[SubjectSummaries], duration_ms: float | 
     ]
     if downloads:
         evidence.append(StageEvidence(label="Descarga NASA (UTC)", value=downloads[0].strftime("%Y-%m-%d %H:%M") if downloads[0] == downloads[-1] else f"{downloads[0]:%Y-%m-%d} a {downloads[-1]:%Y-%m-%d}"))
+    # Cada producto se publica con su propia latencia: se informa la fecha más antigua entre sujetos, por variable.
+    through: dict[str, object] = {}
+    for item in summaries:
+        if item.last_valid_date and (item.variable not in through or item.last_valid_date < through[item.variable]):
+            through[item.variable] = item.last_valid_date
+    if through:
+        by_date: dict[object, list[str]] = {}
+        for variable, last in through.items():
+            by_date.setdefault(last, []).append(variable)
+        evidence.append(StageEvidence(label="Último dato publicado", value=" · ".join(f"{', '.join(names)}: {last:%Y-%m-%d}" for last, names in sorted(by_date.items(), reverse=True))))
+    corrected = sum(1 for item in summaries if any("se dividió por 24" in note for note in item.source.quality_notes))
+    verified = sum(1 for item in summaries if any("verificada" in note for note in item.source.quality_notes))
+    unverifiable = sum(1 for item in summaries if any("no verificable" in note for note in item.source.quality_notes))
+    if corrected or verified or unverifiable:
+        parts = [f"corregida en {corrected}" if corrected else "", f"verificada en {verified}" if verified else "", f"no verificable en {unverifiable}" if unverifiable else ""]
+        evidence.append(StageEvidence(label="Escala de precipitación NASA", value=" · ".join(p for p in parts if p) + " series", provenance=Provenance.MODEL))
+    partial = sorted({item.current_period.year for item in summaries if item.current_period})
+    if partial:
+        evidence.append(StageEvidence(label="Año en curso", value=f"{', '.join(map(str, partial))} fuera de la tendencia; comparado con la misma ventana de años completos"))
     summary = (
         f"NASA POWER entregó {observations:,} observaciones diarias para {len(variables)} variables en {len(subjects)} sujetos."
         if status == PipelineStatus.COMPLETED
