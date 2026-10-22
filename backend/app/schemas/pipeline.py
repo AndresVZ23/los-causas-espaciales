@@ -85,8 +85,11 @@ class TrendFinding(BaseModel):
     change_over_period: float
     change_percent_of_mean: float | None = Field(description="None en escalas de intervalo, como la temperatura en °C.")
     p_value: float
+    p_value_modified: float | None = None
     adjusted_p_value: float
+    variance_correction: float | None = None
     autocorrelation_lag1: float | None
+    autocorrelation_lag1_detrended: float | None = None
 
 
 class NasaQuestionAnswer(BaseModel):

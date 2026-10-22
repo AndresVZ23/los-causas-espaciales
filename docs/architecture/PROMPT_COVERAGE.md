@@ -5,7 +5,7 @@
 | NASA POWER real y caché | Sí | | |
 | Serie histórica y tendencia | Sí | | |
 | Mann-Kendall, Sen, p-value, IC | Sí | | |
-| Autocorrelación y BH | Sí | | Corrección específica por autocorrelación |
+| Autocorrelación y BH | Sí | | Corrección de Hamed–Rao integrada (ADR-014); Mann–Kendall estacional para series mensuales |
 | Selección de punto | Sí | | |
 | Polígono y corredor | | Sí | Muestreo NASA y overlays |
 | Comparación geográfica | Sí | | Ampliar criterios territoriales |

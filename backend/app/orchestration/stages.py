@@ -90,14 +90,17 @@ def build_solar_pipeline(
 
     raw_significant = sum(1 for item in summaries if item.trend.significant)
     insufficient = sum(1 for item in summaries if item.trend.direction == "insufficient_evidence")
-    autocorrelated = sum(1 for item in summaries if item.trend.autocorrelation_lag1 is not None and abs(item.trend.autocorrelation_lag1) >= 0.3)
+    corrected = sum(1 for item in summaries if (item.trend.variance_correction or 1) != 1)
+    detrended = [abs(item.trend.autocorrelation_lag1_detrended) for item in summaries if item.trend.autocorrelation_lag1_detrended is not None]
     analysis_status = PipelineStatus.COMPLETED if insufficient == 0 else PipelineStatus.PARTIAL
     analysis_evidence = [
-        StageEvidence(label="Pruebas Mann–Kendall", value=f"{tests} ({len(variables)} variables × {len(sites)} sitios)"),
+        StageEvidence(label="Pruebas Mann–Kendall (Hamed–Rao)", value=f"{tests} ({len(variables)} variables × {len(sites)} sitios)"),
         StageEvidence(label="Significativas antes de BH", value=f"{raw_significant} de {tests}"),
         StageEvidence(label="Significativas tras BH", value=f"{len(findings)} de {tests}"),
-        StageEvidence(label="Autocorrelación lag-1 ≥ 0.3", value=f"{autocorrelated} series"),
+        StageEvidence(label="Varianza corregida por autocorrelación", value=f"{corrected} de {tests} series"),
     ]
+    if detrended:
+        analysis_evidence.append(StageEvidence(label="Lag-1 máx. de rangos sin tendencia", value=f"{max(detrended):.2f}"))
     if insufficient:
         analysis_evidence.append(StageEvidence(label="Series con menos de 5 años", value=str(insufficient), provenance=Provenance.UNAVAILABLE))
     places_by_label: dict[str, list[str]] = {}
@@ -105,9 +108,9 @@ def build_solar_pipeline(
         places_by_label.setdefault(item.label[0].lower() + item.label[1:], []).append(item.site)
     changing = "; ".join(f"{label} en {' y '.join(places)}" for label, places in places_by_label.items())
     analysis_summary = (
-        f"Mann–Kendall y Sen sobre {years} medias anuales; cambian con significancia: {changing}."
+        f"Mann–Kendall corregido (Hamed–Rao) y Sen sobre {years} medias anuales; cambian con significancia: {changing}."
         if findings
-        else "Mann–Kendall y Sen sobre medias anuales; ninguna tendencia conserva significancia tras BH."
+        else "Mann–Kendall corregido (Hamed–Rao) y Sen sobre medias anuales; ninguna tendencia conserva significancia tras BH."
     )
 
     pending = [gap for gap in gaps if gap.status == Provenance.UNAVAILABLE]

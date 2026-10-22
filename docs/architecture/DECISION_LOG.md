@@ -54,3 +54,7 @@ Las nueve etapas se construyen en `orchestration/stages.py` a partir de hechos m
 ## ADR-013 — Parseo de NASA POWER fuera del camino crítico del bucle
 
 Con la caché caliente, el conector leía y validaba unas 35 000 observaciones por sitio de forma síncrona y bloqueaba el bucle de eventos unos 800 ms. La lectura del archivo pasa a `asyncio.to_thread`. El parseo sigue en el hilo principal, porque en hilos competía por el GIL y se volvía 5 veces más lento, pero usa `date()` y `Observation.model_construct`: los valores ya se validan con `float()` y el constructor de fecha. Medido en local: de 319 a 135 ms por sitio.
+
+## ADR-014 — Mann–Kendall con corrección de Hamed y Rao como prueba de decisión
+
+La significancia se decide con el p-value de Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998), calculado sobre los rangos de la serie sin tendencia de Sen. El ajuste Benjamini–Hochberg usa ese p-value. El p-value clásico se conserva para trazabilidad. La autocorrelación bruta deja de usarse como alerta, porque una tendencia monótona la produce por sí sola; la alerta relevante es la autocorrelación de los rangos sin tendencia, que es la que corrige el método. Si la varianza corregida no es positiva (autocorrelación negativa extrema), se conserva la clásica y se declara. Se contrastó con valores congelados de `pymannkendall` 1.4.3, sin agregarlo como dependencia. Con datos reales 2001–2024, el factor es 1.000 en las ocho series y la tendencia de temperatura se mantiene.

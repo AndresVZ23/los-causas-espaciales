@@ -23,7 +23,7 @@ from ..schemas.analysis import (
 from ..schemas.pipeline import SolarScreeningRequest, SolarScreeningResponse
 from ..schemas.terrain import TerrainRequest, TerrainResponse
 from ..sectors.solar import run_solar_screening
-from ..statistics.trends import analyze_trend
+from ..statistics.trends import analyze_trend, decision_p_value
 from ..statistics.multiple_testing import benjamini_hochberg
 
 router = APIRouter(prefix="/api/v1")
@@ -130,7 +130,7 @@ async def compare_sites(request: ComparisonRequest):
             )
         )
         unit = source.unit
-    adjusted_p_values = benjamini_hochberg([item.trend.p_value for item in results])
+    adjusted_p_values = benjamini_hochberg([decision_p_value(item.trend) for item in results])
     for item, adjusted_p_value in zip(results, adjusted_p_values, strict=True):
         item.adjusted_p_value = adjusted_p_value
         item.significant_after_bh = adjusted_p_value is not None and adjusted_p_value < item.trend.alpha

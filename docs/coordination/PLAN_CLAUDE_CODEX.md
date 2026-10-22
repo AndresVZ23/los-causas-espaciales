@@ -114,7 +114,7 @@ Cada rama, antes de pedir revisión:
 | ID | Estado | Última entrada |
 |---|---|---|
 | X0 | Pendiente de revisión de Codex | `claude/diseno-consola` @ ver registro |
-| C1 | Siguiente para Claude | — |
+| C1 | **Hecho**, pendiente de revisión de Codex | `claude/mk-modificado` (ver registro) |
 | C2 | Siguiente para Claude | — |
 | K1 | Pendiente de X0 | — |
 | K1b | Disponible para Codex | — |

@@ -52,8 +52,11 @@ def collect_trend_findings(sites: Sequence[SiteSummaries]) -> list[TrendFinding]
                     change_over_period=change,
                     change_percent_of_mean=percent,
                     p_value=trend.p_value,
+                    p_value_modified=trend.p_value_modified,
                     adjusted_p_value=item.adjusted_p_value if item.adjusted_p_value is not None else trend.p_value,
+                    variance_correction=trend.variance_correction,
                     autocorrelation_lag1=trend.autocorrelation_lag1,
+                    autocorrelation_lag1_detrended=trend.autocorrelation_lag1_detrended,
                 )
             )
     return findings
@@ -164,26 +167,38 @@ def _how_much(findings: list[TrendFinding]) -> NasaQuestionAnswer:
 
 def _significant(findings: list[TrendFinding], sites: Sequence[SiteSummaries], tests: int, years: int) -> NasaQuestionAnswer:
     raw = sum(1 for site in sites for item in site.summaries if item.trend.significant)
-    flagged = [item for item in findings if item.autocorrelation_lag1 is not None and abs(item.autocorrelation_lag1) >= AUTOCORRELATION_CAUTION]
     method = (
-        f"Mann–Kendall y pendiente de Sen sobre {years} medias anuales; familia Benjamini–Hochberg = cada variable entre "
-        f"{len(sites)} sitios; α = 0.05."
+        f"Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998) y pendiente de Sen sobre {years} medias anuales; "
+        f"familia Benjamini–Hochberg = cada variable entre {len(sites)} sitios; α = 0.05."
     )
-    evidence = [method, f"Significativas antes del ajuste: {raw} de {tests}; después: {len(findings)} de {tests}."]
+    evidence = [method, f"Significativas antes del ajuste BH: {raw} de {tests}; después: {len(findings)} de {tests}."]
     if not findings:
         return NasaQuestionAnswer(
             key="significant", question="Is the change statistically significant?", question_es="¿El cambio es estadísticamente significativo?",
             status=QuestionStatus.INSUFFICIENT, answer=INSUFFICIENT, evidence=evidence, provenance=[Provenance.MODEL], stage_steps=[4],
         )
-    answer = f"Sí en {len(findings)} de {tests} pruebas tras Benjamini–Hochberg."
+    answer = f"Sí en {len(findings)} de {tests} pruebas, con Mann–Kendall corregido por autocorrelación y ajuste Benjamini–Hochberg."
     status = QuestionStatus.ANSWERED
-    if flagged:
-        worst = max(abs(item.autocorrelation_lag1 or 0) for item in flagged)
+    corrected = [item for item in findings if (item.variance_correction or 1) > 1]
+    raw_high = [item for item in findings if abs(item.autocorrelation_lag1 or 0) >= AUTOCORRELATION_CAUTION]
+    if corrected:
+        answer += f" En {len(corrected)} de ellas la autocorrelación sin tendencia era significativa y la varianza se corrigió; aun así conservan significancia."
+    elif raw_high:
+        worst_raw = max(abs(item.autocorrelation_lag1 or 0) for item in raw_high)
+        worst_detrended = max(abs(item.autocorrelation_lag1_detrended or 0) for item in raw_high)
         answer += (
-            f" En {len(flagged)} de ellas la autocorrelación lag-1 llega a {worst:.2f}: Mann–Kendall sin modificar puede "
-            "sobrestimar la significancia, por lo que conviene confirmarla con una variante corregida."
+            f" La autocorrelación bruta (hasta {worst_raw:.2f}) proviene de la propia tendencia: sin ella, la de los rangos es "
+            f"{worst_detrended:.2f} o menor y la corrección no altera la varianza."
         )
-        evidence.append(f"Autocorrelación lag-1 ≥ {AUTOCORRELATION_CAUTION}: " + "; ".join(f"{item.label} · {item.site} ({item.autocorrelation_lag1:.2f})" for item in flagged))
+    evidence.extend(
+        f"{item.label} · {item.site}: p clásico {item.p_value:.4f}, p corregido {item.p_value_modified if item.p_value_modified is not None else item.p_value:.4f}, "
+        f"p BH {item.adjusted_p_value:.4f}, factor de varianza {item.variance_correction if item.variance_correction is not None else 1:.3f}, "
+        f"lag-1 bruto {item.autocorrelation_lag1 if item.autocorrelation_lag1 is not None else float('nan'):.2f} / sin tendencia "
+        f"{item.autocorrelation_lag1_detrended if item.autocorrelation_lag1_detrended is not None else float('nan'):.2f}"
+        for item in findings
+    )
+    if years < 10:
+        answer += f" La serie tiene {years} años, con potencia estadística baja."
         status = QuestionStatus.PARTIAL
     return NasaQuestionAnswer(
         key="significant", question="Is the change statistically significant?", question_es="¿El cambio es estadísticamente significativo?",

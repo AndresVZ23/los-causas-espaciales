@@ -26,7 +26,7 @@ from ..schemas.pipeline import (
 )
 from ..schemas.terrain import TerrainResponse
 from ..statistics.multiple_testing import benjamini_hochberg
-from ..statistics.trends import analyze_trend, annual_means
+from ..statistics.trends import analyze_trend, annual_means, decision_p_value
 
 TERRAIN_TIMEOUT_SECONDS = 45
 
@@ -158,7 +158,7 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
 
     for variable in SOLAR_VARIABLES:
         summaries = [next(item for item in site if item.variable == variable) for site in summaries_by_site]
-        adjusted = benjamini_hochberg([item.trend.p_value for item in summaries])
+        adjusted = benjamini_hochberg([decision_p_value(item.trend) for item in summaries])
         for item, adjusted_p in zip(summaries, adjusted, strict=True):
             item.adjusted_p_value = adjusted_p
             item.significant_after_bh = adjusted_p is not None and adjusted_p < item.trend.alpha

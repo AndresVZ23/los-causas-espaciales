@@ -2,7 +2,11 @@ import type { IconName } from "./icons";
 
 export type Point = { latitude: number; longitude: number; label: string };
 export type Assumptions = { capacity_mw: number; performance_ratio: number; initial_capex_usd: number; annual_opex_usd: number; energy_price_usd_mwh: number; mitigation_capex_usd: number; discount_rate: number; horizon_years: number };
-export type Trend = { direction: string; slope_per_year: number | null; p_value: number | null; confidence_interval: [number, number] | null; significant: boolean; autocorrelation_lag1: number | null; interpretation: string; limitations: string[] };
+export type Trend = {
+  direction: string; slope_per_year: number | null; p_value: number | null; p_value_modified?: number | null; variance_correction?: number | null;
+  confidence_interval: [number, number] | null; significant: boolean;
+  autocorrelation_lag1: number | null; autocorrelation_lag1_detrended?: number | null; interpretation: string; limitations: string[];
+};
 export type SourceMetadata = { dataset: string; version: string; downloaded_at: string; source_url: string; provenance: string; spatial_resolution: string };
 export type VariableSummary = {
   variable: string; label: string; mean: number; minimum: number; maximum: number; unit: string; display_unit: string;

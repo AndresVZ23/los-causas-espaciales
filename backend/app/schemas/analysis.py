@@ -46,12 +46,15 @@ class TrendResult(BaseModel):
     method: str
     direction: Literal["increasing", "decreasing", "no_trend", "insufficient_evidence"]
     slope_per_year: float | None
-    p_value: float | None
+    p_value: float | None = Field(description="Mann-Kendall clásico (Kendall tau); se conserva para trazabilidad.")
+    p_value_modified: float | None = Field(default=None, description="Mann-Kendall con varianza corregida de Hamed y Rao (1998); gobierna la significancia.")
+    variance_correction: float | None = Field(default=None, description="Factor n/n* aplicado a Var(S); 1 si no hay autocorrelación significativa sin tendencia.")
     confidence_interval: tuple[float, float] | None
     significant: bool
     alpha: float = 0.05
     valid_observations: int
-    autocorrelation_lag1: float | None = None
+    autocorrelation_lag1: float | None = Field(default=None, description="Lag-1 de los valores brutos; incluye el efecto de la propia tendencia.")
+    autocorrelation_lag1_detrended: float | None = Field(default=None, description="Lag-1 de los rangos sin tendencia, usado por la corrección.")
     interpretation: str
     limitations: list[str]
 

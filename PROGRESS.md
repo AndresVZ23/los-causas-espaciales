@@ -89,7 +89,7 @@
 
 ## Brechas prioritarias
 
-0. Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado (Hamed–Rao o pre-blanqueo) antes de presentarlas como hallazgo firme.
+0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).
 
 1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
 2. Incorporar red eléctrica, subestaciones y distancia de conexión con fuente y fecha verificadas.
