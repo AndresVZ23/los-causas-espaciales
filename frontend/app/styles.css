@@ -129,6 +129,25 @@ input:hover { border-color: #545b62; } input:focus { border-color: var(--accent)
 .emptyReading > span { width: 42px; height: 42px; flex: 0 0 auto; position: relative; border: 1px solid #41474c; }
 .emptyReading > span i:first-child { position: absolute; left: 9px; right: 9px; top: 20px; height: 1px; background: var(--accent); }.emptyReading > span i:last-child { position: absolute; top: 9px; bottom: 9px; left: 20px; width: 1px; background: var(--accent); }
 .emptyReading strong { font: 500 10px var(--font-data-mono), monospace; letter-spacing: .06em; }.emptyReading p { margin: 4px 0 0; color: var(--muted); font-size: 11px; }
+.terrainReadout { border-bottom: 1px solid var(--border); }
+.terrainHeading { min-height: 39px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.terrainHeading > div { min-width: 0; display: flex; flex-direction: column; }
+.terrainHeading strong { font-size: 11px; font-weight: 600; }
+.terrainHeading span { color: var(--muted); font: 9px/1.3 var(--font-data-mono), monospace; }
+.terrainHeading button { min-height: 29px; flex: 0 0 auto; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--text); padding: 0 8px; font-size: 10px; }
+.terrainHeading button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.terrainState { min-height: 43px; margin: 0; padding: 8px; display: flex; align-items: center; border: 1px dashed #3a4247; color: var(--muted); font-size: 10px; }
+.terrainStateError { border-style: solid; border-color: #73323b; background: #281518; color: #ffb8bf; }
+.terrainSites { padding-bottom: 8px; }
+.terrainSite { min-height: 43px; padding: 6px 0; display: grid; grid-template-columns: minmax(90px, .75fr) minmax(0, 1.25fr); align-items: center; gap: 9px; border-top: 1px solid var(--rule); }
+.terrainSite > span { min-width: 0; display: flex; flex-direction: column; }
+.terrainSite > span b { font-size: 11px; }.terrainSite > span small { overflow: hidden; text-overflow: ellipsis; color: var(--subtle); font: 9px/1.3 var(--font-data-mono), monospace; white-space: nowrap; }
+.terrainSite dl { margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.terrainSite dl div { min-width: 0; text-align: right; }.terrainSite dt { color: var(--muted); font-size: 9px; }.terrainSite dd { margin: 1px 0 0; font: 10px/1.2 var(--font-data-mono), monospace; white-space: nowrap; }
+.terrainSite > p { margin: 0; display: flex; flex-direction: column; align-items: flex-end; text-align: right; }.terrainSite > p b { color: var(--positive); font-size: 10px; }.terrainSite > p span { color: var(--muted); font-size: 9px; line-height: 1.3; }
+.terrainProvenance { margin: 3px 0 0; display: flex; flex-wrap: wrap; gap: 5px 10px; color: var(--subtle); font: 9px/1.35 var(--font-data-mono), monospace; }
+.terrainProvenance a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.terrainProvenance span { flex-basis: 100%; }
 .assumptionPanel { border-bottom: 1px solid var(--border); }
 .assumptionPanel summary { min-height: 34px; display: flex; align-items: center; justify-content: space-between; list-style: none; font-size: 11px; }.assumptionPanel summary::-webkit-details-marker { display: none; }.assumptionPanel summary span { color: var(--warning); font: 9px var(--font-data-mono), monospace; }
 .assumptionFields { padding: 4px 0 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
@@ -199,6 +218,7 @@ footer { border-top: 1px solid var(--border); padding: 26px clamp(22px,4vw,64px)
   .mapStage { order: 1; height: 340px; flex: 0 0 auto; border-right: 0; }.panelCaption { min-height: 34px; }
   .controlPane { order: 2; display: block; }.controlContent { overflow: visible; padding: 13px 15px; }.mobileContext { display: block; margin-bottom: 12px; border-block: 1px solid var(--border); }.mobileContext summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; list-style: none; color: var(--text); font: 500 11px var(--font-data-mono), monospace; }.mobileContext summary::-webkit-details-marker { display: none; }.mobileContext summary span { color: var(--accent); font-size: 10px; }.mobileContextGrid { padding: 4px 0 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }.mobileContextGrid p, .mobileContextGrid label { min-width: 0; margin: 0; display: grid; gap: 4px; }.mobileContextGrid span { color: var(--muted); font-size: 10px; }.mobileContextGrid b { min-height: 44px; padding: 8px; display: flex; align-items: center; border: 1px solid var(--border); background: var(--surface); font: 500 10px/1.3 var(--font-data-mono), monospace; overflow-wrap: anywhere; }.mobileContextGrid input { height: 44px; }.mobileContextGrid .mobileProvenance { grid-column: 1 / -1; }.siteRow { grid-template-columns: 20px minmax(100px, 1.3fr) 1fr 1fr; }.siteRow input, .filterStrip input { height: 44px; }
   .actionRow button { min-height: 44px; }.readingGrid { grid-template-columns: 1fr 1.3fr; }
+  .terrainHeading { min-height: 52px; }.terrainHeading button { min-height: 44px; }.terrainSite { min-height: 54px; }
   .trendPanel { order: 3; height: 360px; flex: 0 0 auto; grid-template-rows: auto 1fr 34px; }.trendHeader { padding: 9px 12px 0; grid-template-columns: 1fr auto; grid-template-rows: 20px 42px; align-items: center; }.trendHeader > span { grid-column: 1; }.trendHeader > b { grid-column: 2; grid-row: 1; }.trendHeader > div { grid-column: 1 / 3; grid-row: 2; overflow-x: auto; }.trendHeader button { min-height: 40px; white-space: nowrap; }
   .pipelineStrip { order: 4; display: block; min-height: 165px; overflow-x: auto; }.pipelineMain { min-width: 760px; border-right: 0; border-bottom: 1px solid var(--border); }.processLog { min-width: 350px; }
   .workspaceBody { padding-bottom: 66px; }
@@ -212,6 +232,7 @@ footer { border-top: 1px solid var(--border); padding: 26px clamp(22px,4vw,64px)
   .mapStage { height: 305px; }.mapSource { max-width: calc(100% - 90px); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .siteRow { grid-template-columns: 20px 1fr 1fr; }.siteRow label:first-of-type { grid-column: 2 / 4; }.siteRow > span { grid-row: 1 / 3; height: 100%; }.siteRow label { font-size: 10px; }
   .readingGrid { grid-template-columns: 1fr; }.readingGrid > div { border-right: 0; border-bottom: 1px solid var(--border); }.assumptionFields { grid-template-columns: 1fr 1fr; }
+  .terrainSite { grid-template-columns: 1fr; }.terrainSite dl { margin-top: 2px; }.terrainSite dl div:first-child { text-align: left; }.terrainSite > p { align-items: flex-start; text-align: left; }
   .chartFoot { align-items: flex-start; justify-content: center; flex-direction: column; padding-block: 5px; line-height: 1.2; }
   .evidenceSection, .coverageSection { padding-block: 42px; }.sectionHeader { align-items: flex-start; flex-direction: column; }.emptyEvidence { grid-template-columns: 1fr; gap: 12px; }.chartPanel, .decisionPanel, .siteResult { padding: 15px; }.moduleMatrix button { grid-template-columns: 30px 1fr; }.moduleMatrix em { grid-column: 2; }.moduleMatrix small { line-height: 1.35; }
   footer, footer > div { flex-direction: column; gap: 9px; }

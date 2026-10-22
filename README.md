@@ -8,6 +8,7 @@ Plataforma de inteligencia territorial para convertir datos de observación de l
 - Consultar cuatro variables reales de NASA POWER para dos a cuatro ubicaciones.
 - Graficar medias anuales reales por sitio y variable después de cada consulta.
 - Usar NASA EOSDIS GIBS Blue Marble como mapa base contextual estático, separado de la evidencia analítica POWER.
+- Consultar en NASA CMR los gránulos NASADEM HGT y SC para cada sitio, mostrar sus metadatos oficiales y superponer la vista previa pública disponible.
 - Comparar irradiancia, temperatura, viento y precipitación sin inventar datos ausentes.
 - Calcular Mann–Kendall, pendiente de Sen, p-value, intervalo de confianza y corrección Benjamini–Hochberg.
 - Ordenar ubicaciones por irradiancia histórica mediante una regla explícita y reproducible, no mediante un puntaje opaco.
@@ -15,7 +16,7 @@ Plataforma de inteligencia territorial para convertir datos de observación de l
 - Mostrar oportunidades, cautelas, procedencia del dato y brechas que todavía impiden una decisión de factibilidad.
 - Descargar el resultado completo en JSON.
 
-Las capas de pendiente, red eléctrica, restricciones ambientales, sensibilidad social y arqueológica, GPM IMERG y fuentes oficiales peruanas todavía no están integradas. La interfaz las muestra como brechas, nunca como resultados terminados.
+La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY`. Las capas de red eléctrica, restricciones ambientales, sensibilidad social y arqueológica, GPM IMERG y fuentes oficiales peruanas todavía no están integradas. La interfaz las muestra como brechas, nunca como resultados terminados.
 
 ## Ejecución con Docker
 
@@ -30,7 +31,7 @@ docker compose -p los-causas-espaciales up -d --build
 - Aplicación: http://localhost:3100
 - Plan operativo y DOP neuronal: http://localhost:3100/plan-operativo.html
 - DOP neuronal conectado y ruta crítica de desarrollo: http://localhost:3100/dop-neuronal
-- Tracker HTML autónomo con estados, responsables, fechas, notas, evidencia y exportación JSON: http://localhost:3100/dop-neuronal.html
+- Mapa de desarrollo HTML con dependencias, ruta crítica, backlog priorizado, filtros, siguiente acción calculada, responsables, evidencia y exportación JSON: http://localhost:3100/dop-neuronal.html
 - OpenAPI: http://localhost:8000/docs
 
 ## Ejecución local sin Docker
@@ -60,6 +61,7 @@ npm.cmd run dev
 - `docs/nasa-submission/`: materiales técnicos y de presentación para NASA Space Apps.
 - `DESIGN.md`: sistema visual normativo para nuevas pantallas.
 - `docs/design/VISUAL_REDESIGN.md`: auditoría antes/después, fidelity ledger y decisiones del workspace.
+- `docs/design/CLAUDE_HANDOFF.md`: estado congelado, pruebas y backlog visual para continuar sin pisar la integración NASADEM.
 - `docs/SKILLS_ACTIVE.md`: Skills instaladas, función y verificaciones realizadas.
 
 NASA POWER puede limitar solicitudes o devolver errores temporales. La aplicación conserva caché y procedencia, expone el error real y nunca reemplaza observaciones faltantes con valores fabricados.

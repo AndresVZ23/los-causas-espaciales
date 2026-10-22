@@ -6,8 +6,9 @@ import { useEffect, useRef } from "react";
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
 type Point = { latitude: number; longitude: number; label: string };
+export type TerrainOverlay = { url: string; bounds: [number, number, number, number] };
 
-export default function GeoMap({ sites, onPick }: { sites: Point[]; onPick: (latitude: number, longitude: number) => void }) {
+export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain }: { sites: Point[]; onPick: (latitude: number, longitude: number) => void; terrainOverlay: TerrainOverlay | null; showTerrain: boolean }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -82,5 +83,36 @@ export default function GeoMap({ sites, onPick }: { sites: Point[]; onPick: (lat
     }
   }, [sites]);
 
-  return <div ref={container} className="geoMap" aria-label="Mapa interactivo con las ubicaciones configuradas" />;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const sourceId = "nasadem-preview";
+    const layerId = "nasadem-preview-layer";
+    const syncOverlay = () => {
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+      if (!terrainOverlay || !showTerrain) return;
+      const [west, south, east, north] = terrainOverlay.bounds;
+      map.addSource(sourceId, {
+        type: "image",
+        url: terrainOverlay.url,
+        coordinates: [[west, north], [east, north], [east, south], [west, south]],
+      });
+      map.addLayer({
+        id: layerId,
+        type: "raster",
+        source: sourceId,
+        paint: { "raster-opacity": 0.58, "raster-contrast": 0.22, "raster-saturation": -0.35 },
+      }, map.getLayer("comparison-axis-line") ? "comparison-axis-line" : undefined);
+    };
+    if (map.loaded()) syncOverlay();
+    else map.once("load", syncOverlay);
+    return () => {
+      if (!map.getStyle()) return;
+      if (map.getLayer(layerId)) map.removeLayer(layerId);
+      if (map.getSource(sourceId)) map.removeSource(sourceId);
+    };
+  }, [terrainOverlay, showTerrain]);
+
+  return <div ref={container} className="geoMap" aria-label={`Mapa interactivo con las ubicaciones configuradas${showTerrain ? " y vista previa NASADEM" : ""}`} />;
 }

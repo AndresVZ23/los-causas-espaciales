@@ -33,6 +33,7 @@
     button, input, select, textarea { font: inherit; }
     button, a, select, input, textarea { touch-action: manipulation; }
     button { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
     a { color: inherit; text-decoration: none; }
     ::selection { background: var(--accent); color: var(--ground); }
     :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
@@ -54,13 +55,20 @@
     .button.danger { color: var(--negative); }
     .save-state { flex-basis: 100%; min-height: 22px; color: var(--muted); font: 500 12px var(--mono); text-align: right; }
 
-    .summary { display: grid; grid-template-columns: repeat(4, minmax(150px, 190px)) minmax(300px, 1fr); border-bottom: 1px solid var(--border); }
+    .summary { display: grid; grid-template-columns: repeat(3, minmax(170px, 220px)) minmax(360px, 1fr); border-bottom: 1px solid var(--border); }
     .metric { min-height: 90px; padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; align-content: center; border-right: 1px solid var(--rule); }
     .metric span { color: var(--subtle); font: 500 13px var(--mono); }
     .metric strong { grid-row: 1 / 3; grid-column: 2; align-self: center; font: 400 30px var(--mono); font-variant-numeric: tabular-nums; }
     .metric small { margin-top: 5px; color: var(--muted); }
     .rule-note { margin: 0; padding: 18px 24px; align-self: center; color: var(--muted); }
     .rule-note strong { display: block; margin-bottom: 4px; color: var(--warning); font: 500 12px var(--mono); }
+
+    .next-action { min-height: 104px; padding: 18px 30px; display: flex; align-items: center; justify-content: space-between; gap: 28px; border-bottom: 1px solid var(--border); background: #0b1010; }
+    .next-action > div { min-width: 0; }
+    .next-action span { color: var(--accent); font: 500 12px var(--mono); letter-spacing: .045em; text-transform: uppercase; }
+    .next-action h2 { margin: 4px 0 3px; font-size: 20px; font-weight: 550; line-height: 1.2; }
+    .next-action p { margin: 0; color: var(--muted); }
+    .next-action .button { flex: none; }
 
     .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 390px; min-height: 690px; }
     .canvas-panel { min-width: 0; padding: 28px 30px 30px; border-right: 1px solid var(--border); }
@@ -76,12 +84,34 @@
     .legend [data-status="LISTO_PARA_QA"] i { background: var(--cached); }
     .legend [data-status="PENDIENTE"] i { background: var(--warning); }
 
-    .network { position: relative; min-height: 590px; margin-top: 22px; border-block: 1px solid var(--border); background: #0b0f10; overflow: hidden; }
+    .map-controls { margin-top: 20px; border-block: 1px solid var(--border); }
+    .view-tabs { min-height: 54px; padding-bottom: 8px; display: flex; border-bottom: 1px solid var(--rule); }
+    .view-tabs button { min-width: 132px; min-height: 46px; position: relative; padding: 0 16px; border: 0; border-right: 1px solid var(--rule); background: transparent; color: var(--muted); }
+    .view-tabs button:hover { background: var(--surface); color: var(--text); }
+    .view-tabs button[aria-selected="true"] { color: var(--text); }
+    .view-tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 1px; background: var(--accent); }
+    .filters { padding: 12px 0; display: grid; grid-template-columns: minmax(180px, 1.4fr) minmax(140px, .8fr) minmax(140px, .8fr) auto auto; align-items: end; gap: 10px; }
+    .filters label:not(.ready-filter) { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
+    .filters input[type="search"], .filters select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #444a4f; border-radius: 2px; background: var(--control); color: var(--text); }
+    .ready-filter { min-height: 40px; padding: 0 10px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
+    .ready-filter:has(input:checked) { border-color: var(--accent); color: var(--text); }
+    .ready-filter input { width: 16px; height: 16px; accent-color: var(--accent); }
+    .clear-filters { min-height: 40px; }
+    .filter-summary { margin: 0; padding: 0 0 11px; color: var(--subtle); font: 500 12px var(--mono); }
+    .view-panel[hidden] { display: none; }
+    .view-panel-head { padding: 18px 0 14px; border-bottom: 1px solid var(--rule); }
+    .view-panel-head h3 { margin: 0; font-size: 16px; font-weight: 550; }
+    .view-panel-head p { margin: 4px 0 0; color: var(--muted); }
+    .empty-view { margin: 0; padding: 54px 20px; color: var(--muted); text-align: center; }
+    #network-empty { position: absolute; inset: 38px 0 0; z-index: 2; place-items: center; }
+    #network-empty:not([hidden]) { display: grid; }
+
+    .network { position: relative; min-height: 590px; border-bottom: 1px solid var(--border); background: #0b0f10; overflow: hidden; }
     .stages { height: 38px; padding: 0 8px 4px; display: grid; grid-template-columns: repeat(6, 1fr); align-items: center; border-bottom: 1px solid var(--rule); color: var(--subtle); font: 500 13px var(--mono); text-align: center; }
     .edges { position: absolute; inset: 38px 0 0; width: 100%; height: calc(100% - 38px); pointer-events: none; }
-    .edges path { fill: none; stroke: #4c555c; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .28; }
-    .edges path.active { stroke: var(--accent); opacity: .82; }
-    .edges path.feedback { stroke-dasharray: 5 5; }
+    .edges > g path { fill: none; stroke: #4c555c; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .28; }
+    .edges > g path.active { stroke: var(--accent); opacity: .82; }
+    .edges > g path.feedback { stroke-dasharray: 5 5; }
     .nodes { min-height: 550px; padding: 26px 16px 18px; display: grid; grid-template-columns: repeat(6, minmax(118px, 1fr)); grid-template-rows: repeat(4, 102px); gap: 24px 18px; position: relative; z-index: 1; }
     .node { min-width: 0; min-height: 72px; position: relative; align-self: center; padding: 10px 11px; display: grid; grid-template-columns: 1fr auto; grid-template-rows: 17px 1fr 18px; gap: 2px 8px; border: 1px solid #343a3e; border-radius: 2px; background: var(--surface); color: var(--text); text-align: left; transition: border-color 150ms ease, opacity 150ms ease, background-color 150ms ease; }
     .node:hover { border-color: var(--subtle); background: var(--raised); }
@@ -98,6 +128,32 @@
     .node[data-status="BLOQUEADO"] .status { color: var(--negative); }
     .node[data-status="LISTO_PARA_QA"] .status { color: var(--cached); }
     .node[data-status="PENDIENTE"] .status { color: var(--warning); }
+
+    .roadmap, .backlog { min-height: 590px; border-bottom: 1px solid var(--border); }
+    .roadmap ol { margin: 0; padding: 0; list-style: none; }
+    .route-row { width: 100%; min-height: 66px; padding: 0; display: grid; grid-template-columns: 46px minmax(190px, 1.4fr) minmax(130px, .7fr) minmax(150px, .8fr) minmax(120px, .6fr); align-items: center; gap: 14px; border: 0; border-left: 2px solid transparent; border-bottom: 1px solid var(--rule); background: transparent; color: var(--text); text-align: left; }
+    .route-row:hover, .backlog-row:hover { background: var(--surface); }
+    .route-row[aria-pressed="true"], .backlog-row[aria-pressed="true"] { border-left-color: var(--accent); background: #111919; }
+    .route-index { width: 26px; height: 26px; margin-left: 8px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--muted); font: 500 12px var(--mono); }
+    .route-row[data-status="VERIFICADO"] .route-index { border-color: var(--positive); color: var(--positive); }
+    .route-row[data-ready="true"] .route-index { border-color: var(--accent); color: var(--accent); }
+    .route-name strong, .route-name small { display: block; }
+    .route-name strong { font-size: 13px; }
+    .route-name small { margin-top: 2px; color: var(--muted); }
+    .route-meta { color: var(--muted); font: 500 12px var(--mono); }
+    .status-text[data-status="VERIFICADO"] { color: var(--positive); }
+    .status-text[data-status="EN_CURSO"] { color: var(--accent); }
+    .status-text[data-status="BLOQUEADO"] { color: var(--negative); }
+    .status-text[data-status="LISTO_PARA_QA"] { color: var(--cached); }
+    .status-text[data-status="PENDIENTE"] { color: var(--warning); }
+    .backlog-header, .backlog-row { display: grid; grid-template-columns: minmax(200px, 1.35fr) minmax(100px, .65fr) minmax(122px, .75fr) minmax(118px, .7fr) minmax(126px, .8fr) minmax(92px, .55fr); align-items: center; gap: 12px; }
+    .backlog-header { min-height: 44px; padding: 0 10px 8px; border-bottom: 1px solid var(--rule); color: var(--subtle); font: 500 11px var(--mono); text-transform: uppercase; }
+    .backlog-row { width: 100%; min-height: 58px; padding: 8px 10px; border: 0; border-left: 2px solid transparent; border-bottom: 1px solid var(--rule); background: transparent; color: var(--muted); text-align: left; }
+    .backlog-row strong { color: var(--text); font-size: 13px; }
+    .backlog-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .backlog-row .backlog-work { display: grid; gap: 2px; }
+    .backlog-row .backlog-work small { color: var(--subtle); font: 500 11px var(--mono); }
+    .backlog-row[data-ready="true"] .status-text { color: var(--accent); }
 
     .tracker { min-width: 0; background: #0d1112; }
     .tracker-header { padding: 24px; border-bottom: 1px solid var(--border); }
@@ -120,28 +176,21 @@
     .detail li + li { margin-top: 4px; }
     .blocker { color: #e7b8bf !important; }
 
-    .critical { padding: 30px; border-top: 1px solid var(--border); }
-    .critical h2 { margin: 0; font-size: 22px; font-weight: 550; }
-    .critical p { margin: 6px 0 20px; color: var(--muted); }
-    .critical ol { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(8, 1fr); }
-    .critical li { min-width: 0; min-height: 72px; position: relative; padding: 0 10px; display: grid; grid-template-rows: 26px auto; gap: 8px; color: var(--muted); }
-    .critical li::before { content: ""; position: absolute; left: 0; right: 0; top: 12px; height: 1px; background: #42484e; }
-    .critical li:first-child::before { left: 13px; }
-    .critical li:last-child::before { right: calc(100% - 13px); }
-    .critical li span { width: 26px; height: 26px; position: relative; z-index: 1; display: grid; place-items: center; border: 1px solid var(--accent); border-radius: 50%; background: var(--ground); color: var(--accent); font: 500 12px var(--mono); }
-    .critical li b { font-size: 13px; font-weight: 550; line-height: 1.25; }
     footer { min-height: 86px; padding: 24px 30px; display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--border); color: var(--muted); }
     footer div { display: flex; flex-direction: column; gap: 4px; }
-    footer strong { color: var(--text); font-family: var(--mono); }
+    footer strong { color: var(--text); }
     footer a { color: var(--accent); }
     .file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+    .metric strong, .save-state, .filter-summary, .node .code, .node .status, .route-index, .route-meta, .backlog-work small, .stages { font-variant-numeric: tabular-nums; }
 
     @media (max-width: 1180px) {
       .topbar { grid-template-columns: 280px 1fr; }
       .top-actions { grid-column: 1 / -1; min-width: 0; padding: 10px 20px 16px; justify-content: flex-start; border-top: 1px solid var(--rule); }
       .save-state { flex-basis: auto; margin-left: auto; align-self: center; }
-      .summary { grid-template-columns: repeat(4, 1fr); }
+      .summary { grid-template-columns: repeat(3, 1fr); }
       .rule-note { grid-column: 1 / -1; border-top: 1px solid var(--rule); }
+      .filters { grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(130px, 1fr)); }
+      .ready-filter, .clear-filters { justify-self: stretch; }
       .workspace { grid-template-columns: 1fr; }
       .canvas-panel { border-right: 0; }
       .tracker { border-top: 1px solid var(--border); }
@@ -156,12 +205,14 @@
       .brand strong { font-size: 27px; }
       .heading { padding: 20px; }
       .top-actions { padding-inline: 20px; }
-      .summary { grid-template-columns: repeat(2, 1fr); }
-      .metric:nth-child(2) { border-right: 0; }
+      .summary { grid-template-columns: repeat(3, 1fr); }
+      .metric:nth-child(3) { border-right: 0; }
       .metric { border-bottom: 1px solid var(--rule); }
       .canvas-panel { padding: 24px 16px; }
       .section-head { align-items: flex-start; flex-direction: column; }
       .legend { justify-content: flex-start; }
+      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .filters label:first-child { grid-column: 1 / -1; }
       .network { min-height: 0; overflow: visible; }
       .stages, .edges { display: none; }
       .nodes { min-height: 0; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
@@ -170,11 +221,12 @@
       .node:last-child::after { display: none; }
       .tracker .form, .tracker .detail { grid-template-columns: 1fr; }
       .tracker .detail section { border-right: 0; }
-      .critical ol { display: flex; flex-direction: column; }
-      .critical li { min-height: 50px; grid-template-columns: 30px 1fr; grid-template-rows: 1fr; align-items: center; }
-      .critical li::before { left: 23px !important; right: auto !important; top: 0; bottom: 0; width: 1px; height: auto; }
-      .critical li:first-child::before { top: 50%; }
-      .critical li:last-child::before { bottom: 50%; }
+      .route-row { grid-template-columns: 42px minmax(160px, 1fr) minmax(120px, .75fr); }
+      .route-row .route-owner, .route-row .route-date { display: none; }
+      .backlog-header { display: none; }
+      .backlog-row { grid-template-columns: minmax(160px, 1fr) auto; gap: 6px 14px; }
+      .backlog-row .backlog-phase, .backlog-row .backlog-deps { display: none; }
+      .backlog-row .backlog-owner, .backlog-row .backlog-date { font-size: 12px; }
     }
 
     @media (max-width: 560px) {
@@ -187,9 +239,15 @@
       .metric { min-height: 72px; border-right: 0; }
       .rule-note { grid-column: auto; padding-inline: 18px; }
       .section-head h2 { font-size: 21px; }
+      .next-action { padding: 16px; align-items: stretch; flex-direction: column; gap: 12px; }
+      .view-tabs button { min-width: 0; flex: 1; padding-inline: 8px; }
+      .filters { grid-template-columns: 1fr; }
+      .filters label:first-child { grid-column: auto; }
+      .route-row { min-height: 76px; grid-template-columns: 38px 1fr; gap: 10px; }
+      .route-row .route-status { grid-column: 2; }
+      .backlog-row { min-height: 72px; }
       .tracker-header, .form, .detail section { padding-inline: 18px; }
       .form-row { grid-template-columns: 1fr; }
-      .critical { padding-inline: 18px; }
       footer { padding-inline: 18px; flex-direction: column; }
     }
 
@@ -222,19 +280,27 @@
     </header>
 
     <section class="summary" aria-label="Resumen del seguimiento">
-      <div class="metric"><span>Verificados</span><strong id="count-verified">0</strong><small>con evidencia registrada</small></div>
-      <div class="metric"><span>En curso</span><strong id="count-progress">0</strong><small>trabajo activo</small></div>
+      <div class="metric"><span>Avance verificable</span><strong id="count-verified">0 / 18</strong><small>nodos con evidencia</small></div>
+      <div class="metric"><span>Listos para trabajar</span><strong id="count-ready">0</strong><small>sin dependencias abiertas</small></div>
       <div class="metric"><span>Bloqueados</span><strong id="count-blocked">0</strong><small>requieren desbloqueo</small></div>
-      <div class="metric"><span>Por iniciar</span><strong id="count-pending">0</strong><small>pendientes o listos para QA</small></div>
       <p class="rule-note"><strong>Regla de autorización</strong> Un estado guardado documenta seguimiento; no sustituye pruebas. Una red neuronal no se entrena hasta disponer de etiquetas reales, dataset versionado, particiones sin fuga y un baseline reproducible.</p>
+    </section>
+
+    <section class="next-action" aria-labelledby="next-action-heading">
+      <div>
+        <span id="next-action-phase">Siguiente acción calculada</span>
+        <h2 id="next-action-heading">Revisando dependencias</h2>
+        <p id="next-action-reason">El mapa seleccionará el primer trabajo ejecutable de la ruta crítica.</p>
+      </div>
+      <button class="button primary" id="next-action-button" type="button">Abrir nodo</button>
     </section>
 
     <main class="workspace" id="pipeline">
       <section class="canvas-panel" aria-labelledby="network-heading">
         <div class="section-head">
           <div>
-            <h2 id="network-heading">Red completa de dependencias</h2>
-            <p>Selecciona un nodo para editar su seguimiento y revisar su puerta de aceptación.</p>
+            <h2 id="network-heading">Mapa de desarrollo</h2>
+            <p id="view-description">Explora dependencias, responsables y puertas de aceptación del proyecto.</p>
           </div>
           <div class="legend" aria-label="Leyenda">
             <span data-status="VERIFICADO"><i></i>Verificado</span>
@@ -244,14 +310,43 @@
             <span data-status="BLOQUEADO"><i></i>Bloqueado</span>
           </div>
         </div>
-        <div class="network" aria-label="Diagrama de operaciones del proceso">
+
+        <div class="map-controls">
+          <div class="view-tabs" role="tablist" aria-label="Vista del mapa de desarrollo">
+            <button type="button" role="tab" aria-selected="true" data-view="network">Dependencias</button>
+            <button type="button" role="tab" aria-selected="false" data-view="critical">Ruta crítica</button>
+            <button type="button" role="tab" aria-selected="false" data-view="backlog">Backlog</button>
+          </div>
+          <div class="filters" aria-label="Filtros del mapa">
+            <label><span>Buscar</span><input id="filter-search" type="search" placeholder="Nodo, capa o responsable" autocomplete="off"></label>
+            <label><span>Estado</span><select id="filter-status"><option value="">Todos</option><option value="PENDIENTE">Pendiente</option><option value="EN_CURSO">En curso</option><option value="BLOQUEADO">Bloqueado</option><option value="LISTO_PARA_QA">Listo para QA</option><option value="VERIFICADO">Verificado</option></select></label>
+            <label><span>Fase</span><select id="filter-phase"><option value="">Todas</option><option value="1">Base</option><option value="2">Datos</option><option value="3">Geoespacial</option><option value="4">Dataset</option><option value="5">Modelos</option><option value="6">Decisión</option></select></label>
+            <label class="ready-filter" for="filter-ready"><input id="filter-ready" type="checkbox"><span>Solo ejecutables</span></label>
+            <button class="button clear-filters" id="clear-filters" type="button">Limpiar</button>
+          </div>
+          <p class="filter-summary" id="filter-summary" role="status" aria-live="polite">18 nodos visibles</p>
+        </div>
+
+        <div class="network view-panel" id="network-view" role="tabpanel" aria-label="Diagrama de dependencias">
           <div class="stages" aria-hidden="true"><span>BASE</span><span>DATOS</span><span>GEO</span><span>DATASET</span><span>MODELOS</span><span>DECISIÓN</span></div>
           <svg class="edges" viewBox="0 0 1200 550" preserveAspectRatio="none" aria-hidden="true">
             <defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#909aa3"></path></marker></defs>
             <g id="edge-layer"></g>
           </svg>
           <div class="nodes" id="node-layer"></div>
+          <p class="empty-view" id="network-empty" hidden>No hay nodos que coincidan con los filtros.</p>
         </div>
+
+        <section class="roadmap view-panel" id="critical-view" role="tabpanel" aria-labelledby="critical-view-heading" hidden>
+          <div class="view-panel-head"><h3 id="critical-view-heading">Ruta priorizada hacia una decisión autorizada</h3><p>La secuencia muestra el hilo principal y declara dependencias paralelas abiertas; ningún nodo avanza sin verificar sus predecesores.</p></div>
+          <ol id="critical-list"></ol>
+        </section>
+
+        <section class="backlog view-panel" id="backlog-view" role="tabpanel" aria-labelledby="backlog-view-heading" hidden>
+          <div class="view-panel-head"><h3 id="backlog-view-heading">Backlog operativo</h3><p>Ordenado por ejecutabilidad y ruta crítica para convertir el mapa en trabajo accionable.</p></div>
+          <div class="backlog-header" aria-hidden="true"><span>Trabajo</span><span>Fase</span><span>Estado</span><span>Dependencias</span><span>Responsable</span><span>Fecha</span></div>
+          <div id="backlog-list"></div>
+        </section>
       </section>
 
       <aside class="tracker" aria-labelledby="tracker-heading">
@@ -301,14 +396,6 @@
       </aside>
     </main>
 
-    <section class="critical" aria-labelledby="critical-heading">
-      <h2 id="critical-heading">Ruta crítica recomendada</h2>
-      <p>Secuencia mínima antes de autorizar investigación neuronal y pilotos de decisión.</p>
-      <ol>
-        <li><span>01</span><b>DEM + fuentes oficiales</b></li><li><span>02</span><b>Armonización espacial</b></li><li><span>03</span><b>PostGIS y muestreo</b></li><li><span>04</span><b>Etiquetas reales</b></li><li><span>05</span><b>Splits sin fuga</b></li><li><span>06</span><b>Baseline simple</b></li><li><span>07</span><b>Candidato neuronal</b></li><li><span>08</span><b>Gate humano</b></li>
-      </ol>
-    </section>
-
     <footer>
       <div><strong>LOS CAUSAS ESPACIALES</strong><span>Tracker local del DOP · no representa un modelo entrenado.</span></div>
       <div><a href="/dop-neuronal">Vista interactiva de solo lectura</a><a href="http://localhost:8000/docs">OpenAPI · 8000</a></div>
@@ -323,10 +410,10 @@
       const MAX_IMPORT_BYTES = 1024 * 1024;
       const allowedStatuses = new Set(["PENDIENTE", "EN_CURSO", "BLOQUEADO", "LISTO_PARA_QA", "VERIFICADO"]);
       const nodes = [
-        {id:"solar",code:"00A",name:"Piloto solar",layer:"Base verificada",column:1,row:2,initial:"VERIFICADO",purpose:"Conservar el caso extremo a extremo como patrón de integración y contrato público.",inputs:["NASA POWER","Supuestos financieros","Geometrías WGS84"],output:"Screening trazable con serie anual, tendencias, VAN y exportación JSON.",acceptance:"13 pruebas, build, navegador desktop/mobile y procedencia aprobados.",blocker:"Ninguno para el alcance actual."},
+        {id:"solar",code:"00A",name:"Piloto solar",layer:"Base verificada",column:1,row:2,initial:"VERIFICADO",purpose:"Conservar el caso extremo a extremo como patrón de integración y contrato público.",inputs:["NASA POWER","Supuestos financieros","Geometrías WGS84"],output:"Screening trazable con serie anual, tendencias, VAN y exportación JSON.",acceptance:"Suite backend, build, navegador desktop/mobile y procedencia aprobados.",blocker:"Ninguno para el alcance actual."},
         {id:"qa-core",code:"00B",name:"QA científico",layer:"Base verificada",column:1,row:4,initial:"VERIFICADO",purpose:"Aplicar puertas de datos, estadística, geoespacio, inversión y reproducibilidad a cada incremento.",inputs:["Skills de dominio","Casos controlados","Fuentes primarias"],output:"Matriz de evidencia sin puertas aplicables en FALLÓ.",acceptance:"Auditor, validadores especializados y pruebas reproducibles en CI.",blocker:"Debe ejecutarse de nuevo en cada incremento."},
         {id:"gpm",code:"01A",name:"GPM IMERG V07",layer:"Observación terrestre",column:2,row:1,initial:"PENDIENTE",purpose:"Incorporar precipitación espacial de alta frecuencia con QA del producto.",inputs:["Earthdata Login","Short name y versión","QA flags"],output:"Raster temporal validado con nodata, unidad, resolución y procedencia.",acceptance:"Consulta real contrastada con NASA y prueba de faltantes/error.",blocker:"Acceso Earthdata y selección final del producto no configurados."},
-        {id:"dem",code:"01B",name:"DEM y pendiente",layer:"Observación terrestre",column:2,row:2,initial:"PENDIENTE",purpose:"Derivar elevación, pendiente y orientación para energía, corredores e inmuebles.",inputs:["DEM NASA/Earthdata","CRS y resolución","Política nodata"],output:"Superficies de terreno y métricas por sitio, corredor o polígono.",acceptance:"Reproyección, unidades y muestreo contrastados con segunda implementación.",blocker:"Producto DEM y resolución de análisis deben decidirse y registrarse."},
+        {id:"dem",code:"01B",name:"NASADEM · relieve",layer:"Observación terrestre",column:2,row:2,initial:"EN_CURSO",purpose:"Derivar elevación, pendiente y orientación verificables para energía, corredores e inmuebles.",inputs:["NASADEM_HGT.001","NASADEM_SC.001","CMR y Earthdata Login"],output:"Metadatos y vistas previas oficiales por sitio; métricas raster reales al habilitar la descarga autenticada.",acceptance:"CMR real, mosaicos WGS84, unidades, geoide EGM96, caché, nodata, parser y navegador contrastados; muestreo raster validado con una segunda implementación.",blocker:"EARTHDATA_TOKEN no está configurado; la descarga protegida y el contraste de celdas reales siguen pendientes."},
         {id:"appeears",code:"01C",name:"AppEEARS",layer:"Observación terrestre",column:2,row:3,initial:"PENDIENTE",purpose:"Extraer vegetación, agua y cobertura para la inteligencia ambiental.",inputs:["Earthdata Login","Productos versionados","Escala y offset"],output:"Capas ambientales con QA y cobertura explícitas.",acceptance:"Extracción reproducible; QA flags, remuestreo y licencia documentados.",blocker:"Productos y credenciales Earthdata pendientes."},
         {id:"peru",code:"01D",name:"Capas oficiales Perú",layer:"Territorio",column:2,row:4,initial:"PENDIENTE",purpose:"Integrar red, subestaciones, áreas protegidas, patrimonio, comunidades y predios.",inputs:["MINEM/COES","SERNANP/SENACE","Cultura y fuentes sociales"],output:"Catálogo territorial con fecha, licencia, escala, cobertura y responsable.",acceptance:"Servicio oficial verificado; CRS, vigencia y limitaciones visibles.",blocker:"Endpoints, licencias y cobertura deben verificarse fuente por fuente."},
         {id:"harmonize",code:"02A",name:"Armonización espacial",layer:"Motor geoespacial",column:3,row:2,initial:"PENDIENTE",purpose:"Normalizar CRS, ejes, resolución, nodata y temporalidad sin degradación silenciosa.",inputs:["Rasters NASA","Vectores oficiales","Metadatos de calidad"],output:"Capas comparables con transformaciones y tolerancias registradas.",acceptance:"Ninguna operación con CRS desconocido; casos límite y segunda implementación aprobados.",blocker:"Depende de las fuentes territoriales faltantes."},
@@ -351,10 +438,24 @@
         ["human-gate","pilots"],["pilots","delivery"],["human-gate","labels",true]
       ];
 
+      const phaseNames = new Map([[1,"Base"],[2,"Datos"],[3,"Geoespacial"],[4,"Dataset"],[5,"Modelos"],[6,"Decisión"]]);
+      const phaseCodes = new Map([[1,"BASE"],[2,"DATOS"],[3,"GEO"],[4,"DATASET"],[5,"MODELOS"],[6,"DECISIÓN"]]);
+      const criticalPath = ["dem","harmonize","sampling","platform","labels","splits","baseline","candidates","assurance","human-gate","pilots","delivery"];
+      const criticalIds = new Set(criticalPath);
       const nodeMap = new Map(nodes.map(node => [node.id, node]));
-      const defaults = Object.fromEntries(nodes.map(node => [node.id, {status:node.initial,owner:"",targetDate:"",evidence:node.initial === "VERIFICADO" ? "Estado verificado en el repositorio y su suite de pruebas." : "",notes:"",updatedAt:""}]));
+      const predecessors = new Map(nodes.map(node => [node.id, []]));
+      edges.forEach(([from,to,feedback]) => { if (!feedback) predecessors.get(to).push(from); });
+      const defaults = Object.fromEntries(nodes.map(node => [node.id, {
+        status:node.initial,
+        owner:node.id === "dem" ? "Backend + geoespacial" : "",
+        targetDate:"",
+        evidence:node.initial === "VERIFICADO" ? "Estado verificado en el repositorio y su suite de pruebas." : node.id === "dem" ? "CMR localizó s18w071 y s17w072; API /terrain/points, caché, parser y vista previa integrados; 16 pruebas backend aprobadas." : "",
+        notes:node.id === "dem" ? "Siguiente gate: configurar un token Earthdata, descargar HGT/SC y contrastar elevación, pendiente y orientación de celdas reales con una segunda implementación." : "",
+        updatedAt:node.id === "dem" ? "2026-10-22T12:30:00.000Z" : ""
+      }]));
       let state = loadState();
-      let selectedId = "labels";
+      let selectedId = "dem";
+      let activeView = "network";
 
       const nodeLayer = document.getElementById("node-layer");
       const edgeLayer = document.getElementById("edge-layer");
@@ -366,6 +467,16 @@
       const dateInput = document.getElementById("target-date");
       const evidenceInput = document.getElementById("evidence");
       const notesInput = document.getElementById("notes");
+      const searchInput = document.getElementById("filter-search");
+      const statusFilter = document.getElementById("filter-status");
+      const phaseFilter = document.getElementById("filter-phase");
+      const readyFilter = document.getElementById("filter-ready");
+      const viewTabs = [...document.querySelectorAll("[data-view]")];
+      const viewPanels = {
+        network:document.getElementById("network-view"),
+        critical:document.getElementById("critical-view"),
+        backlog:document.getElementById("backlog-view")
+      };
 
       function safeText(value, max) {
         return typeof value === "string" ? value.slice(0, max) : "";
@@ -388,7 +499,11 @@
         try {
           const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
           if (!saved || typeof saved !== "object" || saved.version !== 1 || !saved.items) return structuredClone(defaults);
-          return Object.fromEntries(nodes.map(node => [node.id, sanitizeRecord(saved.items[node.id], defaults[node.id])]));
+          const restored = Object.fromEntries(nodes.map(node => [node.id, sanitizeRecord(saved.items[node.id], defaults[node.id])]));
+          const oldDem = saved.items.dem;
+          const untouchedDem = oldDem && oldDem.status === "PENDIENTE" && !oldDem.owner && !oldDem.targetDate && !oldDem.evidence && !oldDem.notes && !oldDem.updatedAt;
+          if (untouchedDem) restored.dem = structuredClone(defaults.dem);
+          return restored;
         } catch {
           return structuredClone(defaults);
         }
@@ -414,9 +529,35 @@
         return visited;
       }
 
-      function renderEdges(active) {
+      function openDependencies(nodeId) {
+        return predecessors.get(nodeId).filter(id => state[id].status !== "VERIFICADO");
+      }
+
+      function isReady(nodeId) {
+        const status = state[nodeId].status;
+        return status !== "VERIFICADO" && status !== "BLOQUEADO" && openDependencies(nodeId).length === 0;
+      }
+
+      function statusLabel(status) {
+        return status.replaceAll("_", " ");
+      }
+
+      function filteredNodes() {
+        const query = searchInput.value.trim().toLocaleLowerCase("es");
+        return nodes.filter(node => {
+          const tracking = state[node.id];
+          const searchable = [node.code,node.name,node.layer,node.purpose,tracking.owner,tracking.notes,tracking.evidence].join(" ").toLocaleLowerCase("es");
+          return (!query || searchable.includes(query))
+            && (!statusFilter.value || tracking.status === statusFilter.value)
+            && (!phaseFilter.value || node.column === Number(phaseFilter.value))
+            && (!readyFilter.checked || isReady(node.id));
+        });
+      }
+
+      function renderEdges(active, visibleIds) {
         edgeLayer.replaceChildren();
         edges.forEach(([from,to,feedback]) => {
+          if (!visibleIds.has(from) || !visibleIds.has(to)) return;
           const source = nodeMap.get(from);
           const target = nodeMap.get(to);
           const x1 = 100 + (source.column - 1) * 200;
@@ -434,11 +575,13 @@
       }
 
       function renderNodes() {
+        const visible = filteredNodes();
+        const visibleIds = new Set(visible.map(node => node.id));
         const upstream = collectConnected(selectedId, "upstream");
         const downstream = collectConnected(selectedId, "downstream");
         const active = new Set([selectedId, ...upstream, ...downstream]);
         nodeLayer.replaceChildren();
-        nodes.forEach(node => {
+        visible.forEach(node => {
           const button = document.createElement("button");
           const relation = node.id === selectedId ? "selected" : upstream.has(node.id) ? "upstream" : downstream.has(node.id) ? "downstream" : "unrelated";
           button.type = "button";
@@ -447,8 +590,9 @@
           button.style.gridRow = node.row;
           button.dataset.status = state[node.id].status;
           button.dataset.relation = relation;
+          button.dataset.ready = String(isReady(node.id));
           button.setAttribute("aria-pressed", String(node.id === selectedId));
-          button.setAttribute("aria-label", `${node.name}. Estado ${state[node.id].status.replaceAll("_", " ")}. ${node.purpose}`);
+          button.setAttribute("aria-label", `${node.name}. Estado ${statusLabel(state[node.id].status)}.${isReady(node.id) ? " Ejecutable ahora." : ""} ${node.purpose}`);
           const code = document.createElement("span");
           const status = document.createElement("span");
           const name = document.createElement("strong");
@@ -456,23 +600,179 @@
           code.className = "code";
           status.className = "status";
           code.textContent = node.code;
-          status.textContent = state[node.id].status.replaceAll("_", " ");
+          status.textContent = statusLabel(state[node.id].status);
           name.textContent = node.name;
-          owner.textContent = state[node.id].owner || node.layer;
+          owner.textContent = isReady(node.id) ? `Ejecutable · ${state[node.id].owner || node.layer}` : state[node.id].owner || node.layer;
           button.append(code, status, name, owner);
           button.addEventListener("click", () => selectNode(node.id));
           nodeLayer.append(button);
         });
-        renderEdges(active);
-        updateCounts();
+        renderEdges(active, visibleIds);
+        document.getElementById("network-empty").hidden = visible.length > 0;
       }
 
-      function updateCounts() {
+      function updateSummary() {
         const values = Object.values(state).map(item => item.status);
-        document.getElementById("count-verified").textContent = values.filter(status => status === "VERIFICADO").length;
-        document.getElementById("count-progress").textContent = values.filter(status => status === "EN_CURSO").length;
+        document.getElementById("count-verified").textContent = `${values.filter(status => status === "VERIFICADO").length} / ${nodes.length}`;
+        document.getElementById("count-ready").textContent = nodes.filter(node => isReady(node.id)).length;
         document.getElementById("count-blocked").textContent = values.filter(status => status === "BLOQUEADO").length;
-        document.getElementById("count-pending").textContent = values.filter(status => status === "PENDIENTE" || status === "LISTO_PARA_QA").length;
+        document.querySelectorAll(".stages span").forEach((element,index) => {
+          const column = index + 1;
+          const phaseNodes = nodes.filter(node => node.column === column);
+          const verified = phaseNodes.filter(node => state[node.id].status === "VERIFICADO").length;
+          element.textContent = `${phaseCodes.get(column)} ${verified}/${phaseNodes.length}`;
+        });
+      }
+
+      function renderNextAction() {
+        const candidateId = criticalPath.find(id => isReady(id)) || nodes.find(node => isReady(node.id))?.id;
+        const button = document.getElementById("next-action-button");
+        if (!candidateId) {
+          document.getElementById("next-action-phase").textContent = "Sin trabajo desbloqueado";
+          document.getElementById("next-action-heading").textContent = "Revisa los bloqueos y la evidencia";
+          document.getElementById("next-action-reason").textContent = "No hay nodos pendientes con todos sus predecesores verificados.";
+          button.disabled = true;
+          delete button.dataset.nodeId;
+          return;
+        }
+        const candidate = nodeMap.get(candidateId);
+        const downstreamCount = collectConnected(candidateId, "downstream").size;
+        document.getElementById("next-action-phase").textContent = `Siguiente acción · ${phaseNames.get(candidate.column)} · ${candidate.code}`;
+        document.getElementById("next-action-heading").textContent = candidate.name;
+        document.getElementById("next-action-reason").textContent = `Puede iniciarse ahora e impacta ${downstreamCount} nodos aguas abajo. ${candidate.blocker}`;
+        button.disabled = false;
+        button.dataset.nodeId = candidateId;
+      }
+
+      function renderCritical() {
+        const list = document.getElementById("critical-list");
+        const visibleIds = new Set(filteredNodes().map(node => node.id));
+        list.replaceChildren();
+        criticalPath.filter(id => visibleIds.has(id)).forEach((id,index) => {
+          const node = nodeMap.get(id);
+          const tracking = state[id];
+          const open = openDependencies(id);
+          const item = document.createElement("li");
+          const button = document.createElement("button");
+          const routeIndex = document.createElement("span");
+          const name = document.createElement("span");
+          const strong = document.createElement("strong");
+          const small = document.createElement("small");
+          const status = document.createElement("span");
+          const owner = document.createElement("span");
+          const date = document.createElement("span");
+          button.type = "button";
+          button.className = "route-row";
+          button.dataset.status = tracking.status;
+          button.dataset.ready = String(isReady(id));
+          button.setAttribute("aria-pressed", String(id === selectedId));
+          button.setAttribute("aria-label", `Paso ${index + 1}, ${node.name}. ${statusLabel(tracking.status)}. ${open.length} dependencias abiertas.`);
+          routeIndex.className = "route-index";
+          routeIndex.textContent = String(criticalPath.indexOf(id) + 1);
+          name.className = "route-name";
+          strong.textContent = node.name;
+          small.textContent = `${phaseNames.get(node.column)} · ${open.length ? `${open.length} dependencias abiertas` : isReady(id) ? "Ejecutable ahora" : "Dependencias verificadas"}`;
+          name.append(strong,small);
+          status.className = "route-meta route-status status-text";
+          status.dataset.status = tracking.status;
+          status.textContent = statusLabel(tracking.status);
+          owner.className = "route-meta route-owner";
+          owner.textContent = tracking.owner || "Sin responsable";
+          date.className = "route-meta route-date";
+          date.textContent = tracking.targetDate || "Sin fecha";
+          button.append(routeIndex,name,status,owner,date);
+          button.addEventListener("click", () => selectNode(id));
+          item.append(button);
+          list.append(item);
+        });
+        if (!list.children.length) {
+          const empty = document.createElement("li");
+          empty.className = "empty-view";
+          empty.textContent = "Ningún paso de la ruta crítica coincide con los filtros.";
+          list.append(empty);
+        }
+      }
+
+      function renderBacklog() {
+        const list = document.getElementById("backlog-list");
+        const statusPriority = {EN_CURSO:1,LISTO_PARA_QA:2,PENDIENTE:3,BLOQUEADO:5,VERIFICADO:6};
+        const ordered = filteredNodes().sort((a,b) => {
+          const readyDelta = Number(!isReady(a.id)) - Number(!isReady(b.id));
+          if (readyDelta) return readyDelta;
+          const criticalDelta = Number(!criticalIds.has(a.id)) - Number(!criticalIds.has(b.id));
+          if (criticalDelta) return criticalDelta;
+          return statusPriority[state[a.id].status] - statusPriority[state[b.id].status] || a.code.localeCompare(b.code);
+        });
+        list.replaceChildren();
+        ordered.forEach(node => {
+          const tracking = state[node.id];
+          const open = openDependencies(node.id);
+          const button = document.createElement("button");
+          const work = document.createElement("span");
+          const name = document.createElement("strong");
+          const code = document.createElement("small");
+          const phase = document.createElement("span");
+          const status = document.createElement("span");
+          const deps = document.createElement("span");
+          const owner = document.createElement("span");
+          const date = document.createElement("span");
+          button.type = "button";
+          button.className = "backlog-row";
+          button.dataset.ready = String(isReady(node.id));
+          button.setAttribute("aria-pressed", String(node.id === selectedId));
+          button.setAttribute("aria-label", `${node.name}. ${statusLabel(tracking.status)}. ${open.length} dependencias abiertas.`);
+          work.className = "backlog-work";
+          name.textContent = node.name;
+          code.textContent = `${node.code}${criticalIds.has(node.id) ? " · RUTA CRÍTICA" : ""}`;
+          work.append(name,code);
+          phase.className = "backlog-phase";
+          phase.textContent = phaseNames.get(node.column);
+          status.className = "status-text";
+          status.dataset.status = tracking.status;
+          status.textContent = isReady(node.id) ? "EJECUTABLE" : statusLabel(tracking.status);
+          deps.className = "backlog-deps";
+          deps.textContent = open.length ? `${open.length} abiertas` : "Libre";
+          owner.className = "backlog-owner";
+          owner.textContent = tracking.owner || "Sin asignar";
+          date.className = "backlog-date";
+          date.textContent = tracking.targetDate || "Sin fecha";
+          button.append(work,phase,status,deps,owner,date);
+          button.addEventListener("click", () => selectNode(node.id));
+          list.append(button);
+        });
+        if (!ordered.length) {
+          const empty = document.createElement("p");
+          empty.className = "empty-view";
+          empty.textContent = "No hay trabajo que coincida con los filtros.";
+          list.append(empty);
+        }
+      }
+
+      function updateFilterSummary() {
+        const count = filteredNodes().length;
+        const activeFilters = [searchInput.value.trim(),statusFilter.value,phaseFilter.value,readyFilter.checked].filter(Boolean).length;
+        document.getElementById("filter-summary").textContent = `${count} de ${nodes.length} nodos visibles${activeFilters ? ` · ${activeFilters} filtros activos` : ""}`;
+      }
+
+      function renderAll() {
+        renderNodes();
+        renderCritical();
+        renderBacklog();
+        updateSummary();
+        renderNextAction();
+        updateFilterSummary();
+      }
+
+      function switchView(view) {
+        activeView = viewPanels[view] ? view : "network";
+        Object.entries(viewPanels).forEach(([key,panel]) => { panel.hidden = key !== activeView; });
+        viewTabs.forEach(tab => tab.setAttribute("aria-selected", String(tab.dataset.view === activeView)));
+        const descriptions = {
+          network:"Explora las dependencias y el impacto aguas arriba y abajo de cada nodo.",
+          critical:"Sigue el hilo de decisión y detecta las dependencias paralelas que aún lo bloquean.",
+          backlog:"Prioriza trabajo ejecutable, ruta crítica, responsables y fechas objetivo."
+        };
+        document.getElementById("view-description").textContent = descriptions[activeView];
       }
 
       function selectNode(id) {
@@ -492,7 +792,7 @@
         evidenceInput.value = tracking.evidence;
         notesInput.value = tracking.notes;
         validation.textContent = "";
-        renderNodes();
+        renderAll();
       }
 
       function updateSelected() {
@@ -512,7 +812,7 @@
           updatedAt:new Date().toISOString()
         };
         persist();
-        renderNodes();
+        renderAll();
       }
 
       form.addEventListener("change", updateSelected);
@@ -520,6 +820,32 @@
         if (event.target === statusInput) return;
         window.clearTimeout(form.saveTimer);
         form.saveTimer = window.setTimeout(updateSelected, 300);
+      });
+
+      viewTabs.forEach(tab => {
+        tab.id = `tab-${tab.dataset.view}`;
+        tab.setAttribute("aria-controls", `${tab.dataset.view}-view`);
+        tab.addEventListener("click", () => switchView(tab.dataset.view));
+      });
+
+      searchInput.addEventListener("input", renderAll);
+      statusFilter.addEventListener("change", renderAll);
+      phaseFilter.addEventListener("change", renderAll);
+      readyFilter.addEventListener("change", renderAll);
+      document.getElementById("clear-filters").addEventListener("click", () => {
+        searchInput.value = "";
+        statusFilter.value = "";
+        phaseFilter.value = "";
+        readyFilter.checked = false;
+        renderAll();
+        searchInput.focus();
+      });
+      document.getElementById("next-action-button").addEventListener("click", event => {
+        const nodeId = event.currentTarget.dataset.nodeId;
+        if (!nodeId) return;
+        switchView("network");
+        selectNode(nodeId);
+        document.getElementById("pipeline").scrollIntoView({behavior:"smooth",block:"start"});
       });
 
       document.getElementById("export-button").addEventListener("click", () => {
@@ -572,12 +898,14 @@
         delete resetButton.dataset.confirming;
         resetButton.textContent = "Restablecer";
         saveState.textContent = "Seguimiento restablecido";
-        selectNode("labels");
+        selectNode("dem");
       });
 
       console.assert(nodes.length === 18, "El DOP debe contener 18 nodos.");
       console.assert(edges.length === 23, "El DOP debe contener 23 conexiones.");
       console.assert(nodes.every(node => state[node.id]), "Cada nodo debe tener un registro de seguimiento.");
+      console.assert(criticalPath.every(id => nodeMap.has(id)), "Cada paso crítico debe existir en el mapa.");
+      switchView(activeView);
       selectNode(selectedId);
     })();
   </script>

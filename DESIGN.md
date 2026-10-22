@@ -217,6 +217,10 @@ La clave superior enumera `REAL_DATA`, `CACHED_DATA`, `MODEL_ESTIMATE`, `USER_AS
 
 Blue Marble de NASA EOSDIS GIBS funciona como basemap raster estático y contextual, con atribución visible. No se presenta como una observación analítica. El mapa añade dos marcadores, eje comparativo discontinuo, coordenadas WGS84 y controles discretos.
 
+### NASADEM Terrain Readout
+
+El bloque compacto de relieve vive dentro de la configuración y mantiene separadas la evidencia cartográfica y las métricas. La vista previa pública puede activarse sobre el mapa, pero elevación, pendiente y orientación solo aparecen cuando el raster protegido fue descargado y validado. En ausencia de Earthdata Login, el bloque declara `METADATA_ONLY` / `DATA_UNAVAILABLE`, conserva enlaces DOI, tesela, CRS y resolución, y no infiere valores.
+
 ### Temporal Series
 
 La gráfica anual usa retícula fina, ejes monoespaciados y líneas sin animación. Antes de ejecutar, conserva la retícula pero declara que la serie aún no está disponible; nunca rellena el espacio con datos ficticios.
@@ -234,6 +238,7 @@ Nueve pasos numerados comparten una línea de 1 px y estados textuales. Durante 
 - **Do** declarar `DATA_UNAVAILABLE`, “pendiente” o “aún no disponible” cuando falte una fuente o ejecución.
 - **Do** conservar foco visible, semántica, navegación por teclado y objetivos táctiles móviles de al menos 44 px.
 - **Do** usar Public Sans para lectura e IBM Plex Mono para datos instrumentales.
+- **Do** diferenciar una vista previa NASADEM de una celda raster analítica y mantener visible su estado de acceso.
 
 ### Don't:
 

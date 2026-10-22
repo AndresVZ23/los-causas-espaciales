@@ -25,19 +25,75 @@ type DopEdge = { from: string; to: string; feedback?: boolean };
 const nodes: DopNode[] = [
   { id: "solar", code: "00A", name: "Piloto solar", layer: "Base verificada", status: "OPERATIVO", column: 1, row: 2, purpose: "Conservar el caso extremo a extremo como patrón de integración y contrato público.", inputs: ["NASA POWER", "Supuestos financieros", "Geometrías WGS84"], output: "Screening trazable con serie anual, tendencias, VAN y exportación JSON.", acceptance: "13 pruebas, build, navegador desktop/mobile y procedencia aprobados." },
   { id: "qa-core", code: "00B", name: "QA científico", layer: "Base verificada", status: "OPERATIVO", column: 1, row: 4, purpose: "Aplicar puertas de datos, estadística, geoespacio, inversión y reproducibilidad a cada incremento.", inputs: ["Skills de dominio", "Casos controlados", "Fuentes primarias"], output: "Matriz de evidencia sin puertas aplicables en FALLÓ.", acceptance: "Auditor, validadores especializados y pruebas reproducibles en CI." },
-  { id: "gpm", code: "01A", name: "GPM IMERG V07", layer: "Observación terrestre", status: "PENDIENTE", column: 2, row: 1, purpose: "Incorporar precipitación espacial de alta frecuencia con QA del producto.", inputs: ["Earthdata Login", "Short name y versión", "QA flags"], output: "Raster temporal validado con nodata, unidad, resolución y procedencia.", acceptance: "Consulta real contrastada con NASA y prueba de faltantes/error.", blocker: "Acceso Earthdata y selección final del producto aún no configurados." },
-  { id: "dem", code: "01B", name: "DEM y pendiente", layer: "Observación terrestre", status: "SIGUIENTE", column: 2, row: 2, purpose: "Derivar elevación, pendiente y orientación para energía, corredores e inmuebles.", inputs: ["DEM NASA/Earthdata", "CRS y resolución", "Política nodata"], output: "Superficies de terreno y métricas por sitio, corredor o polígono.", acceptance: "Reproyección, unidades y muestreo contrastados con segunda implementación.", blocker: "Producto DEM y resolución de análisis deben decidirse y registrarse." },
+  {
+    id: "gpm", code: "01A", name: "GPM IMERG V07", layer: "Observación terrestre", status: "PENDIENTE", column: 2, row: 1,
+    purpose: "Incorporar precipitación espacial de alta frecuencia con QA del producto.",
+    inputs: ["Earthdata Login", "Short name y versión", "QA flags"],
+    output: "Raster temporal validado con nodata, unidad, resolución y procedencia.",
+    acceptance: "Consulta real contrastada con NASA y prueba de faltantes/error.",
+    blocker: "Acceso Earthdata y selección final del producto aún no configurados."
+  },
+  {
+    id: "dem", code: "01B", name: "DEM y pendiente", layer: "Observación terrestre", status: "SIGUIENTE", column: 2, row: 2,
+    purpose: "Derivar elevación, pendiente y orientación para energía, corredores e inmuebles.",
+    inputs: ["DEM NASA/Earthdata", "CRS y resolución", "Política nodata"],
+    output: "Superficies de terreno y métricas por sitio, corredor o polígono.",
+    acceptance: "Reproyección, unidades y muestreo contrastados con segunda implementación.",
+    blocker: "Producto DEM y resolución de análisis deben decidirse y registrarse."
+  },
   { id: "appeears", code: "01C", name: "AppEEARS", layer: "Observación terrestre", status: "PENDIENTE", column: 2, row: 3, purpose: "Extraer vegetación, agua y cobertura para la inteligencia ambiental.", inputs: ["Earthdata Login", "Productos versionados", "Escala y offset"], output: "Capas ambientales con QA y cobertura explícitas.", acceptance: "Extracción reproducible; QA flags, remuestreo y licencia documentados.", blocker: "Productos y credenciales Earthdata pendientes." },
-  { id: "peru", code: "01D", name: "Capas oficiales Perú", layer: "Territorio", status: "PENDIENTE", column: 2, row: 4, purpose: "Integrar red, subestaciones, áreas protegidas, patrimonio, comunidades y predios.", inputs: ["MINEM/COES", "SERNANP/SENACE", "Cultura y fuentes sociales"], output: "Catálogo territorial con fecha, licencia, escala, cobertura y responsable.", acceptance: "Servicio oficial verificado; CRS, vigencia y limitaciones visibles.", blocker: "Endpoints, licencias y cobertura todavía deben verificarse fuente por fuente." },
+  {
+    id: "peru", code: "01D", name: "Capas oficiales Perú", layer: "Territorio", status: "PENDIENTE", column: 2, row: 4,
+    purpose: "Integrar red, subestaciones, áreas protegidas, patrimonio, comunidades y predios.",
+    inputs: ["MINEM/COES", "SERNANP/SENACE", "Cultura y fuentes sociales"],
+    output: "Catálogo territorial con fecha, licencia, escala, cobertura y responsable.",
+    acceptance: "Servicio oficial verificado; CRS, vigencia y limitaciones visibles.",
+    blocker: "Endpoints, licencias y cobertura todavía deben verificarse fuente por fuente."
+  },
   { id: "harmonize", code: "02A", name: "Armonización espacial", layer: "Motor geoespacial", status: "PENDIENTE", column: 3, row: 2, purpose: "Normalizar CRS, ejes, resolución, nodata y temporalidad sin degradación silenciosa.", inputs: ["Rasters NASA", "Vectores oficiales", "Metadatos de calidad"], output: "Capas comparables con transformaciones y tolerancias registradas.", acceptance: "Ninguna operación con CRS desconocido; casos límite y segunda implementación aprobados." },
   { id: "sampling", code: "02B", name: "Muestreo geométrico", layer: "Motor geoespacial", status: "PENDIENTE", column: 3, row: 3, purpose: "Extender el análisis de puntos a corredores y polígonos reales.", inputs: ["GeoJSON validado", "Capas armonizadas", "Regla de muestreo"], output: "Perfiles de corredor, estadísticas zonales y cobertura espacial.", acceptance: "Distancias/áreas geodésicas, densidad de muestra y nodata probados." },
   { id: "platform", code: "02C", name: "PostGIS y trabajos", layer: "Plataforma de datos", status: "PENDIENTE", column: 3, row: 4, purpose: "Persistir análisis grandes y ejecutar extracciones asíncronas auditables.", inputs: ["PostGIS", "Cola de trabajos", "Almacén de artefactos"], output: "Datasets, geometrías, ejecuciones y resultados versionados.", acceptance: "Idempotencia, reintentos, estados de error y restauración comprobados." },
-  { id: "features", code: "03A", name: "Feature store", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 1, purpose: "Convertir observaciones y territorio en variables reproducibles por fecha y geometría.", inputs: ["Capas armonizadas", "Agregaciones declaradas", "Procedencia completa"], output: "Dataset de características versionado, sin mezclar fuentes o períodos silenciosamente.", acceptance: "Esquema, unidades, linaje y pruebas de fuga aprobados.", blocker: "Depende de integrar y armonizar las fuentes faltantes." },
-  { id: "labels", code: "03B", name: "Etiquetas reales", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 2, purpose: "Definir un objetivo decisional medible a partir de resultados reales, no proxies inventados.", inputs: ["Decisión objetivo", "Resultados observados", "Criterio experto"], output: "Etiquetas con fecha, fuente, incertidumbre y política de revisión.", acceptance: "Definición pre-registrada, acuerdo experto y tamaño muestral suficiente.", blocker: "No existe todavía un corpus versionado de resultados reales de proyectos." },
-  { id: "splits", code: "03C", name: "Partición sin fuga", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 3, purpose: "Separar entrenamiento, validación y prueba por tiempo y espacio.", inputs: ["Features versionadas", "Etiquetas confiables", "Grupos espaciales"], output: "Splits congelados que representan generalización temporal y territorial.", acceptance: "Cero solapamiento causal; prueba externa reservada y documentada.", blocker: "Requiere features y etiquetas disponibles." },
+  {
+    id: "features", code: "03A", name: "Feature store", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 1,
+    purpose: "Convertir observaciones y territorio en variables reproducibles por fecha y geometría.",
+    inputs: ["Capas armonizadas", "Agregaciones declaradas", "Procedencia completa"],
+    output: "Dataset de características versionado, sin mezclar fuentes o períodos silenciosamente.",
+    acceptance: "Esquema, unidades, linaje y pruebas de fuga aprobados.",
+    blocker: "Depende de integrar y armonizar las fuentes faltantes."
+  },
+  {
+    id: "labels", code: "03B", name: "Etiquetas reales", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 2,
+    purpose: "Definir un objetivo decisional medible a partir de resultados reales, no proxies inventados.",
+    inputs: ["Decisión objetivo", "Resultados observados", "Criterio experto"],
+    output: "Etiquetas con fecha, fuente, incertidumbre y política de revisión.",
+    acceptance: "Definición pre-registrada, acuerdo experto y tamaño muestral suficiente.",
+    blocker: "No existe todavía un corpus versionado de resultados reales de proyectos."
+  },
+  {
+    id: "splits", code: "03C", name: "Partición sin fuga", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 3,
+    purpose: "Separar entrenamiento, validación y prueba por tiempo y espacio.",
+    inputs: ["Features versionadas", "Etiquetas confiables", "Grupos espaciales"],
+    output: "Splits congelados que representan generalización temporal y territorial.",
+    acceptance: "Cero solapamiento causal; prueba externa reservada y documentada.",
+    blocker: "Requiere features y etiquetas disponibles."
+  },
   { id: "baseline", code: "03D", name: "Baselines simples", layer: "Preparación ML", status: "BLOQUEADO", column: 4, row: 4, purpose: "Establecer la referencia que cualquier red neuronal debe superar.", inputs: ["Splits congelados", "Métrica decisional", "Modelo lineal/árbol"], output: "Rendimiento, calibración y costo operacional reproducibles.", acceptance: "Validación fuera de muestra e intervalos por región/período.", blocker: "No se autoriza antes de congelar dataset, target y splits." },
-  { id: "candidates", code: "04A", name: "Modelos candidatos", layer: "Investigación neuronal", status: "BLOQUEADO", column: 5, row: 2, purpose: "Comparar arquitecturas sólo cuando la estructura de datos lo justifique.", inputs: ["Baseline aprobado", "Series y grafos versionados", "Presupuesto computacional"], output: "Experimentos TCN/Transformer temporal o GNN, según evidencia.", acceptance: "Mejora material fuera de muestra frente al baseline con ablaciones.", blocker: "Arquitectura no debe elegirse antes de conocer datos, target y baseline." },
-  { id: "assurance", code: "04B", name: "Incertidumbre y drift", layer: "Investigación neuronal", status: "BLOQUEADO", column: 5, row: 3, purpose: "Validar calibración, robustez, explicabilidad y degradación operativa.", inputs: ["Predicciones de prueba", "Subgrupos territoriales", "Escenarios adversos"], output: "Intervalos, calibración, atribuciones, drift y límites documentados.", acceptance: "Model card, pruebas de sensibilidad y umbrales de abstención aprobados.", blocker: "Depende de un candidato que supere el baseline." },
+  {
+    id: "candidates", code: "04A", name: "Modelos candidatos", layer: "Investigación neuronal", status: "BLOQUEADO", column: 5, row: 2,
+    purpose: "Comparar arquitecturas sólo cuando la estructura de datos lo justifique.",
+    inputs: ["Baseline aprobado", "Series y grafos versionados", "Presupuesto computacional"],
+    output: "Experimentos TCN/Transformer temporal o GNN, según evidencia.",
+    acceptance: "Mejora material fuera de muestra frente al baseline con ablaciones.",
+    blocker: "Arquitectura no debe elegirse antes de conocer datos, target y baseline."
+  },
+  {
+    id: "assurance", code: "04B", name: "Incertidumbre y drift", layer: "Investigación neuronal", status: "BLOQUEADO", column: 5, row: 3,
+    purpose: "Validar calibración, robustez, explicabilidad y degradación operativa.",
+    inputs: ["Predicciones de prueba", "Subgrupos territoriales", "Escenarios adversos"],
+    output: "Intervalos, calibración, atribuciones, drift y límites documentados.",
+    acceptance: "Model card, pruebas de sensibilidad y umbrales de abstención aprobados.",
+    blocker: "Depende de un candidato que supere el baseline."
+  },
   { id: "human-gate", code: "05A", name: "Gate humano", layer: "Gobernanza", status: "GATE", column: 6, row: 2, purpose: "Autorizar, iterar o descartar el modelo sin automatizar una decisión de inversión.", inputs: ["Model card", "QA científico", "Revisión sectorial"], output: "Decisión firmada con alcance, responsable, vigencia y condiciones de uso.", acceptance: "Ciencia, negocio, riesgo y seguridad aprueban; existe ruta de apelación." },
   { id: "pilots", code: "05B", name: "Pilotos sectoriales", layer: "Producto", status: "PENDIENTE", column: 6, row: 3, purpose: "Desplegar energía ampliada, corredores viales e inmuebles como pilotos separados.", inputs: ["Gate humano", "Capas mínimas", "Casos reales"], output: "Comparativas sectoriales con brechas, mitigaciones y evidencia trazable.", acceptance: "Casos reales revisados por expertos; ninguna recomendación excede la evidencia." },
   { id: "delivery", code: "05C", name: "API, PDF y monitoreo", layer: "Producto", status: "PENDIENTE", column: 6, row: 4, purpose: "Entregar resultados reproducibles y vigilar calidad posterior al despliegue.", inputs: ["Resultados aprobados", "Artefactos versionados", "Umbrales de drift"], output: "API, JSON/PDF, auditoría, monitoreo y rollback.", acceptance: "Exportación reproducible, trazabilidad completa y alarmas probadas." },

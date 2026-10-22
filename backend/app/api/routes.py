@@ -5,6 +5,7 @@ from statistics import fmean
 
 from fastapi import APIRouter, HTTPException
 
+from ..connectors.nasa.nasadem import NasademConnector, NasademConnectorError
 from ..connectors.nasa.power import PowerConnector, PowerConnectorError
 from ..finance.engine import calculate_npv
 from ..geospatial.geometry import GeometryValidationError, inspect_geometry
@@ -20,6 +21,7 @@ from ..schemas.analysis import (
     SiteComparisonResult,
 )
 from ..schemas.pipeline import SolarScreeningRequest, SolarScreeningResponse
+from ..schemas.terrain import TerrainRequest, TerrainResponse
 from ..sectors.solar import run_solar_screening
 from ..statistics.trends import analyze_trend
 from ..statistics.multiple_testing import benjamini_hochberg
@@ -36,9 +38,19 @@ def health():
 def sources():
     return [
         {"id": "nasa-power", "name": "NASA POWER", "status": "integrated", "access": "public API", "url": "https://power.larc.nasa.gov/docs/services/api/temporal/daily/"},
+        {"id": "nasadem-hgt", "name": "NASADEM HGT V001", "status": "metadata_integrated_raster_requires_auth", "access": "CMR público; raster con Earthdata Login", "url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001"},
+        {"id": "nasadem-sc", "name": "NASADEM Slope and Curvature V001", "status": "metadata_integrated_raster_requires_auth", "access": "CMR público; raster con Earthdata Login", "url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001"},
         {"id": "nasa-gpm-imerg", "name": "NASA GPM IMERG V07", "status": "catalogued_not_integrated", "access": "Earthdata/PPS; authentication may apply", "url": "https://gpm.nasa.gov/data/imerg"},
         {"id": "appeears", "name": "NASA AppEEARS", "status": "catalogued_not_integrated", "access": "Earthdata authentication", "url": "https://appeears.earthdatacloud.nasa.gov/"},
     ]
+
+
+@router.post("/terrain/points", response_model=TerrainResponse)
+async def terrain_points(request: TerrainRequest):
+    try:
+        return await NasademConnector().points(request.sites)
+    except NasademConnectorError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
 @router.post("/projects/solar-screening", response_model=SolarScreeningResponse)

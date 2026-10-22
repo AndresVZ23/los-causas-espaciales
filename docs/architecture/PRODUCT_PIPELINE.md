@@ -8,9 +8,9 @@ Este documento define el flujo operativo único exigido por el prompt maestro. L
 |---|---|---|---|---|
 | 1. Selección | Punto, polígono o corredor | Validación WGS84 | Geometría válida y referencia espacial | Punto funcional; geometrías validadas |
 | 2. Configuración | Sector, variables, período y supuestos | Reglas por sector | Solicitud reproducible | Solar funcional |
-| 3. Extracción | Solicitud validada | Conector oficial y caché | Observaciones con metadatos y procedencia | NASA POWER funcional |
+| 3. Extracción | Solicitud validada | Conectores oficiales y caché | Observaciones o metadatos con procedencia | NASA POWER funcional; NASADEM CMR funcional y raster condicionado a Earthdata Login |
 | 4. Análisis | Series temporales | Agregación anual, Mann-Kendall, Sen, autocorrelación y BH | Magnitud, p-value, intervalo y limitaciones | Funcional |
-| 5. Inteligencia territorial | Geometría y capas oficiales | Cruces espaciales | Restricciones y exposición documentada | Parcial; capas oficiales pendientes |
+| 5. Inteligencia territorial | Geometría y capas oficiales | Cruces espaciales | Restricciones y exposición documentada | Parcial; NASADEM en metadatos/preview y capas territoriales oficiales pendientes |
 | 6. Evaluación | Evidencia científica y territorial | Comparación transparente | Oportunidades, cautelas y brechas | Piloto solar funcional sin score arbitrario |
 | 7. Impacto económico | Supuestos del usuario | Energía y VAN condicionados | Flujos y sensibilidad | Escenario solar base funcional |
 | 8. Resultados | Productos anteriores | Síntesis trazable | Panel integrado y recomendaciones de estudios | Funcional para piloto solar |
@@ -24,7 +24,7 @@ Este documento define el flujo operativo único exigido por el prompt maestro. L
 
 ## Primer caso completo
 
-El piloto de energía solar del sur peruano compara Moquegua y Arequipa con `ALLSKY_SFC_SW_DWN`, `T2M`, `WS10M` y `PRECTOTCORR`. NASA POWER se consulta una vez por sitio con varios parámetros. La producción anual y el VAN son estimaciones condicionadas a supuestos explícitos, no observaciones NASA ni una factibilidad definitiva.
+El piloto de energía solar del sur peruano compara Moquegua y Arequipa con `ALLSKY_SFC_SW_DWN`, `T2M`, `WS10M` y `PRECTOTCORR`. NASA POWER se consulta una vez por sitio con varios parámetros. En paralelo, NASA CMR localiza las teselas HGT/SC de NASADEM y expone su procedencia; sin `EARTHDATA_TOKEN` no se calculan métricas de relieve. La producción anual y el VAN son estimaciones condicionadas a supuestos explícitos, no observaciones NASA ni una factibilidad definitiva.
 
 ## Regla de honestidad
 

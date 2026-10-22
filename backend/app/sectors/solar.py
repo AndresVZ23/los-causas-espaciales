@@ -91,7 +91,7 @@ def _summary(variable: str, observations, source, expected_days: int) -> Variabl
 
 def _data_gaps() -> list[DataGap]:
     return [
-        DataGap(dataset="Modelo digital de elevación y pendiente", impact="No se evalúan pendientes ni movimiento de tierras.", next_action="Integrar y validar un DEM NASA/Earthdata."),
+        DataGap(dataset="Métricas raster NASADEM", impact="El catálogo y las vistas previas están conectados; sin Earthdata Login no se calculan elevación, pendiente ni orientación.", next_action="Configurar EARTHDATA_TOKEN y validar las celdas de NASADEM_HGT.001 y NASADEM_SC.001."),
         DataGap(dataset="Red eléctrica y subestaciones", impact="No se estima distancia ni capacidad de conexión.", next_action="Validar servicios oficiales de MINEM y COES."),
         DataGap(dataset="Áreas protegidas y restricciones ambientales", impact="No se emite una conclusión de compatibilidad ambiental.", next_action="Integrar fuentes oficiales con licencia y fecha de actualización."),
         DataGap(dataset="Patrimonio, comunidades y conflictos", impact="No se descartan restricciones sociales o arqueológicas.", next_action="Validar fuentes del Ministerio de Cultura, Defensoría y SENACE."),
@@ -178,7 +178,7 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
         PipelineStage(step=2, key="configuration", name="Configuración", status=PipelineStatus.COMPLETED, summary="Sector solar, cuatro variables NASA, período y supuestos financieros definidos.", provenance=[Provenance.ASSUMPTION]),
         PipelineStage(step=3, key="extraction", name="Extracción", status=PipelineStatus.COMPLETED, summary="NASA POWER consultado con una solicitud multiparámetro por ubicación y caché de 24 horas.", provenance=provenance),
         PipelineStage(step=4, key="analysis", name="Análisis", status=PipelineStatus.COMPLETED, summary="Medias, variabilidad, Mann-Kendall, Sen, autocorrelación y ajuste BH calculados.", provenance=[Provenance.MODEL]),
-        PipelineStage(step=5, key="territorial", name="Inteligencia territorial", status=PipelineStatus.PARTIAL, summary="Ubicaciones validadas; relieve, red, ambiente y restricciones oficiales aún no conectados.", provenance=[Provenance.MODEL, Provenance.UNAVAILABLE]),
+        PipelineStage(step=5, key="territorial", name="Inteligencia territorial", status=PipelineStatus.PARTIAL, summary="Ubicaciones validadas; NASADEM se consulta por un flujo separado y la red, ambiente y restricciones oficiales siguen pendientes.", provenance=[Provenance.MODEL, Provenance.UNAVAILABLE]),
         PipelineStage(step=6, key="evaluation", name="Evaluación", status=PipelineStatus.COMPLETED, summary="Comparación relativa por evidencia observada, sin score arbitrario.", provenance=provenance + [Provenance.MODEL]),
         PipelineStage(step=7, key="finance", name="Impacto económico", status=PipelineStatus.COMPLETED, summary="Producción y VAN calculados con irradiancia NASA y supuestos explícitos del usuario.", provenance=[Provenance.MODEL, Provenance.ASSUMPTION]),
         PipelineStage(step=8, key="results", name="Resultados", status=PipelineStatus.COMPLETED, summary="Hallazgos, cautelas, brechas y próximos estudios reunidos en un resultado reproducible.", provenance=provenance + [Provenance.MODEL, Provenance.ASSUMPTION, Provenance.UNAVAILABLE]),

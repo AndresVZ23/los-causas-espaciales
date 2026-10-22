@@ -20,7 +20,7 @@ El tracker autónomo en `frontend/public/dop-neuronal.html` conserva estados, re
 ## Bloqueos actuales
 
 - Acceso y producto final para GPM IMERG y AppEEARS.
-- Selección y validación del DEM.
+- NASADEM seleccionado y localizado mediante CMR; falta validar los valores HGT/SC descargados con una credencial Earthdata Login.
 - Endpoints, licencias, fechas y cobertura de capas oficiales peruanas.
 - Persistencia PostGIS y ejecución asíncrona.
 - Corpus de resultados reales para construir etiquetas.

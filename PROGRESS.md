@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Última actualización: 2026-10-21
+Última actualización: 2026-10-22
 
 ## Versión operativa verificada
 
@@ -9,6 +9,7 @@
 - Consulta multiparámetro real a NASA POWER con caché de 24 horas, timeout y procedencia `REAL_DATA` / `CACHED_DATA`.
 - Serie temporal anual real expuesta por la API y representada por sitio después de cada consulta.
 - Mapa base contextual NASA EOSDIS GIBS Blue Marble, identificado como producto visual estático y no como evidencia analítica actual.
+- Consulta pública a NASA CMR para localizar NASADEM HGT y SC por sitio, con procedencia, colección, resolución, CRS y vista previa oficial trazables.
 - Pipeline visible de nueve pasos: selección, configuración, extracción, análisis, inteligencia territorial, evaluación, impacto económico, resultados y exportación.
 - Medias anuales, Mann–Kendall, pendiente de Sen, p-value, intervalo de confianza y diagnóstico de autocorrelación lag-1.
 - Corrección Benjamini–Hochberg para comparaciones de tendencias entre ubicaciones.
@@ -27,7 +28,8 @@
 - El pipeline produjo nueve estados trazables: ocho completados y el paso de inteligencia territorial marcado como parcial.
 - El resultado comparativo ubicó a Moquegua primero por irradiancia media histórica (6.5716 kWh/m²/día) y Arequipa segundo (6.5592 kWh/m²/día).
 - Las cifras económicas resultaron negativas bajo los supuestos iniciales, demostrando que el sistema no fuerza una conclusión favorable.
-- Suite backend: 13/13 pruebas aprobadas, incluidas la orquestación completa del screening y la prohibición de sustituir un fallo NASA por datos ficticios.
+- Consulta real CMR verificada para Moquegua (`s18w071`) y Arequipa (`s17w072`) en NASADEM HGT y SC; sin credencial, la respuesta declara `METADATA_ONLY` y `DATA_UNAVAILABLE` para las métricas raster.
+- Suite backend: 16/16 pruebas aprobadas, incluidas la orquestación completa del screening, la selección de teselas NASADEM y la prohibición de sustituir un fallo NASA por datos ficticios.
 - Compilación de producción Next.js y TypeScript aprobada.
 - Auditoría npm: 0 vulnerabilidades conocidas.
 - Recorrido funcional en navegador aprobado: interfaz y resultados en español, pipeline completo, mapa, gráficos, brechas y control de exportación sin errores de consola.
@@ -48,13 +50,16 @@
 ## Plan operativo y DOP neuronal
 
 - DOP neuronal interactivo disponible en `http://localhost:3100/dop-neuronal`, con 18 nodos, dependencias ascendentes/descendentes, bloqueos, salidas y puertas de aceptación.
-- Tracker HTML autónomo disponible en `http://localhost:3100/dop-neuronal.html`; persiste seguimiento en `localStorage`, exige evidencia para `VERIFICADO` y permite importar/exportar un JSON versionado.
+- Mapa de desarrollo HTML disponible en `http://localhost:3100/dop-neuronal.html`, con vistas de dependencias, ruta crítica y backlog priorizado; persiste seguimiento en `localStorage`, exige evidencia para `VERIFICADO` y permite importar/exportar un JSON versionado.
+- La siguiente acción se calcula a partir de predecesores verificados y prioriza la ruta crítica; los filtros combinan texto, estado, fase y trabajo ejecutable sin alterar los datos guardados.
 - La ruta crítica conecta fuentes faltantes, armonización espacial, PostGIS/muestreo, etiquetas reales, splits sin fuga, baseline, candidatos neuronales y gate humano.
+- El nodo NASADEM figura `EN_CURSO`: metadatos y preview están integrados; la validación de celdas HGT/SC queda bloqueada hasta configurar Earthdata Login.
 - Hoja de ruta interactiva disponible en `http://localhost:3100/plan-operativo.html` y enlazada desde la navegación principal.
 - Ocho fases con objetivo, insumos, tareas, resultado, dependencias y criterio de aceptación verificable.
 - DOP neuronal con fuentes, procedencia/QA, ingeniería de características, baseline, modelos candidatos, incertidumbre, explicabilidad, revisión humana y exportación.
 - Las redes neuronales se muestran como `FUTURO — NO IMPLEMENTADO`; requieren etiquetas confiables, dataset versionado y demostrar mejora fuera de muestra frente a baselines simples.
 - Interacciones de fases y modelos verificadas mediante teclado y navegador; escritorio 1440×1000 y móvil 390×844 sin desbordamiento ni errores de consola.
+- Tracker verificado en navegador a 1440, 768 y 390 px: 12 pasos críticos, 18 filas de backlog, cuatro nodos ejecutables iniciales, filtros combinados, puerta de evidencia y cero errores de consola.
 - La referencia visual se conserva en `docs/design/plan-operativo-concept.png` y la decisión arquitectónica en `ADR-007`.
 
 ## Rediseño premium verificado
@@ -65,12 +70,12 @@
 - En móvil existe una barra persistente de cuatro destinos y acceso “Más” a los siete módulos.
 - El drawer móvil gestiona `inert`, `aria-hidden`, foco inicial, retorno de foco y cierre con Escape.
 - Cambiar a un módulo pendiente elimina el resultado solar previo para evitar atribución errónea.
-- Inspección visual final a 1440, 768 y 390 px: 0 errores y 0 advertencias.
+- Recorrido funcional aprobado a 1440, 768 y 390 px. La auditoría visual automatizada más reciente conserva cuatro hallazgos de estilo preexistentes —microetiquetas, texto menor de 11 px, proximidad al borde y ausencia de `h1` en el workspace— como backlog explícito para la siguiente rama de diseño.
 - Auditoría, prompt visual, capturas y fidelity ledger están en `docs/design/`.
 
 ## Brechas prioritarias
 
-1. Integrar un modelo digital de elevación para pendiente y orientación del terreno.
+1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
 2. Incorporar red eléctrica, subestaciones y distancia de conexión con fuente y fecha verificadas.
 3. Añadir áreas protegidas, ecosistemas frágiles y restricciones ambientales oficiales.
 4. Incorporar sensibilidad social, comunidades y patrimonio arqueológico con salvaguardas adecuadas.
@@ -79,10 +84,17 @@
 7. Construir los pilotos vial y de desarrollo inmobiliario después de contar con las capas territoriales mínimas.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.
 
+## Traspaso a Claude Code
+
+- El incremento NASADEM y el mapa de desarrollo se cierran juntos para evitar que dos agentes editen simultáneamente `workspace.tsx`, `geo-map.tsx` y `styles.css`.
+- El siguiente trabajo visual parte de `docs/design/CLAUDE_HANDOFF.md` y debe realizarse en una rama separada.
+- La normalización de unidades, escala del gráfico, jerarquía del resultado, densidad de cabecera, etiqueta del paso 5 y orden móvil permanecen pendientes a propósito; no forman parte de la integración NASADEM.
+
 ## Riesgos y límites declarados
 
 - NASA POWER utiliza estimaciones de grilla; no reemplaza mediciones in situ ni estudios de factibilidad.
 - POWER puede aplicar límites de servicio; la caché reduce solicitudes repetidas, pero no elimina esa dependencia.
+- NASADEM permite consultar metadatos y vistas previas mediante CMR público, pero los archivos analíticos HGT/SC permanecen protegidos por Earthdata Login.
 - Mann–Kendall sin modificación puede verse afectado por correlación serial; cada resultado expone el diagnóstico lag-1 y la limitación.
 - El orden relativo actual considera irradiancia histórica, no permisos, conexión, propiedad, CAPEX local ni impactos sociales.
 - Ningún valor faltante se convierte en cero y ninguna capa pendiente se presenta como disponible.
