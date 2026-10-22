@@ -33,6 +33,6 @@ export type ScreeningResult = {
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; disclaimer: string;
 };
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };
-export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[] };
+export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL" | "PENDING"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[] };
 export type TerrainResult = { generated_at: string; dataset: string; crs: string; spatial_resolution: string; sites: TerrainSite[]; note: string };
 export type Module = { id: string; short: string; name: string; icon: IconName; status: string; ready: boolean; description: string };

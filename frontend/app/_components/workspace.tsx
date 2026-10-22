@@ -259,7 +259,9 @@ export default function Workspace() {
                     <div><dt>Elevación</dt><dd>{site.metrics.elevation_m === null ? "N/D" : `${formatNumber(site.metrics.elevation_m, 0)} m`}</dd></div>
                     <div><dt>Pendiente</dt><dd>{site.metrics.slope_degrees === null ? "N/D" : `${formatNumber(site.metrics.slope_degrees, 2)}°`}</dd></div>
                     <div><dt>Orientación</dt><dd>{site.metrics.aspect_degrees === null ? "N/D" : `${site.metrics.aspect_cardinal} · ${formatNumber(site.metrics.aspect_degrees, 1)}°`}</dd></div>
-                  </dl> : <p><b>Metadatos verificados</b><span>Raster protegido: configure Earthdata Login para calcular métricas.</span></p>}
+                  </dl> : site.status === "PENDING"
+                    ? <p className="terrainPending"><b>Descargando tesela</b><span>NASADEM se descarga en segundo plano; vuelva a ejecutar en unos minutos.</span></p>
+                    : <p><b>Metadatos verificados</b><span>Raster protegido: configure Earthdata Login para calcular métricas.</span></p>}
                 </div>)}
                 <p className="terrainProvenance">
                   <a href={terrain.sites[0]?.granules.find((item) => item.short_name === "NASADEM_HGT")?.doi_url} target="_blank" rel="noreferrer">NASADEM_HGT.001</a>

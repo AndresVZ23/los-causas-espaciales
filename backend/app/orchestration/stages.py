@@ -132,11 +132,17 @@ def territorial_stage(terrain: TerrainResponse | None, terrain_error: str | None
     if terrain is not None:
         located = sum(1 for site in terrain.sites if site.granules)
         ready = sum(1 for site in terrain.sites if site.status == "READY")
+        # PENDING (acordado con Codex): la tesela se está descargando en segundo plano; no es una falla.
+        downloading = sum(1 for site in terrain.sites if site.status == "PENDING")
         tiles = ", ".join(dict.fromkeys(granule.tile_id for site in terrain.sites for granule in site.granules))
         evidence.append(StageEvidence(label="Gránulos NASADEM localizados", value=f"{located} de {len(terrain.sites)} · {tiles}", provenance=Provenance.REAL))
         evidence.append(StageEvidence(label="Elevación y pendiente calculadas", value=f"{ready} de {len(terrain.sites)}", provenance=Provenance.REAL if ready else Provenance.UNAVAILABLE))
+        if downloading:
+            evidence.append(StageEvidence(label="Teselas descargándose", value=f"{downloading} · vuelva a ejecutar en unos minutos", provenance=Provenance.UNAVAILABLE))
         provenance += [site.provenance for site in terrain.sites]
         terrain_sentence = f"NASADEM localizó {located} de {len(terrain.sites)} sujetos y calculó métricas en {ready}."
+        if downloading:
+            terrain_sentence += f" {downloading} tesela(s) se descargan en segundo plano."
     else:
         evidence.append(StageEvidence(label="NASADEM", value=terrain_error or "No consultado", provenance=Provenance.UNAVAILABLE))
         terrain_sentence = "NASADEM no respondió; el relieve queda sin evaluar."

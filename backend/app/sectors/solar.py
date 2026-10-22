@@ -92,7 +92,9 @@ def calculate_solar_projection(mean_irradiance: float, assumptions: SolarAssumpt
 
 def _data_gaps(terrain: TerrainResponse | None) -> list[DataGap]:
     gaps = []
-    if terrain is None or any(site.status != "READY" for site in terrain.sites):
+    if terrain is not None and any(site.status == "PENDING" for site in terrain.sites):
+        gaps.append(DataGap(dataset="Métricas raster NASADEM", impact="Las teselas de algunos sitios se están descargando; elevación, pendiente y orientación aún no están disponibles para ellos.", next_action="Volver a ejecutar el análisis cuando termine la descarga en segundo plano."))
+    elif terrain is None or any(site.status != "READY" for site in terrain.sites):
         gaps.append(DataGap(dataset="Métricas raster NASADEM", impact="No se calcularon elevación, pendiente ni orientación para todos los sitios (token ausente o descarga no completada).", next_action="Verificar EARTHDATA_TOKEN y completar la descarga de NASADEM_HGT.001 y NASADEM_SC.001."))
     return gaps + [
         DataGap(dataset="Red eléctrica y subestaciones", impact="No se estima distancia ni capacidad de conexión.", next_action="Validar servicios oficiales de MINEM y COES."),
