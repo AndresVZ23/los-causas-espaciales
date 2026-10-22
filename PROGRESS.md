@@ -80,7 +80,16 @@
 - Masthead de 89 px con `h1`; el paso parcial del pipeline es visible; en móvil la lectura encabeza el banco tras ejecutar.
 - Verificado con Playwright a 1440, 768 y 390 px: sin overflow, sin errores de consola, edición de supuestos y cambio de variable comprobados.
 
+## Pipeline v2 y preguntas del reto NASA
+
+- Las nueve etapas derivan su estado y su evidencia de la ejecución real (ADR-012); el inspector de la interfaz muestra resumen, evidencia, procedencia, tiempo y preguntas que sustenta cada etapa.
+- La respuesta incluye `nasa_questions` y `trend_findings`. Con datos reales 2001–2024: la temperatura sube en Moquegua y Arequipa (+0.80 °C en Moquegua) y el viento baja en Moquegua; la irradiancia no muestra deriva. La significancia se marca con salvedades por autocorrelación lag-1 de 0.48 y 0.42.
+- NASADEM se integra al orquestador; su fallo no bloquea el screening. El parseo de NASA POWER deja de bloquear el bucle (ADR-013).
+- Backend: 20/20 pruebas, incluidas preguntas con y sin tendencia, caída de NASADEM y cobertura insuficiente.
+
 ## Brechas prioritarias
+
+0. Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado (Hamed–Rao o pre-blanqueo) antes de presentarlas como hallazgo firme.
 
 1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
 2. Incorporar red eléctrica, subestaciones y distancia de conexión con fuente y fecha verificadas.

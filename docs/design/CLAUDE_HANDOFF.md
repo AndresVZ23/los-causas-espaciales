@@ -55,6 +55,13 @@ Además: los tipos pasaron a `types.ts` y ningún texto baja de 10 px. Verificac
 
 **Abierto, pendiente de decisión:** el inspector taste-skill aún marca microetiquetas en mayúsculas espaciadas y texto de 10 px (pide ≥ 11 px). Ambos son rasgos deliberados de la consola en este `DESIGN.md`. Subirlos a 11 px exige volver a medir el primer viewport de escritorio.
 
+### Pipeline v2 (misma rama, 2026-10-22)
+
+- Backend: nuevos `orchestration/stages.py`, `orchestration/nasa_questions.py` y `core/units.py`; `sectors/solar.py` orquesta POWER + NASADEM y mide tiempos; `schemas/pipeline.py` agrega `StageEvidence`, `NasaQuestionAnswer`, `TrendFinding`, `PipelineStatus.READY` y `display_unit`. Todo es aditivo, salvo que la exportación ahora devuelve `LISTO` en lugar de `COMPLETADO`.
+- Conector POWER: lectura de caché en hilo y parseo con `model_construct` (ADR-013). Conviene revisarlo, porque es código de Codex.
+- Frontend: `pipeline-panel.tsx` (pasos seleccionables + inspector) y `nasa-questions.tsx`; el relieve ya no se pide por separado a `/api/terrain`, viene en `result.terrain`. La ruta sigue existiendo.
+- Siguiente paso científico sugerido: Mann–Kendall modificado para series con autocorrelación lag-1 ≥ 0.3.
+
 ## Archivos con mayor probabilidad de conflicto
 
 - `frontend/app/_components/workspace.tsx`

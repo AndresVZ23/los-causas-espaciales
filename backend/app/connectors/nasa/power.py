@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 from datetime import date, datetime, timedelta, timezone
@@ -33,8 +34,10 @@ class PowerConnector:
         cache_path = self._cache_path(params)
         now = datetime.now(timezone.utc)
         if cache_path.exists() and now - datetime.fromtimestamp(cache_path.stat().st_mtime, timezone.utc) < timedelta(hours=self.settings.cache_ttl_hours):
+            # Lectura y parseo de varios MB fuera del bucle de eventos para no bloquear consultas concurrentes.
+            payload = await asyncio.to_thread(lambda: json.loads(cache_path.read_text(encoding="utf-8")))
             return (
-                json.loads(cache_path.read_text(encoding="utf-8")),
+                payload,
                 Provenance.CACHED,
                 datetime.fromtimestamp(cache_path.stat().st_mtime, timezone.utc),
             )
@@ -72,6 +75,15 @@ class PowerConnector:
             "time-standard": "UTC",
         }
         payload, provenance, downloaded_at = await self._request(params)
+        return self._parse_multi(payload, provenance, downloaded_at, unique_variables)
+
+    @staticmethod
+    def _parse_multi(
+        payload: dict,
+        provenance: Provenance,
+        downloaded_at: datetime,
+        unique_variables: list[str],
+    ) -> dict[str, tuple[list[Observation], SourceMetadata]]:
         parameters_payload = payload.get("properties", {}).get("parameter", {})
         if not isinstance(parameters_payload, dict):
             raise PowerConnectorError("NASA POWER devolvió una estructura inesperada.")
@@ -87,7 +99,9 @@ class PowerConnector:
             for key, value in raw.items():
                 if value is None or float(value) <= -900:
                     continue
-                observations.append(Observation(timestamp=datetime.strptime(key, "%Y%m%d").date(), value=float(value)))
+                # date() rechaza fechas inválidas y float() valores no numéricos; model_construct evita revalidar ~35 000 filas por sitio.
+                timestamp = date(int(key[:4]), int(key[4:6]), int(key[6:8]))
+                observations.append(Observation.model_construct(timestamp=timestamp, value=float(value)))
             metadata = parameter_metadata.get(variable, {}) if isinstance(parameter_metadata, dict) else {}
             source = SourceMetadata(
                 source_id="nasa-power",

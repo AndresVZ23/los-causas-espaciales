@@ -2,10 +2,12 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { displayUnit, formatMoney, formatNumber, localizeUnits, siteColor } from "./format";
+import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
+import NasaQuestions from "./nasa-questions";
+import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import SiteVerdict from "./site-verdict";
-import type { Assumptions, Module, Point, ScreeningResult, SiteResult, Stage, TerrainResult } from "./types";
+import type { Assumptions, Module, Point, QuestionKey, ScreeningResult, SiteResult, Stage } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -26,8 +28,6 @@ const initialSites: Point[] = [
   { label: "Arequipa", latitude: -16.409, longitude: -71.537 },
 ];
 const initialAssumptions: Assumptions = { capacity_mw: 20, performance_ratio: 0.8, initial_capex_usd: 18000000, annual_opex_usd: 360000, energy_price_usd_mwh: 55, mitigation_capex_usd: 0, discount_rate: 0.1, horizon_years: 20 };
-const pipelineNames = ["Selección", "Configuración", "Extracción", "Análisis", "Inteligencia territorial", "Evaluación", "Impacto económico", "Resultados", "Exportación"];
-const stageStatusLabels: Record<string, string> = { LISTO: "Listo", PENDIENTE: "Pendiente", COMPLETADO: "Completado", PARCIAL: "Parcial", EN_CURSO: "En curso", FALLIDO: "Fallido" };
 const provenanceLabels: Record<string, string> = { REAL_DATA: "Observación original", CACHED_DATA: "Copia validada en caché", MODEL_ESTIMATE: "Cálculo derivado", USER_ASSUMPTION: "Supuesto editable", DATA_UNAVAILABLE: "Fuente pendiente" };
 const variables = [
   { id: "ALLSKY_SFC_SW_DWN", short: "Radiación solar" },
@@ -50,21 +50,29 @@ export default function Workspace() {
   const [endDate, setEndDate] = useState("2024-12-31");
   const [assumptions, setAssumptions] = useState<Assumptions>(initialAssumptions);
   const [result, setResult] = useState<ScreeningResult | null>(null);
-  const [terrain, setTerrain] = useState<TerrainResult | null>(null);
-  const [terrainLoading, setTerrainLoading] = useState(false);
-  const [terrainError, setTerrainError] = useState("");
   const [terrainVisible, setTerrainVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
+  const [selectedStep, setSelectedStep] = useState(1);
+  const [exportedAt, setExportedAt] = useState<string | null>(null);
   const assumptionPanelRef = useRef<HTMLDetailsElement>(null);
   const mobileVerdictRef = useRef<HTMLDivElement>(null);
 
   const selectedModule = modules.find((module) => module.id === activeModule)!;
-  const visiblePipeline: Stage[] = result?.pipeline ?? pipelineNames.map((name, index) => ({ step: index + 1, key: String(index), name, status: index < 2 ? "LISTO" : "PENDIENTE", summary: "", provenance: [] }));
+  // El relieve llega dentro del mismo resultado: una sola ejecución, una sola procedencia.
+  const terrain = result?.terrain ?? null;
+  const terrainError = result && !terrain ? result.pipeline.find((stage) => stage.key === "territorial")?.evidence?.find((item) => item.label === "NASADEM")?.value ?? "NASADEM no respondió." : "";
+  const visiblePipeline: Stage[] = useMemo(() => {
+    if (!result) return STAGE_NAMES.map((name, index) => ({ step: index + 1, key: String(index), name, status: index < 2 ? "LISTO" : "PENDIENTE", summary: "", provenance: [] }));
+    if (!exportedAt) return result.pipeline;
+    return result.pipeline.map((stage) => stage.key === "export"
+      ? { ...stage, status: "COMPLETADO", summary: `Reporte JSON descargado a las ${exportedAt}. El PDF ejecutivo sigue pendiente.` }
+      : stage);
+  }, [result, exportedAt]);
   const comparisonData = useMemo(() => result?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [result]);
   const selectedVariable = result ? getVariable(result.sites[0], activeVariable) : null;
-  const selectedUnit = selectedVariable ? displayUnit(selectedVariable.unit) : "Media anual";
+  const selectedUnit = selectedVariable?.display_unit ?? "Media anual";
   const staleAssumptions = result !== null && JSON.stringify(result.assumptions) !== JSON.stringify(assumptions);
   const selectedSources = useMemo(() => result?.sites.map((site) => ({ site: site.location.label, ...getVariable(site, activeVariable).source })) ?? [], [result, activeVariable]);
   const terrainOverlay = useMemo(() => {
@@ -111,7 +119,16 @@ export default function Workspace() {
     setSites((current) => current.map((site, position) => position === index ? { ...site, [key]: key === "label" ? value : +value } : site));
   }
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
-  function selectModule(id: string) { if (id !== activeModule) { setResult(null); setTerrain(null); setError(""); setTerrainError(""); } setActiveModule(id); setMobileNavOpen(false); if (id === "investment") setAssumptionsOpen(true); }
+  function selectModule(id: string) { if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); } setActiveModule(id); setMobileNavOpen(false); if (id === "investment") setAssumptionsOpen(true); }
+  function goToStage(step: number) {
+    setSelectedStep(step);
+    window.setTimeout(() => document.getElementById("stage-inspector")?.scrollIntoView({ block: "nearest", behavior: "smooth" }), 0);
+  }
+  function goToQuestion(key: QuestionKey) {
+    const target = document.getElementById(`pregunta-${key}`);
+    target?.scrollIntoView({ block: "center", behavior: "smooth" });
+    target?.focus({ preventScroll: true });
+  }
   function openAssumptions() {
     setAssumptionsOpen(true);
     window.setTimeout(() => {
@@ -121,25 +138,19 @@ export default function Workspace() {
   }
 
   async function runScreening() {
-    setLoading(true); setTerrainLoading(true); setError(""); setTerrainError("");
+    setLoading(true); setError(""); setExportedAt(null);
     try {
-      const terrainRequest = fetch("/api/terrain", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sites }) })
-        .then(async (response) => ({ response, data: await response.json() }))
-        .catch((cause: unknown) => ({ response: null, data: { detail: cause instanceof Error ? cause.message : "No fue posible consultar NASADEM." } }));
       const response = await fetch("/api/solar-screening", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sites, start_date: startDate, end_date: endDate, assumptions }) });
       const data = await response.json();
-      const terrainOutcome = await terrainRequest;
       if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "No fue posible ejecutar el screening. Revise la configuración e intente nuevamente.");
-      setResult(data);
+      const outcome = data as ScreeningResult;
+      setResult(outcome);
+      // El inspector abre en la primera etapa con salvedades; si no hay, en Análisis, donde nacen las respuestas NASA.
+      setSelectedStep(outcome.pipeline.find((stage) => !["COMPLETADO", "LISTO"].includes(stage.status))?.step ?? 4);
       if (isMobile) window.setTimeout(() => mobileVerdictRef.current?.scrollIntoView({ block: "start" }), 0);
-      if (terrainOutcome.response?.ok) setTerrain(terrainOutcome.data as TerrainResult);
-      else {
-        setTerrain(null);
-        setTerrainError(typeof terrainOutcome.data.detail === "string" ? terrainOutcome.data.detail : "No fue posible consultar NASADEM; vuelva a ejecutar el análisis.");
-      }
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Ocurrió un error inesperado. Revise la API e intente nuevamente.");
-    } finally { setLoading(false); setTerrainLoading(false); }
+    } finally { setLoading(false); }
   }
 
   function exportReport() {
@@ -149,6 +160,7 @@ export default function Workspace() {
     const anchor = document.createElement("a");
     anchor.href = url; anchor.download = `screening-solar-${result.analysis_id}.json`; anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    setExportedAt(new Intl.DateTimeFormat("es-PE", { hour: "2-digit", minute: "2-digit" }).format(new Date()));
   }
 
   return (
@@ -235,14 +247,14 @@ export default function Workspace() {
             ) : (
               <div className="emptyReading"><span><i /><i /></span><div><strong>LISTO PARA CONSULTAR</strong><p>{selectedModule.description}</p></div></div>
             )}
-            <section className="terrainReadout" aria-label="Relieve NASADEM" aria-busy={terrainLoading}>
+            <section className="terrainReadout" aria-label="Relieve NASADEM" aria-busy={loading}>
               <div className="terrainHeading">
                 <div><strong>Relieve NASADEM</strong><span>HGT + pendiente y orientación · 1 arc-second</span></div>
                 {terrainOverlay && <button type="button" aria-pressed={terrainVisible} onClick={() => setTerrainVisible((current) => !current)}>{terrainVisible ? "Ocultar capa" : "Mostrar capa"}</button>}
               </div>
-              {terrainLoading && <p className="terrainState">Localizando gránulos oficiales en NASA CMR…</p>}
-              {!terrainLoading && terrainError && <p className="terrainState terrainStateError" role="alert">{terrainError} Ejecute nuevamente para reintentar.</p>}
-              {!terrainLoading && terrain && <div className="terrainSites">
+              {loading && <p className="terrainState">Localizando gránulos oficiales en NASA CMR…</p>}
+              {!loading && terrainError && <p className="terrainState terrainStateError" role="alert">{terrainError} Ejecute nuevamente para reintentar.</p>}
+              {!loading && terrain && <div className="terrainSites">
                 {terrain.sites.map((site) => <div className="terrainSite" key={`${site.location.latitude}-${site.location.longitude}`}>
                   <span><b>{site.location.label}</b><small>{site.granules[0]?.tile_id} · {site.provenance}</small></span>
                   {site.status === "READY" || site.status === "PARTIAL" ? <dl>
@@ -257,7 +269,7 @@ export default function Workspace() {
                   <span>{terrain.crs} · {terrain.spatial_resolution}</span>
                 </p>
               </div>}
-              {!terrainLoading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis solar; no se muestran métricas sin una respuesta oficial.</p>}
+              {!loading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis solar; no se muestran métricas sin una respuesta oficial.</p>}
             </section>
             <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
               <summary>Supuestos financieros <span>USER_ASSUMPTION</span></summary>
@@ -283,16 +295,14 @@ export default function Workspace() {
           <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>Media anual de observaciones diarias válidas · eje vertical ajustado al rango observado</span></div>
         </section>
 
-        <section className={`pipelineStrip ${loading ? "isRunning" : ""}`} aria-label="Estado del pipeline" aria-live="polite">
-          <div className="pipelineMain"><div className="pipelineLabel"><span>PROCESAMIENTO — TUBERÍA DE ANÁLISIS</span><b>{loading ? "EN CURSO" : result ? "COMPLETADO" : "PREPARADO"}</b></div><ol>{visiblePipeline.map((stage, index) => <li key={stage.key} className={stage.status.toLowerCase().replaceAll("_", "-")}><span aria-hidden="true">{index + 1}</span><b>{stage.name}</b>{stage.status === "PARCIAL" ? <small>Parcial</small> : <small className="srOnly">{stageStatusLabels[stage.status] ?? stage.status}</small>}</li>)}</ol></div>
-          <div className="processLog">{[...visiblePipeline].sort((a, b) => Number(a.status === "COMPLETADO") - Number(b.status === "COMPLETADO")).slice(0, 5).map((stage) => <p key={stage.key} className={stage.status === "PARCIAL" ? "partial" : undefined}><time>{String(stage.step).padStart(2, "0")}</time><span>{stage.name}</span><b>{stage.status}</b></p>)}</div>
-        </section>
+        <PipelinePanel stages={visiblePipeline} running={loading} hasResult={result !== null} selectedStep={selectedStep} onSelect={setSelectedStep} onQuestion={goToQuestion} />
       </section>
 
       <section className="evidenceSection" id="resultados" aria-labelledby="evidence-title">
         <div className="sectionHeader"><div><h2 id="evidence-title">Evidencia y decisión</h2><p>{result ? `${result.title} · período ${result.period}` : "Ejecute el análisis para habilitar resultados reproducibles."}</p></div>{result && <button className="exportAction" onClick={exportReport}><Icon name="download" />Exportar JSON</button>}</div>
         {!result ? <div className="emptyEvidence"><div><h3>El flujo está preparado</h3><p>NASA POWER, Mann–Kendall, pendiente de Sen, ajuste BH y VAN condicionado se ejecutan únicamente al solicitar el análisis.</p></div><ul><li>Comparación Moquegua–Arequipa</li><li>Cobertura y limitaciones por variable</li><li>Supuestos financieros explícitos</li><li>Brechas para debida diligencia</li></ul></div> : <>
-          <div className="findingsPanel"><h3>Lectura comparativa</h3>{result.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{localizeUnits(finding)}</p>)}</div>
+          <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
+          <div className="findingsPanel"><h3>Lectura comparativa</h3>{result.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>
           <div className="resultGrid">
             <article className="chartPanel"><div className="panelHeader"><div><h3>Irradiancia histórica media</h3><p>Comparación relativa con observaciones NASA POWER</p></div><span>kWh/m²/día</span></div><ComparisonChart data={comparisonData} /></article>
             <article className="decisionPanel"><h3>Escenario económico</h3>{result.sites.map((site) => <div className="decisionRow" key={site.location.label}><div><b>{site.location.label}</b><span>{formatNumber(site.finance.annual_energy_mwh, 0)} MWh/año</span></div><strong className={site.finance.npv_usd >= 0 ? "positive" : "negative"}>{formatMoney(site.finance.npv_usd)}</strong></div>)}<p>MODEL_ESTIMATE · condicionado a USER_ASSUMPTION</p></article>
@@ -307,9 +317,9 @@ export default function Workspace() {
                     <tbody>{site.variables.map((variable) => (
                       <tr key={variable.variable}>
                         <th>{variable.label}<small>{variable.variable}</small></th>
-                        <td>{formatNumber(variable.mean, 3)} {displayUnit(variable.unit)}</td>
+                        <td>{formatNumber(variable.mean, 3)} {variable.display_unit}</td>
                         <td>{formatNumber(variable.completeness_percent, 1)}%</td>
-                        <td>{variable.trend.slope_per_year?.toFixed(4) ?? "N/D"}</td>
+                        <td>{variable.trend.slope_per_year == null ? "N/D" : `${variable.trend.slope_per_year.toFixed(4)} ${variable.display_unit}/año`}</td>
                         <td>{variable.significant_after_bh ? "Significativa" : "Insuficiente"}</td>
                       </tr>
                     ))}</tbody>

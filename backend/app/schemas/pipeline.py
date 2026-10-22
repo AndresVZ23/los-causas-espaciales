@@ -1,16 +1,28 @@
 from datetime import date, datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
 from .analysis import Point, Provenance, SourceMetadata, TrendResult
+from .terrain import TerrainResponse
 
 
 class PipelineStatus(StrEnum):
     COMPLETED = "COMPLETADO"
     PARTIAL = "PARCIAL"
+    READY = "LISTO"
     UNAVAILABLE = "NO_DISPONIBLE"
     ERROR = "ERROR"
+
+
+NasaQuestionKey = Literal["what", "where", "how_much", "significant", "so_what"]
+
+
+class QuestionStatus(StrEnum):
+    ANSWERED = "RESPONDIDA"
+    PARTIAL = "PARCIAL"
+    INSUFFICIENT = "EVIDENCIA_INSUFICIENTE"
 
 
 class SolarAssumptions(BaseModel):
@@ -41,6 +53,12 @@ class SolarScreeningRequest(BaseModel):
         return self
 
 
+class StageEvidence(BaseModel):
+    label: str
+    value: str
+    provenance: Provenance | None = None
+
+
 class PipelineStage(BaseModel):
     step: int
     key: str
@@ -48,6 +66,38 @@ class PipelineStage(BaseModel):
     status: PipelineStatus
     summary: str
     provenance: list[Provenance]
+    evidence: list[StageEvidence] = Field(default_factory=list)
+    duration_ms: float | None = Field(default=None, description="Tiempo medido en el servidor; None si la etapa no ejecuta cálculo propio.")
+    answers: list[NasaQuestionKey] = Field(default_factory=list, description="Preguntas del reto NASA que esta etapa sustenta.")
+
+
+class TrendFinding(BaseModel):
+    """Una tendencia que conserva significancia tras Benjamini–Hochberg."""
+
+    site: str
+    variable: str
+    label: str
+    unit: str
+    slope_per_year: float
+    confidence_interval: tuple[float, float] | None
+    first_year: int
+    last_year: int
+    change_over_period: float
+    change_percent_of_mean: float | None = Field(description="None en escalas de intervalo, como la temperatura en °C.")
+    p_value: float
+    adjusted_p_value: float
+    autocorrelation_lag1: float | None
+
+
+class NasaQuestionAnswer(BaseModel):
+    key: NasaQuestionKey
+    question: str
+    question_es: str
+    status: QuestionStatus
+    answer: str
+    evidence: list[str]
+    provenance: list[Provenance]
+    stage_steps: list[int]
 
 
 class AnnualObservation(BaseModel):
@@ -62,6 +112,7 @@ class VariableSummary(BaseModel):
     minimum: float
     maximum: float
     unit: str
+    display_unit: str
     valid_observations: int
     completeness_percent: float
     annual_variability_percent: float | None
@@ -108,7 +159,10 @@ class SolarScreeningResponse(BaseModel):
     sector: str = "Energía solar fotovoltaica"
     period: str
     pipeline: list[PipelineStage]
+    nasa_questions: list[NasaQuestionAnswer] = Field(default_factory=list)
+    trend_findings: list[TrendFinding] = Field(default_factory=list)
     sites: list[SolarSiteResult]
+    terrain: TerrainResponse | None = None
     comparative_findings: list[str]
     data_gaps: list[DataGap]
     assumptions: SolarAssumptions

@@ -161,7 +161,7 @@ La paleta usa negros verdosos y grafitos fríos como instrumento de trabajo; el 
 
 ## Layout
 
-En escritorio, un masthead de 89 px tiene dos filas: arriba, la marca en una línea (`h1`) con su lema, los filtros de región, fuente y fechas y el estado de NASA POWER con el identificador de ejecución; abajo, una franja de 30 px con la clave de procedencia. Debajo, una retícula de 190 px para el rail y dos columnas de trabajo distribuye el primer viewport en mapa NASA GIBS, configuración con lectura comparativa, serie temporal anual y pipeline de nueve etapas. El rail recorre las tres filas del banco; el mapa y la configuración ocupan 420 px, la serie 265 px y el pipeline 118 px.
+En escritorio, un masthead de 89 px tiene dos filas: arriba, la marca en una línea (`h1`) con su lema, los filtros de región, fuente y fechas y el estado de NASA POWER con el identificador de ejecución; abajo, una franja de 30 px con la clave de procedencia. Debajo, una retícula de 190 px para el rail y dos columnas de trabajo distribuye el primer viewport en mapa NASA GIBS, configuración con lectura comparativa, serie temporal anual y pipeline de nueve etapas. El rail recorre las tres filas del banco; el mapa y la configuración ocupan 420 px, la serie 240 px y el pipeline con su inspector 150 px.
 
 El sistema responde en `1180px`, `900px` y `560px`. Bajo 1180 px compacta el rail a 174 px, la marca a 250 px y la clave de procedencia a punto y código. A 900 px o menos, el masthead pasa a 56 px, el banco se apila, el rail se convierte en drawer y aparece una navegación inferior fija de 66 px. Tras una ejecución, la lectura comparativa encabeza el banco y recibe el desplazamiento; luego siguen el mapa, la configuración, la serie y el pipeline horizontal desplazable. Bajo 560 px, la tendencia de la lectura pasa a una segunda línea bajo cada sitio y los editores de ubicación, resultados y tablas ajustan sus columnas sin ocultar estados.
 
@@ -235,7 +235,17 @@ Las unidades de NASA POWER se presentan como `kWh/m²/día`, `°C`, `m/s` y `mm/
 
 ### Pipeline & Acquisition
 
-Nueve pasos numerados comparten una línea de 1 px y estados textuales; los nombres pueden ocupar dos líneas y nunca se truncan. Un paso parcial usa anillo ámbar y la palabra “Parcial” bajo su nombre; el registro lateral lista primero los pasos no completados. Durante la consulta, un segmento cian sólido de 1 px recorre el perímetro interior del mapa y el pipeline cambia a “EN CURSO”. Con `prefers-reduced-motion`, el segmento queda fijo en una posición de referencia y toda transición se reduce a 1 ms.
+Nueve pasos numerados comparten una línea de 1 px. Cada paso es un botón con número, nombre (hasta dos líneas, nunca truncado) y estado textual: completado con anillo cian, listo en cian, parcial en ámbar, no disponible o error en rojo. El paso seleccionado recibe fondo grafito y una regla cian de 2 px.
+
+A la derecha, un inspector de 420 px (340 px bajo 1180 px; debajo del recorrido en móvil) muestra la etapa seleccionada: número, nombre, estado, tiempo medido en el servidor, resumen, evidencia en pares etiqueta–valor con punto de procedencia y las preguntas NASA que sustenta, que llevan a su respuesta. Antes de ejecutar, el inspector explica qué hará la etapa sin mostrar resultados. Tras ejecutar, abre la primera etapa con salvedades. Exportación queda “Listo” hasta que el usuario descarga el reporte.
+
+### NASA Questions
+
+Panel al inicio de “Evidencia y decisión”: cinco filas con número, pregunta en español y original en inglés, respuesta, evidencia plegable, estado (respondida, con salvedades o evidencia insuficiente) con punto y texto, procedencia y botones hacia las etapas que la sostienen. La quinta pregunta, propia del producto, se distingue con fondo grafito y la etiqueta “Quinta pregunta”.
+
+### Acquisition
+
+Durante la consulta, un segmento cian sólido de 1 px recorre el perímetro interior del mapa y el pipeline cambia a “EN CURSO”. Con `prefers-reduced-motion`, el segmento queda fijo en una posición de referencia y toda transición se reduce a 1 ms.
 
 ## Do's and Don'ts
 

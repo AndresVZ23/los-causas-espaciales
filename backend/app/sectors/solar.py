@@ -2,16 +2,21 @@ import asyncio
 import hashlib
 import json
 from datetime import datetime, timezone
+from itertools import combinations
 from statistics import fmean, pstdev
+from time import perf_counter
 
+from ..connectors.nasa.nasadem import NasademConnector, NasademConnectorError
 from ..connectors.nasa.power import PowerConnector, PowerConnectorError
+from ..core.units import display_unit
 from ..finance.engine import calculate_npv
-from ..schemas.analysis import FinanceRequest, Provenance
+from ..geospatial.geometry import GEOD
+from ..orchestration.nasa_questions import SiteSummaries, answer_nasa_questions, collect_trend_findings
+from ..orchestration.stages import StageTimings, build_solar_pipeline
+from ..schemas.analysis import FinanceRequest, Point, Provenance
 from ..schemas.pipeline import (
     AnnualObservation,
     DataGap,
-    PipelineStage,
-    PipelineStatus,
     SolarAssumptions,
     SolarFinancialProjection,
     SolarScreeningRequest,
@@ -19,8 +24,11 @@ from ..schemas.pipeline import (
     SolarSiteResult,
     VariableSummary,
 )
+from ..schemas.terrain import TerrainResponse
 from ..statistics.multiple_testing import benjamini_hochberg
 from ..statistics.trends import analyze_trend, annual_means
+
+TERRAIN_TIMEOUT_SECONDS = 45
 
 SOLAR_VARIABLES = ["ALLSKY_SFC_SW_DWN", "T2M", "WS10M", "PRECTOTCORR"]
 VARIABLE_LABELS = {
@@ -77,6 +85,7 @@ def _summary(variable: str, observations, source, expected_days: int) -> Variabl
         minimum=min(values),
         maximum=max(values),
         unit=source.unit,
+        display_unit=display_unit(source.unit),
         valid_observations=len(values),
         completeness_percent=round(len(values) / expected_days * 100, 2),
         annual_variability_percent=round(annual_variability, 3) if annual_variability is not None else None,
@@ -89,9 +98,11 @@ def _summary(variable: str, observations, source, expected_days: int) -> Variabl
     )
 
 
-def _data_gaps() -> list[DataGap]:
-    return [
-        DataGap(dataset="Métricas raster NASADEM", impact="El catálogo y las vistas previas están conectados; sin Earthdata Login no se calculan elevación, pendiente ni orientación.", next_action="Configurar EARTHDATA_TOKEN y validar las celdas de NASADEM_HGT.001 y NASADEM_SC.001."),
+def _data_gaps(terrain: TerrainResponse | None) -> list[DataGap]:
+    gaps = []
+    if terrain is None or any(site.status != "READY" for site in terrain.sites):
+        gaps.append(DataGap(dataset="Métricas raster NASADEM", impact="El catálogo y las vistas previas están conectados; sin Earthdata Login no se calculan elevación, pendiente ni orientación.", next_action="Configurar EARTHDATA_TOKEN y validar las celdas de NASADEM_HGT.001 y NASADEM_SC.001."))
+    return gaps + [
         DataGap(dataset="Red eléctrica y subestaciones", impact="No se estima distancia ni capacidad de conexión.", next_action="Validar servicios oficiales de MINEM y COES."),
         DataGap(dataset="Áreas protegidas y restricciones ambientales", impact="No se emite una conclusión de compatibilidad ambiental.", next_action="Integrar fuentes oficiales con licencia y fecha de actualización."),
         DataGap(dataset="Patrimonio, comunidades y conflictos", impact="No se descartan restricciones sociales o arqueológicas.", next_action="Validar fuentes del Ministerio de Cultura, Defensoría y SENACE."),
@@ -99,15 +110,45 @@ def _data_gaps() -> list[DataGap]:
     ]
 
 
-async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningResponse:
+def _elapsed_ms(start: float) -> float:
+    return round((perf_counter() - start) * 1000, 1)
+
+
+async def _extract_power(request: SolarScreeningRequest):
     connector = PowerConnector()
-    tasks = [
+    start = perf_counter()
+    datasets = await asyncio.gather(*(
         connector.daily_point_multi(site.latitude, site.longitude, SOLAR_VARIABLES, request.start_date, request.end_date)
         for site in request.sites
-    ]
-    datasets_by_site = await asyncio.gather(*tasks)
+    ))
+    return datasets, _elapsed_ms(start)
+
+
+async def _extract_terrain(sites: list[Point]) -> tuple[TerrainResponse | None, str | None, float]:
+    """NASADEM enriquece la etapa territorial; su fallo se declara y no invalida el análisis solar."""
+    start = perf_counter()
+    try:
+        terrain = await asyncio.wait_for(NasademConnector().points(sites), timeout=TERRAIN_TIMEOUT_SECONDS)
+        return terrain, None, _elapsed_ms(start)
+    except NasademConnectorError as exc:
+        return None, str(exc), _elapsed_ms(start)
+    except TimeoutError:
+        return None, f"NASA CMR no respondió en {TERRAIN_TIMEOUT_SECONDS} s.", _elapsed_ms(start)
+
+
+def _max_separation_km(sites: list[Point]) -> float | None:
+    distances = [GEOD.inv(a.longitude, a.latitude, b.longitude, b.latitude)[2] / 1000 for a, b in combinations(sites, 2)]
+    return max(distances) if distances else None
+
+
+async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningResponse:
+    timings = StageTimings()
+    (datasets_by_site, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms) = await asyncio.gather(
+        _extract_power(request), _extract_terrain(request.sites)
+    )
     expected_days = (request.end_date - request.start_date).days + 1
 
+    analysis_start = perf_counter()
     summaries_by_site: list[list[VariableSummary]] = []
     for datasets in datasets_by_site:
         summaries_by_site.append([
@@ -121,15 +162,17 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
         for item, adjusted_p in zip(summaries, adjusted, strict=True):
             item.adjusted_p_value = adjusted_p
             item.significant_after_bh = adjusted_p is not None and adjusted_p < item.trend.alpha
+    timings.analysis_ms = _elapsed_ms(analysis_start)
 
     irradiance_means = [next(item for item in summaries if item.variable == "ALLSKY_SFC_SW_DWN").mean for summaries in summaries_by_site]
     ordered_indexes = sorted(range(len(irradiance_means)), key=lambda index: irradiance_means[index], reverse=True)
     positions = {index: position + 1 for position, index in enumerate(ordered_indexes)}
     site_results = []
+    finance_start = perf_counter()
     for index, (site, summaries) in enumerate(zip(request.sites, summaries_by_site, strict=True)):
         solar = next(item for item in summaries if item.variable == "ALLSKY_SFC_SW_DWN")
         opportunities = [
-            f"Irradiancia histórica media de {solar.mean:.2f} {solar.unit} con {solar.completeness_percent:.1f}% de cobertura diaria.",
+            f"Irradiancia histórica media de {solar.mean:.2f} {solar.display_unit} con {solar.completeness_percent:.1f}% de cobertura diaria.",
             f"Posición {positions[index]} de {len(request.sites)} entre las ubicaciones comparadas por irradiancia media.",
         ]
         if solar.significant_after_bh and solar.trend.direction == "increasing":
@@ -154,6 +197,8 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
             )
         )
 
+    timings.finance_ms = _elapsed_ms(finance_start)
+
     ranked = sorted(site_results, key=lambda item: item.relative_solar_position)
     best = ranked[0]
     worst = ranked[-1]
@@ -162,37 +207,40 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
     delta = best_solar.mean - worst_solar.mean
     delta_percent = delta / worst_solar.mean * 100 if worst_solar.mean else 0
     findings = [
-        f"{best.location.label or 'La primera ubicación'} registra la mayor irradiancia media: {best_solar.mean:.2f} {best_solar.unit}.",
-        f"La diferencia entre la mayor y menor irradiancia media es {delta:.2f} {best_solar.unit} ({delta_percent:.1f}%).",
+        f"{best.location.label or 'La primera ubicación'} registra la mayor irradiancia media: {best_solar.mean:.2f} {best_solar.display_unit}.",
+        f"La diferencia entre la mayor y menor irradiancia media es {delta:.2f} {best_solar.display_unit} ({delta_percent:.1f}%).",
         "La posición relativa considera únicamente irradiancia histórica; no es una recomendación de inversión ni un score de factibilidad.",
     ]
 
-    provenance = []
-    for summaries in summaries_by_site:
-        for item in summaries:
-            if item.source.provenance not in provenance:
-                provenance.append(item.source.provenance)
-    fingerprint = hashlib.sha256(json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()[:16]
-    pipeline = [
-        PipelineStage(step=1, key="selection", name="Selección", status=PipelineStatus.COMPLETED, summary=f"{len(request.sites)} ubicaciones WGS84 validadas.", provenance=[Provenance.ASSUMPTION]),
-        PipelineStage(step=2, key="configuration", name="Configuración", status=PipelineStatus.COMPLETED, summary="Sector solar, cuatro variables NASA, período y supuestos financieros definidos.", provenance=[Provenance.ASSUMPTION]),
-        PipelineStage(step=3, key="extraction", name="Extracción", status=PipelineStatus.COMPLETED, summary="NASA POWER consultado con una solicitud multiparámetro por ubicación y caché de 24 horas.", provenance=provenance),
-        PipelineStage(step=4, key="analysis", name="Análisis", status=PipelineStatus.COMPLETED, summary="Medias, variabilidad, Mann-Kendall, Sen, autocorrelación y ajuste BH calculados.", provenance=[Provenance.MODEL]),
-        PipelineStage(step=5, key="territorial", name="Inteligencia territorial", status=PipelineStatus.PARTIAL, summary="Ubicaciones validadas; NASADEM se consulta por un flujo separado y la red, ambiente y restricciones oficiales siguen pendientes.", provenance=[Provenance.MODEL, Provenance.UNAVAILABLE]),
-        PipelineStage(step=6, key="evaluation", name="Evaluación", status=PipelineStatus.COMPLETED, summary="Comparación relativa por evidencia observada, sin score arbitrario.", provenance=provenance + [Provenance.MODEL]),
-        PipelineStage(step=7, key="finance", name="Impacto económico", status=PipelineStatus.COMPLETED, summary="Producción y VAN calculados con irradiancia NASA y supuestos explícitos del usuario.", provenance=[Provenance.MODEL, Provenance.ASSUMPTION]),
-        PipelineStage(step=8, key="results", name="Resultados", status=PipelineStatus.COMPLETED, summary="Hallazgos, cautelas, brechas y próximos estudios reunidos en un resultado reproducible.", provenance=provenance + [Provenance.MODEL, Provenance.ASSUMPTION, Provenance.UNAVAILABLE]),
-        PipelineStage(step=9, key="export", name="Exportación", status=PipelineStatus.COMPLETED, summary="El resultado estructurado puede descargarse como reporte JSON.", provenance=provenance + [Provenance.MODEL, Provenance.ASSUMPTION, Provenance.UNAVAILABLE]),
+    labelled = [
+        SiteSummaries(label=site.label or f"Sitio {index + 1}", summaries=summaries)
+        for index, (site, summaries) in enumerate(zip(request.sites, summaries_by_site, strict=True))
     ]
+    trend_findings = collect_trend_findings(labelled)
+    gaps = _data_gaps(terrain)
+    nasa_questions = answer_nasa_questions(
+        labelled,
+        trend_findings,
+        site_results,
+        {item.label: (site.latitude, site.longitude) for item, site in zip(labelled, request.sites, strict=True)},
+        pending_gaps=sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE),
+    )
+    pipeline = build_solar_pipeline(
+        request, labelled, site_results, trend_findings, terrain, terrain_error, gaps, _max_separation_km(request.sites), timings
+    )
+    fingerprint = hashlib.sha256(json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()[:16]
     return SolarScreeningResponse(
         analysis_id=fingerprint,
         generated_at=datetime.now(timezone.utc),
         title="Screening solar comparativo — sur del Perú",
         period=f"{request.start_date.isoformat()}/{request.end_date.isoformat()}",
         pipeline=pipeline,
+        nasa_questions=nasa_questions,
+        trend_findings=trend_findings,
         sites=site_results,
+        terrain=terrain,
         comparative_findings=findings,
-        data_gaps=_data_gaps(),
+        data_gaps=gaps,
         assumptions=request.assumptions,
         disclaimer="Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera.",
     )

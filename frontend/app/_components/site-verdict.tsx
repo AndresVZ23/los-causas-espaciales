@@ -1,4 +1,4 @@
-import { displayUnit, formatMillions, formatNumber, formatPercent, siteColor } from "./format";
+import { formatMillions, formatNumber, formatPercent, siteColor } from "./format";
 import type { Assumptions, ScreeningResult, VariableSummary } from "./types";
 
 const IRRADIANCE = "ALLSKY_SFC_SW_DWN";
@@ -11,7 +11,7 @@ type Props = { result: ScreeningResult; staleAssumptions: boolean; onEditAssumpt
 export default function SiteVerdict({ result, staleAssumptions, onEditAssumptions, headingId }: Props) {
   const ranked = [...result.sites].sort((a, b) => a.relative_solar_position - b.relative_solar_position);
   const means = ranked.map((site) => irradiance(site.variables).mean);
-  const unit = displayUnit(irradiance(ranked[0].variables).unit);
+  const unit = irradiance(ranked[0].variables).display_unit;
   const delta = means[0] - means[means.length - 1];
   const deltaShare = means[means.length - 1] > 0 ? delta / means[means.length - 1] : null;
   const used: Assumptions = result.assumptions;
