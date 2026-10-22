@@ -67,7 +67,7 @@ Además: los tipos pasaron a `types.ts` y ningún texto baja de 10 px. Verificac
 - `frontend/app/_components/workspace.tsx`
 - `frontend/app/_components/geo-map.tsx`
 - `frontend/app/styles.css`
-- `frontend/public/dop-neuronal.html`
+- `docs/interno/dop-neuronal.html` (movido fuera de la app el 2026-10-22)
 
 Antes de editarlos, crear una rama desde el commit de este corte. Mantener el conector y los contratos backend separados de los cambios puramente visuales cuando sea posible.
 

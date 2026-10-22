@@ -204,9 +204,7 @@ export default function Workspace() {
             <span>LEYENDA DE MAPA</span>
             <p><i className="keyLine" />Eje entre ubicaciones</p><p><i className="keyPrimary" />Sitio principal</p><p><i className="keySecondary" />Comparador</p><p><i className="keyImagery" />NASA Blue Marble</p>
             <div className="scaleBar"><i /><span>0</span><span>100 km</span></div>
-          </div>
-          <a className="railUtility" href="/dop-neuronal.html"><Icon name="info" /><span>DOP y pipeline</span></a>
-        </aside>
+          </div>        </aside>
 
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
@@ -336,7 +334,7 @@ export default function Workspace() {
         <div className="sectionHeader"><div><h2 id="coverage-title">Siete módulos, estados honestos</h2><p>Una capacidad pendiente permanece identificada como pendiente.</p></div></div>
         <div className="moduleMatrix">{modules.map((module) => <button key={module.id} onClick={() => { selectModule(module.id); document.getElementById("workspace")?.scrollIntoView({ behavior: "smooth" }); }}><Icon name={module.icon} /><span><b>{module.name}</b><small>{module.description}</small></span><em className={module.ready ? "ready" : "pending"}>{module.status}</em></button>)}</div>
       </section>
-      <footer><div><strong>LOS CAUSAS ESPACIALES</strong><span>Inteligencia terrestre verificable para decisiones reales.</span></div><div><a href="/dop-neuronal.html">DOP tracker HTML</a><a href="/dop-neuronal">Vista del DOP</a><a href="/plan-operativo.html">Plan operativo</a><a href="http://localhost:8000/docs">OpenAPI · 8000</a><span>Aplicación · 3100</span></div></footer>
+      <footer><div><strong>LOS CAUSAS ESPACIALES</strong><span>Inteligencia terrestre verificable para decisiones reales.</span></div><div><a href="http://localhost:8000/docs">OpenAPI · 8000</a><span>Aplicación · 3100</span></div></footer>
 
       <nav className="mobileBottomNav" aria-label="Navegación principal móvil">
         {modules.filter((module) => ["solar", "climate", "hazards", "investment"].includes(module.id)).map((module) => <button key={module.id} onClick={() => selectModule(module.id)} className={activeModule === module.id ? "active" : ""} aria-pressed={activeModule === module.id}><Icon name={module.icon} /><span>{module.short}</span></button>)}

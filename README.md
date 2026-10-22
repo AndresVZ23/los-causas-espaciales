@@ -29,10 +29,13 @@ docker compose -p los-causas-espaciales up -d --build
 ```
 
 - Aplicación: http://localhost:3100
-- Plan operativo y DOP neuronal: http://localhost:3100/plan-operativo.html
-- DOP neuronal conectado y ruta crítica de desarrollo: http://localhost:3100/dop-neuronal
-- Mapa de desarrollo HTML con dependencias, ruta crítica, backlog priorizado, filtros, siguiente acción calculada, responsables, evidencia y exportación JSON: http://localhost:3100/dop-neuronal.html
 - OpenAPI: http://localhost:8000/docs
+
+Los documentos internos de seguimiento no forman parte de la aplicación; se abren como archivo local:
+
+- DOP de desarrollo (dependencias, ruta crítica, backlog, evidencia y exportación JSON): `docs/interno/dop-neuronal.html`
+- Plan operativo: `docs/interno/plan-operativo.html`
+- Plan de trabajo Claude Code + Codex: `docs/coordination/PLAN_CLAUDE_CODEX.md`
 
 ## Ejecución local sin Docker
 
@@ -56,7 +59,7 @@ npm.cmd run dev
 - `docs/architecture/PRODUCT_PIPELINE.md`: flujo operativo de nueve pasos y capas del sistema.
 - `docs/architecture/DECISION_LOG.md`: decisiones de producto y arquitectura.
 - `docs/architecture/PROMPT_COVERAGE.md`: matriz honesta de cumplimiento del prompt maestro.
-- `frontend/public/plan-operativo.html`: hoja de ruta interactiva, dependencias, puertas de calidad y DOP neuronal futuro.
+- `docs/interno/plan-operativo.html`: hoja de ruta interactiva, dependencias, puertas de calidad y DOP neuronal futuro (interno, fuera de la app).
 - `PROGRESS.md`: evidencia verificada, límites y backlog priorizado.
 - `docs/nasa-submission/`: materiales técnicos y de presentación para NASA Space Apps.
 - `DESIGN.md`: sistema visual normativo para nuevas pantallas.

@@ -47,14 +47,14 @@
 - Se corrigió el desplazamiento de resultados en móvil para que la cabecera fija no oculte el identificador reproducible.
 - `supabase-best-practices` no se instaló porque el repositorio no utiliza Supabase.
 
-## Plan operativo y DOP neuronal
+## Plan operativo y DOP neuronal (documentos internos, fuera de la app)
 
-- DOP neuronal interactivo disponible en `http://localhost:3100/dop-neuronal`, con 18 nodos, dependencias ascendentes/descendentes, bloqueos, salidas y puertas de aceptación.
-- Mapa de desarrollo HTML disponible en `http://localhost:3100/dop-neuronal.html`, con vistas de dependencias, ruta crítica y backlog priorizado; persiste seguimiento en `localStorage`, exige evidencia para `VERIFICADO` y permite importar/exportar un JSON versionado.
+- Desde el 2026-10-22 el DOP y el plan operativo no se sirven en `localhost:3100`: son documentos internos de seguimiento y viven en `docs/interno/`. La vista React `/dop-neuronal` se retiró (queda en el historial de git); el tracker HTML conserva los 18 nodos, dependencias, bloqueos, salidas y puertas de aceptación.
+- Tracker HTML en `docs/interno/dop-neuronal.html`, con vistas de dependencias, ruta crítica y backlog priorizado; persiste seguimiento en `localStorage`, exige evidencia para `VERIFICADO` y permite importar/exportar un JSON versionado.
 - La siguiente acción se calcula a partir de predecesores verificados y prioriza la ruta crítica; los filtros combinan texto, estado, fase y trabajo ejecutable sin alterar los datos guardados.
 - La ruta crítica conecta fuentes faltantes, armonización espacial, PostGIS/muestreo, etiquetas reales, splits sin fuga, baseline, candidatos neuronales y gate humano.
 - El nodo NASADEM figura `EN_CURSO`: metadatos y preview están integrados; la validación de celdas HGT/SC queda bloqueada hasta configurar Earthdata Login.
-- Hoja de ruta interactiva disponible en `http://localhost:3100/plan-operativo.html` y enlazada desde la navegación principal.
+- Hoja de ruta interactiva en `docs/interno/plan-operativo.html` (ya no enlazada desde la aplicación).
 - Ocho fases con objetivo, insumos, tareas, resultado, dependencias y criterio de aceptación verificable.
 - DOP neuronal con fuentes, procedencia/QA, ingeniería de características, baseline, modelos candidatos, incertidumbre, explicabilidad, revisión humana y exportación.
 - Las redes neuronales se muestran como `FUTURO — NO IMPLEMENTADO`; requieren etiquetas confiables, dataset versionado y demostrar mejora fuera de muestra frente a baselines simples.
