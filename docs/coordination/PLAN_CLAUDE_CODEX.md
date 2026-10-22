@@ -107,5 +107,6 @@ Cada rama, antes de pedir revisión:
 | X0 | Pendiente de revisión de Codex | `claude/diseno-consola` @ ver registro |
 | C1 | **Hecho**, pendiente de revisión de Codex | `claude/mk-modificado` (ver registro) |
 | C2 | **Hecho**, pendiente de revisión de Codex | `claude/contrato-sectores` (ver registro) |
+| C3 | **Hecho**, pendiente de revisión de Codex | `claude/contrato-sectores` (ver registro) |
 | K1 | Pendiente de X0 | — |
 | K1b | Disponible para Codex | — |

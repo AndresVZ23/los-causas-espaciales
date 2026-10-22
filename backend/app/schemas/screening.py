@@ -86,6 +86,11 @@ class PipelineStage(BaseModel):
     answers: list[NasaQuestionKey] = Field(default_factory=list, description="Preguntas del reto NASA que esta etapa sustenta.")
 
 
+class AnnualObservation(BaseModel):
+    year: int
+    value: float
+
+
 class TrendFinding(BaseModel):
     """Una tendencia que conserva significancia tras Benjamini–Hochberg."""
 
@@ -105,6 +110,7 @@ class TrendFinding(BaseModel):
     variance_correction: float | None = None
     autocorrelation_lag1: float | None
     autocorrelation_lag1_detrended: float | None = None
+    annual_series: list[AnnualObservation] = Field(default_factory=list, description="Medias anuales en unidades de presentación; permite graficar sin datos del sector.")
 
 
 class NasaQuestionAnswer(BaseModel):

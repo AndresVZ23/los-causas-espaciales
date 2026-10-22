@@ -93,6 +93,12 @@
 - Orquestación reutilizable para los pilotos vial e inmobiliario: extracción POWER + NASADEM, análisis Hamed–Rao + BH, constructores de etapas, `SectorLens` para la quinta pregunta y verificación `envelope_violations`.
 - Backend: 29/29 pruebas, incluidas 5 de conformidad.
 
+## Reporte PDF ejecutivo (C3)
+
+- Botón «PDF ejecutivo» en la consola y `POST /api/v1/reports/executive-pdf`, genérico para cualquier sector (ADR-016).
+- PDF de 3 páginas con datos reales: las cinco preguntas NASA en la portada, tendencias con minigráfico y recta de Sen, relieve NASADEM, pipeline, supuestos, brechas, método, fuentes con DOI y huella SHA-256.
+- Verificado: 36/36 pruebas backend (el texto del PDF se lee con pypdf) y descarga real en navegador a 1440 y 390 px, con la etapa 9 en «Completado» y sin errores de consola.
+
 ## Brechas prioritarias
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).

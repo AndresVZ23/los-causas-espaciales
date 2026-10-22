@@ -53,6 +53,7 @@ def collect_trend_findings(sites: Sequence[SubjectSummaries]) -> list[TrendFindi
                     variance_correction=trend.variance_correction,
                     autocorrelation_lag1=trend.autocorrelation_lag1,
                     autocorrelation_lag1_detrended=trend.autocorrelation_lag1_detrended,
+                    annual_series=item.annual_series,
                 )
             )
     return findings

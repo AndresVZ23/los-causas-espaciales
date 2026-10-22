@@ -1,7 +1,7 @@
 {
   "contract_version": "1.0",
   "analysis_id": "b94b00e68841712a",
-  "generated_at": "2026-10-22T19:54:05.126478Z",
+  "generated_at": "2026-10-22T20:08:55.293804Z",
   "sector": "solar",
   "sector_label": "Energía solar fotovoltaica",
   "title": "Screening solar comparativo — sur del Perú",
@@ -144,7 +144,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 894.9,
+      "duration_ms": 1155.2,
       "answers": [
         "what"
       ]
@@ -185,7 +185,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 200.3,
+      "duration_ms": 202.0,
       "answers": [
         "what",
         "how_much",
@@ -220,7 +220,7 @@
           "provenance": "DATA_UNAVAILABLE"
         }
       ],
-      "duration_ms": 894.8,
+      "duration_ms": 1155.0,
       "answers": [
         "where",
         "so_what"
@@ -322,7 +322,7 @@
       "key": "export",
       "name": "Exportación",
       "status": "LISTO",
-      "summary": "Reporte JSON reproducible disponible; se marca completado al descargarlo. El PDF ejecutivo sigue pendiente.",
+      "summary": "Reporte JSON y PDF ejecutivo disponibles; la etapa se marca completada al descargar uno de ellos.",
       "provenance": [
         "CACHED_DATA",
         "MODEL_ESTIMATE",
@@ -337,8 +337,8 @@
         },
         {
           "label": "PDF ejecutivo",
-          "value": "Pendiente",
-          "provenance": "DATA_UNAVAILABLE"
+          "value": "Preguntas NASA, tendencias, relieve, pipeline, supuestos, brechas y huella SHA-256",
+          "provenance": null
         }
       ],
       "duration_ms": null,
@@ -465,7 +465,105 @@
       "adjusted_p_value": 0.0032636305160367307,
       "variance_correction": 1.0,
       "autocorrelation_lag1": 0.478016254219388,
-      "autocorrelation_lag1_detrended": 0.05847826086956522
+      "autocorrelation_lag1_detrended": 0.05847826086956522,
+      "annual_series": [
+        {
+          "year": 2001,
+          "value": 6.905315
+        },
+        {
+          "year": 2002,
+          "value": 7.159973
+        },
+        {
+          "year": 2003,
+          "value": 7.290712
+        },
+        {
+          "year": 2004,
+          "value": 7.20041
+        },
+        {
+          "year": 2005,
+          "value": 7.045288
+        },
+        {
+          "year": 2006,
+          "value": 7.207479
+        },
+        {
+          "year": 2007,
+          "value": 7.40389
+        },
+        {
+          "year": 2008,
+          "value": 6.776038
+        },
+        {
+          "year": 2009,
+          "value": 7.188493
+        },
+        {
+          "year": 2010,
+          "value": 7.439726
+        },
+        {
+          "year": 2011,
+          "value": 7.020493
+        },
+        {
+          "year": 2012,
+          "value": 7.188415
+        },
+        {
+          "year": 2013,
+          "value": 7.110438
+        },
+        {
+          "year": 2014,
+          "value": 7.383781
+        },
+        {
+          "year": 2015,
+          "value": 7.515178
+        },
+        {
+          "year": 2016,
+          "value": 7.645601
+        },
+        {
+          "year": 2017,
+          "value": 7.407123
+        },
+        {
+          "year": 2018,
+          "value": 7.293479
+        },
+        {
+          "year": 2019,
+          "value": 8.015397
+        },
+        {
+          "year": 2020,
+          "value": 7.742814
+        },
+        {
+          "year": 2021,
+          "value": 7.426027
+        },
+        {
+          "year": 2022,
+          "value": 7.010712
+        },
+        {
+          "year": 2023,
+          "value": 8.361151
+        },
+        {
+          "year": 2024,
+          "value": 8.766011
+        }
+      ]
     },
     {
       "site": "Moquegua",
@@ -486,7 +584,105 @@
       "adjusted_p_value": 0.04799107670735436,
       "variance_correction": 1.0,
       "autocorrelation_lag1": 0.1331086928363005,
-      "autocorrelation_lag1_detrended": -0.0632608695652174
+      "autocorrelation_lag1_detrended": -0.0632608695652174,
+      "annual_series": [
+        {
+          "year": 2001,
+          "value": 3.914082
+        },
+        {
+          "year": 2002,
+          "value": 3.864849
+        },
+        {
+          "year": 2003,
+          "value": 3.899096
+        },
+        {
+          "year": 2004,
+          "value": 3.905109
+        },
+        {
+          "year": 2005,
+          "value": 3.958904
+        },
+        {
+          "year": 2006,
+          "value": 3.823562
+        },
+        {
+          "year": 2007,
+          "value": 3.925507
+        },
+        {
+          "year": 2008,
+          "value": 3.914809
+        },
+        {
+          "year": 2009,
+          "value": 3.948301
+        },
+        {
+          "year": 2010,
+          "value": 4.001397
+        },
+        {
+          "year": 2011,
+          "value": 3.857589
+        },
+        {
+          "year": 2012,
+          "value": 3.79571
+        },
+        {
+          "year": 2013,
+          "value": 3.892055
+        },
+        {
+          "year": 2014,
+          "value": 3.87263
+        },
+        {
+          "year": 2015,
+          "value": 3.860192
+        },
+        {
+          "year": 2016,
+          "value": 3.921393
+        },
+        {
+          "year": 2017,
+          "value": 3.827397
+        },
+        {
+          "year": 2018,
+          "value": 3.844055
+        },
+        {
+          "year": 2019,
+          "value": 3.848959
+        },
+        {
+          "year": 2020,
+          "value": 3.826339
+        },
+        {
+          "year": 2021,
+          "value": 3.842658
+        },
+        {
+          "year": 2022,
+          "value": 3.913863
+        },
+        {
+          "year": 2023,
+          "value": 3.82189
+        },
+        {
+          "year": 2024,
+          "value": 3.842842
+        }
+      ]
     },
     {
       "site": "Arequipa",
@@ -507,11 +703,109 @@
       "adjusted_p_value": 0.014063556708352909,
       "variance_correction": 1.0,
       "autocorrelation_lag1": 0.4232895769884973,
-      "autocorrelation_lag1_detrended": 0.09760869565217391
+      "autocorrelation_lag1_detrended": 0.09760869565217391,
+      "annual_series": [
+        {
+          "year": 2001,
+          "value": 10.698219
+        },
+        {
+          "year": 2002,
+          "value": 10.960082
+        },
+        {
+          "year": 2003,
+          "value": 11.136603
+        },
+        {
+          "year": 2004,
+          "value": 10.953798
+        },
+        {
+          "year": 2005,
+          "value": 10.865753
+        },
+        {
+          "year": 2006,
+          "value": 10.951616
+        },
+        {
+          "year": 2007,
+          "value": 11.228685
+        },
+        {
+          "year": 2008,
+          "value": 10.482814
+        },
+        {
+          "year": 2009,
+          "value": 10.933014
+        },
+        {
+          "year": 2010,
+          "value": 11.222055
+        },
+        {
+          "year": 2011,
+          "value": 10.632986
+        },
+        {
+          "year": 2012,
+          "value": 10.654126
+        },
+        {
+          "year": 2013,
+          "value": 10.828575
+        },
+        {
+          "year": 2014,
+          "value": 11.185589
+        },
+        {
+          "year": 2015,
+          "value": 11.329699
+        },
+        {
+          "year": 2016,
+          "value": 11.480273
+        },
+        {
+          "year": 2017,
+          "value": 10.934055
+        },
+        {
+          "year": 2018,
+          "value": 11.008301
+        },
+        {
+          "year": 2019,
+          "value": 11.613973
+        },
+        {
+          "year": 2020,
+          "value": 11.285328
+        },
+        {
+          "year": 2021,
+          "value": 11.205562
+        },
+        {
+          "year": 2022,
+          "value": 10.871068
+        },
+        {
+          "year": 2023,
+          "value": 11.913205
+        },
+        {
+          "year": 2024,
+          "value": 12.321667
+        }
+      ]
     }
   ],
   "terrain": {
-    "generated_at": "2026-10-22T19:54:04.924411Z",
+    "generated_at": "2026-10-22T20:08:55.089914Z",
     "dataset": "NASADEM V001",
     "crs": "EPSG:4326; longitude/latitude",
     "spatial_resolution": "1 arc-second (~30 m at the equator)",

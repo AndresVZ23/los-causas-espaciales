@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, model_validator
 from .analysis import Point, Provenance, SourceMetadata, TrendResult
 # Los modelos comunes viven en el contrato C2; se reexportan aquí por compatibilidad de importaciones.
 from .screening import (  # noqa: F401
+    AnnualObservation,
     DataGap,
     NasaQuestionAnswer,
     NasaQuestionKey,
@@ -44,11 +45,6 @@ class SolarScreeningRequest(BaseModel):
         if self.end_date > date.today():
             raise ValueError("La fecha final no puede estar en el futuro.")
         return self
-
-
-class AnnualObservation(BaseModel):
-    year: int
-    value: float
 
 
 class VariableSummary(BaseModel):

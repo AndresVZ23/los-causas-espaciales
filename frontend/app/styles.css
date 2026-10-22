@@ -239,6 +239,10 @@ input:hover { border-color: #545b62; } input:focus { border-color: var(--accent)
 .sectionHeader > div > span { color: var(--accent); font: 500 10px var(--font-data-mono), monospace; letter-spacing: .08em; }
 .sectionHeader h2 { margin: 7px 0 5px; font-size: clamp(25px, 3vw, 38px); font-weight: 520; letter-spacing: -.025em; }.sectionHeader p { margin: 0; color: var(--muted); }
 .exportAction { min-height: 42px; border: 1px solid var(--border); border-radius: 2px; background: var(--surface); color: var(--text); display: flex; align-items: center; gap: 8px; padding: 0 14px; }.exportAction svg { width: 18px; color: var(--accent); }
+.exportActions { display: flex; flex-wrap: wrap; gap: 8px; }
+.exportAction:hover:not(:disabled) { border-color: #596168; }
+.exportAction.primaryExport { border-color: var(--accent); }
+.exportAction:disabled { color: var(--muted); cursor: progress; }
 .emptyEvidence { border-block: 1px solid var(--border); display: grid; grid-template-columns: 1.2fr 1fr; gap: 36px; padding: 25px 0; }.emptyEvidence h3 { margin-top: 0; font-size: 18px; }.emptyEvidence p, .emptyEvidence li { color: var(--muted); }.emptyEvidence li { margin: 7px 0; }
 .questionsPanel { margin-bottom: 30px; border-top: 1px solid var(--border); }
 .questionsHead { padding: 18px 0 12px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; }

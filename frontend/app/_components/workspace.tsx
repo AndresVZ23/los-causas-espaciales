@@ -56,6 +56,8 @@ export default function Workspace() {
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState(1);
   const [exportedAt, setExportedAt] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState("");
   const assumptionPanelRef = useRef<HTMLDetailsElement>(null);
   const mobileVerdictRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +69,7 @@ export default function Workspace() {
     if (!result) return STAGE_NAMES.map((name, index) => ({ step: index + 1, key: String(index), name, status: index < 2 ? "LISTO" : "PENDIENTE", summary: "", provenance: [] }));
     if (!exportedAt) return result.pipeline;
     return result.pipeline.map((stage) => stage.key === "export"
-      ? { ...stage, status: "COMPLETADO", summary: `Reporte JSON descargado a las ${exportedAt}. El PDF ejecutivo sigue pendiente.` }
+      ? { ...stage, status: "COMPLETADO", summary: `Descargado: ${exportedAt}.` }
       : stage);
   }, [result, exportedAt]);
   const comparisonData = useMemo(() => result?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [result]);
@@ -138,7 +140,7 @@ export default function Workspace() {
   }
 
   async function runScreening() {
-    setLoading(true); setError(""); setExportedAt(null);
+    setLoading(true); setError(""); setExportedAt(null); setPdfError("");
     try {
       const response = await fetch("/api/solar-screening", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sites, start_date: startDate, end_date: endDate, assumptions }) });
       const data = await response.json();
@@ -160,7 +162,31 @@ export default function Workspace() {
     const anchor = document.createElement("a");
     anchor.href = url; anchor.download = `screening-solar-${result.analysis_id}.json`; anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setExportedAt(new Intl.DateTimeFormat("es-PE", { hour: "2-digit", minute: "2-digit" }).format(new Date()));
+    markExported("reporte JSON");
+  }
+
+  function markExported(format: string) {
+    const time = new Intl.DateTimeFormat("es-PE", { hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(new Date());
+    setExportedAt((current) => `${current ? `${current}; ` : ""}${format} a las ${time}`);
+  }
+
+  async function exportPdf() {
+    if (!result) return;
+    setPdfLoading(true); setPdfError("");
+    try {
+      const response = await fetch("/api/report-pdf", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(result) });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(typeof data.detail === "string" ? data.detail : "No fue posible generar el PDF ejecutivo.");
+      }
+      const url = URL.createObjectURL(await response.blob());
+      const anchor = document.createElement("a");
+      anchor.href = url; anchor.download = `reporte-ejecutivo-${result.sector}-${result.analysis_id}.pdf`; anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      markExported("PDF ejecutivo");
+    } catch (cause) {
+      setPdfError(cause instanceof Error ? cause.message : "No fue posible generar el PDF ejecutivo.");
+    } finally { setPdfLoading(false); }
   }
 
   return (
@@ -299,7 +325,11 @@ export default function Workspace() {
       </section>
 
       <section className="evidenceSection" id="resultados" aria-labelledby="evidence-title">
-        <div className="sectionHeader"><div><h2 id="evidence-title">Evidencia y decisión</h2><p>{result ? `${result.title} · período ${result.period}` : "Ejecute el análisis para habilitar resultados reproducibles."}</p></div>{result && <button className="exportAction" onClick={exportReport}><Icon name="download" />Exportar JSON</button>}</div>
+        <div className="sectionHeader"><div><h2 id="evidence-title">Evidencia y decisión</h2><p>{result ? `${result.title} · período ${result.period}` : "Ejecute el análisis para habilitar resultados reproducibles."}</p></div>{result && <div className="exportActions">
+          <button className="exportAction primaryExport" onClick={exportPdf} disabled={pdfLoading} aria-busy={pdfLoading}><Icon name="download" />{pdfLoading ? "Generando PDF…" : "PDF ejecutivo"}</button>
+          <button className="exportAction" onClick={exportReport}><Icon name="download" />Exportar JSON</button>
+        </div>}</div>
+        {pdfError && <p className="errorMessage" role="alert">{pdfError}</p>}
         {!result ? <div className="emptyEvidence"><div><h3>El flujo está preparado</h3><p>NASA POWER, Mann–Kendall, pendiente de Sen, ajuste BH y VAN condicionado se ejecutan únicamente al solicitar el análisis.</p></div><ul><li>Comparación Moquegua–Arequipa</li><li>Cobertura y limitaciones por variable</li><li>Supuestos financieros explícitos</li><li>Brechas para debida diligencia</li></ul></div> : <>
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
           <div className="findingsPanel"><h3>Lectura comparativa</h3>{result.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>

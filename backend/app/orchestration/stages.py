@@ -168,9 +168,9 @@ def results_stage(findings: Sequence[TrendFinding], gaps: Sequence[DataGap], pro
 def export_stage(provenance: Sequence[Provenance]) -> PipelineStage:
     evidence = [
         StageEvidence(label="Formato", value="JSON con identificador, período, supuestos, procedencia y métodos"),
-        StageEvidence(label="PDF ejecutivo", value="Pendiente", provenance=Provenance.UNAVAILABLE),
+        StageEvidence(label="PDF ejecutivo", value="Preguntas NASA, tendencias, relieve, pipeline, supuestos, brechas y huella SHA-256"),
     ]
-    return stage("export", PipelineStatus.READY, "Reporte JSON reproducible disponible; se marca completado al descargarlo. El PDF ejecutivo sigue pendiente.",
+    return stage("export", PipelineStatus.READY, "Reporte JSON y PDF ejecutivo disponibles; la etapa se marca completada al descargar uno de ellos.",
                  provenance, evidence)
 
 

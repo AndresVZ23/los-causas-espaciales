@@ -16,7 +16,7 @@
 | AppEEARS / vegetación | | | Earthdata Login y conector |
 | Capas oficiales peruanas | | | Validación de servicios y licencias |
 | Escenario financiero | Sí | | Sensibilidad multidimensional |
-| Reporte exportable | Sí | | PDF ejecutivo |
+| Reporte exportable | Sí | | JSON y PDF ejecutivo (ADR-016); gráficos de sensibilidad financiera pendientes |
 | Asistente analítico | | Sí | Reglas determinísticas del piloto; proveedor IA opcional |
 | PostGIS y trabajos asíncronos | | | Infraestructura de expansión |
 

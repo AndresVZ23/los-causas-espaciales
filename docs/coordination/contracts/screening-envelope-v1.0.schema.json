@@ -1,5 +1,23 @@
 {
   "$defs": {
+    "AnnualObservation": {
+      "properties": {
+        "year": {
+          "title": "Year",
+          "type": "integer"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "year",
+        "value"
+      ],
+      "title": "AnnualObservation",
+      "type": "object"
+    },
     "AssumptionItem": {
       "properties": {
         "key": {
@@ -713,6 +731,14 @@
           ],
           "default": null,
           "title": "Autocorrelation Lag1 Detrended"
+        },
+        "annual_series": {
+          "description": "Medias anuales en unidades de presentación; permite graficar sin datos del sector.",
+          "items": {
+            "$ref": "#/$defs/AnnualObservation"
+          },
+          "title": "Annual Series",
+          "type": "array"
         }
       },
       "required": [
