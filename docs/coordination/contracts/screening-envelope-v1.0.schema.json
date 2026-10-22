@@ -1,0 +1,844 @@
+{
+  "$defs": {
+    "AssumptionItem": {
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance",
+          "default": "USER_ASSUMPTION"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "value",
+        "unit"
+      ],
+      "title": "AssumptionItem",
+      "type": "object"
+    },
+    "DataGap": {
+      "properties": {
+        "dataset": {
+          "title": "Dataset",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/Provenance",
+          "default": "DATA_UNAVAILABLE"
+        },
+        "impact": {
+          "title": "Impact",
+          "type": "string"
+        },
+        "next_action": {
+          "title": "Next Action",
+          "type": "string"
+        }
+      },
+      "required": [
+        "dataset",
+        "impact",
+        "next_action"
+      ],
+      "title": "DataGap",
+      "type": "object"
+    },
+    "NasaQuestionAnswer": {
+      "properties": {
+        "key": {
+          "enum": [
+            "what",
+            "where",
+            "how_much",
+            "significant",
+            "so_what"
+          ],
+          "title": "Key",
+          "type": "string"
+        },
+        "question": {
+          "title": "Question",
+          "type": "string"
+        },
+        "question_es": {
+          "title": "Question Es",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/QuestionStatus"
+        },
+        "answer": {
+          "title": "Answer",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "title": "Provenance",
+          "type": "array"
+        },
+        "stage_steps": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Stage Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "key",
+        "question",
+        "question_es",
+        "status",
+        "answer",
+        "evidence",
+        "provenance",
+        "stage_steps"
+      ],
+      "title": "NasaQuestionAnswer",
+      "type": "object"
+    },
+    "PipelineStage": {
+      "properties": {
+        "step": {
+          "title": "Step",
+          "type": "integer"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/PipelineStatus"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "provenance": {
+          "items": {
+            "$ref": "#/$defs/Provenance"
+          },
+          "title": "Provenance",
+          "type": "array"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/StageEvidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Tiempo medido en el servidor; None si la etapa no ejecuta cálculo propio.",
+          "title": "Duration Ms"
+        },
+        "answers": {
+          "description": "Preguntas del reto NASA que esta etapa sustenta.",
+          "items": {
+            "enum": [
+              "what",
+              "where",
+              "how_much",
+              "significant",
+              "so_what"
+            ],
+            "type": "string"
+          },
+          "title": "Answers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "step",
+        "key",
+        "name",
+        "status",
+        "summary",
+        "provenance"
+      ],
+      "title": "PipelineStage",
+      "type": "object"
+    },
+    "PipelineStatus": {
+      "enum": [
+        "COMPLETADO",
+        "PARCIAL",
+        "LISTO",
+        "NO_DISPONIBLE",
+        "ERROR"
+      ],
+      "title": "PipelineStatus",
+      "type": "string"
+    },
+    "Point": {
+      "properties": {
+        "latitude": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitude",
+          "type": "number"
+        },
+        "longitude": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Longitude",
+          "type": "number"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude"
+      ],
+      "title": "Point",
+      "type": "object"
+    },
+    "Provenance": {
+      "enum": [
+        "REAL_DATA",
+        "CACHED_DATA",
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "ILLUSTRATIVE_DEMO",
+        "DATA_UNAVAILABLE"
+      ],
+      "title": "Provenance",
+      "type": "string"
+    },
+    "QuestionStatus": {
+      "enum": [
+        "RESPONDIDA",
+        "PARCIAL",
+        "EVIDENCIA_INSUFICIENTE"
+      ],
+      "title": "QuestionStatus",
+      "type": "string"
+    },
+    "Sector": {
+      "enum": [
+        "solar",
+        "road",
+        "real_estate"
+      ],
+      "title": "Sector",
+      "type": "string"
+    },
+    "StageEvidence": {
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        },
+        "provenance": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Provenance"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "StageEvidence",
+      "type": "object"
+    },
+    "StudySubject": {
+      "description": "Unidad que se analiza y se compara: un sitio, un tramo de corredor o un terreno.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/SubjectKind"
+        },
+        "geometry": {
+          "additionalProperties": true,
+          "description": "Geometría GeoJSON RFC 7946 (WGS84, longitud-latitud).",
+          "title": "Geometry",
+          "type": "object"
+        },
+        "representative_point": {
+          "$ref": "#/$defs/Point",
+          "description": "Punto donde se consultan NASA POWER y NASADEM para este sujeto."
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "kind",
+        "geometry",
+        "representative_point"
+      ],
+      "title": "StudySubject",
+      "type": "object"
+    },
+    "SubjectKind": {
+      "enum": [
+        "point",
+        "segment",
+        "polygon"
+      ],
+      "title": "SubjectKind",
+      "type": "string"
+    },
+    "TerrainGranule": {
+      "properties": {
+        "short_name": {
+          "enum": [
+            "NASADEM_HGT",
+            "NASADEM_SC"
+          ],
+          "title": "Short Name",
+          "type": "string"
+        },
+        "version": {
+          "default": "001",
+          "title": "Version",
+          "type": "string"
+        },
+        "granule_id": {
+          "title": "Granule Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "tile_id": {
+          "title": "Tile Id",
+          "type": "string"
+        },
+        "bounding_box": {
+          "maxItems": 4,
+          "minItems": 4,
+          "prefixItems": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "title": "Bounding Box",
+          "type": "array"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        },
+        "data_url": {
+          "title": "Data Url",
+          "type": "string"
+        },
+        "preview_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Preview Url"
+        },
+        "doi_url": {
+          "title": "Doi Url",
+          "type": "string"
+        },
+        "catalogue_url": {
+          "title": "Catalogue Url",
+          "type": "string"
+        },
+        "access": {
+          "const": "EARTHDATA_LOGIN_REQUIRED",
+          "default": "EARTHDATA_LOGIN_REQUIRED",
+          "title": "Access",
+          "type": "string"
+        }
+      },
+      "required": [
+        "short_name",
+        "granule_id",
+        "title",
+        "tile_id",
+        "bounding_box",
+        "updated_at",
+        "data_url",
+        "preview_url",
+        "doi_url",
+        "catalogue_url"
+      ],
+      "title": "TerrainGranule",
+      "type": "object"
+    },
+    "TerrainMetrics": {
+      "properties": {
+        "elevation_m": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Elevation M"
+        },
+        "slope_degrees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slope Degrees"
+        },
+        "aspect_degrees": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Aspect Degrees"
+        },
+        "aspect_cardinal": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Aspect Cardinal"
+        },
+        "vertical_datum": {
+          "default": "EGM96 geoid",
+          "title": "Vertical Datum",
+          "type": "string"
+        }
+      },
+      "title": "TerrainMetrics",
+      "type": "object"
+    },
+    "TerrainResponse": {
+      "properties": {
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "dataset": {
+          "default": "NASADEM V001",
+          "title": "Dataset",
+          "type": "string"
+        },
+        "crs": {
+          "default": "EPSG:4326; longitude/latitude",
+          "title": "Crs",
+          "type": "string"
+        },
+        "spatial_resolution": {
+          "default": "1 arc-second (~30 m at the equator)",
+          "title": "Spatial Resolution",
+          "type": "string"
+        },
+        "sites": {
+          "items": {
+            "$ref": "#/$defs/TerrainSiteResult"
+          },
+          "title": "Sites",
+          "type": "array"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "generated_at",
+        "sites",
+        "note"
+      ],
+      "title": "TerrainResponse",
+      "type": "object"
+    },
+    "TerrainSiteResult": {
+      "properties": {
+        "location": {
+          "$ref": "#/$defs/Point"
+        },
+        "status": {
+          "enum": [
+            "READY",
+            "METADATA_ONLY",
+            "PARTIAL"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "metrics": {
+          "$ref": "#/$defs/TerrainMetrics"
+        },
+        "granules": {
+          "items": {
+            "$ref": "#/$defs/TerrainGranule"
+          },
+          "title": "Granules",
+          "type": "array"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "limitations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Limitations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "location",
+        "status",
+        "metrics",
+        "granules",
+        "provenance",
+        "limitations"
+      ],
+      "title": "TerrainSiteResult",
+      "type": "object"
+    },
+    "TrendFinding": {
+      "description": "Una tendencia que conserva significancia tras Benjamini–Hochberg.",
+      "properties": {
+        "site": {
+          "description": "Etiqueta del sujeto de estudio (sitio, tramo o terreno).",
+          "title": "Site",
+          "type": "string"
+        },
+        "variable": {
+          "title": "Variable",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "slope_per_year": {
+          "title": "Slope Per Year",
+          "type": "number"
+        },
+        "confidence_interval": {
+          "anyOf": [
+            {
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Confidence Interval"
+        },
+        "first_year": {
+          "title": "First Year",
+          "type": "integer"
+        },
+        "last_year": {
+          "title": "Last Year",
+          "type": "integer"
+        },
+        "change_over_period": {
+          "title": "Change Over Period",
+          "type": "number"
+        },
+        "change_percent_of_mean": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "None en escalas de intervalo, como la temperatura en °C.",
+          "title": "Change Percent Of Mean"
+        },
+        "p_value": {
+          "title": "P Value",
+          "type": "number"
+        },
+        "p_value_modified": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "P Value Modified"
+        },
+        "adjusted_p_value": {
+          "title": "Adjusted P Value",
+          "type": "number"
+        },
+        "variance_correction": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variance Correction"
+        },
+        "autocorrelation_lag1": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Autocorrelation Lag1"
+        },
+        "autocorrelation_lag1_detrended": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Autocorrelation Lag1 Detrended"
+        }
+      },
+      "required": [
+        "site",
+        "variable",
+        "label",
+        "unit",
+        "slope_per_year",
+        "confidence_interval",
+        "first_year",
+        "last_year",
+        "change_over_period",
+        "change_percent_of_mean",
+        "p_value",
+        "adjusted_p_value",
+        "autocorrelation_lag1"
+      ],
+      "title": "TrendFinding",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "contract_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Contract Version",
+      "type": "string"
+    },
+    "analysis_id": {
+      "title": "Analysis Id",
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "sector": {
+      "$ref": "#/$defs/Sector"
+    },
+    "sector_label": {
+      "title": "Sector Label",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "period": {
+      "title": "Period",
+      "type": "string"
+    },
+    "subjects": {
+      "items": {
+        "$ref": "#/$defs/StudySubject"
+      },
+      "minItems": 1,
+      "title": "Subjects",
+      "type": "array"
+    },
+    "pipeline": {
+      "items": {
+        "$ref": "#/$defs/PipelineStage"
+      },
+      "title": "Pipeline",
+      "type": "array"
+    },
+    "nasa_questions": {
+      "items": {
+        "$ref": "#/$defs/NasaQuestionAnswer"
+      },
+      "title": "Nasa Questions",
+      "type": "array"
+    },
+    "trend_findings": {
+      "items": {
+        "$ref": "#/$defs/TrendFinding"
+      },
+      "title": "Trend Findings",
+      "type": "array"
+    },
+    "terrain": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TerrainResponse"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "data_gaps": {
+      "items": {
+        "$ref": "#/$defs/DataGap"
+      },
+      "title": "Data Gaps",
+      "type": "array"
+    },
+    "assumption_items": {
+      "items": {
+        "$ref": "#/$defs/AssumptionItem"
+      },
+      "title": "Assumption Items",
+      "type": "array"
+    },
+    "disclaimer": {
+      "title": "Disclaimer",
+      "type": "string"
+    }
+  },
+  "required": [
+    "analysis_id",
+    "generated_at",
+    "sector",
+    "sector_label",
+    "title",
+    "period",
+    "subjects",
+    "pipeline",
+    "nasa_questions",
+    "trend_findings",
+    "data_gaps",
+    "assumption_items",
+    "disclaimer"
+  ],
+  "title": "ScreeningEnvelope",
+  "type": "object"
+}

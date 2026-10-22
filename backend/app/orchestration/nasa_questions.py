@@ -5,31 +5,27 @@ tendencias ya calculadas; la quinta (qué significa para invertir) aplica reglas
 lo que todavía no puede cuantificarse. Ninguna función consulta fuentes externas.
 """
 
-from collections.abc import Sequence
-from dataclasses import dataclass
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass, field
 
 from ..core.units import display_unit, is_ratio_scale
 from ..schemas.analysis import Provenance
-from ..schemas.pipeline import (
-    NasaQuestionAnswer,
-    QuestionStatus,
-    SolarSiteResult,
-    TrendFinding,
-    VariableSummary,
-)
+from ..schemas.pipeline import VariableSummary
+from ..schemas.screening import NasaQuestionAnswer, QuestionStatus, TrendFinding
 
 INSUFFICIENT = "Evidencia insuficiente para establecer una tendencia estadísticamente significativa."
 AUTOCORRELATION_CAUTION = 0.3
-IRRADIANCE = "ALLSKY_SFC_SW_DWN"
 
 
 @dataclass(frozen=True)
-class SiteSummaries:
+class SubjectSummaries:
+    """Resúmenes de variables de un sujeto de estudio (sitio, tramo o terreno)."""
+
     label: str
     summaries: Sequence[VariableSummary]
 
 
-def collect_trend_findings(sites: Sequence[SiteSummaries]) -> list[TrendFinding]:
+def collect_trend_findings(sites: Sequence[SubjectSummaries]) -> list[TrendFinding]:
     findings: list[TrendFinding] = []
     for site in sites:
         for item in site.summaries:
@@ -65,7 +61,7 @@ def collect_trend_findings(sites: Sequence[SiteSummaries]) -> list[TrendFinding]
 NBSP = " "  # cifra y unidad no deben separarse al ajustar línea
 
 
-def _join(items: Sequence[str]) -> str:
+def join_es(items: Sequence[str]) -> str:
     items = list(dict.fromkeys(items))
     if len(items) <= 1:
         return "".join(items)
@@ -82,14 +78,14 @@ def _sentence(items: Sequence[str], separator: str = ", ") -> str:
     rest = [_lower_first(item) for item in items[1:]]
     if separator != ", ":
         return separator.join(items[:1] + rest)
-    return _join(items[:1] + rest)
+    return join_es(items[:1] + rest)
 
 
 def _qty(value: float, unit: str, digits: int, signed: bool = True) -> str:
     return f"{value:+.{digits}f}{NBSP}{unit}" if signed else f"{value:.{digits}f}{NBSP}{unit}"
 
 
-def _millions(value: float) -> str:
+def millions_usd(value: float) -> str:
     return f"{'−' if value < 0 else ''}USD{NBSP}{abs(value) / 1e6:.2f}{NBSP}M"
 
 
@@ -105,7 +101,7 @@ def _magnitude(finding: TrendFinding) -> str:
     )
 
 
-def _what(findings: list[TrendFinding], sites: Sequence[SiteSummaries], tests: int) -> NasaQuestionAnswer:
+def _what(findings: list[TrendFinding], sites: Sequence[SubjectSummaries], tests: int) -> NasaQuestionAnswer:
     labels = [item.label for site in sites for item in site.summaries]
     changing = list(dict.fromkeys(finding.label for finding in findings))
     stable = [label for label in dict.fromkeys(labels) if label not in changing]
@@ -113,11 +109,11 @@ def _what(findings: list[TrendFinding], sites: Sequence[SiteSummaries], tests: i
         return NasaQuestionAnswer(
             key="what", question="What is changing?", question_es="¿Qué está cambiando?", status=QuestionStatus.INSUFFICIENT,
             answer=f"{INSUFFICIENT} Ninguna de las {tests} pruebas conserva significancia tras Benjamini–Hochberg.",
-            evidence=[f"Variables analizadas: {_join(stable)}."], provenance=[Provenance.MODEL], stage_steps=[3, 4],
+            evidence=[f"Variables analizadas: {join_es(stable)}."], provenance=[Provenance.MODEL], stage_steps=[3, 4],
         )
     evidence = [f"{finding.label} · {finding.site} · p ajustado {finding.adjusted_p_value:.4f}" for finding in findings]
     if stable:
-        evidence.append(f"Sin evidencia de cambio: {_join([_lower_first(label) for label in stable])}.")
+        evidence.append(f"Sin evidencia de cambio: {join_es([_lower_first(label) for label in stable])}.")
     return NasaQuestionAnswer(
         key="what", question="What is changing?", question_es="¿Qué está cambiando?", status=QuestionStatus.ANSWERED,
         answer=f"{_sentence(changing)}. {len(findings)} de {tests} pruebas conservan significancia tras Benjamini–Hochberg (α = 0.05).",
@@ -125,13 +121,13 @@ def _what(findings: list[TrendFinding], sites: Sequence[SiteSummaries], tests: i
     )
 
 
-def _where(findings: list[TrendFinding], sites: Sequence[SiteSummaries], coordinates: dict[str, tuple[float, float]]) -> NasaQuestionAnswer:
+def _where(findings: list[TrendFinding], sites: Sequence[SubjectSummaries], coordinates: dict[str, tuple[float, float]]) -> NasaQuestionAnswer:
     all_sites = [site.label for site in sites]
     evidence = [f"{label}: {lat:.3f}, {lon:.3f} (WGS84) · celda de grilla NASA POWER, no medición en sitio" for label, (lat, lon) in coordinates.items()]
     if not findings:
         return NasaQuestionAnswer(
             key="where", question="Where is it changing?", question_es="¿Dónde está cambiando?", status=QuestionStatus.INSUFFICIENT,
-            answer=f"No se identifica un lugar con cambio significativo entre {_join(all_sites)}.",
+            answer=f"{INSUFFICIENT} No se identifica un lugar con cambio significativo entre {join_es(all_sites)}.",
             evidence=evidence, provenance=[Provenance.MODEL], stage_steps=[1, 5],
         )
     by_variable: dict[str, list[str]] = {}
@@ -139,7 +135,7 @@ def _where(findings: list[TrendFinding], sites: Sequence[SiteSummaries], coordin
         by_variable.setdefault(finding.label, []).append(finding.site)
     parts = []
     for label, places in by_variable.items():
-        scope = "en todos los sitios analizados" if set(places) == set(all_sites) else f"solo en {_join(places)}"
+        scope = "en todos los sitios analizados" if set(places) == set(all_sites) else f"solo en {join_es(places)}"
         parts.append(f"{label}: {scope}")
     return NasaQuestionAnswer(
         key="where", question="Where is it changing?", question_es="¿Dónde está cambiando?", status=QuestionStatus.ANSWERED,
@@ -165,7 +161,7 @@ def _how_much(findings: list[TrendFinding]) -> NasaQuestionAnswer:
     )
 
 
-def _significant(findings: list[TrendFinding], sites: Sequence[SiteSummaries], tests: int, years: int) -> NasaQuestionAnswer:
+def _significant(findings: list[TrendFinding], sites: Sequence[SubjectSummaries], tests: int, years: int) -> NasaQuestionAnswer:
     raw = sum(1 for site in sites for item in site.summaries if item.trend.significant)
     method = (
         f"Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998) y pendiente de Sen sobre {years} medias anuales; "
@@ -206,41 +202,33 @@ def _significant(findings: list[TrendFinding], sites: Sequence[SiteSummaries], t
     )
 
 
-# Lecturas sectoriales (fotovoltaica) por variable y dirección: explican consecuencias, no las cuantifican.
-SOLAR_READINGS: dict[tuple[str, str], str] = {
-    ("ALLSKY_SFC_SW_DWN", "decreasing"): "la irradiancia cae: la media histórica sobrestima el recurso futuro y el VAN debe sensibilizarse a la baja",
-    ("ALLSKY_SFC_SW_DWN", "increasing"): "la irradiancia sube: la media histórica es conservadora para el recurso",
-    ("T2M", "increasing"): "la temperatura sube: aumentan las pérdidas térmicas de los módulos, que el cálculo de energía actual no modela",
-    ("T2M", "decreasing"): "la temperatura baja: reduce pérdidas térmicas de los módulos, que el cálculo de energía actual no modela",
-    ("WS10M", "decreasing"): "el viento a 10 m disminuye: menor enfriamiento convectivo de los módulos",
-    ("WS10M", "increasing"): "el viento a 10 m aumenta: revisar cargas de diseño de estructuras",
-    ("PRECTOTCORR", "increasing"): "la precipitación aumenta: revisar drenaje y exposición hidrometeorológica",
-    ("PRECTOTCORR", "decreasing"): "la precipitación disminuye: más ensuciamiento de módulos y menos limpieza natural",
-}
+@dataclass(frozen=True)
+class SectorLens:
+    """Cómo lee un sector las tendencias para la quinta pregunta; lo define cada módulo sectorial.
+
+    readings: consecuencia sectorial por (variable, "increasing" | "decreasing"); explica, no cuantifica.
+    stable_notes: frase para una variable clave que no cambia con significancia en ningún sujeto.
+    economics: frase ya calculada por el sector con su escenario económico (VAN, interrupciones, etc.).
+    """
+
+    readings: Mapping[tuple[str, str], str]
+    stable_notes: Mapping[str, str] = field(default_factory=dict)
+    economics: str | None = None
 
 
-def _so_what(findings: list[TrendFinding], sites: Sequence[SiteSummaries], results: Sequence[SolarSiteResult], gaps: int) -> NasaQuestionAnswer:
-    sentences: list[str] = []
-    irradiance_changes = [item for item in findings if item.variable == IRRADIANCE]
-    if not irradiance_changes:
-        sentences.append(
-            "El recurso solar no muestra deriva significativa en ningún sitio: no hay evidencia para castigar la media histórica por tendencia, "
-            "lo que no prueba que sea constante."
-        )
+def _so_what(findings: list[TrendFinding], lens: SectorLens, gaps: int) -> NasaQuestionAnswer:
+    changing = {finding.variable for finding in findings}
+    sentences = [note for variable, note in lens.stable_notes.items() if variable not in changing]
     by_reading: dict[str, list[str]] = {}
     for finding in findings:
         direction = "increasing" if finding.slope_per_year > 0 else "decreasing"
-        reading = SOLAR_READINGS.get((finding.variable, direction))
+        reading = lens.readings.get((finding.variable, direction))
         if reading:
             by_reading.setdefault(reading, []).append(finding.site)
     for reading, places in by_reading.items():
-        sentences.append(f"En {_join(places)}, {reading}.")
-    npvs = [result.finance.npv_usd for result in results]
-    positive = sum(1 for value in npvs if value >= 0)
-    sentences.append(
-        f"Con los supuestos del usuario, el VAN es positivo en {positive} de {len(npvs)} sitios "
-        f"(de {_millions(min(npvs))} a {_millions(max(npvs))})."
-    )
+        sentences.append(f"En {join_es(places)}, {reading}.")
+    if lens.economics:
+        sentences.append(lens.economics)
     evidence = [
         "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
         f"{gaps} capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
@@ -248,24 +236,25 @@ def _so_what(findings: list[TrendFinding], sites: Sequence[SiteSummaries], resul
     ]
     return NasaQuestionAnswer(
         key="so_what", question="What do these changes mean for investment decisions?", question_es="¿Qué significan estos cambios para invertir?",
-        status=QuestionStatus.PARTIAL, answer=" ".join(sentences), evidence=evidence,
+        status=QuestionStatus.PARTIAL, answer=" ".join(sentences) or INSUFFICIENT, evidence=evidence,
         provenance=[Provenance.MODEL, Provenance.ASSUMPTION, Provenance.UNAVAILABLE], stage_steps=[5, 6, 7],
     )
 
 
 def answer_nasa_questions(
-    sites: Sequence[SiteSummaries],
+    subjects: Sequence[SubjectSummaries],
     findings: list[TrendFinding],
-    results: Sequence[SolarSiteResult],
     coordinates: dict[str, tuple[float, float]],
     pending_gaps: int,
+    lens: SectorLens,
 ) -> list[NasaQuestionAnswer]:
-    tests = sum(len(site.summaries) for site in sites)
-    years = max((len(item.annual_series) for site in sites for item in site.summaries), default=0)
+    tests = sum(len(subject.summaries) for subject in subjects)
+    years = max((len(item.annual_series) for subject in subjects for item in subject.summaries), default=0)
     return [
-        _what(findings, sites, tests),
-        _where(findings, sites, coordinates),
+        _what(findings, subjects, tests),
+        _where(findings, subjects, coordinates),
         _how_much(findings),
-        _significant(findings, sites, tests, years),
-        _so_what(findings, sites, results, pending_gaps),
+        _significant(findings, subjects, tests, years),
+        _so_what(findings, lens, pending_gaps),
     ]
+

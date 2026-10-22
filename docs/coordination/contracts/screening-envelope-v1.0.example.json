@@ -1,0 +1,727 @@
+{
+  "contract_version": "1.0",
+  "analysis_id": "b94b00e68841712a",
+  "generated_at": "2026-10-22T19:54:05.126478Z",
+  "sector": "solar",
+  "sector_label": "Energía solar fotovoltaica",
+  "title": "Screening solar comparativo — sur del Perú",
+  "period": "2001-01-01/2024-12-31",
+  "subjects": [
+    {
+      "id": "sitio-1",
+      "label": "Moquegua",
+      "kind": "point",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -70.934,
+          -17.193
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.193,
+        "longitude": -70.934,
+        "label": "Moquegua"
+      }
+    },
+    {
+      "id": "sitio-2",
+      "label": "Arequipa",
+      "kind": "point",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -71.537,
+          -16.409
+        ]
+      },
+      "representative_point": {
+        "latitude": -16.409,
+        "longitude": -71.537,
+        "label": "Arequipa"
+      }
+    }
+  ],
+  "pipeline": [
+    {
+      "step": 1,
+      "key": "selection",
+      "name": "Selección",
+      "status": "COMPLETADO",
+      "summary": "2 ubicaciones WGS84 validados.",
+      "provenance": [
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Moquegua",
+          "value": "-17.193, -70.934",
+          "provenance": null
+        },
+        {
+          "label": "Arequipa",
+          "value": "-16.409, -71.537",
+          "provenance": null
+        },
+        {
+          "label": "Separación geodésica máxima",
+          "value": "108.0 km (WGS84)",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": [
+        "where"
+      ]
+    },
+    {
+      "step": 2,
+      "key": "configuration",
+      "name": "Configuración",
+      "status": "COMPLETADO",
+      "summary": "Solar fotovoltaico, 4 variables NASA, 24 años y supuestos explícitos.",
+      "provenance": [
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Sector",
+          "value": "Solar fotovoltaico",
+          "provenance": null
+        },
+        {
+          "label": "Variables NASA POWER",
+          "value": "ALLSKY_SFC_SW_DWN, T2M, WS10M, PRECTOTCORR",
+          "provenance": null
+        },
+        {
+          "label": "Período",
+          "value": "2001-01-01 a 2024-12-31 · 24 años",
+          "provenance": null
+        },
+        {
+          "label": "Significancia",
+          "value": "α = 0.05 · Hamed–Rao · BH por variable entre sujetos",
+          "provenance": null
+        },
+        {
+          "label": "Supuestos",
+          "value": "20 MW · tasa 10% · 20 años",
+          "provenance": "USER_ASSUMPTION"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    },
+    {
+      "step": 3,
+      "key": "extraction",
+      "name": "Extracción",
+      "status": "COMPLETADO",
+      "summary": "NASA POWER entregó 70,128 observaciones diarias para 4 variables en 2 sujetos.",
+      "provenance": [
+        "CACHED_DATA"
+      ],
+      "evidence": [
+        {
+          "label": "Observaciones diarias válidas",
+          "value": "70,128",
+          "provenance": null
+        },
+        {
+          "label": "Cobertura mínima",
+          "value": "100.0 %",
+          "provenance": null
+        },
+        {
+          "label": "Series desde caché",
+          "value": "8 de 8",
+          "provenance": "CACHED_DATA"
+        },
+        {
+          "label": "Descarga NASA (UTC)",
+          "value": "2026-10-22 a 2026-10-22",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 894.9,
+      "answers": [
+        "what"
+      ]
+    },
+    {
+      "step": 4,
+      "key": "analysis",
+      "name": "Análisis",
+      "status": "COMPLETADO",
+      "summary": "Mann–Kendall corregido (Hamed–Rao) y Sen sobre 24 medias anuales; cambian con significancia: temperatura del aire a 2 m en Moquegua y Arequipa; velocidad del viento a 10 m en Moquegua.",
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "evidence": [
+        {
+          "label": "Pruebas Mann–Kendall (Hamed–Rao)",
+          "value": "8 (4 variables × 2 sujetos)",
+          "provenance": null
+        },
+        {
+          "label": "Significativas antes de BH",
+          "value": "3 de 8",
+          "provenance": null
+        },
+        {
+          "label": "Significativas tras BH",
+          "value": "3 de 8",
+          "provenance": null
+        },
+        {
+          "label": "Varianza corregida por autocorrelación",
+          "value": "0 de 8 series",
+          "provenance": null
+        },
+        {
+          "label": "Lag-1 máx. de rangos sin tendencia",
+          "value": "0.30",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 200.3,
+      "answers": [
+        "what",
+        "how_much",
+        "significant"
+      ]
+    },
+    {
+      "step": 5,
+      "key": "territorial",
+      "name": "Inteligencia territorial",
+      "status": "PARCIAL",
+      "summary": "NASADEM localizó 2 de 2 sujetos y calculó métricas en 2. 4 capas oficiales siguen pendientes y no se interpretan como riesgo cero.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "CACHED_DATA",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Gránulos NASADEM localizados",
+          "value": "2 de 2 · s18w071, s17w072",
+          "provenance": "REAL_DATA"
+        },
+        {
+          "label": "Elevación y pendiente calculadas",
+          "value": "2 de 2",
+          "provenance": "REAL_DATA"
+        },
+        {
+          "label": "Capas pendientes",
+          "value": "Red eléctrica y subestaciones, Áreas protegidas y restricciones ambientales, Patrimonio, comunidades y conflictos, GPM IMERG V07",
+          "provenance": "DATA_UNAVAILABLE"
+        }
+      ],
+      "duration_ms": 894.8,
+      "answers": [
+        "where",
+        "so_what"
+      ]
+    },
+    {
+      "step": 6,
+      "key": "evaluation",
+      "name": "Evaluación",
+      "status": "COMPLETADO",
+      "summary": "Orden relativo por irradiancia; diferencia entre extremos de 0.014 kWh/m²/día.",
+      "provenance": [
+        "CACHED_DATA",
+        "MODEL_ESTIMATE"
+      ],
+      "evidence": [
+        {
+          "label": "1.º Arequipa",
+          "value": "6.616 kWh/m²/día",
+          "provenance": null
+        },
+        {
+          "label": "2.º Moquegua",
+          "value": "6.602 kWh/m²/día",
+          "provenance": null
+        },
+        {
+          "label": "Criterio",
+          "value": "Irradiancia histórica media; sin score compuesto",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": [
+        "so_what"
+      ]
+    },
+    {
+      "step": 7,
+      "key": "finance",
+      "name": "Impacto económico",
+      "status": "COMPLETADO",
+      "summary": "VAN positivo en 0 de 2 sitios con los supuestos del usuario.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Moquegua",
+          "value": "USD -3,012,649 · 38,553 MWh/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Arequipa",
+          "value": "USD -2,973,077 · 38,637 MWh/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Fórmula",
+          "value": "Energía = MW × irradiancia × 365 × PR; VAN a tasa del usuario",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 0.3,
+      "answers": [
+        "so_what"
+      ]
+    },
+    {
+      "step": 8,
+      "key": "results",
+      "name": "Resultados",
+      "status": "COMPLETADO",
+      "summary": "Respuestas a las preguntas NASA, 3 tendencias significativas y 4 brechas documentadas.",
+      "provenance": [
+        "CACHED_DATA",
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Tendencias significativas",
+          "value": "3",
+          "provenance": null
+        },
+        {
+          "label": "Brechas para debida diligencia",
+          "value": "4",
+          "provenance": "DATA_UNAVAILABLE"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    },
+    {
+      "step": 9,
+      "key": "export",
+      "name": "Exportación",
+      "status": "LISTO",
+      "summary": "Reporte JSON reproducible disponible; se marca completado al descargarlo. El PDF ejecutivo sigue pendiente.",
+      "provenance": [
+        "CACHED_DATA",
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Formato",
+          "value": "JSON con identificador, período, supuestos, procedencia y métodos",
+          "provenance": null
+        },
+        {
+          "label": "PDF ejecutivo",
+          "value": "Pendiente",
+          "provenance": "DATA_UNAVAILABLE"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    }
+  ],
+  "nasa_questions": [
+    {
+      "key": "what",
+      "question": "What is changing?",
+      "question_es": "¿Qué está cambiando?",
+      "status": "RESPONDIDA",
+      "answer": "Temperatura del aire a 2 m y velocidad del viento a 10 m. 3 de 8 pruebas conservan significancia tras Benjamini–Hochberg (α = 0.05).",
+      "evidence": [
+        "Temperatura del aire a 2 m · Moquegua · p ajustado 0.0033",
+        "Velocidad del viento a 10 m · Moquegua · p ajustado 0.0480",
+        "Temperatura del aire a 2 m · Arequipa · p ajustado 0.0141",
+        "Sin evidencia de cambio: irradiancia solar superficial y precipitación corregida."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        3,
+        4
+      ]
+    },
+    {
+      "key": "where",
+      "question": "Where is it changing?",
+      "question_es": "¿Dónde está cambiando?",
+      "status": "RESPONDIDA",
+      "answer": "Temperatura del aire a 2 m: en todos los sitios analizados; velocidad del viento a 10 m: solo en Moquegua.",
+      "evidence": [
+        "Moquegua: -17.193, -70.934 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Arequipa: -16.409, -71.537 (WGS84) · celda de grilla NASA POWER, no medición en sitio"
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        1,
+        5
+      ]
+    },
+    {
+      "key": "how_much",
+      "question": "How much is it changing?",
+      "question_es": "¿Cuánto está cambiando?",
+      "status": "RESPONDIDA",
+      "answer": "Temperatura del aire a 2 m en Moquegua: +0.80 °C entre 2001 y 2024 (+0.0350 °C/año, pendiente de Sen).",
+      "evidence": [
+        "Temperatura del aire a 2 m en Moquegua: +0.0350 °C/año (IC 95 %: +0.0140 a +0.0611); +0.80 °C entre 2001 y 2024.",
+        "Velocidad del viento a 10 m en Moquegua: -0.0032 m/s/año (IC 95 %: -0.0061 a -0.0004); -0.07 m/s entre 2001 y 2024, -1.9 % de la media.",
+        "Temperatura del aire a 2 m en Arequipa: +0.0315 °C/año (IC 95 %: +0.0047 a +0.0556); +0.72 °C entre 2001 y 2024."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        4
+      ]
+    },
+    {
+      "key": "significant",
+      "question": "Is the change statistically significant?",
+      "question_es": "¿El cambio es estadísticamente significativo?",
+      "status": "RESPONDIDA",
+      "answer": "Sí en 3 de 8 pruebas, con Mann–Kendall corregido por autocorrelación y ajuste Benjamini–Hochberg. La autocorrelación bruta (hasta 0.48) proviene de la propia tendencia: sin ella, la de los rangos es 0.10 o menor y la corrección no altera la varianza.",
+      "evidence": [
+        "Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998) y pendiente de Sen sobre 24 medias anuales; familia Benjamini–Hochberg = cada variable entre 2 sitios; α = 0.05.",
+        "Significativas antes del ajuste BH: 3 de 8; después: 3 de 8.",
+        "Temperatura del aire a 2 m · Moquegua: p clásico 0.0012, p corregido 0.0016, p BH 0.0033, factor de varianza 1.000, lag-1 bruto 0.48 / sin tendencia 0.06",
+        "Velocidad del viento a 10 m · Moquegua: p clásico 0.0228, p corregido 0.0240, p BH 0.0480, factor de varianza 1.000, lag-1 bruto 0.13 / sin tendencia -0.06",
+        "Temperatura del aire a 2 m · Arequipa: p clásico 0.0129, p corregido 0.0141, p BH 0.0141, factor de varianza 1.000, lag-1 bruto 0.42 / sin tendencia 0.10"
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        4
+      ]
+    },
+    {
+      "key": "so_what",
+      "question": "What do these changes mean for investment decisions?",
+      "question_es": "¿Qué significan estos cambios para invertir?",
+      "status": "PARCIAL",
+      "answer": "El recurso solar no muestra deriva significativa en ningún sitio: no hay evidencia para castigar la media histórica por tendencia, lo que no prueba que sea constante. En Moquegua y Arequipa, la temperatura sube: aumentan las pérdidas térmicas de los módulos, que el cálculo de energía actual no modela. En Moquegua, el viento a 10 m disminuye: menor enfriamiento convectivo de los módulos. Con los supuestos del usuario, el VAN es positivo en 0 de 2 sitios (de −USD 3.01 M a −USD 2.97 M).",
+      "evidence": [
+        "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
+        "4 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
+        "Screening preliminar: no sustituye estudios de recurso, ingeniería, impacto ambiental ni factibilidad."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "stage_steps": [
+        5,
+        6,
+        7
+      ]
+    }
+  ],
+  "trend_findings": [
+    {
+      "site": "Moquegua",
+      "variable": "T2M",
+      "label": "Temperatura del aire a 2 m",
+      "unit": "°C",
+      "slope_per_year": 0.034981164383561414,
+      "confidence_interval": [
+        0.014002883922134036,
+        0.06109162362452278
+      ],
+      "first_year": 2001,
+      "last_year": 2024,
+      "change_over_period": 0.8045667808219126,
+      "change_percent_of_mean": null,
+      "p_value": 0.0011772109119610658,
+      "p_value_modified": 0.0016318152580183654,
+      "adjusted_p_value": 0.0032636305160367307,
+      "variance_correction": 1.0,
+      "autocorrelation_lag1": 0.478016254219388,
+      "autocorrelation_lag1_detrended": 0.05847826086956522
+    },
+    {
+      "site": "Moquegua",
+      "variable": "WS10M",
+      "label": "Velocidad del viento a 10 m",
+      "unit": "m/s",
+      "slope_per_year": -0.0032449621977693075,
+      "confidence_interval": [
+        -0.006108556817599785,
+        -0.0003582718651211454
+      ],
+      "first_year": 2001,
+      "last_year": 2024,
+      "change_over_period": -0.07463413054869407,
+      "change_percent_of_mean": -1.9234984224929703,
+      "p_value": 0.022808390757329572,
+      "p_value_modified": 0.02399553835367718,
+      "adjusted_p_value": 0.04799107670735436,
+      "variance_correction": 1.0,
+      "autocorrelation_lag1": 0.1331086928363005,
+      "autocorrelation_lag1_detrended": -0.0632608695652174
+    },
+    {
+      "site": "Arequipa",
+      "variable": "T2M",
+      "label": "Temperatura del aire a 2 m",
+      "unit": "°C",
+      "slope_per_year": 0.03146450916913175,
+      "confidence_interval": [
+        0.004723744292237579,
+        0.055595956629641834
+      ],
+      "first_year": 2001,
+      "last_year": 2024,
+      "change_over_period": 0.7236837108900303,
+      "change_percent_of_mean": null,
+      "p_value": 0.01290450360123228,
+      "p_value_modified": 0.014063556708352909,
+      "adjusted_p_value": 0.014063556708352909,
+      "variance_correction": 1.0,
+      "autocorrelation_lag1": 0.4232895769884973,
+      "autocorrelation_lag1_detrended": 0.09760869565217391
+    }
+  ],
+  "terrain": {
+    "generated_at": "2026-10-22T19:54:04.924411Z",
+    "dataset": "NASADEM V001",
+    "crs": "EPSG:4326; longitude/latitude",
+    "spatial_resolution": "1 arc-second (~30 m at the equator)",
+    "sites": [
+      {
+        "location": {
+          "latitude": -17.193,
+          "longitude": -70.934,
+          "label": "Moquegua"
+        },
+        "status": "READY",
+        "metrics": {
+          "elevation_m": 1420.0,
+          "slope_degrees": 5.47,
+          "aspect_degrees": 315.12,
+          "aspect_cardinal": "NO",
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777918-LPCLOUD",
+            "title": "NASADEM_HGT_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.916000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816797784-LPCLOUD",
+            "title": "NASADEM_SC_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:26.378000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -16.409,
+          "longitude": -71.537,
+          "label": "Arequipa"
+        },
+        "status": "READY",
+        "metrics": {
+          "elevation_m": 2316.0,
+          "slope_degrees": 3.67,
+          "aspect_degrees": 225.3,
+          "aspect_cardinal": "SO",
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816776376-LPCLOUD",
+            "title": "NASADEM_HGT_s17w072",
+            "tile_id": "s17w072",
+            "bounding_box": [
+              -72.0001389,
+              -17.0001389,
+              -70.9998611,
+              -15.9998611
+            ],
+            "updated_at": "2018-09-12T13:28:54.199000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s17w072/NASADEM_HGT_s17w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s17w072/NASADEM_HGT_s17w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816809703-LPCLOUD",
+            "title": "NASADEM_SC_s17w072",
+            "tile_id": "s17w072",
+            "bounding_box": [
+              -72.0001389,
+              -17.0001389,
+              -70.9998611,
+              -15.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:23.040000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s17w072/NASADEM_SC_s17w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s17w072/NASADEM_SC_s17w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
+        ]
+      }
+    ],
+    "note": "2 de 2 ubicaciones tienen métricas raster. Las demás conservan metadatos y vista previa oficiales sin convertir la ausencia de credenciales en datos ficticios."
+  },
+  "data_gaps": [
+    {
+      "dataset": "Red eléctrica y subestaciones",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No se estima distancia ni capacidad de conexión.",
+      "next_action": "Validar servicios oficiales de MINEM y COES."
+    },
+    {
+      "dataset": "Áreas protegidas y restricciones ambientales",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No se emite una conclusión de compatibilidad ambiental.",
+      "next_action": "Integrar fuentes oficiales con licencia y fecha de actualización."
+    },
+    {
+      "dataset": "Patrimonio, comunidades y conflictos",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No se descartan restricciones sociales o arqueológicas.",
+      "next_action": "Validar fuentes del Ministerio de Cultura, Defensoría y SENACE."
+    },
+    {
+      "dataset": "GPM IMERG V07",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La precipitación proviene de POWER; IMERG todavía no se usa como producto especializado.",
+      "next_action": "Configurar Earthdata y verificar producto, unidad y versión."
+    }
+  ],
+  "assumption_items": [
+    {
+      "key": "capacity_mw",
+      "label": "Capacidad",
+      "value": 20.0,
+      "unit": "MW",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "performance_ratio",
+      "label": "Performance ratio",
+      "value": 0.8,
+      "unit": "",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "initial_capex_usd",
+      "label": "CAPEX inicial",
+      "value": 18000000.0,
+      "unit": "USD",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "annual_opex_usd",
+      "label": "OPEX anual",
+      "value": 360000.0,
+      "unit": "USD/año",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "energy_price_usd_mwh",
+      "label": "Precio de energía",
+      "value": 55.0,
+      "unit": "USD/MWh",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "mitigation_capex_usd",
+      "label": "CAPEX de mitigación",
+      "value": 0.0,
+      "unit": "USD",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "discount_rate",
+      "label": "Tasa de descuento",
+      "value": 0.1,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "horizon_years",
+      "label": "Horizonte",
+      "value": 20.0,
+      "unit": "años",
+      "provenance": "USER_ASSUMPTION"
+    }
+  ],
+  "disclaimer": "Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera."
+}

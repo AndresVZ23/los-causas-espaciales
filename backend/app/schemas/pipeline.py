@@ -1,28 +1,21 @@
-from datetime import date, datetime
-from enum import StrEnum
-from typing import Literal
+from datetime import date
 
 from pydantic import BaseModel, Field, model_validator
 
 from .analysis import Point, Provenance, SourceMetadata, TrendResult
-from .terrain import TerrainResponse
-
-
-class PipelineStatus(StrEnum):
-    COMPLETED = "COMPLETADO"
-    PARTIAL = "PARCIAL"
-    READY = "LISTO"
-    UNAVAILABLE = "NO_DISPONIBLE"
-    ERROR = "ERROR"
-
-
-NasaQuestionKey = Literal["what", "where", "how_much", "significant", "so_what"]
-
-
-class QuestionStatus(StrEnum):
-    ANSWERED = "RESPONDIDA"
-    PARTIAL = "PARCIAL"
-    INSUFFICIENT = "EVIDENCIA_INSUFICIENTE"
+# Los modelos comunes viven en el contrato C2; se reexportan aquí por compatibilidad de importaciones.
+from .screening import (  # noqa: F401
+    DataGap,
+    NasaQuestionAnswer,
+    NasaQuestionKey,
+    PipelineStage,
+    PipelineStatus,
+    QuestionStatus,
+    ScreeningEnvelope,
+    Sector,
+    StageEvidence,
+    TrendFinding,
+)
 
 
 class SolarAssumptions(BaseModel):
@@ -51,56 +44,6 @@ class SolarScreeningRequest(BaseModel):
         if self.end_date > date.today():
             raise ValueError("La fecha final no puede estar en el futuro.")
         return self
-
-
-class StageEvidence(BaseModel):
-    label: str
-    value: str
-    provenance: Provenance | None = None
-
-
-class PipelineStage(BaseModel):
-    step: int
-    key: str
-    name: str
-    status: PipelineStatus
-    summary: str
-    provenance: list[Provenance]
-    evidence: list[StageEvidence] = Field(default_factory=list)
-    duration_ms: float | None = Field(default=None, description="Tiempo medido en el servidor; None si la etapa no ejecuta cálculo propio.")
-    answers: list[NasaQuestionKey] = Field(default_factory=list, description="Preguntas del reto NASA que esta etapa sustenta.")
-
-
-class TrendFinding(BaseModel):
-    """Una tendencia que conserva significancia tras Benjamini–Hochberg."""
-
-    site: str
-    variable: str
-    label: str
-    unit: str
-    slope_per_year: float
-    confidence_interval: tuple[float, float] | None
-    first_year: int
-    last_year: int
-    change_over_period: float
-    change_percent_of_mean: float | None = Field(description="None en escalas de intervalo, como la temperatura en °C.")
-    p_value: float
-    p_value_modified: float | None = None
-    adjusted_p_value: float
-    variance_correction: float | None = None
-    autocorrelation_lag1: float | None
-    autocorrelation_lag1_detrended: float | None = None
-
-
-class NasaQuestionAnswer(BaseModel):
-    key: NasaQuestionKey
-    question: str
-    question_es: str
-    status: QuestionStatus
-    answer: str
-    evidence: list[str]
-    provenance: list[Provenance]
-    stage_steps: list[int]
 
 
 class AnnualObservation(BaseModel):
@@ -148,25 +91,11 @@ class SolarSiteResult(BaseModel):
     cautions: list[str]
 
 
-class DataGap(BaseModel):
-    dataset: str
-    status: Provenance = Provenance.UNAVAILABLE
-    impact: str
-    next_action: str
+class SolarScreeningResponse(ScreeningEnvelope):
+    """Sobre común C2 + campos propios del piloto solar."""
 
-
-class SolarScreeningResponse(BaseModel):
-    analysis_id: str
-    generated_at: datetime
-    title: str
-    sector: str = "Energía solar fotovoltaica"
-    period: str
-    pipeline: list[PipelineStage]
-    nasa_questions: list[NasaQuestionAnswer] = Field(default_factory=list)
-    trend_findings: list[TrendFinding] = Field(default_factory=list)
+    sector: Sector = Sector.SOLAR
+    sector_label: str = "Energía solar fotovoltaica"
     sites: list[SolarSiteResult]
-    terrain: TerrainResponse | None = None
     comparative_findings: list[str]
-    data_gaps: list[DataGap]
     assumptions: SolarAssumptions
-    disclaimer: str

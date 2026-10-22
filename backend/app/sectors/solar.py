@@ -1,41 +1,62 @@
+"""Piloto solar: screening comparativo de sitios sobre el contrato común C2."""
+
 import asyncio
 import hashlib
 import json
 from datetime import datetime, timezone
-from itertools import combinations
-from statistics import fmean, pstdev
 from time import perf_counter
 
-from ..connectors.nasa.nasadem import NasademConnector, NasademConnectorError
-from ..connectors.nasa.power import PowerConnector, PowerConnectorError
-from ..core.units import display_unit
 from ..finance.engine import calculate_npv
-from ..geospatial.geometry import GEOD
-from ..orchestration.nasa_questions import SiteSummaries, answer_nasa_questions, collect_trend_findings
-from ..orchestration.stages import StageTimings, build_solar_pipeline
-from ..schemas.analysis import FinanceRequest, Point, Provenance
+from ..orchestration.analysis import analyze_subjects
+from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
+from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
+from ..orchestration.stages import (
+    StageTimings,
+    analysis_stage,
+    assemble_pipeline,
+    configuration_stage,
+    export_stage,
+    extraction_stage,
+    results_stage,
+    selection_stage,
+    stage,
+    territorial_stage,
+    unique,
+)
+from ..schemas.analysis import FinanceRequest, Provenance
 from ..schemas.pipeline import (
-    AnnualObservation,
     DataGap,
     SolarAssumptions,
     SolarFinancialProjection,
     SolarScreeningRequest,
     SolarScreeningResponse,
     SolarSiteResult,
-    VariableSummary,
 )
+from ..schemas.screening import AssumptionItem, PipelineStatus, StageEvidence, StudySubject, SubjectKind
 from ..schemas.terrain import TerrainResponse
-from ..statistics.multiple_testing import benjamini_hochberg
-from ..statistics.trends import analyze_trend, annual_means, decision_p_value
-
-TERRAIN_TIMEOUT_SECONDS = 45
 
 SOLAR_VARIABLES = ["ALLSKY_SFC_SW_DWN", "T2M", "WS10M", "PRECTOTCORR"]
-VARIABLE_LABELS = {
-    "ALLSKY_SFC_SW_DWN": "Irradiancia solar superficial",
-    "T2M": "Temperatura del aire a 2 m",
-    "WS10M": "Velocidad del viento a 10 m",
-    "PRECTOTCORR": "Precipitación corregida",
+IRRADIANCE = "ALLSKY_SFC_SW_DWN"
+SECTOR_LABEL = "Solar fotovoltaico"
+
+# Lecturas sectoriales por variable y dirección: explican consecuencias, no las cuantifican.
+SOLAR_READINGS: dict[tuple[str, str], str] = {
+    (IRRADIANCE, "decreasing"): "la irradiancia cae: la media histórica sobrestima el recurso futuro y el VAN debe sensibilizarse a la baja",
+    (IRRADIANCE, "increasing"): "la irradiancia sube: la media histórica es conservadora para el recurso",
+    ("T2M", "increasing"): "la temperatura sube: aumentan las pérdidas térmicas de los módulos, que el cálculo de energía actual no modela",
+    ("T2M", "decreasing"): "la temperatura baja: reduce pérdidas térmicas de los módulos, que el cálculo de energía actual no modela",
+    ("WS10M", "decreasing"): "el viento a 10 m disminuye: menor enfriamiento convectivo de los módulos",
+    ("WS10M", "increasing"): "el viento a 10 m aumenta: revisar cargas de diseño de estructuras",
+    ("PRECTOTCORR", "increasing"): "la precipitación aumenta: revisar drenaje y exposición hidrometeorológica",
+    ("PRECTOTCORR", "decreasing"): "la precipitación disminuye: más ensuciamiento de módulos y menos limpieza natural",
+}
+SOLAR_STABLE_NOTES = {
+    IRRADIANCE: "El recurso solar no muestra deriva significativa en ningún sitio: no hay evidencia para castigar la media histórica por tendencia, lo que no prueba que sea constante.",
+}
+ASSUMPTION_LABELS = {
+    "capacity_mw": ("Capacidad", "MW"), "performance_ratio": ("Performance ratio", ""), "initial_capex_usd": ("CAPEX inicial", "USD"),
+    "annual_opex_usd": ("OPEX anual", "USD/año"), "energy_price_usd_mwh": ("Precio de energía", "USD/MWh"),
+    "mitigation_capex_usd": ("CAPEX de mitigación", "USD"), "discount_rate": ("Tasa de descuento", "fracción"), "horizon_years": ("Horizonte", "años"),
 }
 
 
@@ -69,39 +90,10 @@ def calculate_solar_projection(mean_irradiance: float, assumptions: SolarAssumpt
     )
 
 
-def _summary(variable: str, observations, source, expected_days: int) -> VariableSummary:
-    if not observations:
-        raise PowerConnectorError(f"NASA POWER no devolvió observaciones válidas para {variable}.")
-    values = [observation.value for observation in observations]
-    annual_observations = annual_means(observations)
-    annual_values = [observation.value for observation in annual_observations]
-    annual_variability = None
-    if len(annual_values) >= 2 and abs(fmean(annual_values)) > 1e-12:
-        annual_variability = pstdev(annual_values) / abs(fmean(annual_values)) * 100
-    return VariableSummary(
-        variable=variable,
-        label=VARIABLE_LABELS[variable],
-        mean=fmean(values),
-        minimum=min(values),
-        maximum=max(values),
-        unit=source.unit,
-        display_unit=display_unit(source.unit),
-        valid_observations=len(values),
-        completeness_percent=round(len(values) / expected_days * 100, 2),
-        annual_variability_percent=round(annual_variability, 3) if annual_variability is not None else None,
-        trend=analyze_trend(observations),
-        source=source,
-        annual_series=[
-            AnnualObservation(year=observation.timestamp.year, value=round(observation.value, 6))
-            for observation in annual_observations
-        ],
-    )
-
-
 def _data_gaps(terrain: TerrainResponse | None) -> list[DataGap]:
     gaps = []
     if terrain is None or any(site.status != "READY" for site in terrain.sites):
-        gaps.append(DataGap(dataset="Métricas raster NASADEM", impact="El catálogo y las vistas previas están conectados; sin Earthdata Login no se calculan elevación, pendiente ni orientación.", next_action="Configurar EARTHDATA_TOKEN y validar las celdas de NASADEM_HGT.001 y NASADEM_SC.001."))
+        gaps.append(DataGap(dataset="Métricas raster NASADEM", impact="No se calcularon elevación, pendiente ni orientación para todos los sitios (token ausente o descarga no completada).", next_action="Verificar EARTHDATA_TOKEN y completar la descarga de NASADEM_HGT.001 y NASADEM_SC.001."))
     return gaps + [
         DataGap(dataset="Red eléctrica y subestaciones", impact="No se estima distancia ni capacidad de conexión.", next_action="Validar servicios oficiales de MINEM y COES."),
         DataGap(dataset="Áreas protegidas y restricciones ambientales", impact="No se emite una conclusión de compatibilidad ambiental.", next_action="Integrar fuentes oficiales con licencia y fecha de actualización."),
@@ -110,137 +102,144 @@ def _data_gaps(terrain: TerrainResponse | None) -> list[DataGap]:
     ]
 
 
-def _elapsed_ms(start: float) -> float:
-    return round((perf_counter() - start) * 1000, 1)
+def _subjects(request: SolarScreeningRequest) -> list[StudySubject]:
+    return [
+        StudySubject(
+            id=f"sitio-{index + 1}", label=site.label or f"Sitio {index + 1}", kind=SubjectKind.POINT,
+            geometry={"type": "Point", "coordinates": [site.longitude, site.latitude]}, representative_point=site,
+        )
+        for index, site in enumerate(request.sites)
+    ]
 
 
-async def _extract_power(request: SolarScreeningRequest):
-    connector = PowerConnector()
-    start = perf_counter()
-    datasets = await asyncio.gather(*(
-        connector.daily_point_multi(site.latitude, site.longitude, SOLAR_VARIABLES, request.start_date, request.end_date)
-        for site in request.sites
-    ))
-    return datasets, _elapsed_ms(start)
+def _assumption_items(assumptions: SolarAssumptions) -> list[AssumptionItem]:
+    return [AssumptionItem(key=key, label=label, value=float(getattr(assumptions, key)), unit=unit) for key, (label, unit) in ASSUMPTION_LABELS.items()]
 
 
-async def _extract_terrain(sites: list[Point]) -> tuple[TerrainResponse | None, str | None, float]:
-    """NASADEM enriquece la etapa territorial; su fallo se declara y no invalida el análisis solar."""
-    start = perf_counter()
-    try:
-        terrain = await asyncio.wait_for(NasademConnector().points(sites), timeout=TERRAIN_TIMEOUT_SECONDS)
-        return terrain, None, _elapsed_ms(start)
-    except NasademConnectorError as exc:
-        return None, str(exc), _elapsed_ms(start)
-    except TimeoutError:
-        return None, f"NASA CMR no respondió en {TERRAIN_TIMEOUT_SECONDS} s.", _elapsed_ms(start)
+def _site_result(site, summaries, position: int, total: int, assumptions: SolarAssumptions) -> SolarSiteResult:
+    solar = next(item for item in summaries if item.variable == IRRADIANCE)
+    opportunities = [
+        f"Irradiancia histórica media de {solar.mean:.2f} {solar.display_unit} con {solar.completeness_percent:.1f}% de cobertura diaria.",
+        f"Posición {position} de {total} entre las ubicaciones comparadas por irradiancia media.",
+    ]
+    if solar.significant_after_bh and solar.trend.direction == "increasing":
+        opportunities.append("La tendencia de irradiancia es creciente y conserva significancia después del ajuste BH.")
+    cautions = [
+        "NASA POWER representa una estimación en grilla y no sustituye mediciones en sitio.",
+        "El análisis no incluye conexión eléctrica, predios ni restricciones ambientales o sociales.",
+    ]
+    if solar.significant_after_bh and solar.trend.direction == "decreasing":
+        cautions.append("La irradiancia presenta una tendencia decreciente significativa después del ajuste BH.")
+    elif not solar.significant_after_bh:
+        cautions.append("No existe evidencia suficiente de una tendencia de irradiancia significativa después del ajuste BH.")
+    return SolarSiteResult(
+        location=site, relative_solar_position=position, relative_position_text=f"{position} de {total} por irradiancia histórica media",
+        variables=summaries, finance=calculate_solar_projection(solar.mean, assumptions), opportunities=opportunities, cautions=cautions,
+    )
 
 
-def _max_separation_km(sites: list[Point]) -> float | None:
-    distances = [GEOD.inv(a.longitude, a.latitude, b.longitude, b.latitude)[2] / 1000 for a, b in combinations(sites, 2)]
-    return max(distances) if distances else None
+def _evaluation_and_finance_stages(results: list[SolarSiteResult], source_provenance: list[Provenance], finance_ms: float):
+    ranked = sorted(results, key=lambda item: item.relative_solar_position)
+    irradiance = [next(v for v in item.variables if v.variable == IRRADIANCE) for item in ranked]
+    unit = irradiance[0].display_unit
+    delta = irradiance[0].mean - irradiance[-1].mean
+    evaluation_evidence = [StageEvidence(label=f"{index + 1}.º {item.location.label}", value=f"{solar.mean:.3f} {unit}") for index, (item, solar) in enumerate(zip(ranked, irradiance, strict=True))]
+    evaluation_evidence.append(StageEvidence(label="Criterio", value="Irradiancia histórica media; sin score compuesto"))
+    evaluation = stage("evaluation", PipelineStatus.COMPLETED, f"Orden relativo por irradiancia; diferencia entre extremos de {delta:.3f} {unit}.",
+                       source_provenance + [Provenance.MODEL], evaluation_evidence, answers=["so_what"])
+    npvs = [item.finance.npv_usd for item in results]
+    finance_evidence = [StageEvidence(label=item.location.label or "Sitio", value=f"USD {item.finance.npv_usd:,.0f} · {item.finance.annual_energy_mwh:,.0f} MWh/año", provenance=Provenance.MODEL) for item in results]
+    finance_evidence.append(StageEvidence(label="Fórmula", value="Energía = MW × irradiancia × 365 × PR; VAN a tasa del usuario"))
+    finance = stage("finance", PipelineStatus.COMPLETED, f"VAN positivo en {sum(1 for value in npvs if value >= 0)} de {len(npvs)} sitios con los supuestos del usuario.",
+                    [Provenance.MODEL, Provenance.ASSUMPTION], finance_evidence, finance_ms, ["so_what"])
+    return evaluation, finance
 
 
 async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningResponse:
     timings = StageTimings()
-    (datasets_by_site, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms) = await asyncio.gather(
-        _extract_power(request), _extract_terrain(request.sites)
+    subjects = _subjects(request)
+    points = [subject.representative_point for subject in subjects]
+    (datasets, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms) = await asyncio.gather(
+        extract_power(points, SOLAR_VARIABLES, request.start_date, request.end_date), extract_terrain(points)
     )
     expected_days = (request.end_date - request.start_date).days + 1
 
     analysis_start = perf_counter()
-    summaries_by_site: list[list[VariableSummary]] = []
-    for datasets in datasets_by_site:
-        summaries_by_site.append([
-            _summary(variable, *datasets[variable], expected_days)
-            for variable in SOLAR_VARIABLES
-        ])
+    summaries_by_site = analyze_subjects(datasets, SOLAR_VARIABLES, expected_days)
+    timings.analysis_ms = elapsed_ms(analysis_start)
 
-    for variable in SOLAR_VARIABLES:
-        summaries = [next(item for item in site if item.variable == variable) for site in summaries_by_site]
-        adjusted = benjamini_hochberg([decision_p_value(item.trend) for item in summaries])
-        for item, adjusted_p in zip(summaries, adjusted, strict=True):
-            item.adjusted_p_value = adjusted_p
-            item.significant_after_bh = adjusted_p is not None and adjusted_p < item.trend.alpha
-    timings.analysis_ms = _elapsed_ms(analysis_start)
-
-    irradiance_means = [next(item for item in summaries if item.variable == "ALLSKY_SFC_SW_DWN").mean for summaries in summaries_by_site]
-    ordered_indexes = sorted(range(len(irradiance_means)), key=lambda index: irradiance_means[index], reverse=True)
-    positions = {index: position + 1 for position, index in enumerate(ordered_indexes)}
-    site_results = []
+    irradiance_means = [next(item for item in summaries if item.variable == IRRADIANCE).mean for summaries in summaries_by_site]
+    ordered = sorted(range(len(irradiance_means)), key=lambda index: irradiance_means[index], reverse=True)
+    positions = {index: position + 1 for position, index in enumerate(ordered)}
     finance_start = perf_counter()
-    for index, (site, summaries) in enumerate(zip(request.sites, summaries_by_site, strict=True)):
-        solar = next(item for item in summaries if item.variable == "ALLSKY_SFC_SW_DWN")
-        opportunities = [
-            f"Irradiancia histórica media de {solar.mean:.2f} {solar.display_unit} con {solar.completeness_percent:.1f}% de cobertura diaria.",
-            f"Posición {positions[index]} de {len(request.sites)} entre las ubicaciones comparadas por irradiancia media.",
-        ]
-        if solar.significant_after_bh and solar.trend.direction == "increasing":
-            opportunities.append("La tendencia de irradiancia es creciente y conserva significancia después del ajuste BH.")
-        cautions = [
-            "NASA POWER representa una estimación en grilla y no sustituye mediciones en sitio.",
-            "El análisis no incluye conexión eléctrica, topografía, predios ni restricciones ambientales o sociales.",
-        ]
-        if solar.significant_after_bh and solar.trend.direction == "decreasing":
-            cautions.append("La irradiancia presenta una tendencia decreciente significativa después del ajuste BH.")
-        elif not solar.significant_after_bh:
-            cautions.append("No existe evidencia suficiente de una tendencia de irradiancia significativa después del ajuste BH.")
-        site_results.append(
-            SolarSiteResult(
-                location=site,
-                relative_solar_position=positions[index],
-                relative_position_text=f"{positions[index]} de {len(request.sites)} por irradiancia histórica media",
-                variables=summaries,
-                finance=calculate_solar_projection(solar.mean, request.assumptions),
-                opportunities=opportunities,
-                cautions=cautions,
-            )
-        )
-
-    timings.finance_ms = _elapsed_ms(finance_start)
+    site_results = [
+        _site_result(site, summaries, positions[index], len(request.sites), request.assumptions)
+        for index, (site, summaries) in enumerate(zip(request.sites, summaries_by_site, strict=True))
+    ]
+    timings.finance_ms = elapsed_ms(finance_start)
 
     ranked = sorted(site_results, key=lambda item: item.relative_solar_position)
-    best = ranked[0]
-    worst = ranked[-1]
-    best_solar = next(item for item in best.variables if item.variable == "ALLSKY_SFC_SW_DWN")
-    worst_solar = next(item for item in worst.variables if item.variable == "ALLSKY_SFC_SW_DWN")
+    best_solar = next(item for item in ranked[0].variables if item.variable == IRRADIANCE)
+    worst_solar = next(item for item in ranked[-1].variables if item.variable == IRRADIANCE)
     delta = best_solar.mean - worst_solar.mean
     delta_percent = delta / worst_solar.mean * 100 if worst_solar.mean else 0
-    findings = [
-        f"{best.location.label or 'La primera ubicación'} registra la mayor irradiancia media: {best_solar.mean:.2f} {best_solar.display_unit}.",
+    comparative = [
+        f"{ranked[0].location.label or 'La primera ubicación'} registra la mayor irradiancia media: {best_solar.mean:.2f} {best_solar.display_unit}.",
         f"La diferencia entre la mayor y menor irradiancia media es {delta:.2f} {best_solar.display_unit} ({delta_percent:.1f}%).",
         "La posición relativa considera únicamente irradiancia histórica; no es una recomendación de inversión ni un score de factibilidad.",
     ]
 
-    labelled = [
-        SiteSummaries(label=site.label or f"Sitio {index + 1}", summaries=summaries)
-        for index, (site, summaries) in enumerate(zip(request.sites, summaries_by_site, strict=True))
-    ]
+    labelled = [SubjectSummaries(label=subject.label, summaries=summaries) for subject, summaries in zip(subjects, summaries_by_site, strict=True)]
     trend_findings = collect_trend_findings(labelled)
     gaps = _data_gaps(terrain)
+    pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
+    npvs = [result.finance.npv_usd for result in site_results]
+    lens = SectorLens(
+        readings=SOLAR_READINGS,
+        stable_notes=SOLAR_STABLE_NOTES,
+        economics=(
+            f"Con los supuestos del usuario, el VAN es positivo en {sum(1 for value in npvs if value >= 0)} de {len(npvs)} sitios "
+            f"(de {millions_usd(min(npvs))} a {millions_usd(max(npvs))})."
+        ),
+    )
     nasa_questions = answer_nasa_questions(
-        labelled,
-        trend_findings,
-        site_results,
-        {item.label: (site.latitude, site.longitude) for item, site in zip(labelled, request.sites, strict=True)},
-        pending_gaps=sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE),
+        labelled, trend_findings,
+        {subject.label: (subject.representative_point.latitude, subject.representative_point.longitude) for subject in subjects},
+        pending, lens,
     )
-    pipeline = build_solar_pipeline(
-        request, labelled, site_results, trend_findings, terrain, terrain_error, gaps, _max_separation_km(request.sites), timings
-    )
+
+    source_provenance = unique([item.source.provenance for summaries in summaries_by_site for item in summaries])
+    all_provenance = unique(source_provenance + [Provenance.MODEL, Provenance.ASSUMPTION] + ([Provenance.UNAVAILABLE] if pending else []))
+    years = max(len(item.annual_series) for summaries in summaries_by_site for item in summaries)
+    a = request.assumptions
+    evaluation, finance = _evaluation_and_finance_stages(site_results, source_provenance, timings.finance_ms)
+    pipeline = assemble_pipeline([
+        selection_stage(subjects, max_separation_km(points)),
+        configuration_stage(SECTOR_LABEL, SOLAR_VARIABLES, request.start_date, request.end_date, years,
+                            f"{a.capacity_mw:g} MW · tasa {a.discount_rate:.0%} · {a.horizon_years} años"),
+        extraction_stage(labelled, timings.extraction_ms),
+        analysis_stage(labelled, trend_findings, timings.analysis_ms),
+        territorial_stage(terrain, terrain_error, gaps, timings.terrain_ms),
+        evaluation,
+        finance,
+        results_stage(trend_findings, gaps, all_provenance),
+        export_stage(all_provenance),
+    ])
     fingerprint = hashlib.sha256(json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()[:16]
     return SolarScreeningResponse(
         analysis_id=fingerprint,
         generated_at=datetime.now(timezone.utc),
         title="Screening solar comparativo — sur del Perú",
         period=f"{request.start_date.isoformat()}/{request.end_date.isoformat()}",
+        subjects=subjects,
         pipeline=pipeline,
         nasa_questions=nasa_questions,
         trend_findings=trend_findings,
         sites=site_results,
         terrain=terrain,
-        comparative_findings=findings,
+        comparative_findings=comparative,
         data_gaps=gaps,
         assumptions=request.assumptions,
+        assumption_items=_assumption_items(request.assumptions),
         disclaimer="Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera.",
     )

@@ -58,26 +58,15 @@ Solo el dueño edita su archivo. Si el otro necesita un cambio, lo pide en el re
 
 Los pilotos de Codex entregan su interfaz como componentes en `frontend/app/_components/pilots/` (por ejemplo `road-reading.tsx`), sin tocar `workspace.tsx`. Claude los conecta en C5.
 
-## 4. Contrato compartido (C2)
+## 4. Contrato compartido (C2) — entregado
 
-Todos los sectores responden con el mismo sobre, para que el pipeline, las preguntas NASA, el PDF y el asistente funcionen igual en solar, vial e inmobiliario:
+Ver `docs/coordination/contracts/README.md`: esquema, ejemplo real y guía paso a paso para armar un piloto. En resumen:
 
-```text
-ScreeningEnvelope
-  analysis_id, generated_at, sector, title, period
-  geometries: puntos | corredor | polígonos (WGS84, RFC 7946)
-  pipeline: list[PipelineStage]          # 9 etapas, evidencia y estados derivados (ADR-012)
-  nasa_questions: list[NasaQuestionAnswer]
-  trend_findings: list[TrendFinding]
-  data_gaps: list[DataGap]
-  assumptions: dict + procedencia USER_ASSUMPTION
-  disclaimer
-  sector_payload: modelo propio del sector (SolarPayload, RoadPayload, RealEstatePayload)
-```
-
-- Las preguntas 1–4 se calculan igual para todos los sectores. La quinta usa un registro de lecturas por sector (`SECTOR_READINGS[sector][(variable, dirección)]`), y Codex agrega las de vial e inmobiliario en su rama.
-- Los cambios al contrato son solo aditivos. Un cambio incompatible requiere un ADR y el acuerdo de ambos.
-- Claude publica el contrato con un ejemplo JSON real en `docs/coordination/contracts/` al cerrar C2.
+- `ScreeningEnvelope` (`backend/app/schemas/screening.py`) lleva sujetos de estudio (`point`, `segment` o `polygon` con GeoJSON), pipeline de nueve etapas, preguntas NASA, tendencias, relieve, brechas, supuestos y aviso.
+- Los campos del sector se agregan **heredando** el sobre, en lugar de un `sector_payload` anidado. Así la respuesta solar sigue siendo compatible con el frontend actual (ADR-015).
+- Las preguntas 1–4 son comunes. La quinta recibe un `SectorLens` que define cada sector en su propio módulo; no hay registro central que editar.
+- Piezas reutilizables en `backend/app/orchestration/`: `extraction`, `analysis`, `stages` y `conformance`. Cada piloto prueba `envelope_violations(...) == []`.
+- Los cambios al contrato son solo aditivos. Uno incompatible requiere un ADR y el acuerdo de ambos.
 
 ## 5. Puerta de calidad común (definición de terminado)
 
@@ -93,6 +82,8 @@ Cada rama, antes de pedir revisión:
 
 ## 6. Protocolo de traspaso
 
+- Claude trabaja en una copia de trabajo hermana (`git worktree`, carpeta `Desktop\Codex\los-causas-claude`); la carpeta principal queda para Codex. Así nadie cambia la rama activa del otro ni pisa archivos sin confirmar. El worktree usa `frontend/node_modules` como junction hacia la carpeta principal, y como Turbopack no compila dependencias fuera de su raíz, allí se valida con `npx next build --webpack`. El build oficial con Turbopack se corre en la carpeta principal al fusionar.
+- `docs/coordination/HANDOFF_LOG.md` se fusiona con `merge=union` (`.gitattributes`): las entradas de ambos se unen sin conflicto.
 - Cada rama nace del `master` vigente y trata un solo tema. Antes de pedir revisión, se actualiza con `master`.
 - Al terminar, el agente agrega una entrada a `docs/coordination/HANDOFF_LOG.md` (solo agregar, nunca editar entradas ajenas):
   `fecha · agente · rama · commit · qué entrega · evidencia de la puerta · qué necesita del otro · bloqueos`.
@@ -115,6 +106,6 @@ Cada rama, antes de pedir revisión:
 |---|---|---|
 | X0 | Pendiente de revisión de Codex | `claude/diseno-consola` @ ver registro |
 | C1 | **Hecho**, pendiente de revisión de Codex | `claude/mk-modificado` (ver registro) |
-| C2 | Siguiente para Claude | — |
+| C2 | **Hecho**, pendiente de revisión de Codex | `claude/contrato-sectores` (ver registro) |
 | K1 | Pendiente de X0 | — |
 | K1b | Disponible para Codex | — |

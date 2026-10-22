@@ -22,8 +22,12 @@ export type Stage = { step: number; key: string; name: string; status: string; s
 export type NasaQuestion = { key: QuestionKey; question: string; question_es: string; status: "RESPONDIDA" | "PARCIAL" | "EVIDENCIA_INSUFICIENTE"; answer: string; evidence: string[]; provenance: string[]; stage_steps: number[] };
 export type TrendFinding = { site: string; variable: string; label: string; unit: string; slope_per_year: number; confidence_interval: [number, number] | null; first_year: number; last_year: number; change_over_period: number; change_percent_of_mean: number | null; p_value: number; adjusted_p_value: number; autocorrelation_lag1: number | null };
 export type DataGap = { dataset: string; status: string; impact: string; next_action: string };
+// Contrato común C2 (ScreeningEnvelope v1.0): campos que todos los sectores comparten.
+export type StudySubject = { id: string; label: string; kind: "point" | "segment" | "polygon"; geometry: { type: string; coordinates: unknown }; representative_point: Point };
+export type AssumptionItem = { key: string; label: string; value: number; unit: string; provenance: string };
 export type ScreeningResult = {
-  analysis_id: string; generated_at: string; title: string; sector: string; period: string;
+  contract_version?: string; analysis_id: string; generated_at: string; title: string; sector: string; sector_label?: string; period: string;
+  subjects?: StudySubject[]; assumption_items?: AssumptionItem[];
   pipeline: Stage[]; nasa_questions: NasaQuestion[]; trend_findings: TrendFinding[];
   sites: SiteResult[]; terrain: TerrainResult | null;
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; disclaimer: string;

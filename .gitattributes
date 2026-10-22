@@ -1,0 +1,2 @@
+# El registro de traspaso solo crece por agregados de ambos agentes en ramas distintas: unir sin conflicto.
+docs/coordination/HANDOFF_LOG.md merge=union

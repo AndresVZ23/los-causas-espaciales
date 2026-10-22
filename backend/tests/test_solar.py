@@ -8,6 +8,7 @@ from backend.app.connectors.nasa.power import PowerConnectorError
 from backend.app.schemas.analysis import Observation, Point, Provenance, SourceMetadata
 from backend.app.schemas.pipeline import PipelineStatus, QuestionStatus, SolarAssumptions, SolarScreeningRequest
 from backend.app.schemas.terrain import TerrainMetrics, TerrainResponse, TerrainSiteResult
+from backend.app.orchestration import extraction
 from backend.app.sectors import solar
 from backend.app.sectors.solar import SOLAR_VARIABLES, calculate_solar_projection
 
@@ -112,7 +113,7 @@ class FailingNasadem:
 
 @pytest.fixture(autouse=True)
 def offline_nasadem(monkeypatch):
-    monkeypatch.setattr(solar, "NasademConnector", MetadataOnlyNasadem)
+    monkeypatch.setattr(extraction, "NasademConnector", MetadataOnlyNasadem)
 
 
 def _request() -> SolarScreeningRequest:
@@ -127,7 +128,7 @@ def _request() -> SolarScreeningRequest:
 
 
 def test_screening_orchestrates_pipeline_and_preserves_provenance(monkeypatch):
-    monkeypatch.setattr(solar, "PowerConnector", FakePowerConnector)
+    monkeypatch.setattr(extraction, "PowerConnector", FakePowerConnector)
 
     result = asyncio.run(solar.run_solar_screening(_request()))
 
@@ -151,7 +152,7 @@ def test_screening_orchestrates_pipeline_and_preserves_provenance(monkeypatch):
 
 
 def test_nasa_questions_quantify_significant_trends(monkeypatch):
-    monkeypatch.setattr(solar, "PowerConnector", FakePowerConnector)
+    monkeypatch.setattr(extraction, "PowerConnector", FakePowerConnector)
 
     result = asyncio.run(solar.run_solar_screening(_request()))
     questions = {item.key: item for item in result.nasa_questions}
@@ -171,7 +172,7 @@ def test_nasa_questions_quantify_significant_trends(monkeypatch):
 
 
 def test_nasa_questions_declare_insufficient_evidence_without_trend(monkeypatch):
-    monkeypatch.setattr(solar, "PowerConnector", FlatPowerConnector)
+    monkeypatch.setattr(extraction, "PowerConnector", FlatPowerConnector)
 
     result = asyncio.run(solar.run_solar_screening(_request()))
     questions = {item.key: item for item in result.nasa_questions}
@@ -184,8 +185,8 @@ def test_nasa_questions_declare_insufficient_evidence_without_trend(monkeypatch)
 
 
 def test_terrain_failure_is_declared_without_blocking_solar_screening(monkeypatch):
-    monkeypatch.setattr(solar, "PowerConnector", FakePowerConnector)
-    monkeypatch.setattr(solar, "NasademConnector", FailingNasadem)
+    monkeypatch.setattr(extraction, "PowerConnector", FakePowerConnector)
+    monkeypatch.setattr(extraction, "NasademConnector", FailingNasadem)
 
     result = asyncio.run(solar.run_solar_screening(_request()))
     territorial = result.pipeline[4]
@@ -197,7 +198,7 @@ def test_terrain_failure_is_declared_without_blocking_solar_screening(monkeypatc
 
 
 def test_low_coverage_marks_extraction_partial(monkeypatch):
-    monkeypatch.setattr(solar, "PowerConnector", SparsePowerConnector)
+    monkeypatch.setattr(extraction, "PowerConnector", SparsePowerConnector)
     result = asyncio.run(solar.run_solar_screening(_request()))
 
     assert result.pipeline[2].status == PipelineStatus.PARTIAL
@@ -209,7 +210,7 @@ def test_screening_does_not_replace_provider_failure_with_fake_data(monkeypatch)
         async def daily_point_multi(self, *args, **kwargs):
             raise PowerConnectorError("fallo NASA controlado")
 
-    monkeypatch.setattr(solar, "PowerConnector", FailingConnector)
+    monkeypatch.setattr(extraction, "PowerConnector", FailingConnector)
 
     with pytest.raises(PowerConnectorError, match="fallo NASA controlado"):
         asyncio.run(solar.run_solar_screening(_request()))
