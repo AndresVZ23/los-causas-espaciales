@@ -8,8 +8,8 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-22T21:30:00Z",
-  updatedBy: "Claude",
+  updatedAt: "2026-10-22T22:50:00Z",
+  updatedBy: "Codex",
 
   statuses: {
     VERIFICADO: "Verificado con evidencia en el repositorio",
@@ -55,16 +55,19 @@ window.DOP_DATA = {
       acceptance: "Consulta real contrastada con NASA y prueba de faltantes y error.",
       blocker: "Ninguno técnico: el token Earthdata ya funciona. Falta elegir el producto y construir el conector.",
       evidence: [] },
-    { id: "dem", code: "01B", name: "NASADEM · relieve", phase: 2, row: 2, owner: "Codex", status: "LISTO_PARA_QA", planTask: "K0",
+    { id: "dem", code: "01B", name: "NASADEM · relieve", phase: 2, row: 2, owner: "Codex", status: "VERIFICADO", planTask: "K0",
       purpose: "Elevación, pendiente y orientación verificables para energía, corredores e inmuebles.",
       inputs: ["NASADEM_HGT.001", "NASADEM_SC.001", "CMR y Earthdata Login"],
       output: "Métricas raster reales: Moquegua 1,420 m · 5.47° · NO; Arequipa 2,316 m · 3.67° · SO.",
       acceptance: "Celdas reales contrastadas con una segunda implementación y descarga asíncrona reanudable (K0).",
-      blocker: "Falta el contraste independiente de celdas y la descarga en segundo plano para sitios nuevos.",
+      blocker: "Ninguno para K0; los productos territoriales y el muestreo de geometrías continúan en K1/K1b.",
       evidence: [
         { label: "Integración CMR y vista previa", ref: "08be4ff" },
         { label: "Descarga autenticada real: 2 de 2 sitios READY", ref: "HANDOFF_LOG 2026-10-22" },
-        { label: "Descarga reanudable en curso", ref: "codex/nasadem-resumable" },
+        { label: "Descarga asíncrona, reanudable, atómica y con precarga", ref: "df128a0 · merge 7a42125" },
+        { label: "14 pruebas K0: fría, Range, caché, concurrencia, PENDING y prefetch", ref: "pytest backend/tests/test_nasadem.py" },
+        { label: "Celdas contrastadas por lectura ZIP independiente", ref: "Moquegua 1420 m · 5.47° · 315.12°; Arequipa 2316 m · 3.67° · 225.3°" },
+        { label: "Caché real 2 de 2 READY en 470.6 ms", ref: "HANDOFF_LOG 2026-10-22 · X0/K0" },
       ] },
     { id: "appeears", code: "01C", name: "AppEEARS", phase: 2, row: 3, owner: "Codex", status: "PENDIENTE",
       purpose: "Vegetación, agua y cobertura para la inteligencia ambiental.",
@@ -181,7 +184,7 @@ window.DOP_DATA = {
     units: [
       // Entradas
       { id: "in-power", layer: "in", group: "NASA", name: "NASA POWER diario", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", detail: "Irradiancia, temperatura, viento y precipitación desde 1981, con caché y procedencia." },
-      { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "LISTO_PARA_QA", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; descarga autenticada funcionando." },
+      { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; caché real 2 de 2 READY en 470.6 ms.", evidence: ["df128a0", "7a42125", "14 pruebas K0", "contraste ZIP independiente"] },
       { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "gpm", detail: "Precipitación satelital de alta frecuencia para extremos y huaicos." },
       { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "appeears", detail: "Índices de vegetación, cobertura y agua superficial para el módulo ambiental." },
       { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Susceptibilidad y alerta de deslizamientos, según su propósito y límites." },
@@ -199,7 +202,7 @@ window.DOP_DATA = {
 
       // Capa A
       { id: "a-connectors", layer: "A", name: "Conectores NASA con caché y procedencia", owner: "Codex", status: "VERIFICADO", detail: "POWER y NASADEM operativos; el patrón se reutiliza para cada fuente nueva." },
-      { id: "a-async", layer: "A", name: "Descarga asíncrona y precarga", owner: "Codex", status: "EN_CURSO", planTask: "K0", dopNode: "dem", detail: "Reanudable, atómica y con estado PENDING para sitios nuevos." },
+      { id: "a-async", layer: "A", name: "Descarga asíncrona y precarga", owner: "Codex", status: "VERIFICADO", planTask: "K0", dopNode: "dem", detail: "Reanudable por Range, atómica, deduplicada por tesela, con PENDING y prefetch; 14 pruebas aprobadas.", evidence: ["df128a0", "merge 7a42125", "pytest backend/tests/test_nasadem.py"] },
       { id: "a-catalog", layer: "A", name: "Catálogo de fuentes y licencias", owner: "Codex", status: "EN_CURSO", planTask: "K1b", detail: "Existencia, acceso, licencia, resolución, cobertura y fecha de cada fuente." },
       { id: "a-harmonize", layer: "A", name: "Armonización espacial", owner: "Codex", status: "PENDIENTE", dopNode: "harmonize", detail: "CRS, resolución, nodata y temporalidad sin degradación silenciosa." },
       { id: "a-sampling", layer: "A", name: "Muestreo de corredores y polígonos", owner: "Codex", status: "PENDIENTE", planTask: "K1", dopNode: "sampling", detail: "Convierte geometrías en sujetos de estudio del contrato C2." },
@@ -207,7 +210,7 @@ window.DOP_DATA = {
 
       // Capa B
       { id: "b-trends", layer: "B", name: "Motor de tendencias", owner: "Claude", status: "VERIFICADO", detail: "Mann–Kendall con Hamed–Rao, Sen y Benjamini–Hochberg." },
-      { id: "b-terrain", layer: "B", name: "Relieve y terreno", owner: "Codex", status: "LISTO_PARA_QA", dopNode: "dem", detail: "Elevación, pendiente y orientación por sujeto." },
+      { id: "b-terrain", layer: "B", name: "Relieve y terreno", owner: "Codex", status: "VERIFICADO", dopNode: "dem", detail: "Elevación, pendiente y orientación por sujeto contrastadas con lectura ZIP independiente.", evidence: ["Moquegua 1420 m · 5.47° · 315.12°", "Arequipa 2316 m · 3.67° · 225.3°"] },
       { id: "b-hydro", layer: "B", name: "Extremos hidrometeorológicos", owner: "Claude", status: "PENDIENTE", detail: "Lluvia intensa, días sobre percentil y sequía, con su propia prueba de tendencia." },
       { id: "b-hazard", layer: "B", name: "Exposición a amenazas", owner: "Codex", status: "PENDIENTE", detail: "Superposición con capas oficiales; susceptibilidad, amenaza, exposición y riesgo son distintos." },
       { id: "b-constraints", layer: "B", name: "Restricciones territoriales", owner: "Codex", status: "PENDIENTE", detail: "Áreas protegidas, patrimonio y comunidades como alertas, no conclusiones legales." },
@@ -283,8 +286,8 @@ window.DOP_DATA = {
     steps: [
       { id: "op1", type: "operation", code: "O-1", name: "Extraer series diarias por sujeto", node: "solar", status: "VERIFICADO" },
       { id: "in1", type: "inspection", code: "I-1", name: "Verificar cobertura ≥ 95 %, faltantes, unidades y procedencia", node: "qa-core", status: "VERIFICADO" },
-      { id: "op2", type: "operation", code: "O-2", name: "Leer elevación, pendiente y orientación", node: "dem", status: "LISTO_PARA_QA" },
-      { id: "in2", type: "inspection", code: "I-2", name: "Contrastar celdas con una segunda implementación", node: "dem", status: "PENDIENTE" },
+      { id: "op2", type: "operation", code: "O-2", name: "Leer elevación, pendiente y orientación", node: "dem", status: "VERIFICADO" },
+      { id: "in2", type: "inspection", code: "I-2", name: "Contrastar celdas con una segunda implementación", node: "dem", status: "VERIFICADO" },
       { id: "op3", type: "operation", code: "O-3", name: "Agregar a medias anuales", node: "solar", status: "VERIFICADO" },
       { id: "cb1", type: "combined", code: "C-1", name: "Mann–Kendall con Hamed–Rao, Sen y Benjamini–Hochberg", node: "qa-core", status: "VERIFICADO" },
       { id: "op5", type: "operation", code: "O-4", name: "Armonizar CRS, resolución y nodata", node: "harmonize", status: "PENDIENTE" },
@@ -328,13 +331,13 @@ window.DOP_DATA = {
 
   // Tareas del plan conjunto (docs/coordination/PLAN_CLAUDE_CODEX.md) y su relación con el DOP.
   plan: [
-    { id: "X0", owner: "Codex", title: "Revisar y fusionar las ramas de Claude en master", status: "PENDIENTE", ref: "aprobación de Christian", nodes: [] },
+    { id: "X0", owner: "Codex", title: "Revisar y fusionar las ramas de Claude en master", status: "VERIFICADO", ref: "7a43c10 · merge K0 7a42125 · puerta común aprobada", nodes: [] },
     { id: "C1", owner: "Claude", title: "Mann–Kendall con Hamed–Rao", status: "VERIFICADO", ref: "5d307f9", nodes: ["qa-core"] },
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
     { id: "C4", owner: "Claude", title: "Asistente analítico", status: "EN_CURSO", ref: "claude/contrato-sectores", nodes: ["delivery"] },
     { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "PENDIENTE", ref: "depende de K2 y K3", nodes: ["pilots"] },
-    { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "EN_CURSO", ref: "codex/nasadem-resumable", nodes: ["dem"] },
+    { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
     { id: "K1", owner: "Codex", title: "Muestreo de corredores y polígonos", status: "PENDIENTE", ref: "—", nodes: ["sampling"] },
     { id: "K1b", owner: "Codex", title: "Fuentes IMERG, LHASA y capas Perú; verificar datos COES", status: "PENDIENTE", ref: "—", nodes: ["gpm", "peru", "labels"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
