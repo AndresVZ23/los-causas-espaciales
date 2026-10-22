@@ -48,6 +48,7 @@
 ## Plan operativo y DOP neuronal
 
 - DOP neuronal interactivo disponible en `http://localhost:3100/dop-neuronal`, con 18 nodos, dependencias ascendentes/descendentes, bloqueos, salidas y puertas de aceptación.
+- Tracker HTML autónomo disponible en `http://localhost:3100/dop-neuronal.html`; persiste seguimiento en `localStorage`, exige evidencia para `VERIFICADO` y permite importar/exportar un JSON versionado.
 - La ruta crítica conecta fuentes faltantes, armonización espacial, PostGIS/muestreo, etiquetas reales, splits sin fuga, baseline, candidatos neuronales y gate humano.
 - Hoja de ruta interactiva disponible en `http://localhost:3100/plan-operativo.html` y enlazada desde la navegación principal.
 - Ocho fases con objetivo, insumos, tareas, resultado, dependencias y criterio de aceptación verificable.

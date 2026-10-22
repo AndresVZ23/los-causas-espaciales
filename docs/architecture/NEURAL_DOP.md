@@ -2,6 +2,8 @@
 
 El DOP neuronal representa el proceso necesario para determinar si un modelo neuronal puede aportar valor verificable. Es una arquitectura de trabajo; no afirma que exista un modelo entrenado.
 
+El tracker autónomo en `frontend/public/dop-neuronal.html` conserva estados, responsables, fechas, evidencia y notas únicamente en el navegador. Su formato JSON exportable usa el esquema `los-causas-dop-tracker`, versión 1. Un estado marcado en el tracker documenta seguimiento, pero no sustituye las puertas de aceptación ni las pruebas del repositorio.
+
 ## Cadena autorizada
 
 1. Integrar fuentes NASA y territoriales con versión, unidades, QA, CRS, cobertura y procedencia.

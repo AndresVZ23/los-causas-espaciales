@@ -85,7 +85,7 @@ export default function NeuralDop() {
       <header className={styles.header}>
         <a className={styles.brand} href="/"><strong>LOS CAUSAS<br />ESPACIALES</strong><span>INTELIGENCIA DE LA TIERRA<br />PARA DECISIONES REALES</span></a>
         <div className={styles.titleBlock}><span>DOP — SISTEMA NEURONAL</span><h1>Pipeline de construcción pendiente</h1><p>Red de dependencias para llegar desde el piloto verificado hasta modelos evaluables y pilotos sectoriales.</p></div>
-        <nav className={styles.headerNav} aria-label="Navegación del DOP"><a href="/">Workspace</a><a href="/plan-operativo.html">Plan operativo</a></nav>
+        <nav className={styles.headerNav} aria-label="Navegación del DOP"><a href="/">Workspace</a><a href="/dop-neuronal.html">Tracker HTML</a><a href="/plan-operativo.html">Plan operativo</a></nav>
       </header>
 
       <section className={styles.statusBar} aria-label="Estado del programa">
