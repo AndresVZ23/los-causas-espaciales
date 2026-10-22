@@ -29,6 +29,7 @@ docker compose -p los-causas-espaciales up -d --build
 
 - Aplicación: http://localhost:3100
 - Plan operativo y DOP neuronal: http://localhost:3100/plan-operativo.html
+- DOP neuronal conectado y ruta crítica de desarrollo: http://localhost:3100/dop-neuronal
 - OpenAPI: http://localhost:8000/docs
 
 ## Ejecución local sin Docker
