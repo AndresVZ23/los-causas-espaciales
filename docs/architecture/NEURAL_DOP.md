@@ -1,13 +1,21 @@
 # DOP de la red neuronal
 
-El DOP representa el proceso necesario para determinar si una red neuronal puede aportar valor verificable. Es una arquitectura de trabajo: no afirma que exista un modelo entrenado.
+El DOP tiene dos niveles. El primero es la **red de la plataforma**: cómo muchas entradas, a través de las capas A, B y C del prompt maestro, producen muchos resultados, y en qué orden se completa lo que falta. El segundo es el detalle de una de sus neuronas, el **calibrador FV**: el proceso para determinar si una red neuronal aporta valor verificable. Es una arquitectura de trabajo: no afirma que exista un modelo entrenado.
+
+## Red de la plataforma
+
+- **Unidades** (`platform.units` en `dop-datos.js`): 16 entradas (NASA, territorio peruano, usuario y resultados reales), 6 unidades de la capa A, 7 de la capa B, 8 de la capa C y 12 resultados (los 7 módulos, los pilotos y los entregables).
+- **Enlaces** (`platform.links`): `[origen, destino]` es **requerido** (sin él el destino no funciona); `[origen, destino, "E"]` solo **enriquece**. Por ejemplo, el muestreo de corredores amplía el motor de tendencias, que ya funciona con puntos.
+- **Cobertura de un resultado:** unidades activas de su cadena requerida sobre el total. **Ola** de una unidad pendiente: 1 + la mayor ola de sus requisitos pendientes. Las unidades activas valen 0. Un resultado queda completo en la mayor ola de su cadena. Una ola no es una semana: es un escalón de dependencias, y lo de una misma ola avanza en paralelo.
+- **Siguiente acción de mayor impacto:** la unidad de la ola 1 que habilita más resultados del demo del jurado (`platform.juryTargets`).
+- Con el estado del 2026-10-22, el demo necesita 4 olas: clima en la 1, inversión en la 2, lentes vial e inmobiliario en la 3 y sus pantallas en la 4.
 
 ## Dónde vive y cómo se lee
 
 - `docs/interno/dop-neuronal.html`: documento interno, fuera de la aplicación. Se abre con doble clic, sin servidor.
 - `docs/interno/dop-datos.js`: **única fuente del estado** (esquema `los-causas-dop`, versión 2), versionada en git. El HTML solo la lee; ya no guarda estados en el navegador (eso reemplaza al tracker v1 con `localStorage` y JSON importable).
 
-Vistas: **DOP del proceso** (simbología ASME: operaciones, inspecciones, combinadas, materiales que entran por la izquierda y cuadro resumen), **Mapa de dependencias** (fases en columnas, ruta crítica, dependencias hacia atrás y hacia adelante), **Red neuronal** (definición de la propuesta), **Plan y responsables** (tareas del plan conjunto) y **Backlog**.
+Vistas: **Red de la plataforma** (entradas, capas y resultados con sus conexiones), **Orquestación** (olas de trabajo para los resultados objetivo que se elijan), **ASME del modelo** (simbología ASME del calibrador FV), **Ruta del modelo** (sus 18 etapas por fase, con ruta crítica), **Calibrador FV** (definición de la propuesta), **Plan y responsables** y **Backlog**.
 
 ## Cómo se actualiza
 

@@ -168,6 +168,108 @@ window.DOP_DATA = {
   ],
   criticalPath: ["dem", "harmonize", "sampling", "platform", "labels", "splits", "baseline", "candidates", "assurance", "human-gate", "pilots", "delivery"],
 
+  // Red de la plataforma: entradas → capas A, B y C del prompt maestro → resultados. Cada unidad es una «neurona»;
+  // cada enlace dice qué alimenta a qué. La cobertura y las olas de trabajo se calculan a partir de esta red.
+  platform: {
+    layers: [
+      { id: "in", name: "Entradas", note: "Datos y decisiones que entran a la plataforma" },
+      { id: "A", name: "Capa A · Observación y datos", note: "Conectar, descargar, armonizar y muestrear" },
+      { id: "B", name: "Capa B · Inteligencia geoespacial y de riesgo", note: "Tendencias, terreno, amenazas y restricciones" },
+      { id: "C", name: "Capa C · Inversión y decisión", note: "Lentes sectoriales, finanzas, puntajes y explicación" },
+      { id: "out", name: "Resultados", note: "Lo que reciben el usuario y el jurado" },
+    ],
+    units: [
+      // Entradas
+      { id: "in-power", layer: "in", group: "NASA", name: "NASA POWER diario", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", detail: "Irradiancia, temperatura, viento y precipitación desde 1981, con caché y procedencia." },
+      { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "LISTO_PARA_QA", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; descarga autenticada funcionando." },
+      { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "gpm", detail: "Precipitación satelital de alta frecuencia para extremos y huaicos." },
+      { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "appeears", detail: "Índices de vegetación, cobertura y agua superficial para el módulo ambiental." },
+      { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Susceptibilidad y alerta de deslizamientos, según su propósito y límites." },
+      { id: "in-grid", layer: "in", group: "Territorio Perú", name: "Red eléctrica y subestaciones", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "MINEM y COES: distancia y capacidad de conexión." },
+      { id: "in-protected", layer: "in", group: "Territorio Perú", name: "Áreas protegidas", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "SERNANP y ecosistemas frágiles." },
+      { id: "in-heritage", layer: "in", group: "Territorio Perú", name: "Patrimonio arqueológico", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Ministerio de Cultura; la ausencia de registro no prueba ausencia de patrimonio." },
+      { id: "in-hazards-pe", layer: "in", group: "Territorio Perú", name: "Peligros geológicos e inundación", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "peru", detail: "INGEMMET, CENEPRED y ANA." },
+      { id: "in-social", layer: "in", group: "Territorio Perú", name: "Comunidades y conflictos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Defensoría del Pueblo y SENACE; solo alertas de debida diligencia." },
+      { id: "in-roads", layer: "in", group: "Territorio Perú", name: "Red vial", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K2", detail: "MTC u OpenStreetMap (ODbL) para la geometría del corredor piloto." },
+      { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Puntos operativos; dibujo y carga de corredores y polígonos pendientes." },
+      { id: "in-assumptions", layer: "in", group: "Usuario", name: "Supuestos financieros y técnicos", owner: "Claude", status: "VERIFICADO", provenance: "USER_ASSUMPTION", detail: "CAPEX, OPEX, precio, tasa, horizonte y performance ratio." },
+      { id: "in-sector", layer: "in", group: "Usuario", name: "Sector y criterios de comparación", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Hoy solo solar; ponderaciones por sector pendientes." },
+      { id: "in-coes", layer: "in", group: "Resultados reales", name: "Generación real por central (COES)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "labels", detail: "Etiquetas para el calibrador neuronal; acceso y licencia por verificar." },
+      { id: "in-events", layer: "in", group: "Resultados reales", name: "Emergencias e interrupciones viales", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", detail: "INDECI y MTC: eventos reales para validar la exposición del corredor." },
+
+      // Capa A
+      { id: "a-connectors", layer: "A", name: "Conectores NASA con caché y procedencia", owner: "Codex", status: "VERIFICADO", detail: "POWER y NASADEM operativos; el patrón se reutiliza para cada fuente nueva." },
+      { id: "a-async", layer: "A", name: "Descarga asíncrona y precarga", owner: "Codex", status: "EN_CURSO", planTask: "K0", dopNode: "dem", detail: "Reanudable, atómica y con estado PENDING para sitios nuevos." },
+      { id: "a-catalog", layer: "A", name: "Catálogo de fuentes y licencias", owner: "Codex", status: "EN_CURSO", planTask: "K1b", detail: "Existencia, acceso, licencia, resolución, cobertura y fecha de cada fuente." },
+      { id: "a-harmonize", layer: "A", name: "Armonización espacial", owner: "Codex", status: "PENDIENTE", dopNode: "harmonize", detail: "CRS, resolución, nodata y temporalidad sin degradación silenciosa." },
+      { id: "a-sampling", layer: "A", name: "Muestreo de corredores y polígonos", owner: "Codex", status: "PENDIENTE", planTask: "K1", dopNode: "sampling", detail: "Convierte geometrías en sujetos de estudio del contrato C2." },
+      { id: "a-store", layer: "A", name: "Persistencia y trabajos", owner: "Codex", status: "PENDIENTE", dopNode: "platform", detail: "PostGIS, cola de trabajos y ejecuciones versionadas." },
+
+      // Capa B
+      { id: "b-trends", layer: "B", name: "Motor de tendencias", owner: "Claude", status: "VERIFICADO", detail: "Mann–Kendall con Hamed–Rao, Sen y Benjamini–Hochberg." },
+      { id: "b-terrain", layer: "B", name: "Relieve y terreno", owner: "Codex", status: "LISTO_PARA_QA", dopNode: "dem", detail: "Elevación, pendiente y orientación por sujeto." },
+      { id: "b-hydro", layer: "B", name: "Extremos hidrometeorológicos", owner: "Claude", status: "PENDIENTE", detail: "Lluvia intensa, días sobre percentil y sequía, con su propia prueba de tendencia." },
+      { id: "b-hazard", layer: "B", name: "Exposición a amenazas", owner: "Codex", status: "PENDIENTE", detail: "Superposición con capas oficiales; susceptibilidad, amenaza, exposición y riesgo son distintos." },
+      { id: "b-constraints", layer: "B", name: "Restricciones territoriales", owner: "Codex", status: "PENDIENTE", detail: "Áreas protegidas, patrimonio y comunidades como alertas, no conclusiones legales." },
+      { id: "b-environment", layer: "B", name: "Cambio de cobertura y vegetación", owner: "Codex", status: "PENDIENTE", detail: "Tendencias en índices de vegetación y agua." },
+      { id: "b-pvnn", layer: "B", name: "Calibrador FV (red neuronal)", owner: "Claude", status: "BLOQUEADO", dopNode: "candidates", detail: "Propuesta: factor de planta mensual contra el baseline físico. Ver la pestaña «Calibrador neuronal»." },
+
+      // Capa C
+      { id: "c-questions", layer: "C", name: "Preguntas del reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Qué, dónde, cuánto, si es significativo y qué significa para invertir." },
+      { id: "c-solar", layer: "C", name: "Lente solar", owner: "Claude", status: "VERIFICADO", detail: "Piloto Moquegua–Arequipa sobre el contrato C2." },
+      { id: "c-road", layer: "C", name: "Lente vial", owner: "Codex", status: "PENDIENTE", planTask: "K2", detail: "Exposición por tramo y escenario de interrupción con supuestos del usuario." },
+      { id: "c-realestate", layer: "C", name: "Lente inmobiliario", owner: "Codex", status: "PENDIENTE", planTask: "K3", detail: "Terreno, amenazas, restricciones y mitigación por polígono." },
+      { id: "c-windhydro", layer: "C", name: "Lentes eólico e hidroeléctrico", owner: "Claude", status: "PENDIENTE", detail: "Viento a 10 m no sustituye medición a altura de buje; lluvia no es caudal." },
+      { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "EN_CURSO", detail: "VAN operativo; faltan escenarios base, optimista y pesimista y sensibilidad." },
+      { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "PENDIENTE", detail: "Ponderaciones explícitas por sector, cobertura y sensibilidad; nunca un 90/100 sin método." },
+      { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
+
+      // Resultados
+      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "EN_CURSO", detail: "Tendencias de POWER disponibles dentro del piloto solar; falta su pantalla propia." },
+      { id: "o-energy", layer: "out", group: "Módulos", name: "2 · Energía renovable", owner: "Claude", status: "VERIFICADO", detail: "Solar operativo; eólica e hidro pendientes." },
+      { id: "o-hazards", layer: "out", group: "Módulos", name: "3 · Amenazas naturales", owner: "Claude", status: "PENDIENTE", detail: "Requiere capas de amenaza y extremos de lluvia." },
+      { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },
+      { id: "o-social", layer: "out", group: "Módulos", name: "5 · Social y arqueológico", owner: "Claude", status: "PENDIENTE", detail: "Alertas de debida diligencia con fuentes oficiales." },
+      { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Corredor con tramos expuestos y escenario de interrupción." },
+      { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado operativo; faltan escenarios, sensibilidad y comparación multicriterio." },
+      { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Comparación de terrenos con relieve, amenazas y restricciones." },
+      { id: "o-nasa", layer: "out", group: "Entregables", name: "Respuestas al reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Las cinco preguntas, con evidencia y etapas que las sostienen." },
+      { id: "o-reports", layer: "out", group: "Entregables", name: "Reportes PDF y JSON", owner: "Claude", status: "VERIFICADO", detail: "PDF ejecutivo con huella SHA-256 y JSON reproducible." },
+      { id: "o-api", layer: "out", group: "Entregables", name: "API para terceros", owner: "Codex", status: "EN_CURSO", detail: "OpenAPI operativa; falta versionado público y límites de uso." },
+      { id: "o-monitor", layer: "out", group: "Entregables", name: "Monitoreo recurrente de activos", owner: "Codex", status: "PENDIENTE", detail: "Línea comercial futura: re-ejecutar y alertar cambios." },
+    ],
+    // [origen, destino, tipo]: sin tipo = requerida (sin ella el destino no funciona); "E" = enriquece, amplía pero no bloquea.
+    // La cobertura y las olas solo cuentan las requeridas.
+    links: [
+      ["in-power", "a-connectors"], ["in-nasadem", "a-connectors", "E"], ["in-nasadem", "a-async"],
+      ["in-imerg", "a-connectors", "E"], ["in-imerg", "a-harmonize", "E"], ["in-modis", "a-connectors", "E"], ["in-modis", "a-harmonize", "E"], ["in-modis", "b-environment"],
+      ["in-lhasa", "a-connectors", "E"], ["in-lhasa", "a-harmonize", "E"], ["in-grid", "a-catalog", "E"], ["in-grid", "a-harmonize", "E"],
+      ["in-protected", "a-catalog", "E"], ["in-protected", "b-constraints"], ["in-heritage", "a-catalog", "E"], ["in-heritage", "b-constraints"],
+      ["in-hazards-pe", "a-catalog", "E"], ["in-hazards-pe", "b-hazard"], ["in-social", "a-catalog", "E"], ["in-social", "b-constraints"],
+      ["in-roads", "a-sampling"], ["in-geom", "a-sampling"],
+      ["in-assumptions", "c-finance"], ["in-sector", "c-scoring"], ["in-coes", "b-pvnn"], ["in-events", "b-hazard", "E"],
+      ["a-connectors", "b-trends"], ["a-connectors", "b-terrain"], ["a-connectors", "b-hydro"], ["a-connectors", "b-pvnn"],
+      ["a-async", "b-terrain", "E"], ["a-harmonize", "b-hazard"], ["a-harmonize", "b-constraints"], ["a-harmonize", "b-environment"], ["a-harmonize", "b-hydro", "E"],
+      ["a-sampling", "b-trends", "E"], ["a-sampling", "b-terrain", "E"], ["a-sampling", "b-hazard", "E"], ["a-catalog", "b-constraints"],
+      ["a-store", "b-pvnn"], ["a-store", "o-monitor"],
+      ["a-sampling", "c-road"], ["a-sampling", "c-realestate"],
+      ["b-trends", "c-questions"], ["b-trends", "c-solar"], ["b-trends", "c-road"], ["b-trends", "c-realestate"], ["b-trends", "c-windhydro"], ["b-trends", "o-climate"],
+      ["b-terrain", "c-solar", "E"], ["b-terrain", "c-road"], ["b-terrain", "c-realestate"],
+      ["b-hydro", "c-road"], ["b-hydro", "c-realestate", "E"], ["b-hydro", "c-windhydro"], ["b-hydro", "o-climate", "E"],
+      ["b-hazard", "c-road"], ["b-hazard", "c-realestate"], ["b-hazard", "c-scoring"], ["b-hazard", "o-hazards"],
+      ["b-constraints", "c-realestate"], ["b-constraints", "c-scoring"], ["b-constraints", "o-social"],
+      ["b-environment", "c-scoring", "E"], ["b-environment", "o-environment"], ["b-pvnn", "c-solar", "E"], ["b-pvnn", "c-finance", "E"],
+      ["c-questions", "o-nasa"], ["c-questions", "o-reports"], ["c-questions", "o-api"],
+      ["c-solar", "o-energy"], ["c-solar", "o-reports", "E"], ["c-windhydro", "o-energy", "E"], ["c-road", "o-infra"], ["c-realestate", "o-realestate"],
+      ["c-finance", "o-invest"], ["c-finance", "o-reports", "E"], ["c-finance", "o-api", "E"],
+      ["c-scoring", "o-invest", "E"], ["c-scoring", "o-infra", "E"], ["c-scoring", "o-realestate", "E"],
+      ["c-assistant", "o-reports", "E"], ["b-trends", "c-assistant"], ["b-terrain", "c-assistant", "E"], ["b-trends", "o-monitor"],
+    ],
+    // Resultados que el demo del jurado debe completar (preselección en la vista de orquestación).
+    // Energía no figura: el piloto solar ya la demuestra; eólica e hidro son extensión, no requisito del demo.
+    juryTargets: ["o-nasa", "o-climate", "o-infra", "o-realestate", "o-invest", "o-reports"],
+  },
+
   // Diagrama de operaciones del proceso (ASME): la línea principal va de datos NASA crudos a la decisión.
   asme: {
     title: "De observación NASA a decisión asistida por la red",

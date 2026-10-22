@@ -45,7 +45,8 @@
     .shell { display: grid; grid-template-columns: minmax(0, 1fr) 360px; min-height: calc(100vh - 230px); }
     .main { min-width: 0; padding: 0 32px 32px; border-right: 1px solid var(--border); }
     .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--ground); z-index: 5; }
-    .tabs button { min-height: 46px; padding: 0 16px; border: 0; background: none; color: var(--muted); position: relative; }
+    .tabs button { min-height: 46px; padding: 0 12px; border: 0; background: none; color: var(--muted); position: relative; white-space: nowrap; }
+    .tabs { overflow-x: auto; }
     .tabs button[aria-selected="true"] { color: var(--text); }
     .tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--accent); }
     .panel-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding: 20px 0 14px; }
@@ -97,6 +98,55 @@
     .edge.lit { stroke: var(--accent); stroke-width: 2.2; }
     .edge.dim { opacity: .15; }
 
+    /* Red de la plataforma */
+    .net { position: relative; border: 1px solid var(--rule); background: #090d0e; }
+    .net-edges { position: absolute; inset: 0; pointer-events: none; }
+    .nlink { fill: none; stroke-width: 1.1; transition: opacity .15s; }
+    .nlink.active { stroke: #2f8f82; opacity: .75; }
+    .nlink.planned { stroke: #59626a; stroke-dasharray: 3 4; opacity: .55; }
+    .nlink.lit { stroke: var(--accent); stroke-width: 2; opacity: 1; stroke-dasharray: none; }
+    .nlink.lit.planned { stroke: var(--pending); stroke-dasharray: 4 3; }
+    .nlink.dim { opacity: .06; }
+    .nlink.enrich { stroke-width: .8; opacity: .28; }
+    .nlink.enrich.lit { stroke-width: 1.2; opacity: .7; }
+    .line-key { display: inline-flex; align-items: center; gap: 6px; }
+    .line-key svg { width: 26px; height: 8px; }
+    .layer-head { position: absolute; top: 0; padding: 10px 10px 0; }
+    .layer-head b { display: block; font-size: 12px; font-weight: 600; }
+    .layer-head span { display: block; color: var(--subtle); font-size: 11px; line-height: 1.3; }
+    .layer-head em { font-style: normal; color: var(--accent); font: 500 10px var(--mono); }
+    .group-head { position: absolute; color: var(--subtle); font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .04em; }
+    .unit { position: absolute; display: grid; grid-template-columns: 16px 1fr; gap: 0 8px; align-items: center; padding: 4px 8px 4px 4px; border: 1px solid transparent; border-radius: 2px; background: #0d1213; text-align: left; transition: opacity .15s; }
+    .unit:hover { border-color: var(--border); background: var(--raised); }
+    .unit.selected { border-color: var(--accent); background: var(--raised); }
+    .unit.dim { opacity: .2; }
+    .neuron { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--st); background: transparent; grid-row: 1 / 3; }
+    .st-VERIFICADO .neuron, .st-LISTO_PARA_QA .neuron { background: var(--st); }
+    .st-EN_CURSO .neuron { background: linear-gradient(90deg, var(--st) 50%, transparent 50%); }
+    .unit b { font-size: 12px; font-weight: 600; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .unit small { font: 10px var(--mono); color: var(--subtle); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .cov { grid-column: 2; height: 3px; background: var(--rule); margin-top: 2px; }
+    .cov i { display: block; height: 100%; background: var(--accent); }
+
+    /* Orquestación */
+    .targets { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 12px; }
+    .targets button { padding: 5px 10px; border: 1px solid var(--border); border-radius: 2px; background: none; color: var(--muted); font-size: 12px; }
+    .targets button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: #0f1a1a; }
+    .targets .quick { border-style: dashed; }
+    .orch-summary { padding: 12px 14px; border: 1px solid var(--rule); background: var(--surface); margin-bottom: 14px; color: #d3d9de; }
+    .orch-summary b { color: var(--text); }
+    .waves { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+    .wave { border: 1px solid var(--rule); background: #0b1011; display: flex; flex-direction: column; }
+    .wave header { padding: 10px 12px; border-bottom: 1px solid var(--rule); }
+    .wave header b { display: block; font-size: 13px; }
+    .wave header span { color: var(--subtle); font: 10px var(--mono); }
+    .wave .done { padding: 8px 12px; border-bottom: 1px solid var(--rule); background: #0e1716; color: var(--verified); font-size: 12px; }
+    .wcard { margin: 8px 8px 0; padding: 8px 10px; border: 1px solid var(--border); border-left: 3px solid var(--st); border-radius: 2px; background: var(--surface); text-align: left; display: grid; gap: 2px; }
+    .wcard:last-child { margin-bottom: 8px; }
+    .wcard:hover, .wcard.selected { border-color: var(--accent); border-left-color: var(--st); }
+    .wcard b { font-size: 12.5px; font-weight: 600; }
+    .wcard .row { display: flex; justify-content: space-between; gap: 6px; }
+
     /* Red neuronal */
     .banner { padding: 12px 14px; border: 1px solid #514529; background: #1a170f; color: #e6d39a; border-radius: 2px; margin-bottom: 18px; }
     .spec { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
@@ -140,8 +190,8 @@
   <header class="top">
     <div>
       <small>Los Causas Espaciales · documento interno de desarrollo</small>
-      <h1>DOP de la red neuronal</h1>
-      <p>Del dato NASA crudo a una decisión asistida por un modelo, solo si el modelo demuestra que aporta. El estado sale del repositorio: nada se marca verificado sin evidencia.</p>
+      <h1>Red de la plataforma</h1>
+      <p>Cómo se conectan las entradas, los motores y los resultados de Los Causas Espaciales, qué existe hoy y en qué orden se completa el resto. El estado sale del repositorio: nada se marca verificado sin evidencia.</p>
     </div>
     <div class="source">
       <div>Estado del repositorio · actualizado <b id="updated-at">—</b> por <b id="updated-by">—</b></div>
@@ -151,29 +201,44 @@
   </header>
 
   <section class="metrics" aria-label="Resumen">
-    <div class="metric"><strong id="m-verified">—</strong><span>nodos verificados</span></div>
-    <div class="metric"><strong id="m-qa">—</strong><span>listos para QA</span></div>
-    <div class="metric"><strong id="m-ready">—</strong><span>ejecutables ahora</span></div>
-    <div class="metric"><strong id="m-blocked">—</strong><span>bloqueados</span></div>
+    <div class="metric"><strong id="m-inputs">—</strong><span>entradas activas</span></div>
+    <div class="metric"><strong id="m-engines">—</strong><span>motores activos (capas A, B y C)</span></div>
+    <div class="metric"><strong id="m-outputs">—</strong><span id="m-outputs-label">resultados disponibles</span></div>
+    <div class="metric"><strong id="m-waves">—</strong><span>olas hasta el demo del jurado</span></div>
     <div class="metric"><strong id="m-plan">—</strong><span>tareas del plan cerradas</span></div>
     <div class="next">
-      <div><small id="next-kicker">Siguiente acción</small><h2 id="next-title">—</h2><p id="next-reason"></p></div>
-      <button class="btn primary" id="next-open" type="button">Ver nodo</button>
+      <div><small id="next-kicker">Siguiente acción de mayor impacto</small><h2 id="next-title">—</h2><p id="next-reason"></p></div>
+      <button class="btn primary" id="next-open" type="button">Ver en la red</button>
     </div>
   </section>
 
   <div class="shell">
     <main class="main">
       <div class="tabs" role="tablist" aria-label="Vistas del DOP">
-        <button role="tab" aria-selected="true" aria-controls="view-asme" id="tab-asme" data-view="asme">DOP del proceso</button>
-        <button role="tab" aria-selected="false" aria-controls="view-map" id="tab-map" data-view="map">Mapa de dependencias</button>
-        <button role="tab" aria-selected="false" aria-controls="view-neural" id="tab-neural" data-view="neural">Red neuronal</button>
+        <button role="tab" aria-selected="true" aria-controls="view-net" id="tab-net" data-view="net">Red de la plataforma</button>
+        <button role="tab" aria-selected="false" aria-controls="view-orch" id="tab-orch" data-view="orch">Orquestación</button>
+        <button role="tab" aria-selected="false" aria-controls="view-asme" id="tab-asme" data-view="asme">ASME del modelo</button>
+        <button role="tab" aria-selected="false" aria-controls="view-map" id="tab-map" data-view="map">Ruta del modelo</button>
+        <button role="tab" aria-selected="false" aria-controls="view-neural" id="tab-neural" data-view="neural">Calibrador FV</button>
         <button role="tab" aria-selected="false" aria-controls="view-plan" id="tab-plan" data-view="plan">Plan y responsables</button>
         <button role="tab" aria-selected="false" aria-controls="view-backlog" id="tab-backlog" data-view="backlog">Backlog</button>
       </div>
 
-      <section id="view-asme" role="tabpanel" aria-labelledby="tab-asme">
-        <div class="panel-head"><div><h2 id="asme-title">Diagrama de operaciones del proceso</h2><p>Simbología ASME: la línea principal baja del dato a la decisión; los materiales entran por la izquierda donde se usan. Haz clic en una operación para ver su nodo.</p></div>
+      <section id="view-net" role="tabpanel" aria-labelledby="tab-net">
+        <div class="panel-head"><div><h2>Muchas entradas, tres capas, muchos resultados</h2><p>Cada círculo es una neurona de la plataforma: lleno si funciona, a medias si está en curso, vacío si falta. Las conexiones requeridas habilitan; las tenues solo enriquecen. Haz clic en un resultado para ver la cadena que lo produce y lo que falta; en una entrada, para ver qué resultados dependen de ella.</p></div>
+          <div class="legend" id="net-legend"></div></div>
+        <div class="net" id="net"><svg class="net-edges" id="net-edges" aria-hidden="true"></svg></div>
+      </section>
+
+      <section id="view-orch" role="tabpanel" aria-labelledby="tab-orch" hidden>
+        <div class="panel-head"><div><h2>Orquestación del plan</h2><p>Olas calculadas desde la red: cada ola contiene lo que ya puede empezar porque todo lo que necesita existe o está en la ola anterior. Elige los resultados objetivo y la ruta se recalcula solo para ellos.</p></div></div>
+        <div class="targets" id="targets" role="group" aria-label="Resultados objetivo"></div>
+        <div class="orch-summary" id="orch-summary"></div>
+        <div class="waves" id="waves"></div>
+      </section>
+
+      <section id="view-asme" role="tabpanel" aria-labelledby="tab-asme" hidden>
+        <div class="panel-head"><div><h2 id="asme-title">Diagrama de operaciones del proceso</h2><p>Detalle de una neurona de la red: el calibrador FV. Simbología ASME: la línea principal baja del dato a la decisión y los materiales entran por la izquierda donde se usan.</p></div>
           <div class="legend" id="status-legend"></div></div>
         <div class="asme-wrap">
           <div class="asme" id="asme"></div>
@@ -189,7 +254,7 @@
       </section>
 
       <section id="view-map" role="tabpanel" aria-labelledby="tab-map" hidden>
-        <div class="panel-head"><div><h2>Mapa de dependencias</h2><p>Columnas por fase. La ruta crítica va en verde azulado; al seleccionar un nodo se iluminan sus dependencias hacia atrás y hacia adelante.</p></div></div>
+        <div class="panel-head"><div><h2>Ruta del modelo neuronal</h2><p>Las 18 etapas que separan al calibrador FV de una decisión autorizada, en columnas por fase. La ruta crítica va en verde azulado; al seleccionar un nodo se iluminan sus dependencias hacia atrás y hacia adelante.</p></div></div>
         <div class="filters">
           <label>Buscar<input id="f-search" type="search" placeholder="Nodo, código o entrada" autocomplete="off"></label>
           <label>Estado<select id="f-status"><option value="">Todos</option></select></label>
@@ -253,28 +318,72 @@
     $("updated-at").textContent = new Date(D.updatedAt).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", hourCycle: "h23" });
     $("updated-by").textContent = D.updatedBy;
     $("foot-schema").textContent = `${D.schema} v${D.version}`;
-    const count = (s) => nodes.filter((n) => n.status === s).length;
-    $("m-verified").textContent = `${count("VERIFICADO")} / ${nodes.length}`;
-    $("m-qa").textContent = count("LISTO_PARA_QA");
-    $("m-ready").textContent = nodes.filter(executable).length;
-    $("m-blocked").textContent = count("BLOQUEADO");
     $("m-plan").textContent = `${D.plan.filter((t) => t.status === "VERIFICADO").length} / ${D.plan.length}`;
-    const nextNode = D.criticalPath.map((id) => byId.get(id)).find((n) => n.status !== "VERIFICADO" && preds.get(n.id).every((p) => DONE.has(byId.get(p).status)))
-      || nodes.find(executable);
-    if (nextNode) {
-      const impact = walk(nextNode.id, succs).size;
-      $("next-kicker").textContent = `Siguiente acción · ${nextNode.code} · ${nextNode.owner}`;
-      $("next-title").textContent = nextNode.name;
-      $("next-reason").textContent = `${STATUS_LABEL[nextNode.status]} · desbloquea ${impact} nodos aguas abajo. ${nextNode.blocker}`;
-      $("next-open").onclick = () => select(nextNode.id, true);
+    const legendHtml = Object.keys(STATUS_LABEL).map((s) => `<span class="st-${s}"><i style="background:var(--st)"></i>${STATUS_LABEL[s]}</span>`).join("");
+    $("status-legend").innerHTML = legendHtml;
+    $("net-legend").innerHTML = legendHtml
+      + '<span class="line-key"><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#2f8f82" stroke-width="1.6"/></svg>Requerida y activa</span>'
+      + '<span class="line-key"><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#7a838b" stroke-width="1.4" stroke-dasharray="3 3"/></svg>Requerida, planificada</span>'
+      + '<span class="line-key"><svg viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="#59626a" stroke-width=".9" opacity=".7"/></svg>Enriquece</span>';
+
+    // Red de la plataforma: unidades, enlaces, cobertura y olas de trabajo
+    const P = D.platform;
+    const units = P.units;
+    const uById = new Map(units.map((u) => [u.id, u]));
+    const uPreds = new Map(units.map((u) => [u.id, []]));
+    const uSuccs = new Map(units.map((u) => [u.id, []]));
+    // Requeridas: sin ellas el destino no funciona. Las enriquecedoras ("E") se dibujan, pero no bloquean ni cuentan para la cobertura.
+    const uReq = new Map(units.map((u) => [u.id, []]));
+    const uReqSuccs = new Map(units.map((u) => [u.id, []]));
+    P.links.forEach(([a, b, kind]) => {
+      uPreds.get(b).push(a); uSuccs.get(a).push(b);
+      if (kind !== "E") { uReq.get(b).push(a); uReqSuccs.get(a).push(b); }
+    });
+    const isDone = (u) => DONE.has(u.status);
+    const layerName = new Map(P.layers.map((l) => [l.id, l.name]));
+    const outputs = units.filter((u) => u.layer === "out");
+    const coverage = (id) => {
+      const chain = [...walk(id, uReq)].map((x) => uById.get(x));
+      const required = new Set(chain.map((u) => u.id));
+      const optional = [...walk(id, uPreds)].filter((x) => !required.has(x)).map((x) => uById.get(x)).filter((u) => !isDone(u));
+      return { done: chain.filter(isDone).length, total: chain.length, missing: chain.filter((u) => !isDone(u)), optional };
+    };
+    const waveMemo = new Map();
+    function wave(id) {
+      if (waveMemo.has(id)) return waveMemo.get(id);
+      const u = uById.get(id);
+      const w = isDone(u) ? 0 : 1 + Math.max(0, ...uReq.get(id).map(wave));
+      waveMemo.set(id, w);
+      return w;
     }
-    $("status-legend").innerHTML = Object.keys(STATUS_LABEL).map((s) => `<span class="st-${s}"><i style="background:var(--st)"></i>${STATUS_LABEL[s]}</span>`).join("");
+    // Ola en que un resultado queda completo: la más tardía de su cadena requerida pendiente.
+    const completionWave = (id) => Math.max(wave(id), ...[...walk(id, uReq)].map(wave));
+    const inLayer = (l) => units.filter((u) => u.layer === l);
+    const engines = units.filter((u) => ["A", "B", "C"].includes(u.layer));
+    $("m-inputs").textContent = `${inLayer("in").filter(isDone).length} / ${inLayer("in").length}`;
+    $("m-engines").textContent = `${engines.filter(isDone).length} / ${engines.length}`;
+    $("m-outputs").textContent = `${outputs.filter((u) => u.status === "VERIFICADO").length} / ${outputs.length}`;
+    $("m-outputs-label").textContent = `resultados disponibles · ${outputs.filter((u) => u.status === "EN_CURSO").length} en curso`;
+    $("m-waves").textContent = Math.max(...P.juryTargets.map(completionWave));
+    const juryReach = (id) => P.juryTargets.filter((t) => t === id || walk(id, uReqSuccs).has(t));
+    const nextUnit = units
+      .filter((u) => !isDone(u) && wave(u.id) === 1 && juryReach(u.id).length)
+      .sort((a, b) => juryReach(b.id).length - juryReach(a.id).length || walk(b.id, uReqSuccs).size - walk(a.id, uReqSuccs).size)[0];
+    if (nextUnit) {
+      const reach = juryReach(nextUnit.id).map((t) => uById.get(t).name);
+      $("next-kicker").textContent = `Siguiente acción de mayor impacto · ${nextUnit.owner}`;
+      $("next-title").textContent = nextUnit.name;
+      $("next-reason").textContent = `Ola 1 · ${STATUS_LABEL[nextUnit.status]} · alimenta ${reach.length} resultados del demo: ${reach.join(", ")}.`;
+      $("next-open").onclick = () => { showView("net"); selectUnit(nextUnit.id); };
+    }
 
     // Pestañas
     const tabs = [...document.querySelectorAll("[role=tab]")];
     function showView(view) {
       tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute("aria-selected", on); $(t.getAttribute("aria-controls")).hidden = !on; });
       if (view === "map") drawMap();
+      if (view === "net") drawNet();
+      if (view === "orch") drawOrch();
       try { localStorage.setItem("lce.dop.view", view); } catch (_) { /* preferencia opcional */ }
     }
     tabs.forEach((t) => t.addEventListener("click", () => showView(t.dataset.view)));
@@ -485,11 +594,155 @@
         <tr class="st-${n.status}"><td><button class="linkchip" data-go="${n.id}">${esc(n.code)}</button> ${esc(n.name)}${critical.has(n.id) ? ' <span class="owner">· crítica</span>' : ""}</td><td><span class="chip">${STATUS_LABEL[n.status]}</span></td><td><span class="owner ${esc(n.owner)}">${esc(n.owner)}</span></td><td class="mono">${executable(n) ? "sí" : "no"}</td><td>${esc(n.blocker)}</td></tr>`).join("")}</tbody>`;
     }
 
+    // Red de la plataforma: capas como columnas, unidades como neuronas, enlaces como curvas entre capas.
+    let netDrawn = false;
+    let selectedUnit = null;
+    const UNIT_H = 46;
+    function drawNet() {
+      const net = $("net");
+      const W = net.clientWidth;
+      if (!W) return;
+      const colW = W / P.layers.length, headH = 70, rowH = 52, groupH = 22, boxW = colW - 34;
+      let H = 0;
+      const plans = P.layers.map((layer, li) => {
+        const items = [];
+        let y = 0, lastGroup = null;
+        units.filter((u) => u.layer === layer.id).forEach((u) => {
+          if (u.group && u.group !== lastGroup) { items.push({ group: u.group, y }); y += groupH; lastGroup = u.group; }
+          items.push({ unit: u, y }); y += rowH;
+        });
+        H = Math.max(H, y);
+        return { layer, li, items, height: y };
+      });
+      const totalH = headH + H + 16;
+      net.style.height = `${totalH}px`;
+      net.querySelectorAll(".unit, .layer-head, .group-head").forEach((el) => el.remove());
+      const layout = new Map();
+      plans.forEach(({ layer, li, items, height }) => {
+        const x0 = li * colW + 12, offset = headH + (H - height) / 2;
+        const members = units.filter((u) => u.layer === layer.id);
+        net.insertAdjacentHTML("beforeend", `<div class="layer-head" style="left:${li * colW}px;width:${colW}px"><b>${esc(layer.name)}</b><span>${esc(layer.note)}</span><em>${members.filter(isDone).length} de ${members.length} activas</em></div>`);
+        items.forEach((item) => {
+          if (item.group) { net.insertAdjacentHTML("beforeend", `<div class="group-head" style="left:${x0 + 4}px;top:${offset + item.y + 6}px">${esc(item.group)}</div>`); return; }
+          const u = item.unit, y = offset + item.y;
+          layout.set(u.id, { x: x0, y, w: boxW });
+          const cov = u.layer === "out" ? coverage(u.id) : null;
+          const share = cov ? Math.round((cov.done / Math.max(cov.total, 1)) * 100) : null;
+          const b = document.createElement("button");
+          b.type = "button"; b.className = `unit st-${u.status}`; b.dataset.unit = u.id;
+          b.style.cssText = `left:${x0}px;top:${y}px;width:${boxW}px;height:${UNIT_H}px`;
+          b.setAttribute("aria-label", `${u.name}, ${layerName.get(u.layer)}, ${STATUS_LABEL[u.status]}, ${u.owner}${cov ? `, cadena al ${share} %` : ""}`);
+          b.innerHTML = `<span class="neuron" aria-hidden="true"></span><b>${esc(u.name)}</b><small>${esc(u.owner)} · ${STATUS_LABEL[u.status]}${u.planTask ? ` · ${esc(u.planTask)}` : ""}${cov ? ` · cadena ${share} %` : ""}</small>`;
+          b.addEventListener("click", () => selectUnit(u.id));
+          net.appendChild(b);
+        });
+      });
+      const paths = P.links.map(([a, b, kind]) => {
+        const s = layout.get(a), t = layout.get(b);
+        const x1 = s.x + s.w, y1 = s.y + UNIT_H / 2, x2 = t.x + 4, y2 = t.y + UNIT_H / 2, dx = Math.max(30, (x2 - x1) / 2);
+        const active = isDone(uById.get(a)) && isDone(uById.get(b));
+        return `<path class="nlink ${active ? "active" : "planned"}${kind === "E" ? " enrich" : ""}" data-from="${a}" data-to="${b}" d="M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}"/>`;
+      });
+      $("net-edges").setAttribute("viewBox", `0 0 ${W} ${totalH}`);
+      $("net-edges").innerHTML = paths.join("");
+      netDrawn = true;
+      highlightNet();
+    }
+    function highlightNet() {
+      if (!netDrawn) return;
+      const up = selectedUnit ? new Set([selectedUnit, ...walk(selectedUnit, uPreds)]) : null;
+      const down = selectedUnit ? new Set([selectedUnit, ...walk(selectedUnit, uSuccs)]) : null;
+      document.querySelectorAll(".unit").forEach((el) => {
+        el.classList.toggle("selected", el.dataset.unit === selectedUnit);
+        el.classList.toggle("dim", !!up && !up.has(el.dataset.unit) && !down.has(el.dataset.unit));
+      });
+      document.querySelectorAll(".nlink").forEach((el) => {
+        const { from, to } = el.dataset;
+        const on = !!up && ((up.has(from) && up.has(to)) || (down.has(from) && down.has(to)));
+        el.classList.toggle("lit", on); el.classList.toggle("dim", !!up && !on);
+      });
+    }
+    const unitChips = (list) => list.length ? list.map((x) => `<button class="linkchip" data-unit-go="${x.id}">${esc(x.name)}</button>`).join("") : '<p class="empty">Nada.</p>';
+    function selectUnit(id) {
+      selectedUnit = id;
+      const u = uById.get(id);
+      const from = uPreds.get(id).map((x) => uById.get(x));
+      const to = uSuccs.get(id).map((x) => uById.get(x));
+      let extra = "";
+      if (u.layer === "out") {
+        const c = coverage(id);
+        const w = completionWave(id);
+        extra = `<section><h3>Cadena requerida</h3><p>${c.done} de ${c.total} unidades activas (${Math.round((c.done / Math.max(c.total, 1)) * 100)} %). ${w === 0 ? "Su cadena requerida está completa." : `Queda completo al cerrar la ola ${w}.`}</p></section>
+          <section><h3>Falta para que funcione (${c.missing.length})</h3>${unitChips(c.missing)}</section>
+          <section><h3>Lo enriquecería además (${c.optional.length})</h3>${unitChips(c.optional)}</section>`;
+      } else {
+        const outs = [...walk(id, uReqSuccs)].map((x) => uById.get(x)).filter((x) => x.layer === "out");
+        const required = new Set(outs.map((x) => x.id));
+        const enriches = [...walk(id, uSuccs)].map((x) => uById.get(x)).filter((x) => x.layer === "out" && !required.has(x.id));
+        extra = `<section><h3>Resultados que la necesitan (${outs.length})</h3>${unitChips(outs)}</section>
+          <section><h3>Resultados que enriquece (${enriches.length})</h3>${unitChips(enriches)}</section>`;
+        if (!isDone(u)) extra += `<section><h3>Orquestación</h3><p>Ola ${wave(id)}: ${wave(id) === 1 ? "puede empezar ya, todo lo que necesita existe." : `espera a lo que se construye en la ola ${wave(id) - 1}.`}</p></section>`;
+      }
+      $("detail").innerHTML = `
+        <small class="code">${esc(layerName.get(u.layer))}${u.group ? ` · ${esc(u.group)}` : ""}</small>
+        <h2>${esc(u.name)}</h2>
+        <div class="meta st-${u.status}"><span class="chip">${STATUS_LABEL[u.status]}</span><span class="owner ${esc(u.owner)}">${esc(u.owner)}</span>${u.planTask ? `<span class="owner">Tarea ${esc(u.planTask)}</span>` : ""}${u.provenance ? `<span class="owner">${esc(u.provenance)}</span>` : ""}</div>
+        <p>${esc(u.detail)}</p>${extra}
+        <section><h3>Recibe de (${from.length})</h3>${unitChips(from)}</section>
+        <section><h3>Alimenta a (${to.length})</h3>${unitChips(to)}</section>
+        ${u.dopNode ? `<section><button class="btn" type="button" data-dop="${u.dopNode}">Ver su etapa en la ruta del modelo</button></section>` : ""}`;
+      highlightNet();
+      document.querySelectorAll(".wcard").forEach((el) => el.classList.toggle("selected", el.dataset.unitGo === id));
+    }
+    document.addEventListener("click", (e) => {
+      const go = e.target.closest("[data-unit-go]");
+      if (go) { if ($("view-net").hidden && $("view-orch").hidden) showView("net"); selectUnit(go.dataset.unitGo); return; }
+      const dop = e.target.closest("[data-dop]");
+      if (dop) { showView("map"); select(dop.dataset.dop, true); }
+    });
+
+    // Orquestación: olas = escalones de dependencias, no semanas.
+    let targets = new Set(P.juryTargets);
+    function drawOrch() {
+      $("targets").innerHTML = `<button type="button" class="quick" data-quick="jury">Demo del jurado</button><button type="button" class="quick" data-quick="all">Plataforma completa</button>`
+        + outputs.map((o) => `<button type="button" aria-pressed="${targets.has(o.id)}" data-target="${o.id}">${esc(o.name)}</button>`).join("");
+      const relevant = new Set();
+      targets.forEach((t) => { relevant.add(t); walk(t, uReq).forEach((x) => relevant.add(x)); });
+      const pending = [...relevant].map((id) => uById.get(id)).filter((u) => !isDone(u));
+      const maxWave = Math.max(0, ...pending.map((u) => wave(u.id)));
+      const by = (owner) => pending.filter((u) => u.owner === owner).length;
+      const ready = [...targets].filter((t) => completionWave(t) === 0).map((t) => uById.get(t).name);
+      $("orch-summary").innerHTML = targets.size
+        ? `<b>${targets.size} resultados objetivo</b> · ${pending.length} unidades por construir (Claude ${by("Claude")} · Codex ${by("Codex")} · Equipo ${by("Equipo")}) · <b>${maxWave} olas</b>. Una ola no es una semana: es un escalón de dependencias; lo de una misma ola puede avanzar en paralelo.${ready.length ? ` Ya completos: ${esc(ready.join(", "))}.` : ""}`
+        : "Elige al menos un resultado objetivo.";
+      const order = { in: 0, A: 1, B: 2, C: 3, out: 4 };
+      const reachCount = (id) => [...targets].filter((t) => t === id || walk(id, uReqSuccs).has(t)).length;
+      let html = "";
+      for (let w = 1; w <= maxWave; w++) {
+        const list = pending.filter((u) => wave(u.id) === w).sort((a, b) => order[a.layer] - order[b.layer] || a.owner.localeCompare(b.owner));
+        const completes = [...targets].filter((t) => completionWave(t) === w).map((t) => uById.get(t).name);
+        html += `<section class="wave"><header><b>Ola ${w}${w === 1 ? " · puede empezar ya" : ""}</b><span>${list.length} unidades · Claude ${list.filter((u) => u.owner === "Claude").length} · Codex ${list.filter((u) => u.owner === "Codex").length} · Equipo ${list.filter((u) => u.owner === "Equipo").length}</span></header>
+          ${completes.length ? `<div class="done">Al cerrar esta ola: ${esc(completes.join(", "))}</div>` : ""}
+          ${list.map((u) => `<button type="button" class="wcard st-${u.status}" data-unit-go="${u.id}"><span class="row"><span class="owner ${esc(u.owner)}">${esc(u.owner)}${u.planTask ? ` · ${esc(u.planTask)}` : ""}</span><span class="chip">${STATUS_LABEL[u.status]}</span></span><b>${esc(u.name)}</b><span class="owner">${esc(layerName.get(u.layer).split(" · ")[0])} · habilita ${reachCount(u.id)} objetivo(s)</span></button>`).join("")}
+        </section>`;
+      }
+      $("waves").innerHTML = html || '<p class="empty">Los resultados elegidos ya tienen su cadena completa.</p>';
+    }
+    $("targets").addEventListener("click", (e) => {
+      const quick = e.target.closest("[data-quick]");
+      const chip = e.target.closest("[data-target]");
+      if (quick) targets = new Set(quick.dataset.quick === "jury" ? P.juryTargets : outputs.map((o) => o.id));
+      else if (chip) { const id = chip.dataset.target; targets.has(id) ? targets.delete(id) : targets.add(id); }
+      else return;
+      drawOrch();
+    });
+    window.addEventListener("resize", () => { if (!$("view-net").hidden) drawNet(); });
+
     drawAsme(); drawNeural(); drawPlan(); drawBacklog();
-    select(nextNode ? nextNode.id : nodes[0].id);
-    let initial = "asme";
-    try { initial = localStorage.getItem("lce.dop.view") || "asme"; } catch (_) { /* sin almacenamiento */ }
-    showView(document.querySelector(`[data-view="${initial}"]`) ? initial : "asme");
+    let initial = "net";
+    try { initial = localStorage.getItem("lce.dop.view") || "net"; } catch (_) { /* sin almacenamiento */ }
+    showView(document.querySelector(`[data-view="${initial}"]`) ? initial : "net");
+    selectUnit(nextUnit ? nextUnit.id : outputs[0].id);
   })();
   </script>
 </body>
