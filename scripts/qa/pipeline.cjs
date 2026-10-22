@@ -37,7 +37,7 @@ const out = process.argv[2];
   checks.backToStage = await page.locator(".inspectorHead h3").textContent();
   // Exportar marca la etapa 9 como completada.
   const download = page.waitForEvent("download");
-  await page.locator(".exportAction").click();
+  await page.getByRole("button", { name: "Exportar JSON" }).click();
   await download;
   await page.locator(".pipelineStrip li button").nth(8).click();
   checks.exportStatus = await page.locator(".inspectorHead em").textContent();
