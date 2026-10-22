@@ -104,7 +104,7 @@ Cada rama, antes de pedir revisión:
 
 | # | Decisión | Por qué importa | Propuesta |
 |---|---|---|---|
-| D1 | **Crear la cuenta Earthdata Login y el token** (`EARTHDATA_TOKEN` en `.env`, nunca en git) | Desbloquea las métricas de NASADEM, IMERG y AppEEARS; sin token, los pilotos vial e inmobiliario quedan casi sin relieve ni lluvia satelital | Hacerlo primero; es gratuito |
+| D1 | ✅ **Resuelta el 2026-10-22**: cuenta, token y aplicaciones autorizadas; NASADEM verificado con datos reales (ver registro). El token vence a los 60 días. | Desbloquea las métricas de NASADEM, IMERG y AppEEARS; sin token, los pilotos vial e inmobiliario quedan casi sin relieve ni lluvia satelital | Hacerlo primero; es gratuito |
 | D2 | Corredor del piloto vial | Define la geometría y las amenazas a evaluar | Un tramo cercano a Moquegua, por relevancia local, con geometría pública de OpenStreetMap (ODbL, con atribución) |
 | D3 | Terrenos del piloto inmobiliario | Deben ser coordenadas públicas, nunca datos de clientes (`AGENTS.md`, sección 21 del prompt) | Dos o tres polígonos en zonas de expansión de Arequipa o Moquegua elegidos por el equipo |
 | D4 | Proveedor de IA del asistente | La plataforma funciona sin IA, con reglas; la IA solo redacta sobre el resultado calculado | Empezar determinista; agregar el proveedor por variable de entorno cuando haya clave |
