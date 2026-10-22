@@ -16,11 +16,16 @@ from ..schemas.analysis import Observation
 
 WET_DAY_MM = 1.0
 MIN_YEAR_COVERAGE = 0.9
+# z robusto (mediana y MAD escalada) a partir del cual un valor anual se marca para revisión; no se excluye.
+ATYPICAL_ROBUST_Z = 10.0
+MAD_SCALE = 1.4826
 
 METHOD_NOTES = (
     "Día húmedo: precipitación ≥ 1 mm. Solo se usan años con al menos 90 % de días válidos.",
     "El percentil 95 de días húmedos se calcula sobre el período analizado, no sobre el período base estándar 1961–1990.",
     "Las rachas secas (CDD) y las ventanas de 5 días (RX5DAY) se cuentan dentro de cada año y no cruzan el 31 de diciembre.",
+    "Un año con z robusto mayor que 10 (mediana y MAD) se marca como atípico para contrastarlo con estaciones; no se excluye. "
+    "Mann–Kendall usa rangos y no cambia por su magnitud, pero la media anual sí.",
 )
 
 
@@ -81,6 +86,21 @@ def _max_window_sum(days: dict[date, float], window: int) -> float | None:
             total = float(sum(span))
             best = total if best is None or total > best else best
     return best
+
+
+def atypical_years(series: list[Observation], threshold: float = ATYPICAL_ROBUST_Z) -> list[tuple[int, float, float]]:
+    """Años cuyo valor supera la mediana en más de `threshold` MAD escaladas: (año, valor, z robusto).
+
+    Solo cola superior: los artefactos de reanálisis en lluvia aparecen como picos. Con MAD nula no se marca nada.
+    """
+    values = np.asarray([item.value for item in series], dtype=float)
+    if len(values) < 5:
+        return []
+    median = float(np.median(values))
+    spread = MAD_SCALE * float(np.median(np.abs(values - median)))
+    if spread == 0:
+        return []
+    return [(item.timestamp.year, float(item.value), (item.value - median) / spread) for item in series if (item.value - median) / spread > threshold]
 
 
 def annual_indices(observations: list[Observation]) -> tuple[dict[str, list[Observation]], float | None, int]:

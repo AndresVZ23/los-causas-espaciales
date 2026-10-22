@@ -9,6 +9,14 @@ from .pipeline import VariableSummary
 from .screening import AnnualObservation, ScreeningEnvelope, Sector
 
 
+class AtypicalYear(BaseModel):
+    """Valor anual marcado para revisión por su z robusto; sigue dentro del análisis."""
+
+    year: int
+    value: float
+    robust_z: float
+
+
 class ExtremeIndexSummary(BaseModel):
     """Índice ETCCDI anual de un sujeto. Comparte los nombres de campo de `VariableSummary` para reutilizar el análisis común."""
 
@@ -26,6 +34,7 @@ class ExtremeIndexSummary(BaseModel):
     adjusted_p_value: float | None = None
     significant_after_bh: bool = False
     annual_series: list[AnnualObservation]
+    atypical_years: list[AtypicalYear] = Field(default_factory=list, description="Años con z robusto > 10, para contrastar con estaciones.")
 
 
 class ClimateSiteResult(BaseModel):

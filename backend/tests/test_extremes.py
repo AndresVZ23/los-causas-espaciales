@@ -5,7 +5,7 @@ from datetime import date, timedelta
 import pytest
 
 from backend.app.schemas.analysis import Observation
-from backend.app.statistics.extremes import annual_indices, complete_years
+from backend.app.statistics.extremes import annual_indices, atypical_years, complete_years
 from backend.app.statistics.trends import analyze_trend
 
 
@@ -66,3 +66,20 @@ def test_increasing_extremes_are_detected():
     trend = analyze_trend(series["RX1DAY"], already_annual=True)
     assert trend.significant and trend.direction == "increasing"
     assert trend.slope_per_year == pytest.approx(2.0)
+
+
+def _annual(values):
+    return [Observation(timestamp=date(2001 + i, 1, 1), value=v) for i, v in enumerate(values)]
+
+
+def test_atypical_year_is_flagged_not_removed():
+    # Mediana 10, MAD 1 → escala 1.4826: 30 mm da z ≈ 13.5 y se marca; 14 mm (z ≈ 2.7) no.
+    values = [9, 10, 11, 10, 9, 11, 10, 30, 14, 10, 9]
+    flagged = atypical_years(_annual(values))
+    assert [(year, value) for year, value, _ in flagged] == [(2008, 30)]
+    assert flagged[0][2] == pytest.approx(20 / 1.4826)
+
+
+def test_atypical_needs_spread_and_length():
+    assert atypical_years(_annual([5.0] * 10 + [500.0])) == []   # MAD nula: no hay escala para juzgar
+    assert atypical_years(_annual([1.0, 2.0, 300.0])) == []

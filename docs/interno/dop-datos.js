@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-22T23:30:00Z",
+  updatedAt: "2026-10-23T00:40:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -228,7 +228,7 @@ window.DOP_DATA = {
       { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
 
       // Resultados
-      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "EN_CURSO", detail: "Endpoint climate-screening con tendencias, extremos y año en curso hasta hoy; falta su pantalla propia." },
+      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "LISTO_PARA_QA", detail: "Pantalla y endpoint climate-screening: año en curso, tendencias, 6 índices ETCCDI con años atípicos marcados, PDF y JSON; QA 1440/390 aprobado (ADR-019). Falta la revisión de Codex." },
       { id: "o-energy", layer: "out", group: "Módulos", name: "2 · Energía renovable", owner: "Claude", status: "VERIFICADO", detail: "Solar operativo; eólica e hidro pendientes." },
       { id: "o-hazards", layer: "out", group: "Módulos", name: "3 · Amenazas naturales", owner: "Claude", status: "PENDIENTE", detail: "Requiere capas de amenaza y extremos de lluvia." },
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },

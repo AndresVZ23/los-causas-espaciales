@@ -152,11 +152,16 @@ def _how_much(findings: list[TrendFinding]) -> NasaQuestionAnswer:
             answer=f"{INSUFFICIENT} No se informa magnitud sin una tendencia significativa.",
             evidence=[], provenance=[Provenance.MODEL], stage_steps=[4],
         )
-    lead = max(findings, key=lambda item: abs(item.change_over_period))
-    answer = (
-        f"{lead.label} en {lead.site}: {_qty(lead.change_over_period, lead.unit, 2)} entre {lead.first_year} y {lead.last_year} "
-        f"({_qty(lead.slope_per_year, lead.unit + '/año', 4)}, pendiente de Sen)."
-    )
+    # Una cláusula por variable: magnitudes en unidades distintas no se comparan entre sí.
+    by_variable: dict[str, list[TrendFinding]] = {}
+    for item in findings:
+        by_variable.setdefault(item.variable, []).append(item)
+    clauses = []
+    for index, items in enumerate(by_variable.values()):
+        label = items[0].label if index == 0 else items[0].label[0].lower() + items[0].label[1:]
+        clauses.append(f"{label}: " + " y ".join(f"{_qty(item.change_over_period, item.unit, 2)} en {item.site}" for item in items))
+    first, last = min(item.first_year for item in findings), max(item.last_year for item in findings)
+    answer = f"{'; '.join(clauses)}, entre {first} y {last} (pendiente de Sen por los años del período)."
     return NasaQuestionAnswer(
         key="how_much", question="How much is it changing?", question_es="¿Cuánto está cambiando?", status=QuestionStatus.ANSWERED,
         answer=answer, evidence=[_magnitude(finding) for finding in findings], provenance=[Provenance.MODEL], stage_steps=[4],

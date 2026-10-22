@@ -2,19 +2,21 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ClimateEvidence, ClimateReading } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import SiteVerdict from "./site-verdict";
-import type { Assumptions, Module, Point, QuestionKey, ScreeningResult, SiteResult, Stage } from "./types";
+import { isClimate } from "./types";
+import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
 const ComparisonChart = dynamic(() => import("./comparison-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando comparación…</div> });
 
 const modules: Module[] = [
-  { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Disponible vía Solar", ready: false, description: "Variables POWER y tendencias disponibles dentro del piloto solar." },
+  { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER, extremos de lluvia ETCCDI y año en curso hasta hoy." },
   { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con observaciones NASA POWER." },
   { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Capas pendientes", ready: false, description: "Requiere integrar y validar capas oficiales de amenazas." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "AppEEARS pendiente", ready: false, description: "Vegetación, agua y cobertura todavía no están conectadas." },
@@ -29,14 +31,28 @@ const initialSites: Point[] = [
 ];
 const initialAssumptions: Assumptions = { capacity_mw: 20, performance_ratio: 0.8, initial_capex_usd: 18000000, annual_opex_usd: 360000, energy_price_usd_mwh: 55, mitigation_capex_usd: 0, discount_rate: 0.1, horizon_years: 20 };
 const provenanceLabels: Record<string, string> = { REAL_DATA: "Observación original", CACHED_DATA: "Copia validada en caché", MODEL_ESTIMATE: "Cálculo derivado", USER_ASSUMPTION: "Supuesto editable", DATA_UNAVAILABLE: "Fuente pendiente" };
-const variables = [
+const solarTabs = [
   { id: "ALLSKY_SFC_SW_DWN", short: "Radiación solar" },
   { id: "T2M", short: "Temperatura" },
   { id: "WS10M", short: "Viento" },
   { id: "PRECTOTCORR", short: "Precipitación" },
 ];
+const climateTabs = [
+  { id: "T2M", short: "Temperatura" },
+  { id: "PRECTOTCORR", short: "Precipitación" },
+  { id: "RX1DAY", short: "Lluvia máx. 1 día" },
+  { id: "RX5DAY", short: "Lluvia máx. 5 días" },
+  { id: "CDD", short: "Racha seca" },
+  { id: "WS10M", short: "Viento" },
+];
 
-function getVariable(site: SiteResult, variable: string) { return site.variables.find((item) => item.variable === variable)!; }
+function getVariable(site: SiteResult | ClimateSite, variable: string) { return site.variables.find((item) => item.variable === variable)!; }
+// Serie anual de una variable NASA o de un índice ETCCDI (solo en clima); los índices heredan la fuente de la precipitación.
+function seriesFor(site: SiteResult | ClimateSite, code: string) {
+  const extreme = "extremes" in site ? site.extremes.find((item) => item.variable === code) : undefined;
+  if (extreme) return { annual_series: extreme.annual_series, display_unit: extreme.display_unit, source: getVariable(site, "PRECTOTCORR").source };
+  return getVariable(site, code);
+}
 
 export default function Workspace() {
   const [activeModule, setActiveModule] = useState("solar");
@@ -51,7 +67,7 @@ export default function Workspace() {
   const [endDate, setEndDate] = useState("");
   useEffect(() => { setEndDate(new Date().toLocaleDateString("en-CA")); }, []);
   const [assumptions, setAssumptions] = useState<Assumptions>(initialAssumptions);
-  const [result, setResult] = useState<ScreeningResult | null>(null);
+  const [result, setResult] = useState<AnyResult | null>(null);
   const [terrainVisible, setTerrainVisible] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -74,20 +90,24 @@ export default function Workspace() {
       ? { ...stage, status: "COMPLETADO", summary: `Descargado: ${exportedAt}.` }
       : stage);
   }, [result, exportedAt]);
-  const comparisonData = useMemo(() => result?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [result]);
-  const selectedVariable = result ? getVariable(result.sites[0], activeVariable) : null;
+  const climateResult = isClimate(result) ? result : null;
+  const solarResult = result && !isClimate(result) ? result : null;
+  const isClimateModule = activeModule === "climate";
+  const tabs = isClimateModule ? climateTabs : solarTabs;
+  const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
+  const selectedVariable = result ? seriesFor(result.sites[0], activeVariable) : null;
   const selectedUnit = selectedVariable?.display_unit ?? "Media anual";
   // Cada producto NASA se publica con su propia latencia: se muestra la fecha más antigua entre sitios, por grupo.
   const dataThrough = useMemo(() => {
     if (!result) return null;
-    const latest = (codes: string[]) => result.sites.flatMap((site) => site.variables.filter((v) => codes.includes(v.variable) && v.last_valid_date).map((v) => v.last_valid_date as string)).sort()[0];
+    const latest = (codes: string[]) => result.sites.flatMap((site: SiteResult | ClimateSite) => site.variables.filter((v) => codes.includes(v.variable) && v.last_valid_date).map((v) => v.last_valid_date as string)).sort()[0];
     const fmt = (iso?: string) => iso ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }) : null;
     const meteo = fmt(latest(["T2M", "PRECTOTCORR", "WS10M"]));
     const solar = fmt(latest(["ALLSKY_SFC_SW_DWN"]));
     return [meteo && `Datos NASA hasta ${meteo}`, solar && solar !== meteo && `radiación hasta ${solar}`].filter(Boolean).join(" · ");
   }, [result]);
-  const staleAssumptions = result !== null && JSON.stringify(result.assumptions) !== JSON.stringify(assumptions);
-  const selectedSources = useMemo(() => result?.sites.map((site) => ({ site: site.location.label, ...getVariable(site, activeVariable).source })) ?? [], [result, activeVariable]);
+  const staleAssumptions = solarResult !== null && JSON.stringify(solarResult.assumptions) !== JSON.stringify(assumptions);
+  const selectedSources = useMemo(() => result?.sites.map((site: SiteResult | ClimateSite) => ({ site: site.location.label, ...seriesFor(site, activeVariable).source })) ?? [], [result, activeVariable]);
   const terrainOverlay = useMemo(() => {
     const granule = terrain?.sites[0]?.granules.find((item) => item.short_name === "NASADEM_HGT" && item.preview_url);
     return granule?.preview_url
@@ -100,11 +120,11 @@ export default function Workspace() {
   const temporalSeries = useMemo(() => {
     if (!result) return [];
     const years = new Set<number>();
-    result.sites.forEach((site) => getVariable(site, activeVariable).annual_series.forEach((item) => years.add(item.year)));
+    result.sites.forEach((site: SiteResult | ClimateSite) => seriesFor(site, activeVariable).annual_series.forEach((item) => years.add(item.year)));
     return [...years].sort().map((year) => {
       const point: { year: number } & Record<string, number> = { year };
-      result.sites.forEach((site, index) => {
-        const value = getVariable(site, activeVariable).annual_series.find((item) => item.year === year)?.value;
+      result.sites.forEach((site: SiteResult | ClimateSite, index: number) => {
+        const value = seriesFor(site, activeVariable).annual_series.find((item) => item.year === year)?.value;
         if (value !== undefined) point[`site${index}`] = value;
       });
       return point;
@@ -132,7 +152,11 @@ export default function Workspace() {
     setSites((current) => current.map((site, position) => position === index ? { ...site, [key]: key === "label" ? value : +value } : site));
   }
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
-  function selectModule(id: string) { if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); } setActiveModule(id); setMobileNavOpen(false); if (id === "investment") setAssumptionsOpen(true); }
+  function selectModule(id: string) {
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : "ALLSKY_SFC_SW_DWN"); }
+    setActiveModule(id); setMobileNavOpen(false);
+    if (id === "investment") setAssumptionsOpen(true);
+  }
   function goToStage(step: number) {
     setSelectedStep(step);
     window.setTimeout(() => document.getElementById("stage-inspector")?.scrollIntoView({ block: "nearest", behavior: "smooth" }), 0);
@@ -153,10 +177,14 @@ export default function Workspace() {
   async function runScreening() {
     setLoading(true); setError(""); setExportedAt(null); setPdfError("");
     try {
-      const response = await fetch("/api/solar-screening", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sites, start_date: startDate, end_date: endDate, assumptions }) });
+      // Cada módulo funcional tiene su endpoint; clima no usa supuestos financieros.
+      const request = isClimateModule
+        ? { url: "/api/climate-screening", body: { sites, start_date: startDate, end_date: endDate } }
+        : { url: "/api/solar-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions } };
+      const response = await fetch(request.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request.body) });
       const data = await response.json();
       if (!response.ok) throw new Error(typeof data.detail === "string" ? data.detail : "No fue posible ejecutar el screening. Revise la configuración e intente nuevamente.");
-      const outcome = data as ScreeningResult;
+      const outcome = data as AnyResult;
       setResult(outcome);
       // El inspector abre en la primera etapa con salvedades; si no hay, en Análisis, donde nacen las respuestas NASA.
       setSelectedStep(outcome.pipeline.find((stage) => !["COMPLETADO", "LISTO"].includes(stage.status))?.step ?? 4);
@@ -171,7 +199,7 @@ export default function Workspace() {
     const blob = new Blob([JSON.stringify(result, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
-    anchor.href = url; anchor.download = `screening-solar-${result.analysis_id}.json`; anchor.click();
+    anchor.href = url; anchor.download = `screening-${result.sector}-${result.analysis_id}.json`; anchor.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
     markExported("reporte JSON");
   }
@@ -225,7 +253,9 @@ export default function Workspace() {
       <section id="workspace" className="consoleGrid" aria-label="Mesa de inteligencia terrestre">
         {result && isMobile && (
           <div className="mobileVerdict" ref={mobileVerdictRef}>
-            <SiteVerdict result={result} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />
+            {climateResult
+              ? <ClimateReading result={climateResult} headingId="lectura-movil" />
+              : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />}
           </div>
         )}
         <aside className={`moduleRail ${mobileNavOpen ? "isOpen" : ""}`} aria-label="Módulos de inteligencia" aria-hidden={isMobile && !mobileNavOpen} inert={isMobile && !mobileNavOpen ? true : undefined}>
@@ -278,7 +308,9 @@ export default function Workspace() {
             <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready || !endDate}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (
-              !isMobile && <SiteVerdict result={result} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />
+              !isMobile && (climateResult
+                ? <ClimateReading result={climateResult} headingId="lectura-escritorio" />
+                : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />)
             ) : (
               <div className="emptyReading"><span><i /><i /></span><div><strong>LISTO PARA CONSULTAR</strong><p>{selectedModule.description}</p></div></div>
             )}
@@ -306,9 +338,9 @@ export default function Workspace() {
                   <span>{terrain.crs} · {terrain.spatial_resolution}</span>
                 </p>
               </div>}
-              {!loading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis solar; no se muestran métricas sin una respuesta oficial.</p>}
+              {!loading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis; no se muestran métricas sin una respuesta oficial.</p>}
             </section>
-            <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
+            {!isClimateModule && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
               <summary>Supuestos financieros <span>USER_ASSUMPTION</span></summary>
               <div className="assumptionFields">
                 <label>Capacidad MW<input type="number" value={assumptions.capacity_mw} onChange={(event) => updateAssumption("capacity_mw", event.target.value)} /></label>
@@ -318,18 +350,18 @@ export default function Workspace() {
                 <label>OPEX anual USD<input type="number" value={assumptions.annual_opex_usd} onChange={(event) => updateAssumption("annual_opex_usd", event.target.value)} /></label>
                 <label>Tasa descuento<input type="number" step="0.01" value={assumptions.discount_rate} onChange={(event) => updateAssumption("discount_rate", event.target.value)} /></label>
               </div>
-            </details>
+            </details>}
           </div>
         </aside>
 
         <section className="trendPanel" aria-label="Serie temporal anual">
           <div className="trendHeader">
             <span>Serie temporal anual</span>
-            <div role="group" aria-label="Variable NASA POWER">{variables.map((variable) => <button key={variable.id} className={activeVariable === variable.id ? "active" : ""} aria-pressed={activeVariable === variable.id} onClick={() => setActiveVariable(variable.id)}>{variable.short}</button>)}</div>
-            <p className="seriesKey">{(result?.sites ?? []).map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
+            <div role="group" aria-label="Variable NASA POWER">{tabs.map((variable) => <button key={variable.id} className={activeVariable === variable.id ? "active" : ""} aria-pressed={activeVariable === variable.id} onClick={() => setActiveVariable(variable.id)}>{variable.short}</button>)}</div>
+            <p className="seriesKey">{(result?.sites ?? []).map((site: SiteResult | ClimateSite, index: number) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
           </div>
-          <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={(result?.sites ?? []).map((site, index) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
-          <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>Media anual de observaciones diarias válidas · eje vertical ajustado al rango observado</span></div>
+          <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={(result?.sites ?? []).map((site: SiteResult | ClimateSite, index: number) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
+          <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>Años completos · {["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"} · eje ajustado al rango observado</span></div>
         </section>
 
         <PipelinePanel stages={visiblePipeline} running={loading} hasResult={result !== null} selectedStep={selectedStep} onSelect={setSelectedStep} onQuestion={goToQuestion} />
@@ -343,15 +375,17 @@ export default function Workspace() {
         {pdfError && <p className="errorMessage" role="alert">{pdfError}</p>}
         {!result ? <div className="emptyEvidence"><div><h3>El flujo está preparado</h3><p>NASA POWER, Mann–Kendall, pendiente de Sen, ajuste BH y VAN condicionado se ejecutan únicamente al solicitar el análisis.</p></div><ul><li>Comparación Moquegua–Arequipa</li><li>Cobertura y limitaciones por variable</li><li>Supuestos financieros explícitos</li><li>Brechas para debida diligencia</li></ul></div> : <>
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
-          <div className="findingsPanel"><h3>Lectura comparativa</h3>{result.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>
+          {climateResult && <ClimateEvidence result={climateResult} />}
+          {solarResult && <>
+          <div className="findingsPanel"><h3>Lectura comparativa</h3>{solarResult.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>
           <div className="resultGrid">
             <article className="chartPanel"><div className="panelHeader"><div><h3>Irradiancia histórica media</h3><p>Comparación relativa con observaciones NASA POWER</p></div><span>kWh/m²/día</span></div><ComparisonChart data={comparisonData} /></article>
-            <article className="decisionPanel"><h3>Escenario económico</h3>{result.sites.map((site) => <div className="decisionRow" key={site.location.label}><div><b>{site.location.label}</b><span>{formatNumber(site.finance.annual_energy_mwh, 0)} MWh/año</span></div><strong className={site.finance.npv_usd >= 0 ? "positive" : "negative"}>{formatMoney(site.finance.npv_usd)}</strong></div>)}<p>MODEL_ESTIMATE · condicionado a USER_ASSUMPTION</p></article>
+            <article className="decisionPanel"><h3>Escenario económico</h3>{solarResult.sites.map((site) => <div className="decisionRow" key={site.location.label}><div><b>{site.location.label}</b><span>{formatNumber(site.finance.annual_energy_mwh, 0)} MWh/año</span></div><strong className={site.finance.npv_usd >= 0 ? "positive" : "negative"}>{formatMoney(site.finance.npv_usd)}</strong></div>)}<p>MODEL_ESTIMATE · condicionado a USER_ASSUMPTION</p></article>
           </div>
           <div className="siteResults">
-            {result.sites.map((site) => (
+            {solarResult.sites.map((site) => (
               <article className="siteResult" key={site.location.label}>
-                <div className="siteResultHeader"><div><h3>{site.location.label}</h3><p>{site.relative_position_text}</p></div><span>{site.relative_solar_position}.º de {result.sites.length}</span></div>
+                <div className="siteResultHeader"><div><h3>{site.location.label}</h3><p>{site.relative_position_text}</p></div><span>{site.relative_solar_position}.º de {solarResult.sites.length}</span></div>
                 <div className="tableScroll">
                   <table>
                     <thead><tr><th>Variable NASA</th><th>Media</th><th>Cobertura</th><th>Pendiente Sen</th><th>Evidencia BH</th></tr></thead>
@@ -369,6 +403,7 @@ export default function Workspace() {
               </article>
             ))}
           </div>
+          </>}
           <div className="gapPanel"><div><h3>Brechas antes de invertir</h3><p>Definen el siguiente trabajo; no representan riesgo cero.</p></div><div>{result.data_gaps.map((gap) => <article key={gap.dataset}><span>{provenanceLabels[gap.status]}</span><h4>{gap.dataset}</h4><p>{gap.impact}</p><b>Siguiente acción: {gap.next_action}</b></article>)}</div></div><p className="disclaimer">{result.disclaimer}</p>
         </>}
       </section>

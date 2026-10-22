@@ -91,8 +91,11 @@
 
 - Datos hasta hoy con la última fecha publicada por variable: meteorología hasta el 20-oct-2026 y radiación hasta el 31-jul-2026. Tendencias con años completos (2001–2025) y año en curso comparado aparte (ADR-017).
 - Defecto de NASA POWER detectado y controlado: precipitación × 24 al incluir días recientes; se verifica y corrige en cada consulta, y queda registrado en la procedencia.
-- Motor de extremos ETCCDI y endpoint `climate-screening` (ADR-018). Con datos reales hasta hoy, la lluvia máxima de 1 día sube con significancia en Moquegua (evidencia fuerte) y en Arequipa; la de 5 días, en Arequipa. En 2026, Moquegua va como el 3.er año más cálido y el de menos viento del registro, y Arequipa lleva 39 % más lluvia que el promedio del mismo período.
-- Backend: 55/55 pruebas.
+- Motor de extremos ETCCDI y endpoint `climate-screening` (ADR-018).
+- Pantalla del Módulo 1 en 3100: lectura del año en curso por variable y sitio, pestañas de serie anual para RX1DAY, RX5DAY y CDD, tabla de los seis índices por sitio, método, preguntas NASA, PDF y JSON. QA Playwright (`scripts/qa/climate_ui.cjs`): 1440 y 390 px sin desborde ni errores de consola.
+- Revisión científica de los resultados (ADR-019): la corrección de Hamed–Rao ya no reduce la varianza con autocorrelación negativa, y los años atípicos se marcan. Con datos reales hasta hoy quedan 5 de 20 pruebas significativas: temperatura sube en ambos sitios (fuerte), viento baja en ambos (moderada) y la lluvia máxima de 5 días sube en Arequipa (moderada). La «lluvia máxima de 1 día fuerte en Moquegua» que se informó antes dependía de la corrección y se retiró. NASA POWER trae 314 mm en dos días en Moquegua (12–13 sep 2022), marcado para contrastar con estaciones.
+- En 2026, Moquegua va como el 3.er año más cálido y el de menos viento del registro, y Arequipa lleva 39 % más lluvia que el promedio del mismo período.
+- Backend: 70/70 pruebas.
 
 ## Contrato común entre sectores (C2)
 

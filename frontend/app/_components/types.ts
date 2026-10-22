@@ -37,6 +37,17 @@ export type ScreeningResult = {
   sites: SiteResult[]; terrain: TerrainResult | null;
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; disclaimer: string;
 };
+// Módulo 1 · Inteligencia climática (sector "climate" del contrato C2).
+export type ExtremeIndex = {
+  variable: string; label: string; description: string; unit: string; display_unit: string;
+  mean: number; minimum: number; maximum: number; valid_years: number; discarded_years: number;
+  trend: Trend; adjusted_p_value: number | null; significant_after_bh: boolean; annual_series: { year: number; value: number }[];
+  atypical_years?: { year: number; value: number; robust_z: number }[];
+};
+export type ClimateSite = { location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null };
+export type ClimateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & { sector: "climate"; sites: ClimateSite[]; method_notes: string[] };
+export type AnyResult = ScreeningResult | ClimateResult;
+export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };
 export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL" | "PENDING"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[] };
 export type TerrainResult = { generated_at: string; dataset: string; crs: string; spatial_resolution: string; sites: TerrainSite[]; note: string };

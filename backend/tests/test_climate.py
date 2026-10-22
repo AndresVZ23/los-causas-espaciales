@@ -50,6 +50,14 @@ def test_extreme_trends_reach_nasa_questions(response):
     assert "huaicos" in so_what.answer and "no usa supuestos financieros" in so_what.answer
 
 
+def test_how_much_reports_every_significant_variable(response):
+    # Una cláusula por variable significativa: no se elige un «mayor cambio» comparando mm con °C.
+    how_much = next(question for question in response.nasa_questions if question.key == "how_much")
+    for variable in {item.variable for item in response.trend_findings}:
+        label = next(item.label for item in response.trend_findings if item.variable == variable)
+        assert label.lower() in how_much.answer.lower()
+
+
 def test_finance_stage_is_declared_not_applicable(response):
     finance = next(stage for stage in response.pipeline if stage.key == "finance")
     assert finance.status == PipelineStatus.UNAVAILABLE

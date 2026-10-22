@@ -14,3 +14,4 @@ coverage/
 scripts/qa/node_modules/
 # Next en modo dev genera este archivo para agentes; no forma parte del proyecto
 frontend/AGENTS.md
+frontend/tsconfig.tsbuildinfo

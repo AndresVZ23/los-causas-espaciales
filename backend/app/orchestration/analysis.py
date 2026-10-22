@@ -13,9 +13,9 @@ from ..connectors.nasa.power import PowerConnectorError
 from ..core.units import display_unit, is_ratio_scale
 from ..core.variables import variable_label
 from ..schemas.analysis import Observation, SourceMetadata
-from ..schemas.climate import ExtremeIndexSummary
+from ..schemas.climate import AtypicalYear, ExtremeIndexSummary
 from ..schemas.pipeline import AnnualObservation, CurrentPeriod, VariableSummary
-from ..statistics.extremes import INDEX_DEFINITIONS, annual_indices
+from ..statistics.extremes import INDEX_DEFINITIONS, annual_indices, atypical_years
 from ..statistics.multiple_testing import benjamini_hochberg
 from ..statistics.trends import analyze_trend, annual_means, decision_p_value, partial_years
 from .extraction import PowerDataset
@@ -130,6 +130,7 @@ def analyze_extremes(datasets: Sequence[PowerDataset]) -> tuple[list[list[Extrem
                 discarded_years=discarded,
                 trend=analyze_trend(series[code], already_annual=True),
                 annual_series=[AnnualObservation(year=item.timestamp.year, value=round(item.value, 4)) for item in series[code]],
+                atypical_years=[AtypicalYear(year=year, value=round(value, 2), robust_z=round(z, 1)) for year, value, z in atypical_years(series[code])],
             ))
         by_subject.append(summaries)
     _adjust_by_column(by_subject, len(INDEX_DEFINITIONS))

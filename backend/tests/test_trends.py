@@ -2,6 +2,7 @@ from datetime import date, timedelta
 
 import numpy as np
 import pytest
+from scipy.stats import norm
 
 from backend.app.orchestration.analysis import current_period
 from backend.app.schemas.analysis import Observation
@@ -96,4 +97,20 @@ def test_negative_corrected_variance_falls_back_and_is_declared():
     assert result.variance_correction == 1
     assert result.p_value_modified == pytest.approx(0.8906603480, rel=1e-6)
     assert not result.significant
-    assert any("varianza no positiva" in item for item in result.limitations)
+    assert any("autocorrelación negativa" in item for item in result.limitations)
+
+
+# RX1DAY anual de NASA POWER en Moquegua (2001–2025), con el año atípico 2022: los rangos sin tendencia alternan.
+MOQUEGUA_RX1DAY = [7.3, 10.9, 8.8, 8.8, 7.8, 8.9, 5.6, 9.6, 8.4, 2.6, 9.3, 8.6, 6.6, 11.2, 6.1, 12.3, 8.8, 18.2, 6.7, 20.9, 4.6, 300.2, 43.2, 5.1, 24.7]
+
+
+def test_negative_autocorrelation_never_shrinks_the_variance():
+    # Sin el piso, n/n* ≈ 0.15 llevaba p de 0.21 a 0.001 y declaraba «fuerte» una tendencia cuyo IC de Sen cruza el cero.
+    values = np.asarray(MOQUEGUA_RX1DAY)
+    result = analyze_trend(series(MOQUEGUA_RX1DAY), already_annual=True)
+    classical = 2 * (1 - norm.cdf(abs(mann_kendall_s(values) - 1) / np.sqrt(mann_kendall_variance(values))))
+    assert result.autocorrelation_lag1_detrended < -0.4
+    assert result.variance_correction == 1
+    assert result.p_value_modified == pytest.approx(classical, rel=1e-9)
+    assert not result.significant
+    assert result.confidence_interval[0] < 0 < result.confidence_interval[1]

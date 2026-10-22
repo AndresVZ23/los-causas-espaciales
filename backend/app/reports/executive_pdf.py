@@ -171,7 +171,8 @@ def _decorate(envelope: ScreeningEnvelope, short_hash: str):
         canvas.line(left, height - 14 * mm, right, height - 14 * mm)
         canvas.line(left, 13 * mm, right, 13 * mm)
         canvas.setFont(SANS, 6.8)
-        canvas.drawString(left, 9 * mm, "Screening preliminar con datos NASA y supuestos del usuario; no sustituye estudios de factibilidad.")
+        basis = "datos NASA y supuestos del usuario" if envelope.assumption_items else "datos NASA, sin supuestos financieros"
+        canvas.drawString(left, 9 * mm, f"Screening preliminar con {basis}; no sustituye estudios de factibilidad ni mediciones in situ.")
         canvas.drawRightString(right, 9 * mm, f"Huella {short_hash} · página {doc.page}")
         canvas.restoreState()
     return draw

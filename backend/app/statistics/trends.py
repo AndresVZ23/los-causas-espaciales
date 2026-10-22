@@ -125,14 +125,19 @@ def analyze_trend(observations: list[Observation], alpha: float = 0.05, *, alrea
     variance = mann_kendall_variance(values)
     # Tiempo relativo (1, 2, …) en lugar del año absoluto: evita error de redondeo al restar la tendencia y respeta años faltantes.
     factor, detrended_lag1, significant_lags = hamed_rao_correction(values, years - years[0] + 1, float(sen.slope), alpha)
-    if factor <= 0:
-        # Autocorrelación negativa extrema: la varianza corregida no es válida; se conserva la clásica y se declara.
-        limitations.append("La corrección de Hamed y Rao produjo una varianza no positiva; se informa la varianza clásica de Mann-Kendall.")
+    if factor < 1:
+        # Criterio conservador (ADR-019): la corrección solo ensancha la varianza. Con autocorrelación negativa, n/n* < 1
+        # volvería la prueba más permisiva que la clásica; en series cortas suele venir de un año atípico, no de la física.
+        if significant_lags:
+            limitations.append(
+                f"La serie sin tendencia muestra autocorrelación negativa (factor n/n* = {factor:.3f}); "
+                "se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia."
+            )
         factor_applied = 1.0
     else:
         factor_applied = factor
     p_modified = float(2 * (1 - norm.cdf(abs(_z_score(s, variance * factor_applied)))))
-    if significant_lags and factor > 0:
+    if significant_lags and factor > 1:
         limitations.append(
             f"Se detectó autocorrelación significativa en {significant_lags} rezagos de la serie sin tendencia; "
             f"la varianza de S se multiplicó por {factor_applied:.3f}."
