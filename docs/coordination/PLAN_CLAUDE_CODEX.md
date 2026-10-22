@@ -2,6 +2,21 @@
 
 Fecha: 2026-10-22 · Dueño del producto: Christian · Documento vivo; cada agente actualiza solo su fila de estado.
 
+## 0. Calendario hacia la entrega: sábado 7 de noviembre de 2026
+
+Las olas salen de la vista «Orquestación» del DOP (`docs/interno/dop-neuronal.html`): cada una agrupa lo que puede avanzar en paralelo.
+
+| Fechas | Ola | Claude | Codex | Se completa |
+|---|---|---|---|---|
+| 22–23 oct | 0 | Arrancar ola 1 | Fusionar y subir las ramas de Claude (X0); cerrar K0 | Base estable en `master` y GitHub |
+| 23–28 oct | 1 | Extremos hidrometeorológicos; pantalla del módulo Clima; escenarios y sensibilidad financiera; dibujo y carga de corredores y polígonos | Peligros geológicos e inundación, áreas protegidas, patrimonio, comunidades, red vial; armonización espacial; catálogo de fuentes | Módulo 1 · Clima |
+| 29 oct–1 nov | 2 | Puntajes multicriterio; asistente (C4) | Muestreo de corredores y polígonos (K1); exposición a amenazas; restricciones territoriales | Módulo 7 · Inversión |
+| 2–4 nov | 3 | Integración progresiva de los pilotos | Backend del piloto vial (K2) y del inmobiliario (K3), con el contrato C2 | — |
+| 4–6 nov | 4 | Pantallas de los pilotos (C5) | QA cruzado, Docker y rendimiento | Módulo 6 · Vial y piloto inmobiliario |
+| 6–7 nov | Cierre | `PITCH.md`, `DEMO_SCENARIOS.md` y ensayo del demo | `DATA_SOURCES.md`, `TECHNICAL_ARCHITECTURE.md`, congelamiento y etiqueta de versión | Entrega |
+
+Reglas de calendario: si una unidad de la ola N se atrasa, lo de la ola N+1 que no depende de ella sigue adelante. Si al 4 de noviembre el piloto inmobiliario no llega, se presenta como avance sobre los mismos motores y el foco queda en el vial. El calibrador neuronal se presenta como hoja de ruta; antes de la entrega solo se verifica el acceso a los datos del COES.
+
 ## 1. Objetivo
 
 Cerrar lo que más pesa para el jurado del NASA Space Apps Challenge sin pisarnos el trabajo:
