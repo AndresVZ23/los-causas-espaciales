@@ -30,7 +30,7 @@ Regla general de datos y decisión: **Codex entrega datos verificados** (conecto
 | C1 | Mann–Kendall modificado (Hamed–Rao) y su uso en las preguntas NASA | **Claude** | X0 | `claude/mk-modificado` |
 | C2 | Contrato común de screening por sector (`ScreeningEnvelope`) y preguntas NASA agnósticas al sector | **Claude** | X0 | `claude/contrato-sectores` |
 | K1 | Muestreo NASA POWER sobre corredores y polígonos (geodésico, deduplicado por celda de grilla) | **Codex** | X0 | `codex/muestreo-geometrias` |
-| K1b | Verificar acceso real a IMERG V07, LHASA y una capa oficial peruana de amenazas; registrar en `DATA_SOURCES.md` | **Codex** | — | `codex/fuentes-amenazas` |
+| K1b | Verificar acceso real a IMERG V07, LHASA, una capa oficial peruana de amenazas y **la generación mensual del COES por central fotovoltaica** (etiquetas de la red neuronal); registrar en `DATA_SOURCES.md` | **Codex** | — | `codex/fuentes-amenazas` |
 | C3 | Reporte PDF ejecutivo (backend + botón) a partir del contrato C2 | **Claude** | C2 | `claude/reporte-pdf` |
 | K0 | Descarga NASADEM asíncrona: reanudable, atómica, con bloqueo por tesela, precarga y estado `PENDING` (en curso) | **Codex** | C2 | `codex/nasadem-asincrono` |
 | K2 | Piloto vial (backend): corredor, extremos de precipitación por tramo, relieve, amenazas disponibles y escenario de interrupción; responde con el sobre C2 | **Codex** | C2, K1 | `codex/piloto-vial` |
@@ -58,8 +58,9 @@ Solo el dueño edita su archivo. Si el otro necesita un cambio, lo pide en el re
 | Archivos | Dueño |
 |---|---|
 | `backend/app/connectors/**`, `backend/app/geospatial/**`, `backend/app/sectors/road.py`, `backend/app/sectors/real_estate.py`, `backend/app/schemas/terrain.py` y los esquemas de geometría | Codex |
-| `docs/interno/**` (DOP y plan operativo), `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `docs/nasa-submission/DATA_SOURCES.md`, `docs/nasa-submission/TECHNICAL_ARCHITECTURE.md` | Codex |
-| **Todo `frontend/**`** (incluido `geo-map.tsx`), `DESIGN.md`, `PRODUCT.md`, `docs/design/**`, `.taste-skill/`, `.impeccable/` | Claude |
+| `docs/interno/plan-operativo.html`, `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `docs/nasa-submission/DATA_SOURCES.md`, `docs/nasa-submission/TECHNICAL_ARCHITECTURE.md` | Codex |
+| **Todo `frontend/**`** (incluido `geo-map.tsx`), `DESIGN.md`, `PRODUCT.md`, `docs/design/**`, `.taste-skill/`, `.impeccable/`, `docs/interno/dop-neuronal.html` | Claude |
+| `docs/interno/dop-datos.js` (estado del DOP): cada agente actualiza sus nodos y tareas, con evidencia | Ambos |
 | `backend/app/statistics/trends.py`, `backend/app/orchestration/**`, `backend/app/reports/**`, `backend/app/assistant/**`, `backend/app/schemas/screening.py` | Claude |
 | `frontend/app/_components/workspace.tsx`, `styles.css`, `pipeline-panel.tsx`, `nasa-questions.tsx`, `site-verdict.tsx`, `temporal-chart.tsx` y los componentes nuevos de reporte y asistente | Claude |
 | `backend/app/sectors/solar.py` | Claude (orquestación); Codex lo toca solo para cambios de conector |

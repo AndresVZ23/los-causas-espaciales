@@ -3,911 +3,494 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="dark">
-  <title>DOP neuronal | Tracker | Los Causas Espaciales</title>
-  <meta name="description" content="Tracker local del pipeline de desarrollo y sus puertas de aceptación verificables.">
+  <title>DOP de la red neuronal · Los Causas Espaciales</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Public+Sans:wght@400;500;600&display=swap">
   <style>
     :root {
-      --ground: #080c0d;
-      --surface: #141618;
-      --raised: #1f2226;
-      --control: #202428;
-      --border: #2e3136;
-      --rule: #25292d;
-      --text: #e8eaed;
-      --muted: #aeb7bf;
-      --subtle: #909aa3;
-      --accent: #38d9c3;
-      --positive: #75e59a;
-      --warning: #f1c84b;
-      --negative: #ee7180;
-      --cached: #74a0ff;
-      --focus: #8af4e5;
-      --sans: "Public Sans", "Segoe UI", Arial, sans-serif;
-      --mono: "IBM Plex Mono", Consolas, monospace;
+      --ground: #080c0d; --surface: #101415; --raised: #161b1d; --control: #1d2326;
+      --border: #2b3035; --rule: #22272b; --text: #e8eaed; --muted: #9aa4ae; --subtle: #7f8992;
+      --accent: #38d9c3; --verified: #75e59a; --qa: #74a0ff; --progress: #38d9c3; --pending: #f1c84b; --blocked: #ee7180;
+      --sans: "Public Sans", system-ui, sans-serif; --mono: "IBM Plex Mono", ui-monospace, monospace;
     }
-
     * { box-sizing: border-box; }
-    html { background: var(--ground); color: var(--text); scroll-behavior: smooth; }
-    body { margin: 0; min-width: 320px; background: var(--ground); font-family: var(--sans); font-size: 14px; line-height: 1.45; font-variant-numeric: tabular-nums; }
-    button, input, select, textarea { font: inherit; }
-    button, a, select, input, textarea { touch-action: manipulation; }
+    html { background: var(--ground); }
+    body { margin: 0; min-width: 1100px; background: var(--ground); color: var(--text); font: 14px/1.45 var(--sans); }
+    button, input, select { font: inherit; color: inherit; }
     button { cursor: pointer; }
-    button:disabled { cursor: not-allowed; opacity: .5; }
-    a { color: inherit; text-decoration: none; }
-    ::selection { background: var(--accent); color: var(--ground); }
-    :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-    .skip { position: absolute; left: 12px; top: -80px; z-index: 20; padding: 10px 12px; background: var(--text); color: var(--ground); }
-    .skip:focus { top: 12px; }
+    a { color: var(--accent); }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-    .shell { min-height: 100vh; }
-    .topbar { min-height: 132px; display: grid; grid-template-columns: 330px minmax(380px, 1fr) auto; border-bottom: 1px solid var(--border); background: #0a0e0f; }
-    .brand { padding: 22px 32px; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--border); }
-    .brand strong { font-size: 31px; font-weight: 400; line-height: .95; letter-spacing: .045em; }
-    .brand span { margin-top: 12px; color: var(--muted); font: 500 12px/1.25 var(--mono); letter-spacing: .07em; }
-    .heading { padding: 20px 28px; display: flex; flex-direction: column; justify-content: center; }
-    .heading h1 { margin: 0; max-width: 760px; font-size: clamp(24px, 2.3vw, 32px); font-weight: 520; line-height: 1.1; letter-spacing: -.025em; }
-    .heading p { max-width: 760px; margin: 8px 0 0; color: var(--muted); }
-    .top-actions { min-width: 340px; padding: 20px 24px; display: flex; align-items: flex-start; justify-content: flex-end; flex-wrap: wrap; gap: 8px; }
-    .button, .link-button { min-height: 38px; padding: 0 13px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: 2px; background: var(--surface); color: var(--text); font-size: 13px; }
-    .button:hover, .link-button:hover { border-color: var(--subtle); background: var(--raised); }
-    .button.primary { border-color: var(--accent); background: var(--accent); color: var(--ground); font-weight: 600; }
-    .button.danger { color: var(--negative); }
-    .save-state { flex-basis: 100%; min-height: 22px; color: var(--muted); font: 500 12px var(--mono); text-align: right; }
+    .top { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: end; padding: 22px 32px 18px; border-bottom: 1px solid var(--border); }
+    .top small { display: block; color: var(--subtle); font: 500 11px var(--mono); }
+    .top h1 { margin: 6px 0 4px; font-size: 26px; font-weight: 600; letter-spacing: -.01em; }
+    .top p { margin: 0; max-width: 760px; color: var(--muted); }
+    .source { text-align: right; color: var(--muted); font-size: 12px; }
+    .source b { color: var(--text); font-weight: 500; }
+    .source code { font: 11px var(--mono); color: var(--accent); }
+    .source nav { margin-top: 8px; display: flex; gap: 14px; justify-content: flex-end; }
 
-    .summary { display: grid; grid-template-columns: repeat(3, minmax(170px, 220px)) minmax(360px, 1fr); border-bottom: 1px solid var(--border); }
-    .metric { min-height: 90px; padding: 16px 18px; display: grid; grid-template-columns: 1fr auto; align-content: center; border-right: 1px solid var(--rule); }
-    .metric span { color: var(--subtle); font: 500 13px var(--mono); }
-    .metric strong { grid-row: 1 / 3; grid-column: 2; align-self: center; font: 400 30px var(--mono); font-variant-numeric: tabular-nums; }
-    .metric small { margin-top: 5px; color: var(--muted); }
-    .rule-note { margin: 0; padding: 18px 24px; align-self: center; color: var(--muted); }
-    .rule-note strong { display: block; margin-bottom: 4px; color: var(--warning); font: 500 12px var(--mono); }
+    .metrics { display: grid; grid-template-columns: repeat(5, 1fr) 2.2fr; border-bottom: 1px solid var(--border); }
+    .metric { padding: 14px 20px; border-right: 1px solid var(--rule); }
+    .metric strong { display: block; font: 500 24px/1.1 var(--mono); }
+    .metric span { color: var(--muted); font-size: 12px; }
+    .next { padding: 12px 20px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+    .next small { color: var(--accent); font: 500 11px var(--mono); }
+    .next h2 { margin: 2px 0; font-size: 15px; font-weight: 600; }
+    .next p { margin: 0; color: var(--muted); font-size: 12px; }
+    .btn { min-height: 34px; padding: 0 14px; border: 1px solid #465058; border-radius: 2px; background: transparent; }
+    .btn:hover { border-color: var(--accent); color: var(--accent); }
+    .btn.primary { border-color: var(--accent); background: var(--accent); color: #04110f; font-weight: 600; }
 
-    .next-action { min-height: 104px; padding: 18px 30px; display: flex; align-items: center; justify-content: space-between; gap: 28px; border-bottom: 1px solid var(--border); background: #0b1010; }
-    .next-action > div { min-width: 0; }
-    .next-action span { color: var(--accent); font: 500 12px var(--mono); letter-spacing: .045em; text-transform: uppercase; }
-    .next-action h2 { margin: 4px 0 3px; font-size: 20px; font-weight: 550; line-height: 1.2; }
-    .next-action p { margin: 0; color: var(--muted); }
-    .next-action .button { flex: none; }
+    .shell { display: grid; grid-template-columns: minmax(0, 1fr) 360px; min-height: calc(100vh - 230px); }
+    .main { min-width: 0; padding: 0 32px 32px; border-right: 1px solid var(--border); }
+    .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: var(--ground); z-index: 5; }
+    .tabs button { min-height: 46px; padding: 0 16px; border: 0; background: none; color: var(--muted); position: relative; }
+    .tabs button[aria-selected="true"] { color: var(--text); }
+    .tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--accent); }
+    .panel-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; padding: 20px 0 14px; }
+    .panel-head h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .panel-head p { margin: 4px 0 0; color: var(--muted); max-width: 720px; }
+    .legend { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font: 11px var(--mono); }
+    .legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; vertical-align: 1px; }
 
-    .workspace { display: grid; grid-template-columns: minmax(0, 1fr) 390px; min-height: 690px; }
-    .canvas-panel { min-width: 0; padding: 28px 30px 30px; border-right: 1px solid var(--border); }
-    .section-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; }
-    .section-head h2 { margin: 0; font-size: 24px; font-weight: 550; letter-spacing: -.02em; }
-    .section-head p { margin: 7px 0 0; color: var(--muted); }
-    .legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; color: var(--muted); font: 500 13px var(--mono); }
-    .legend span { display: inline-flex; align-items: center; gap: 6px; }
-    .legend i { width: 7px; height: 7px; border-radius: 50%; background: var(--subtle); }
-    .legend [data-status="VERIFICADO"] i { background: var(--positive); }
-    .legend [data-status="EN_CURSO"] i { background: var(--accent); }
-    .legend [data-status="BLOQUEADO"] i { background: var(--negative); }
-    .legend [data-status="LISTO_PARA_QA"] i { background: var(--cached); }
-    .legend [data-status="PENDIENTE"] i { background: var(--warning); }
+    .st-VERIFICADO { --st: var(--verified); } .st-LISTO_PARA_QA { --st: var(--qa); } .st-EN_CURSO { --st: var(--progress); }
+    .st-PENDIENTE { --st: var(--pending); } .st-BLOQUEADO { --st: var(--blocked); }
+    .chip { color: var(--st); font: 500 10px var(--mono); text-transform: uppercase; white-space: nowrap; }
+    .owner { font: 500 10px var(--mono); color: var(--muted); }
+    .owner.Claude { color: var(--accent); } .owner.Codex { color: #c9a8ff; } .owner.Equipo { color: var(--text); }
 
-    .map-controls { margin-top: 20px; border-block: 1px solid var(--border); }
-    .view-tabs { min-height: 54px; padding-bottom: 8px; display: flex; border-bottom: 1px solid var(--rule); }
-    .view-tabs button { min-width: 132px; min-height: 46px; position: relative; padding: 0 16px; border: 0; border-right: 1px solid var(--rule); background: transparent; color: var(--muted); }
-    .view-tabs button:hover { background: var(--surface); color: var(--text); }
-    .view-tabs button[aria-selected="true"] { color: var(--text); }
-    .view-tabs button[aria-selected="true"]::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 0; height: 1px; background: var(--accent); }
-    .filters { padding: 12px 0; display: grid; grid-template-columns: minmax(180px, 1.4fr) minmax(140px, .8fr) minmax(140px, .8fr) auto auto; align-items: end; gap: 10px; }
-    .filters label:not(.ready-filter) { display: grid; gap: 5px; color: var(--muted); font-size: 12px; }
-    .filters input[type="search"], .filters select { width: 100%; min-height: 40px; padding: 8px 10px; border: 1px solid #444a4f; border-radius: 2px; background: var(--control); color: var(--text); }
-    .ready-filter { min-height: 40px; padding: 0 10px; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); color: var(--muted); white-space: nowrap; }
-    .ready-filter:has(input:checked) { border-color: var(--accent); color: var(--text); }
-    .ready-filter input { width: 16px; height: 16px; accent-color: var(--accent); }
-    .clear-filters { min-height: 40px; }
-    .filter-summary { margin: 0; padding: 0 0 11px; color: var(--subtle); font: 500 12px var(--mono); }
-    .view-panel[hidden] { display: none; }
-    .view-panel-head { padding: 18px 0 14px; border-bottom: 1px solid var(--rule); }
-    .view-panel-head h3 { margin: 0; font-size: 16px; font-weight: 550; }
-    .view-panel-head p { margin: 4px 0 0; color: var(--muted); }
-    .empty-view { margin: 0; padding: 54px 20px; color: var(--muted); text-align: center; }
-    #network-empty { position: absolute; inset: 38px 0 0; z-index: 2; place-items: center; }
-    #network-empty:not([hidden]) { display: grid; }
+    /* DOP ASME */
+    .asme-wrap { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; }
+    .asme svg { width: 100%; height: auto; display: block; }
+    .asme text { fill: var(--text); font-family: var(--sans); }
+    .asme .step { cursor: pointer; }
+    .asme .step:hover .sym, .asme .step.selected .sym { stroke-width: 2.4; }
+    .asme .step.selected text.name { font-weight: 600; }
+    .summary-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .summary-table th, .summary-table td { padding: 7px 6px; border-bottom: 1px solid var(--rule); text-align: left; }
+    .summary-table td:last-child, .summary-table th:last-child { text-align: right; font-family: var(--mono); }
+    .summary-table caption { text-align: left; color: var(--muted); font: 500 11px var(--mono); padding-bottom: 6px; }
+    .symbols { margin-top: 18px; display: grid; gap: 10px; color: var(--muted); font-size: 12px; }
+    .symbols svg { vertical-align: middle; margin-right: 8px; }
 
-    .network { position: relative; min-height: 590px; border-bottom: 1px solid var(--border); background: #0b0f10; overflow: hidden; }
-    .stages { height: 38px; padding: 0 8px 4px; display: grid; grid-template-columns: repeat(6, 1fr); align-items: center; border-bottom: 1px solid var(--rule); color: var(--subtle); font: 500 13px var(--mono); text-align: center; }
-    .edges { position: absolute; inset: 38px 0 0; width: 100%; height: calc(100% - 38px); pointer-events: none; }
-    .edges > g path { fill: none; stroke: #4c555c; stroke-width: 1; vector-effect: non-scaling-stroke; opacity: .28; }
-    .edges > g path.active { stroke: var(--accent); opacity: .82; }
-    .edges > g path.feedback { stroke-dasharray: 5 5; }
-    .nodes { min-height: 550px; padding: 26px 16px 18px; display: grid; grid-template-columns: repeat(6, minmax(118px, 1fr)); grid-template-rows: repeat(4, 102px); gap: 24px 18px; position: relative; z-index: 1; }
-    .node { min-width: 0; min-height: 72px; position: relative; align-self: center; padding: 10px 11px; display: grid; grid-template-columns: 1fr auto; grid-template-rows: 17px 1fr 18px; gap: 2px 8px; border: 1px solid #343a3e; border-radius: 2px; background: var(--surface); color: var(--text); text-align: left; transition: border-color 150ms ease, opacity 150ms ease, background-color 150ms ease; }
-    .node:hover { border-color: var(--subtle); background: var(--raised); }
-    .node .code { color: var(--subtle); font: 500 13px var(--mono); }
-    .node .status { text-align: right; color: var(--muted); font: 500 13px var(--mono); }
-    .node strong { grid-column: 1 / -1; overflow: hidden; font-size: 13px; line-height: 1.2; }
-    .node small { grid-column: 1 / -1; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .node[aria-pressed="true"] { border-color: var(--accent); background: #17201f; }
-    .node[aria-pressed="true"]::before { content: ""; position: absolute; left: 10px; right: 10px; bottom: 0; height: 1px; background: var(--accent); }
-    .node[data-relation="upstream"], .node[data-relation="downstream"] { border-color: #3b4146; opacity: .92; }
-    .node[data-relation="unrelated"] { opacity: .33; }
-    .node[data-status="VERIFICADO"] .status { color: var(--positive); }
-    .node[data-status="EN_CURSO"] .status { color: var(--accent); }
-    .node[data-status="BLOQUEADO"] .status { color: var(--negative); }
-    .node[data-status="LISTO_PARA_QA"] .status { color: var(--cached); }
-    .node[data-status="PENDIENTE"] .status { color: var(--warning); }
+    /* Mapa */
+    .filters { display: flex; gap: 10px; align-items: end; padding-bottom: 12px; flex-wrap: wrap; }
+    .filters label { display: grid; gap: 4px; color: var(--muted); font-size: 11px; }
+    .filters input, .filters select { height: 32px; border: 1px solid var(--border); border-radius: 2px; background: var(--control); padding: 0 8px; min-width: 150px; }
+    .segmented { display: flex; border: 1px solid var(--border); border-radius: 2px; }
+    .segmented button { height: 32px; padding: 0 12px; border: 0; background: none; color: var(--muted); }
+    .segmented button[aria-pressed="true"] { background: var(--raised); color: var(--text); box-shadow: inset 0 -2px var(--accent); }
+    .map { position: relative; border: 1px solid var(--rule); background: #0a0f10; }
+    .map svg.edges { position: absolute; inset: 0; pointer-events: none; }
+    .phase-head { position: absolute; top: 0; height: 30px; display: flex; align-items: center; justify-content: center; color: var(--subtle); font: 500 10px var(--mono); border-bottom: 1px solid var(--rule); }
+    .node { position: absolute; padding: 8px 10px; border: 1px solid var(--border); border-left: 3px solid var(--st); border-radius: 2px; background: var(--surface); text-align: left; display: grid; gap: 2px; transition: opacity .15s; }
+    .node:hover { background: var(--raised); }
+    .node.selected { border-color: var(--accent); border-left-color: var(--st); box-shadow: 0 0 0 1px var(--accent); background: var(--raised); }
+    .node.dim { opacity: .28; }
+    .node .row1 { display: flex; justify-content: space-between; gap: 6px; font: 500 10px var(--mono); color: var(--subtle); }
+    .node b { font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+    .node .row3 { display: flex; justify-content: space-between; gap: 6px; }
+    .edge { fill: none; stroke: #4a535a; stroke-width: 1.2; }
+    .edge.critical { stroke: #2f8f82; stroke-width: 1.8; }
+    .edge.feedback { stroke-dasharray: 4 3; stroke: #8a6a9c; }
+    .edge.lit { stroke: var(--accent); stroke-width: 2.2; }
+    .edge.dim { opacity: .15; }
 
-    .roadmap, .backlog { min-height: 590px; border-bottom: 1px solid var(--border); }
-    .roadmap ol { margin: 0; padding: 0; list-style: none; }
-    .route-row { width: 100%; min-height: 66px; padding: 0; display: grid; grid-template-columns: 46px minmax(190px, 1.4fr) minmax(130px, .7fr) minmax(150px, .8fr) minmax(120px, .6fr); align-items: center; gap: 14px; border: 0; border-left: 2px solid transparent; border-bottom: 1px solid var(--rule); background: transparent; color: var(--text); text-align: left; }
-    .route-row:hover, .backlog-row:hover { background: var(--surface); }
-    .route-row[aria-pressed="true"], .backlog-row[aria-pressed="true"] { border-left-color: var(--accent); background: #111919; }
-    .route-index { width: 26px; height: 26px; margin-left: 8px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; color: var(--muted); font: 500 12px var(--mono); }
-    .route-row[data-status="VERIFICADO"] .route-index { border-color: var(--positive); color: var(--positive); }
-    .route-row[data-ready="true"] .route-index { border-color: var(--accent); color: var(--accent); }
-    .route-name strong, .route-name small { display: block; }
-    .route-name strong { font-size: 13px; }
-    .route-name small { margin-top: 2px; color: var(--muted); }
-    .route-meta { color: var(--muted); font: 500 12px var(--mono); }
-    .status-text[data-status="VERIFICADO"] { color: var(--positive); }
-    .status-text[data-status="EN_CURSO"] { color: var(--accent); }
-    .status-text[data-status="BLOQUEADO"] { color: var(--negative); }
-    .status-text[data-status="LISTO_PARA_QA"] { color: var(--cached); }
-    .status-text[data-status="PENDIENTE"] { color: var(--warning); }
-    .backlog-header, .backlog-row { display: grid; grid-template-columns: minmax(200px, 1.35fr) minmax(100px, .65fr) minmax(122px, .75fr) minmax(118px, .7fr) minmax(126px, .8fr) minmax(92px, .55fr); align-items: center; gap: 12px; }
-    .backlog-header { min-height: 44px; padding: 0 10px 8px; border-bottom: 1px solid var(--rule); color: var(--subtle); font: 500 11px var(--mono); text-transform: uppercase; }
-    .backlog-row { width: 100%; min-height: 58px; padding: 8px 10px; border: 0; border-left: 2px solid transparent; border-bottom: 1px solid var(--rule); background: transparent; color: var(--muted); text-align: left; }
-    .backlog-row strong { color: var(--text); font-size: 13px; }
-    .backlog-row span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .backlog-row .backlog-work { display: grid; gap: 2px; }
-    .backlog-row .backlog-work small { color: var(--subtle); font: 500 11px var(--mono); }
-    .backlog-row[data-ready="true"] .status-text { color: var(--accent); }
+    /* Red neuronal */
+    .banner { padding: 12px 14px; border: 1px solid #514529; background: #1a170f; color: #e6d39a; border-radius: 2px; margin-bottom: 18px; }
+    .spec { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+    .spec section { padding: 14px 0; border-top: 1px solid var(--rule); }
+    .spec h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--accent); }
+    .spec p, .spec li { margin: 0; color: #d3d9de; }
+    .spec ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+    .spec .wide { grid-column: 1 / -1; }
+    .spec .lead { font-size: 17px; color: var(--text); }
 
-    .tracker { min-width: 0; background: #0d1112; }
-    .tracker-header { padding: 24px; border-bottom: 1px solid var(--border); }
-    .tracker-header span { color: var(--accent); font: 500 13px var(--mono); }
-    .tracker-header h2 { margin: 6px 0 4px; font-size: 22px; font-weight: 550; }
-    .tracker-header p { margin: 0; color: var(--muted); }
-    .form { padding: 20px 24px 24px; display: grid; gap: 16px; }
-    .field { display: grid; gap: 7px; }
-    .field label { color: var(--muted); font-size: 13px; font-weight: 600; }
-    .field input, .field select, .field textarea { width: 100%; min-height: 42px; padding: 9px 10px; border: 1px solid #444a4f; border-radius: 2px; background: var(--control); color: var(--text); }
-    .field textarea { min-height: 92px; resize: vertical; }
-    .field small { color: var(--subtle); }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .validation { min-height: 20px; margin: 0; color: var(--negative); font-size: 12px; }
-    .detail { border-top: 1px solid var(--border); }
-    .detail section { padding: 17px 24px; border-bottom: 1px solid var(--rule); }
-    .detail h3 { margin: 0 0 7px; color: var(--subtle); font: 500 13px var(--mono); }
-    .detail p, .detail ul { margin: 0; color: var(--muted); }
-    .detail ul { padding-left: 18px; }
-    .detail li + li { margin-top: 4px; }
-    .blocker { color: #e7b8bf !important; }
+    /* Tablas */
+    table.list { width: 100%; border-collapse: collapse; }
+    table.list th { text-align: left; color: var(--subtle); font: 500 11px var(--mono); padding: 8px; border-bottom: 1px solid var(--border); }
+    table.list td { padding: 10px 8px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+    table.list td.mono { font: 12px var(--mono); color: var(--muted); }
+    .linkchip { margin: 0 6px 4px 0; padding: 2px 7px; border: 1px solid var(--border); border-radius: 2px; background: none; font: 11px var(--mono); color: var(--muted); }
+    .linkchip:hover { border-color: var(--accent); color: var(--accent); }
+    .owners { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .owners div { padding: 12px 14px; border: 1px solid var(--rule); background: var(--surface); }
+    .owners strong { font: 500 18px var(--mono); }
 
-    footer { min-height: 86px; padding: 24px 30px; display: flex; justify-content: space-between; gap: 24px; border-top: 1px solid var(--border); color: var(--muted); }
-    footer div { display: flex; flex-direction: column; gap: 4px; }
-    footer strong { color: var(--text); }
-    footer a { color: var(--accent); }
-    .file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-    .metric strong, .save-state, .filter-summary, .node .code, .node .status, .route-index, .route-meta, .backlog-work small, .stages { font-variant-numeric: tabular-nums; }
-
-    @media (max-width: 1180px) {
-      .topbar { grid-template-columns: 280px 1fr; }
-      .top-actions { grid-column: 1 / -1; min-width: 0; padding: 10px 20px 16px; justify-content: flex-start; border-top: 1px solid var(--rule); }
-      .save-state { flex-basis: auto; margin-left: auto; align-self: center; }
-      .summary { grid-template-columns: repeat(3, 1fr); }
-      .rule-note { grid-column: 1 / -1; border-top: 1px solid var(--rule); }
-      .filters { grid-template-columns: minmax(180px, 1.5fr) repeat(2, minmax(130px, 1fr)); }
-      .ready-filter, .clear-filters { justify-self: stretch; }
-      .workspace { grid-template-columns: 1fr; }
-      .canvas-panel { border-right: 0; }
-      .tracker { border-top: 1px solid var(--border); }
-      .tracker .form { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .tracker .detail { display: grid; grid-template-columns: repeat(2, 1fr); }
-      .tracker .detail section { border-right: 1px solid var(--rule); }
-    }
-
-    @media (max-width: 900px) {
-      .topbar { display: block; }
-      .brand { min-height: 104px; border-right: 0; border-bottom: 1px solid var(--border); }
-      .brand strong { font-size: 27px; }
-      .heading { padding: 20px; }
-      .top-actions { padding-inline: 20px; }
-      .summary { grid-template-columns: repeat(3, 1fr); }
-      .metric:nth-child(3) { border-right: 0; }
-      .metric { border-bottom: 1px solid var(--rule); }
-      .canvas-panel { padding: 24px 16px; }
-      .section-head { align-items: flex-start; flex-direction: column; }
-      .legend { justify-content: flex-start; }
-      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .filters label:first-child { grid-column: 1 / -1; }
-      .network { min-height: 0; overflow: visible; }
-      .stages, .edges { display: none; }
-      .nodes { min-height: 0; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
-      .node { width: 100%; min-height: 68px; opacity: 1 !important; position: relative; }
-      .node::after { content: ""; position: absolute; left: 19px; bottom: -11px; width: 1px; height: 10px; background: #42484e; }
-      .node:last-child::after { display: none; }
-      .tracker .form, .tracker .detail { grid-template-columns: 1fr; }
-      .tracker .detail section { border-right: 0; }
-      .route-row { grid-template-columns: 42px minmax(160px, 1fr) minmax(120px, .75fr); }
-      .route-row .route-owner, .route-row .route-date { display: none; }
-      .backlog-header { display: none; }
-      .backlog-row { grid-template-columns: minmax(160px, 1fr) auto; gap: 6px 14px; }
-      .backlog-row .backlog-phase, .backlog-row .backlog-deps { display: none; }
-      .backlog-row .backlog-owner, .backlog-row .backlog-date { font-size: 12px; }
-    }
-
-    @media (max-width: 560px) {
-      body { font-size: 14px; }
-      .brand, .heading, .top-actions { padding-inline: 16px; }
-      .top-actions { display: grid; grid-template-columns: 1fr 1fr; }
-      .button, .link-button { min-height: 44px; }
-      .save-state { grid-column: 1 / -1; margin-left: 0; text-align: left; }
-      .summary { grid-template-columns: 1fr; }
-      .metric { min-height: 72px; border-right: 0; }
-      .rule-note { grid-column: auto; padding-inline: 18px; }
-      .section-head h2 { font-size: 21px; }
-      .next-action { padding: 16px; align-items: stretch; flex-direction: column; gap: 12px; }
-      .view-tabs button { min-width: 0; flex: 1; padding-inline: 8px; }
-      .filters { grid-template-columns: 1fr; }
-      .filters label:first-child { grid-column: auto; }
-      .route-row { min-height: 76px; grid-template-columns: 38px 1fr; gap: 10px; }
-      .route-row .route-status { grid-column: 2; }
-      .backlog-row { min-height: 72px; }
-      .tracker-header, .form, .detail section { padding-inline: 18px; }
-      .form-row { grid-template-columns: 1fr; }
-      footer { padding-inline: 18px; flex-direction: column; }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto; }
-      .node { transition: none; }
-    }
+    /* Detalle */
+    .detail { padding: 22px 24px; position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; }
+    .detail small.code { color: var(--accent); font: 500 11px var(--mono); }
+    .detail h2 { margin: 4px 0 6px; font-size: 20px; font-weight: 600; }
+    .detail .meta { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+    .detail p { margin: 0 0 6px; color: #d3d9de; }
+    .detail section { padding: 12px 0; border-top: 1px solid var(--rule); }
+    .detail h3 { margin: 0 0 6px; color: var(--subtle); font: 500 11px var(--mono); }
+    .detail ul { margin: 0; padding-left: 18px; color: #d3d9de; }
+    .detail .blocker { color: #f2b7be; }
+    .detail .ev { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 4px 0; }
+    .detail .ev code { font: 11px var(--mono); color: var(--accent); }
+    .empty { color: var(--subtle); }
+    footer { padding: 18px 32px; border-top: 1px solid var(--border); color: var(--subtle); font-size: 12px; display: flex; justify-content: space-between; }
+    [hidden] { display: none !important; }
+    .error { margin: 40px 32px; padding: 16px; border: 1px solid #73323b; background: #281518; color: #ffb8bf; }
   </style>
 </head>
 <body>
-  <a class="skip" href="#pipeline">Saltar al pipeline</a>
+  <header class="top">
+    <div>
+      <small>Los Causas Espaciales · documento interno de desarrollo</small>
+      <h1>DOP de la red neuronal</h1>
+      <p>Del dato NASA crudo a una decisión asistida por un modelo, solo si el modelo demuestra que aporta. El estado sale del repositorio: nada se marca verificado sin evidencia.</p>
+    </div>
+    <div class="source">
+      <div>Estado del repositorio · actualizado <b id="updated-at">—</b> por <b id="updated-by">—</b></div>
+      <div>Fuente: <code>docs/interno/dop-datos.js</code></div>
+      <nav><a href="plan-operativo.html">Plan operativo</a><a href="../coordination/PLAN_CLAUDE_CODEX.md">Plan Claude + Codex</a><a href="http://localhost:3100">Aplicación · 3100</a></nav>
+    </div>
+  </header>
+
+  <section class="metrics" aria-label="Resumen">
+    <div class="metric"><strong id="m-verified">—</strong><span>nodos verificados</span></div>
+    <div class="metric"><strong id="m-qa">—</strong><span>listos para QA</span></div>
+    <div class="metric"><strong id="m-ready">—</strong><span>ejecutables ahora</span></div>
+    <div class="metric"><strong id="m-blocked">—</strong><span>bloqueados</span></div>
+    <div class="metric"><strong id="m-plan">—</strong><span>tareas del plan cerradas</span></div>
+    <div class="next">
+      <div><small id="next-kicker">Siguiente acción</small><h2 id="next-title">—</h2><p id="next-reason"></p></div>
+      <button class="btn primary" id="next-open" type="button">Ver nodo</button>
+    </div>
+  </section>
+
   <div class="shell">
-    <header class="topbar">
-      <a class="brand" href="plan-operativo.html" aria-label="Abrir el plan operativo interno">
-        <strong>LOS CAUSAS<br>ESPACIALES</strong>
-        <span>INTELIGENCIA DE LA TIERRA<br>PARA DECISIONES REALES</span>
-      </a>
-      <div class="heading">
-        <h1>DOP neuronal: tracker de desarrollo</h1>
-        <p>Actualiza responsables, fechas, evidencia y estado de cada dependencia. Los cambios se guardan únicamente en este navegador.</p>
+    <main class="main">
+      <div class="tabs" role="tablist" aria-label="Vistas del DOP">
+        <button role="tab" aria-selected="true" aria-controls="view-asme" id="tab-asme" data-view="asme">DOP del proceso</button>
+        <button role="tab" aria-selected="false" aria-controls="view-map" id="tab-map" data-view="map">Mapa de dependencias</button>
+        <button role="tab" aria-selected="false" aria-controls="view-neural" id="tab-neural" data-view="neural">Red neuronal</button>
+        <button role="tab" aria-selected="false" aria-controls="view-plan" id="tab-plan" data-view="plan">Plan y responsables</button>
+        <button role="tab" aria-selected="false" aria-controls="view-backlog" id="tab-backlog" data-view="backlog">Backlog</button>
       </div>
-      <nav class="top-actions" aria-label="Acciones del tracker">
-        <a class="link-button" href="plan-operativo.html">Plan operativo</a>
-        <button class="button" id="export-button" type="button">Exportar JSON</button>
-        <label class="button" for="import-file">Importar JSON</label>
-        <input class="file-input" id="import-file" type="file" accept="application/json,.json">
-        <button class="button danger" id="reset-button" type="button">Restablecer</button>
-        <span class="save-state" id="save-state" role="status" aria-live="polite">Sin cambios locales</span>
-      </nav>
-    </header>
 
-    <section class="summary" aria-label="Resumen del seguimiento">
-      <div class="metric"><span>Avance verificable</span><strong id="count-verified">0 / 18</strong><small>nodos con evidencia</small></div>
-      <div class="metric"><span>Listos para trabajar</span><strong id="count-ready">0</strong><small>sin dependencias abiertas</small></div>
-      <div class="metric"><span>Bloqueados</span><strong id="count-blocked">0</strong><small>requieren desbloqueo</small></div>
-      <p class="rule-note"><strong>Regla de autorización</strong> Un estado guardado documenta seguimiento; no sustituye pruebas. Una red neuronal no se entrena hasta disponer de etiquetas reales, dataset versionado, particiones sin fuga y un baseline reproducible.</p>
-    </section>
-
-    <section class="next-action" aria-labelledby="next-action-heading">
-      <div>
-        <span id="next-action-phase">Siguiente acción calculada</span>
-        <h2 id="next-action-heading">Revisando dependencias</h2>
-        <p id="next-action-reason">El mapa seleccionará el primer trabajo ejecutable de la ruta crítica.</p>
-      </div>
-      <button class="button primary" id="next-action-button" type="button">Abrir nodo</button>
-    </section>
-
-    <main class="workspace" id="pipeline">
-      <section class="canvas-panel" aria-labelledby="network-heading">
-        <div class="section-head">
-          <div>
-            <h2 id="network-heading">Mapa de desarrollo</h2>
-            <p id="view-description">Explora dependencias, responsables y puertas de aceptación del proyecto.</p>
-          </div>
-          <div class="legend" aria-label="Leyenda">
-            <span data-status="VERIFICADO"><i></i>Verificado</span>
-            <span data-status="EN_CURSO"><i></i>En curso</span>
-            <span data-status="LISTO_PARA_QA"><i></i>Listo para QA</span>
-            <span data-status="PENDIENTE"><i></i>Pendiente</span>
-            <span data-status="BLOQUEADO"><i></i>Bloqueado</span>
-          </div>
+      <section id="view-asme" role="tabpanel" aria-labelledby="tab-asme">
+        <div class="panel-head"><div><h2 id="asme-title">Diagrama de operaciones del proceso</h2><p>Simbología ASME: la línea principal baja del dato a la decisión; los materiales entran por la izquierda donde se usan. Haz clic en una operación para ver su nodo.</p></div>
+          <div class="legend" id="status-legend"></div></div>
+        <div class="asme-wrap">
+          <div class="asme" id="asme"></div>
+          <aside>
+            <table class="summary-table" id="asme-summary"><caption>Cuadro resumen</caption></table>
+            <div class="symbols">
+              <div><svg width="22" height="22"><circle cx="11" cy="11" r="8" fill="none" stroke="#9aa4ae" stroke-width="1.6"/></svg>Operación: transforma el dato</div>
+              <div><svg width="22" height="22"><rect x="3" y="3" width="16" height="16" fill="none" stroke="#9aa4ae" stroke-width="1.6"/></svg>Inspección: verifica calidad o criterio</div>
+              <div><svg width="22" height="22"><rect x="2" y="2" width="18" height="18" fill="none" stroke="#9aa4ae" stroke-width="1.6"/><circle cx="11" cy="11" r="6.5" fill="none" stroke="#9aa4ae" stroke-width="1.6"/></svg>Combinada: opera e inspecciona a la vez</div>
+            </div>
+          </aside>
         </div>
-
-        <div class="map-controls">
-          <div class="view-tabs" role="tablist" aria-label="Vista del mapa de desarrollo">
-            <button type="button" role="tab" aria-selected="true" data-view="network">Dependencias</button>
-            <button type="button" role="tab" aria-selected="false" data-view="critical">Ruta crítica</button>
-            <button type="button" role="tab" aria-selected="false" data-view="backlog">Backlog</button>
-          </div>
-          <div class="filters" aria-label="Filtros del mapa">
-            <label><span>Buscar</span><input id="filter-search" type="search" placeholder="Nodo, capa o responsable" autocomplete="off"></label>
-            <label><span>Estado</span><select id="filter-status"><option value="">Todos</option><option value="PENDIENTE">Pendiente</option><option value="EN_CURSO">En curso</option><option value="BLOQUEADO">Bloqueado</option><option value="LISTO_PARA_QA">Listo para QA</option><option value="VERIFICADO">Verificado</option></select></label>
-            <label><span>Fase</span><select id="filter-phase"><option value="">Todas</option><option value="1">Base</option><option value="2">Datos</option><option value="3">Geoespacial</option><option value="4">Dataset</option><option value="5">Modelos</option><option value="6">Decisión</option></select></label>
-            <label class="ready-filter" for="filter-ready"><input id="filter-ready" type="checkbox"><span>Solo ejecutables</span></label>
-            <button class="button clear-filters" id="clear-filters" type="button">Limpiar</button>
-          </div>
-          <p class="filter-summary" id="filter-summary" role="status" aria-live="polite">18 nodos visibles</p>
-        </div>
-
-        <div class="network view-panel" id="network-view" role="tabpanel" aria-label="Diagrama de dependencias">
-          <div class="stages" aria-hidden="true"><span>BASE</span><span>DATOS</span><span>GEO</span><span>DATASET</span><span>MODELOS</span><span>DECISIÓN</span></div>
-          <svg class="edges" viewBox="0 0 1200 550" preserveAspectRatio="none" aria-hidden="true">
-            <defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#909aa3"></path></marker></defs>
-            <g id="edge-layer"></g>
-          </svg>
-          <div class="nodes" id="node-layer"></div>
-          <p class="empty-view" id="network-empty" hidden>No hay nodos que coincidan con los filtros.</p>
-        </div>
-
-        <section class="roadmap view-panel" id="critical-view" role="tabpanel" aria-labelledby="critical-view-heading" hidden>
-          <div class="view-panel-head"><h3 id="critical-view-heading">Ruta priorizada hacia una decisión autorizada</h3><p>La secuencia muestra el hilo principal y declara dependencias paralelas abiertas; ningún nodo avanza sin verificar sus predecesores.</p></div>
-          <ol id="critical-list"></ol>
-        </section>
-
-        <section class="backlog view-panel" id="backlog-view" role="tabpanel" aria-labelledby="backlog-view-heading" hidden>
-          <div class="view-panel-head"><h3 id="backlog-view-heading">Backlog operativo</h3><p>Ordenado por ejecutabilidad y ruta crítica para convertir el mapa en trabajo accionable.</p></div>
-          <div class="backlog-header" aria-hidden="true"><span>Trabajo</span><span>Fase</span><span>Estado</span><span>Dependencias</span><span>Responsable</span><span>Fecha</span></div>
-          <div id="backlog-list"></div>
-        </section>
       </section>
 
-      <aside class="tracker" aria-labelledby="tracker-heading">
-        <div class="tracker-header">
-          <span id="selected-code">Sin selección</span>
-          <h2 id="tracker-heading">Selecciona un nodo</h2>
-          <p id="selected-purpose">El detalle y los controles de seguimiento aparecerán aquí.</p>
+      <section id="view-map" role="tabpanel" aria-labelledby="tab-map" hidden>
+        <div class="panel-head"><div><h2>Mapa de dependencias</h2><p>Columnas por fase. La ruta crítica va en verde azulado; al seleccionar un nodo se iluminan sus dependencias hacia atrás y hacia adelante.</p></div></div>
+        <div class="filters">
+          <label>Buscar<input id="f-search" type="search" placeholder="Nodo, código o entrada" autocomplete="off"></label>
+          <label>Estado<select id="f-status"><option value="">Todos</option></select></label>
+          <div><span style="display:block;color:var(--muted);font-size:11px;margin-bottom:4px">Responsable</span>
+            <div class="segmented" id="f-owner" role="group" aria-label="Responsable">
+              <button type="button" aria-pressed="true" data-owner="">Todos</button><button type="button" aria-pressed="false" data-owner="Claude">Claude</button><button type="button" aria-pressed="false" data-owner="Codex">Codex</button><button type="button" aria-pressed="false" data-owner="Equipo">Equipo</button>
+            </div></div>
+          <span id="f-count" style="color:var(--subtle);font:11px var(--mono);padding-bottom:9px"></span>
         </div>
-        <form class="form" id="tracking-form" novalidate>
-          <div class="field">
-            <label for="status">Estado de seguimiento</label>
-            <select id="status" name="status">
-              <option value="PENDIENTE">Pendiente</option>
-              <option value="EN_CURSO">En curso</option>
-              <option value="BLOQUEADO">Bloqueado</option>
-              <option value="LISTO_PARA_QA">Listo para QA</option>
-              <option value="VERIFICADO">Verificado</option>
-            </select>
-          </div>
-          <div class="form-row">
-            <div class="field">
-              <label for="owner">Responsable</label>
-              <input id="owner" name="owner" maxlength="80" autocomplete="off" placeholder="Equipo o persona">
-            </div>
-            <div class="field">
-              <label for="target-date">Fecha objetivo</label>
-              <input id="target-date" name="targetDate" type="date">
-            </div>
-          </div>
-          <div class="field">
-            <label for="evidence">Evidencia</label>
-            <input id="evidence" name="evidence" maxlength="300" autocomplete="off" placeholder="Ruta, commit, prueba o URL verificable">
-            <small>Obligatoria antes de marcar un nodo como verificado.</small>
-          </div>
-          <div class="field">
-            <label for="notes">Notas de seguimiento</label>
-            <textarea id="notes" name="notes" maxlength="1000" placeholder="Siguiente acción, dependencia o decisión pendiente"></textarea>
-          </div>
-          <p class="validation" id="validation" role="alert"></p>
-        </form>
-        <div class="detail">
-          <section><h3>Entradas</h3><ul id="selected-inputs"></ul></section>
-          <section><h3>Salida verificable</h3><p id="selected-output">Sin selección</p></section>
-          <section><h3>Puerta de aceptación</h3><p id="selected-acceptance">Sin selección</p></section>
-          <section><h3>Bloqueo de referencia</h3><p class="blocker" id="selected-blocker">Sin selección</p></section>
-        </div>
-      </aside>
+        <div class="map" id="map"><svg class="edges" id="edges" aria-hidden="true"></svg></div>
+      </section>
+
+      <section id="view-neural" role="tabpanel" aria-labelledby="tab-neural" hidden>
+        <div class="panel-head"><div><h2 id="neural-name">Red neuronal</h2><p>Qué predeciría, con qué datos, contra qué se mide y cuándo se adopta.</p></div></div>
+        <div class="banner" id="neural-status"></div>
+        <div class="spec" id="neural-spec"></div>
+      </section>
+
+      <section id="view-plan" role="tabpanel" aria-labelledby="tab-plan" hidden>
+        <div class="panel-head"><div><h2>Plan y responsables</h2><p>Tareas del plan conjunto y los nodos del DOP que mueven. Claude: producto, frontend y capa de decisión. Codex: soporte operativo, datos y backend de pilotos.</p></div></div>
+        <div class="owners" id="owners"></div>
+        <table class="list" id="plan-table"></table>
+      </section>
+
+      <section id="view-backlog" role="tabpanel" aria-labelledby="tab-backlog" hidden>
+        <div class="panel-head"><div><h2>Backlog</h2><p>Primero lo ejecutable, luego la ruta crítica. Lo verificado no aparece.</p></div></div>
+        <table class="list" id="backlog-table"></table>
+      </section>
     </main>
 
-    <footer>
-      <div><strong>LOS CAUSAS ESPACIALES</strong><span>Tracker local del DOP · no representa un modelo entrenado.</span></div>
-      <div><a href="plan-operativo.html">Plan operativo</a><a href="http://localhost:3100">Aplicación · 3100</a><a href="http://localhost:8000/docs">OpenAPI · 8000</a></div>
-    </footer>
+    <aside class="detail" id="detail" aria-live="polite"></aside>
   </div>
 
+  <footer><span>Documento interno · no forma parte de la aplicación · no representa un modelo entrenado</span><span id="foot-schema"></span></footer>
+
+  <script src="dop-datos.js"></script>
   <script>
-    (() => {
-      "use strict";
+  (() => {
+    "use strict";
+    const D = window.DOP_DATA;
+    if (!D || D.schema !== "los-causas-dop") {
+      document.body.insertAdjacentHTML("afterbegin", '<p class="error">No se pudo leer docs/interno/dop-datos.js. Abra este archivo desde la carpeta docs/interno del repositorio.</p>');
+      return;
+    }
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    const STATUS_LABEL = { VERIFICADO: "Verificado", LISTO_PARA_QA: "Listo para QA", EN_CURSO: "En curso", PENDIENTE: "Pendiente", BLOQUEADO: "Bloqueado" };
+    const DONE = new Set(["VERIFICADO", "LISTO_PARA_QA"]);
+    const nodes = D.nodes;
+    const byId = new Map(nodes.map((n) => [n.id, n]));
+    const preds = new Map(nodes.map((n) => [n.id, []]));
+    const succs = new Map(nodes.map((n) => [n.id, []]));
+    D.edges.forEach(([a, b, fb]) => { if (!fb) { preds.get(b).push(a); succs.get(a).push(b); } });
+    const critical = new Set(D.criticalPath);
+    const executable = (n) => n.status !== "VERIFICADO" && preds.get(n.id).every((p) => DONE.has(byId.get(p).status));
+    const walk = (start, graph) => { const seen = new Set(); const stack = [...graph.get(start)]; while (stack.length) { const id = stack.pop(); if (!seen.has(id)) { seen.add(id); stack.push(...graph.get(id)); } } return seen; };
+    let selected = null;
+    let ownerFilter = "";
 
-      const STORAGE_KEY = "lce.dop-tracker.v1";
-      const MAX_IMPORT_BYTES = 1024 * 1024;
-      const allowedStatuses = new Set(["PENDIENTE", "EN_CURSO", "BLOQUEADO", "LISTO_PARA_QA", "VERIFICADO"]);
-      const nodes = [
-        {id:"solar",code:"00A",name:"Piloto solar",layer:"Base verificada",column:1,row:2,initial:"VERIFICADO",purpose:"Conservar el caso extremo a extremo como patrón de integración y contrato público.",inputs:["NASA POWER","Supuestos financieros","Geometrías WGS84"],output:"Screening trazable con serie anual, tendencias, VAN y exportación JSON.",acceptance:"Suite backend, build, navegador desktop/mobile y procedencia aprobados.",blocker:"Ninguno para el alcance actual."},
-        {id:"qa-core",code:"00B",name:"QA científico",layer:"Base verificada",column:1,row:4,initial:"VERIFICADO",purpose:"Aplicar puertas de datos, estadística, geoespacio, inversión y reproducibilidad a cada incremento.",inputs:["Skills de dominio","Casos controlados","Fuentes primarias"],output:"Matriz de evidencia sin puertas aplicables en FALLÓ.",acceptance:"Auditor, validadores especializados y pruebas reproducibles en CI.",blocker:"Debe ejecutarse de nuevo en cada incremento."},
-        {id:"gpm",code:"01A",name:"GPM IMERG V07",layer:"Observación terrestre",column:2,row:1,initial:"PENDIENTE",purpose:"Incorporar precipitación espacial de alta frecuencia con QA del producto.",inputs:["Earthdata Login","Short name y versión","QA flags"],output:"Raster temporal validado con nodata, unidad, resolución y procedencia.",acceptance:"Consulta real contrastada con NASA y prueba de faltantes/error.",blocker:"Acceso Earthdata y selección final del producto no configurados."},
-        {id:"dem",code:"01B",name:"NASADEM · relieve",layer:"Observación terrestre",column:2,row:2,initial:"EN_CURSO",purpose:"Derivar elevación, pendiente y orientación verificables para energía, corredores e inmuebles.",inputs:["NASADEM_HGT.001","NASADEM_SC.001","CMR y Earthdata Login"],output:"Metadatos y vistas previas oficiales por sitio; métricas raster reales al habilitar la descarga autenticada.",acceptance:"CMR real, mosaicos WGS84, unidades, geoide EGM96, caché, nodata, parser y navegador contrastados; muestreo raster validado con una segunda implementación.",blocker:"EARTHDATA_TOKEN no está configurado; la descarga protegida y el contraste de celdas reales siguen pendientes."},
-        {id:"appeears",code:"01C",name:"AppEEARS",layer:"Observación terrestre",column:2,row:3,initial:"PENDIENTE",purpose:"Extraer vegetación, agua y cobertura para la inteligencia ambiental.",inputs:["Earthdata Login","Productos versionados","Escala y offset"],output:"Capas ambientales con QA y cobertura explícitas.",acceptance:"Extracción reproducible; QA flags, remuestreo y licencia documentados.",blocker:"Productos y credenciales Earthdata pendientes."},
-        {id:"peru",code:"01D",name:"Capas oficiales Perú",layer:"Territorio",column:2,row:4,initial:"PENDIENTE",purpose:"Integrar red, subestaciones, áreas protegidas, patrimonio, comunidades y predios.",inputs:["MINEM/COES","SERNANP/SENACE","Cultura y fuentes sociales"],output:"Catálogo territorial con fecha, licencia, escala, cobertura y responsable.",acceptance:"Servicio oficial verificado; CRS, vigencia y limitaciones visibles.",blocker:"Endpoints, licencias y cobertura deben verificarse fuente por fuente."},
-        {id:"harmonize",code:"02A",name:"Armonización espacial",layer:"Motor geoespacial",column:3,row:2,initial:"PENDIENTE",purpose:"Normalizar CRS, ejes, resolución, nodata y temporalidad sin degradación silenciosa.",inputs:["Rasters NASA","Vectores oficiales","Metadatos de calidad"],output:"Capas comparables con transformaciones y tolerancias registradas.",acceptance:"Ninguna operación con CRS desconocido; casos límite y segunda implementación aprobados.",blocker:"Depende de las fuentes territoriales faltantes."},
-        {id:"sampling",code:"02B",name:"Muestreo geométrico",layer:"Motor geoespacial",column:3,row:3,initial:"PENDIENTE",purpose:"Extender el análisis de puntos a corredores y polígonos reales.",inputs:["GeoJSON validado","Capas armonizadas","Regla de muestreo"],output:"Perfiles de corredor, estadísticas zonales y cobertura espacial.",acceptance:"Distancias/áreas geodésicas, densidad de muestra y nodata probados.",blocker:"Requiere armonización espacial validada."},
-        {id:"platform",code:"02C",name:"PostGIS y trabajos",layer:"Plataforma de datos",column:3,row:4,initial:"PENDIENTE",purpose:"Persistir análisis grandes y ejecutar extracciones asíncronas auditables.",inputs:["PostGIS","Cola de trabajos","Almacén de artefactos"],output:"Datasets, geometrías, ejecuciones y resultados versionados.",acceptance:"Idempotencia, reintentos, estados de error y restauración comprobados.",blocker:"Persistencia y cola de trabajos todavía no implementadas."},
-        {id:"features",code:"03A",name:"Feature store",layer:"Preparación ML",column:4,row:1,initial:"BLOQUEADO",purpose:"Convertir observaciones y territorio en variables reproducibles por fecha y geometría.",inputs:["Capas armonizadas","Agregaciones declaradas","Procedencia completa"],output:"Dataset de características versionado, sin mezclar fuentes o períodos silenciosamente.",acceptance:"Esquema, unidades, linaje y pruebas de fuga aprobados.",blocker:"Depende de integrar y armonizar las fuentes faltantes."},
-        {id:"labels",code:"03B",name:"Etiquetas reales",layer:"Preparación ML",column:4,row:2,initial:"BLOQUEADO",purpose:"Definir un objetivo decisional medible a partir de resultados reales, no proxies inventados.",inputs:["Decisión objetivo","Resultados observados","Criterio experto"],output:"Etiquetas con fecha, fuente, incertidumbre y política de revisión.",acceptance:"Definición pre-registrada, acuerdo experto y tamaño muestral suficiente.",blocker:"No existe un corpus versionado de resultados reales de proyectos."},
-        {id:"splits",code:"03C",name:"Partición sin fuga",layer:"Preparación ML",column:4,row:3,initial:"BLOQUEADO",purpose:"Separar entrenamiento, validación y prueba por tiempo y espacio.",inputs:["Features versionadas","Etiquetas confiables","Grupos espaciales"],output:"Splits congelados que representan generalización temporal y territorial.",acceptance:"Cero solapamiento causal; prueba externa reservada y documentada.",blocker:"Requiere features y etiquetas disponibles."},
-        {id:"baseline",code:"03D",name:"Baselines simples",layer:"Preparación ML",column:4,row:4,initial:"BLOQUEADO",purpose:"Establecer la referencia que cualquier red neuronal debe superar.",inputs:["Splits congelados","Métrica decisional","Modelo lineal/árbol"],output:"Rendimiento, calibración y costo operacional reproducibles.",acceptance:"Validación fuera de muestra e intervalos por región/período.",blocker:"No se autoriza antes de congelar dataset, target y splits."},
-        {id:"candidates",code:"04A",name:"Modelos candidatos",layer:"Investigación neuronal",column:5,row:2,initial:"BLOQUEADO",purpose:"Comparar arquitecturas sólo cuando la estructura de datos lo justifique.",inputs:["Baseline aprobado","Series y grafos versionados","Presupuesto computacional"],output:"Experimentos TCN/Transformer temporal o GNN, según evidencia.",acceptance:"Mejora material fuera de muestra frente al baseline con ablaciones.",blocker:"La arquitectura no debe elegirse antes de conocer datos, target y baseline."},
-        {id:"assurance",code:"04B",name:"Incertidumbre y drift",layer:"Investigación neuronal",column:5,row:3,initial:"BLOQUEADO",purpose:"Validar calibración, robustez, explicabilidad y degradación operativa.",inputs:["Predicciones de prueba","Subgrupos territoriales","Escenarios adversos"],output:"Intervalos, calibración, atribuciones, drift y límites documentados.",acceptance:"Model card, pruebas de sensibilidad y umbrales de abstención aprobados.",blocker:"Depende de un candidato que supere el baseline."},
-        {id:"human-gate",code:"05A",name:"Gate humano",layer:"Gobernanza",column:6,row:2,initial:"PENDIENTE",purpose:"Autorizar, iterar o descartar el modelo sin automatizar una decisión de inversión.",inputs:["Model card","QA científico","Revisión sectorial"],output:"Decisión firmada con alcance, responsable, vigencia y condiciones de uso.",acceptance:"Ciencia, negocio, riesgo y seguridad aprueban; existe ruta de apelación.",blocker:"Requiere candidato validado; hoy no existe."},
-        {id:"pilots",code:"05B",name:"Pilotos sectoriales",layer:"Producto",column:6,row:3,initial:"PENDIENTE",purpose:"Desplegar energía ampliada, corredores viales e inmuebles como pilotos separados.",inputs:["Gate humano","Capas mínimas","Casos reales"],output:"Comparativas sectoriales con brechas, mitigaciones y evidencia trazable.",acceptance:"Casos reales revisados por expertos; ninguna recomendación excede la evidencia.",blocker:"Faltan capas oficiales y casos sectoriales reales."},
-        {id:"delivery",code:"05C",name:"API, PDF y monitoreo",layer:"Producto",column:6,row:4,initial:"PENDIENTE",purpose:"Entregar resultados reproducibles y vigilar calidad posterior al despliegue.",inputs:["Resultados aprobados","Artefactos versionados","Umbrales de drift"],output:"API, JSON/PDF, auditoría, monitoreo y rollback.",acceptance:"Exportación reproducible, trazabilidad completa y alarmas probadas.",blocker:"Depende de pilotos aprobados y operación instrumentada."}
-      ];
+    // Encabezado y métricas
+    $("updated-at").textContent = new Date(D.updatedAt).toLocaleString("es-PE", { dateStyle: "medium", timeStyle: "short", hourCycle: "h23" });
+    $("updated-by").textContent = D.updatedBy;
+    $("foot-schema").textContent = `${D.schema} v${D.version}`;
+    const count = (s) => nodes.filter((n) => n.status === s).length;
+    $("m-verified").textContent = `${count("VERIFICADO")} / ${nodes.length}`;
+    $("m-qa").textContent = count("LISTO_PARA_QA");
+    $("m-ready").textContent = nodes.filter(executable).length;
+    $("m-blocked").textContent = count("BLOQUEADO");
+    $("m-plan").textContent = `${D.plan.filter((t) => t.status === "VERIFICADO").length} / ${D.plan.length}`;
+    const nextNode = D.criticalPath.map((id) => byId.get(id)).find((n) => n.status !== "VERIFICADO" && preds.get(n.id).every((p) => DONE.has(byId.get(p).status)))
+      || nodes.find(executable);
+    if (nextNode) {
+      const impact = walk(nextNode.id, succs).size;
+      $("next-kicker").textContent = `Siguiente acción · ${nextNode.code} · ${nextNode.owner}`;
+      $("next-title").textContent = nextNode.name;
+      $("next-reason").textContent = `${STATUS_LABEL[nextNode.status]} · desbloquea ${impact} nodos aguas abajo. ${nextNode.blocker}`;
+      $("next-open").onclick = () => select(nextNode.id, true);
+    }
+    $("status-legend").innerHTML = Object.keys(STATUS_LABEL).map((s) => `<span class="st-${s}"><i style="background:var(--st)"></i>${STATUS_LABEL[s]}</span>`).join("");
 
-      const edges = [
-        ["solar","features"],["solar","labels"],["qa-core","harmonize"],["qa-core","splits"],["qa-core","assurance"],
-        ["gpm","harmonize"],["dem","harmonize"],["appeears","harmonize"],["peru","harmonize"],["harmonize","sampling"],
-        ["sampling","platform"],["sampling","features"],["platform","features"],["platform","labels"],["features","splits"],
-        ["labels","splits"],["splits","baseline"],["baseline","candidates"],["candidates","assurance"],["assurance","human-gate"],
-        ["human-gate","pilots"],["pilots","delivery"],["human-gate","labels",true]
-      ];
+    // Pestañas
+    const tabs = [...document.querySelectorAll("[role=tab]")];
+    function showView(view) {
+      tabs.forEach((t) => { const on = t.dataset.view === view; t.setAttribute("aria-selected", on); $(t.getAttribute("aria-controls")).hidden = !on; });
+      if (view === "map") drawMap();
+      try { localStorage.setItem("lce.dop.view", view); } catch (_) { /* preferencia opcional */ }
+    }
+    tabs.forEach((t) => t.addEventListener("click", () => showView(t.dataset.view)));
 
-      const phaseNames = new Map([[1,"Base"],[2,"Datos"],[3,"Geoespacial"],[4,"Dataset"],[5,"Modelos"],[6,"Decisión"]]);
-      const phaseCodes = new Map([[1,"BASE"],[2,"DATOS"],[3,"GEO"],[4,"DATASET"],[5,"MODELOS"],[6,"DECISIÓN"]]);
-      const criticalPath = ["dem","harmonize","sampling","platform","labels","splits","baseline","candidates","assurance","human-gate","pilots","delivery"];
-      const criticalIds = new Set(criticalPath);
-      const nodeMap = new Map(nodes.map(node => [node.id, node]));
-      const predecessors = new Map(nodes.map(node => [node.id, []]));
-      edges.forEach(([from,to,feedback]) => { if (!feedback) predecessors.get(to).push(from); });
-      const defaults = Object.fromEntries(nodes.map(node => [node.id, {
-        status:node.initial,
-        owner:node.id === "dem" ? "Backend + geoespacial" : "",
-        targetDate:"",
-        evidence:node.initial === "VERIFICADO" ? "Estado verificado en el repositorio y su suite de pruebas." : node.id === "dem" ? "CMR localizó s18w071 y s17w072; API /terrain/points, caché, parser y vista previa integrados; 16 pruebas backend aprobadas." : "",
-        notes:node.id === "dem" ? "Siguiente gate: configurar un token Earthdata, descargar HGT/SC y contrastar elevación, pendiente y orientación de celdas reales con una segunda implementación." : "",
-        updatedAt:node.id === "dem" ? "2026-10-22T12:30:00.000Z" : ""
-      }]));
-      let state = loadState();
-      let selectedId = "dem";
-      let activeView = "network";
+    // Detalle
+    function select(id, reveal) {
+      selected = id;
+      const n = byId.get(id);
+      const up = [...walk(id, preds)].map((x) => byId.get(x));
+      const down = [...walk(id, succs)].map((x) => byId.get(x));
+      const task = n.planTask ? D.plan.find((t) => t.id === n.planTask) : null;
+      $("detail").innerHTML = `
+        <small class="code">${esc(n.code)} · ${esc(D.phases.find((p) => p.id === n.phase).name)}</small>
+        <h2>${esc(n.name)}</h2>
+        <div class="meta st-${n.status}"><span class="chip">${STATUS_LABEL[n.status]}</span><span class="owner ${esc(n.owner)}">${esc(n.owner)}</span>${task ? `<span class="owner">Tarea ${esc(task.id)}</span>` : ""}${critical.has(id) ? '<span class="owner">Ruta crítica</span>' : ""}</div>
+        <p>${esc(n.purpose)}</p>
+        <section><h3>Entradas</h3><ul>${n.inputs.map((i) => `<li>${esc(i)}</li>`).join("")}</ul></section>
+        <section><h3>Salida verificable</h3><p>${esc(n.output)}</p></section>
+        <section><h3>Puerta de aceptación</h3><p>${esc(n.acceptance)}</p></section>
+        <section><h3>Bloqueo</h3><p class="blocker">${esc(n.blocker)}</p></section>
+        <section><h3>Evidencia en el repositorio</h3>${n.evidence.length ? n.evidence.map((e) => `<div class="ev"><span>${esc(e.label)}</span><code>${esc(e.ref)}</code></div>`).join("") : '<p class="empty">Sin evidencia todavía.</p>'}</section>
+        <section><h3>Depende de (${up.length})</h3>${up.length ? up.map((x) => `<button class="linkchip" data-go="${x.id}">${esc(x.code)} ${esc(x.name)}</button>`).join("") : '<p class="empty">Nada.</p>'}</section>
+        <section><h3>Desbloquea (${down.length})</h3>${down.length ? down.map((x) => `<button class="linkchip" data-go="${x.id}">${esc(x.code)} ${esc(x.name)}</button>`).join("") : '<p class="empty">Nada.</p>'}</section>`;
+      document.querySelectorAll(".step").forEach((s) => s.classList.toggle("selected", s.dataset.node === id));
+      highlightMap();
+      if (reveal) $("detail").scrollTop = 0;
+    }
+    document.addEventListener("click", (e) => { const go = e.target.closest("[data-go]"); if (go) select(go.dataset.go, true); });
 
-      const nodeLayer = document.getElementById("node-layer");
-      const edgeLayer = document.getElementById("edge-layer");
-      const form = document.getElementById("tracking-form");
-      const saveState = document.getElementById("save-state");
-      const validation = document.getElementById("validation");
-      const statusInput = document.getElementById("status");
-      const ownerInput = document.getElementById("owner");
-      const dateInput = document.getElementById("target-date");
-      const evidenceInput = document.getElementById("evidence");
-      const notesInput = document.getElementById("notes");
-      const searchInput = document.getElementById("filter-search");
-      const statusFilter = document.getElementById("filter-status");
-      const phaseFilter = document.getElementById("filter-phase");
-      const readyFilter = document.getElementById("filter-ready");
-      const viewTabs = [...document.querySelectorAll("[data-view]")];
-      const viewPanels = {
-        network:document.getElementById("network-view"),
-        critical:document.getElementById("critical-view"),
-        backlog:document.getElementById("backlog-view")
+    // DOP ASME
+    function drawAsme() {
+      const A = D.asme;
+      $("asme-title").textContent = A.title;
+      const lineX = 300, top = 50, gap = 54, W = 900;
+      const H = top + A.steps.length * gap + 30;
+      const color = (s) => getComputedStyle(document.documentElement).getPropertyValue({ VERIFICADO: "--verified", LISTO_PARA_QA: "--qa", EN_CURSO: "--progress", PENDIENTE: "--pending", BLOQUEADO: "--blocked" }[s]).trim();
+      const provColor = { REAL_DATA: "#75e59a", DATA_UNAVAILABLE: "#ee7180", USER_ASSUMPTION: "#f1c84b" };
+      const yOf = (i) => top + i * gap + 20;
+      let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Diagrama de operaciones del proceso">`;
+      svg += `<line x1="${lineX}" y1="${top - 30}" x2="${lineX}" y2="${H - 14}" stroke="#4a535a" stroke-width="1.6"/>`;
+      A.inputs.forEach((input) => {
+        const i = A.steps.findIndex((s) => s.id === input.entersAt);
+        const y = (i === 0 ? top - 30 : yOf(i) - gap / 2) + 2;
+        svg += `<line x1="24" y1="${y}" x2="${lineX}" y2="${y}" stroke="${provColor[input.provenance] || "#9aa4ae"}" stroke-width="1.2" ${input.provenance === "DATA_UNAVAILABLE" ? 'stroke-dasharray="4 3"' : ""}/>`;
+        svg += `<text x="24" y="${y - 6}" font-size="12">${esc(input.label)}</text><text x="24" y="${y + 14}" font-size="10" font-family="IBM Plex Mono, monospace" fill="${provColor[input.provenance] || "#9aa4ae"}">${input.provenance}</text>`;
+      });
+      A.steps.forEach((s, i) => {
+        const y = yOf(i), c = color(s.status);
+        let sym = "";
+        if (s.type === "operation") sym = `<circle class="sym" cx="${lineX}" cy="${y}" r="13" fill="#0a0f10" stroke="${c}" stroke-width="1.8"/>`;
+        else if (s.type === "inspection") sym = `<rect class="sym" x="${lineX - 13}" y="${y - 13}" width="26" height="26" fill="#0a0f10" stroke="${c}" stroke-width="1.8"/>`;
+        else sym = `<rect class="sym" x="${lineX - 14}" y="${y - 14}" width="28" height="28" fill="#0a0f10" stroke="${c}" stroke-width="1.8"/><circle cx="${lineX}" cy="${y}" r="9" fill="none" stroke="${c}" stroke-width="1.6"/>`;
+        svg += `<g class="step" tabindex="0" role="button" data-node="${s.node}" aria-label="${esc(s.code)} ${esc(s.name)}, ${STATUS_LABEL[s.status]}">${sym}
+          <text x="${lineX}" y="${y + 4}" text-anchor="middle" font-size="9" font-family="IBM Plex Mono, monospace" fill="${c}">${esc(s.code.replace("-", ""))}</text>
+          <text class="name" x="${lineX + 28}" y="${y - 2}" font-size="13">${esc(s.name)}</text>
+          <text x="${lineX + 28}" y="${y + 14}" font-size="10" font-family="IBM Plex Mono, monospace" fill="${c}">${esc(s.code)} · ${STATUS_LABEL[s.status].toUpperCase()} · ${esc(byId.get(s.node).owner)}</text></g>`;
+      });
+      svg += `<text x="${lineX + 28}" y="${H - 4}" font-size="11" fill="#9aa4ae">Decisión de screening asistida, con abstención y revisión humana</text></svg>`;
+      $("asme").innerHTML = svg;
+      document.querySelectorAll(".step").forEach((g) => {
+        g.addEventListener("click", () => select(g.dataset.node));
+        g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(g.dataset.node); } });
+      });
+      const types = { operation: "Operaciones", inspection: "Inspecciones", combined: "Combinadas" };
+      const rows = Object.entries(types).map(([t, label]) => `<tr><td>${label}</td><td>${A.steps.filter((s) => s.type === t).length}</td></tr>`).join("");
+      const byStatus = Object.keys(STATUS_LABEL).map((s) => `<tr class="st-${s}"><td><span class="chip">${STATUS_LABEL[s]}</span></td><td>${A.steps.filter((x) => x.status === s).length}</td></tr>`).join("");
+      $("asme-summary").insertAdjacentHTML("beforeend", `<thead><tr><th>Actividad</th><th>N.º</th></tr></thead><tbody>${rows}<tr><td><b>Total</b></td><td><b>${A.steps.length}</b></td></tr></tbody><tbody><tr><th>Estado</th><th></th></tr>${byStatus}</tbody><tbody><tr><td>Materiales que entran</td><td>${A.inputs.length}</td></tr></tbody>`);
+    }
+
+    // Mapa de dependencias con trazado ortogonal: las líneas viajan por los pasillos entre columnas y por un carril superior.
+    let geo = null;
+    function drawMap() {
+      const map = $("map");
+      const W = map.clientWidth;
+      if (!W) return;
+      const cols = D.phases.length, padX = 16, headH = 30, laneTop = headH + 12, laneGap = 7;
+      const longEdges = D.edges.filter(([a, b, fb]) => fb || byId.get(b).phase - byId.get(a).phase > 1);
+      const gridTop = laneTop + longEdges.length * laneGap + 14;
+      const colW = (W - padX * 2) / cols, nodeW = colW - 34, nodeH = 70, rowH = 96;
+      const H = gridTop + 4 * rowH + 10;
+      map.style.height = `${H}px`;
+      const pos = new Map(nodes.map((n) => [n.id, { x: padX + (n.phase - 1) * colW + 17, y: gridTop + (n.row - 1) * rowH }]));
+      map.querySelectorAll(".node, .phase-head").forEach((el) => el.remove());
+      D.phases.forEach((p) => {
+        const done = nodes.filter((n) => n.phase === p.id && n.status === "VERIFICADO").length;
+        const total = nodes.filter((n) => n.phase === p.id).length;
+        map.insertAdjacentHTML("beforeend", `<div class="phase-head" style="left:${padX + (p.id - 1) * colW}px;width:${colW}px">${esc(p.code)} ${done}/${total}</div>`);
+      });
+      nodes.forEach((n) => {
+        const { x, y } = pos.get(n.id);
+        const b = document.createElement("button");
+        b.type = "button"; b.className = `node st-${n.status}`; b.dataset.id = n.id;
+        b.style.cssText = `left:${x}px;top:${y}px;width:${nodeW}px;height:${nodeH}px`;
+        b.setAttribute("aria-label", `${n.code} ${n.name}, ${STATUS_LABEL[n.status]}, ${n.owner}`);
+        b.innerHTML = `<span class="row1"><span>${esc(n.code)}</span><span class="chip">${STATUS_LABEL[n.status]}</span></span><b>${esc(n.name)}</b><span class="row3"><span class="owner ${esc(n.owner)}">${esc(n.owner)}</span><span class="owner">${n.planTask ? esc(n.planTask) : ""}</span></span>`;
+        b.addEventListener("click", () => select(n.id));
+        map.appendChild(b);
+      });
+      // Pasillos: desplazamiento por arista para que verticales paralelas no se monten.
+      const gapSlots = new Map();
+      const slot = (key) => { const k = gapSlots.get(key) || 0; gapSlots.set(key, k + 1); return k; };
+      const mid = (id) => { const p = pos.get(id); return { l: p.x, r: p.x + nodeW, cy: p.y + nodeH / 2, cx: p.x + nodeW / 2, t: p.y, b: p.y + nodeH }; };
+      const path = (pts) => {
+        const r = 6; let d = `M${pts[0][0]},${pts[0][1]}`;
+        for (let i = 1; i < pts.length - 1; i++) {
+          const [px, py] = pts[i - 1], [x, y] = pts[i], [nx, ny] = pts[i + 1];
+          const d1 = Math.min(r, Math.hypot(x - px, y - py) / 2), d2 = Math.min(r, Math.hypot(nx - x, ny - y) / 2);
+          const ax = x - Math.sign(x - px) * d1, ay = y - Math.sign(y - py) * d1, bx = x + Math.sign(nx - x) * d2, by = y + Math.sign(ny - y) * d2;
+          d += ` L${ax},${ay} Q${x},${y} ${bx},${by}`;
+        }
+        const last = pts[pts.length - 1]; return d + ` L${last[0]},${last[1]}`;
       };
-
-      function safeText(value, max) {
-        return typeof value === "string" ? value.slice(0, max) : "";
-      }
-
-      function sanitizeRecord(value, fallback) {
-        const candidate = value && typeof value === "object" ? value : {};
-        const status = allowedStatuses.has(candidate.status) ? candidate.status : fallback.status;
-        return {
-          status,
-          owner:safeText(candidate.owner,80),
-          targetDate:/^\d{4}-\d{2}-\d{2}$/.test(candidate.targetDate || "") ? candidate.targetDate : "",
-          evidence:safeText(candidate.evidence,300),
-          notes:safeText(candidate.notes,1000),
-          updatedAt:safeText(candidate.updatedAt,40)
-        };
-      }
-
-      function loadState() {
-        try {
-          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-          if (!saved || typeof saved !== "object" || saved.version !== 1 || !saved.items) return structuredClone(defaults);
-          const restored = Object.fromEntries(nodes.map(node => [node.id, sanitizeRecord(saved.items[node.id], defaults[node.id])]));
-          const oldDem = saved.items.dem;
-          const untouchedDem = oldDem && oldDem.status === "PENDIENTE" && !oldDem.owner && !oldDem.targetDate && !oldDem.evidence && !oldDem.notes && !oldDem.updatedAt;
-          if (untouchedDem) restored.dem = structuredClone(defaults.dem);
-          return restored;
-        } catch {
-          return structuredClone(defaults);
+      let lane = 0;
+      const svgEdges = D.edges.map(([a, b, fb]) => {
+        const s = mid(a), t = mid(b), na = byId.get(a), nb = byId.get(b);
+        let pts;
+        if (fb) {
+          const y = laneTop + lane++ * laneGap;
+          pts = [[s.cx, s.t], [s.cx, y], [t.cx + 10, y], [t.cx + 10, t.t]];
+        } else if (na.phase === nb.phase) {
+          pts = [[s.cx, s.b], [t.cx, t.t]];
+        } else if (nb.phase - na.phase === 1) {
+          const gx = s.r + 17 + (slot(`g${na.phase}`) % 5 - 2) * 4;
+          pts = [[s.r, s.cy], [gx, s.cy], [gx, t.cy], [t.l, t.cy]];
+        } else {
+          const y = laneTop + lane++ * laneGap;
+          const gx1 = s.r + 17 + (slot(`g${na.phase}`) % 5 - 2) * 4;
+          const gx2 = t.l - 17 + (slot(`g${nb.phase - 1}`) % 5 - 2) * 4;
+          pts = [[s.r, s.cy], [gx1, s.cy], [gx1, y], [gx2, y], [gx2, t.cy], [t.l, t.cy]];
         }
-      }
-
-      function persist(message) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({version:1,exportedAt:new Date().toISOString(),items:state}));
-        saveState.textContent = message || `Guardado localmente · ${new Date().toLocaleTimeString("es-PE", {hour:"2-digit",minute:"2-digit"})}`;
-      }
-
-      function collectConnected(start, direction) {
-        const visited = new Set();
-        const queue = [start];
-        while (queue.length) {
-          const current = queue.shift();
-          edges.forEach(([from,to,feedback]) => {
-            if (feedback) return;
-            const next = direction === "downstream" && from === current ? to : direction === "upstream" && to === current ? from : null;
-            if (next && !visited.has(next)) { visited.add(next); queue.push(next); }
-          });
-        }
-        visited.delete(start);
-        return visited;
-      }
-
-      function openDependencies(nodeId) {
-        return predecessors.get(nodeId).filter(id => state[id].status !== "VERIFICADO");
-      }
-
-      function isReady(nodeId) {
-        const status = state[nodeId].status;
-        return status !== "VERIFICADO" && status !== "BLOQUEADO" && openDependencies(nodeId).length === 0;
-      }
-
-      function statusLabel(status) {
-        return status.replaceAll("_", " ");
-      }
-
-      function filteredNodes() {
-        const query = searchInput.value.trim().toLocaleLowerCase("es");
-        return nodes.filter(node => {
-          const tracking = state[node.id];
-          const searchable = [node.code,node.name,node.layer,node.purpose,tracking.owner,tracking.notes,tracking.evidence].join(" ").toLocaleLowerCase("es");
-          return (!query || searchable.includes(query))
-            && (!statusFilter.value || tracking.status === statusFilter.value)
-            && (!phaseFilter.value || node.column === Number(phaseFilter.value))
-            && (!readyFilter.checked || isReady(node.id));
-        });
-      }
-
-      function renderEdges(active, visibleIds) {
-        edgeLayer.replaceChildren();
-        edges.forEach(([from,to,feedback]) => {
-          if (!visibleIds.has(from) || !visibleIds.has(to)) return;
-          const source = nodeMap.get(from);
-          const target = nodeMap.get(to);
-          const x1 = 100 + (source.column - 1) * 200;
-          const y1 = 76 + (source.row - 1) * 118;
-          const x2 = 100 + (target.column - 1) * 200;
-          const y2 = 76 + (target.row - 1) * 118;
-          const bend = Math.max(34, Math.abs(x2 - x1) * .42);
-          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          path.setAttribute("d", `M ${x1 + 72} ${y1} C ${x1 + bend} ${y1}, ${x2 - bend} ${y2}, ${x2 - 72} ${y2}`);
-          path.setAttribute("marker-end", "url(#arrow)");
-          if (active.has(from) && active.has(to)) path.classList.add("active");
-          if (feedback) path.classList.add("feedback");
-          edgeLayer.append(path);
-        });
-      }
-
-      function renderNodes() {
-        const visible = filteredNodes();
-        const visibleIds = new Set(visible.map(node => node.id));
-        const upstream = collectConnected(selectedId, "upstream");
-        const downstream = collectConnected(selectedId, "downstream");
-        const active = new Set([selectedId, ...upstream, ...downstream]);
-        nodeLayer.replaceChildren();
-        visible.forEach(node => {
-          const button = document.createElement("button");
-          const relation = node.id === selectedId ? "selected" : upstream.has(node.id) ? "upstream" : downstream.has(node.id) ? "downstream" : "unrelated";
-          button.type = "button";
-          button.className = "node";
-          button.style.gridColumn = node.column;
-          button.style.gridRow = node.row;
-          button.dataset.status = state[node.id].status;
-          button.dataset.relation = relation;
-          button.dataset.ready = String(isReady(node.id));
-          button.setAttribute("aria-pressed", String(node.id === selectedId));
-          button.setAttribute("aria-label", `${node.name}. Estado ${statusLabel(state[node.id].status)}.${isReady(node.id) ? " Ejecutable ahora." : ""} ${node.purpose}`);
-          const code = document.createElement("span");
-          const status = document.createElement("span");
-          const name = document.createElement("strong");
-          const owner = document.createElement("small");
-          code.className = "code";
-          status.className = "status";
-          code.textContent = node.code;
-          status.textContent = statusLabel(state[node.id].status);
-          name.textContent = node.name;
-          owner.textContent = isReady(node.id) ? `Ejecutable · ${state[node.id].owner || node.layer}` : state[node.id].owner || node.layer;
-          button.append(code, status, name, owner);
-          button.addEventListener("click", () => selectNode(node.id));
-          nodeLayer.append(button);
-        });
-        renderEdges(active, visibleIds);
-        document.getElementById("network-empty").hidden = visible.length > 0;
-      }
-
-      function updateSummary() {
-        const values = Object.values(state).map(item => item.status);
-        document.getElementById("count-verified").textContent = `${values.filter(status => status === "VERIFICADO").length} / ${nodes.length}`;
-        document.getElementById("count-ready").textContent = nodes.filter(node => isReady(node.id)).length;
-        document.getElementById("count-blocked").textContent = values.filter(status => status === "BLOQUEADO").length;
-        document.querySelectorAll(".stages span").forEach((element,index) => {
-          const column = index + 1;
-          const phaseNodes = nodes.filter(node => node.column === column);
-          const verified = phaseNodes.filter(node => state[node.id].status === "VERIFICADO").length;
-          element.textContent = `${phaseCodes.get(column)} ${verified}/${phaseNodes.length}`;
-        });
-      }
-
-      function renderNextAction() {
-        const candidateId = criticalPath.find(id => isReady(id)) || nodes.find(node => isReady(node.id))?.id;
-        const button = document.getElementById("next-action-button");
-        if (!candidateId) {
-          document.getElementById("next-action-phase").textContent = "Sin trabajo desbloqueado";
-          document.getElementById("next-action-heading").textContent = "Revisa los bloqueos y la evidencia";
-          document.getElementById("next-action-reason").textContent = "No hay nodos pendientes con todos sus predecesores verificados.";
-          button.disabled = true;
-          delete button.dataset.nodeId;
-          return;
-        }
-        const candidate = nodeMap.get(candidateId);
-        const downstreamCount = collectConnected(candidateId, "downstream").size;
-        document.getElementById("next-action-phase").textContent = `Siguiente acción · ${phaseNames.get(candidate.column)} · ${candidate.code}`;
-        document.getElementById("next-action-heading").textContent = candidate.name;
-        document.getElementById("next-action-reason").textContent = `Puede iniciarse ahora e impacta ${downstreamCount} nodos aguas abajo. ${candidate.blocker}`;
-        button.disabled = false;
-        button.dataset.nodeId = candidateId;
-      }
-
-      function renderCritical() {
-        const list = document.getElementById("critical-list");
-        const visibleIds = new Set(filteredNodes().map(node => node.id));
-        list.replaceChildren();
-        criticalPath.filter(id => visibleIds.has(id)).forEach((id,index) => {
-          const node = nodeMap.get(id);
-          const tracking = state[id];
-          const open = openDependencies(id);
-          const item = document.createElement("li");
-          const button = document.createElement("button");
-          const routeIndex = document.createElement("span");
-          const name = document.createElement("span");
-          const strong = document.createElement("strong");
-          const small = document.createElement("small");
-          const status = document.createElement("span");
-          const owner = document.createElement("span");
-          const date = document.createElement("span");
-          button.type = "button";
-          button.className = "route-row";
-          button.dataset.status = tracking.status;
-          button.dataset.ready = String(isReady(id));
-          button.setAttribute("aria-pressed", String(id === selectedId));
-          button.setAttribute("aria-label", `Paso ${index + 1}, ${node.name}. ${statusLabel(tracking.status)}. ${open.length} dependencias abiertas.`);
-          routeIndex.className = "route-index";
-          routeIndex.textContent = String(criticalPath.indexOf(id) + 1);
-          name.className = "route-name";
-          strong.textContent = node.name;
-          small.textContent = `${phaseNames.get(node.column)} · ${open.length ? `${open.length} dependencias abiertas` : isReady(id) ? "Ejecutable ahora" : "Dependencias verificadas"}`;
-          name.append(strong,small);
-          status.className = "route-meta route-status status-text";
-          status.dataset.status = tracking.status;
-          status.textContent = statusLabel(tracking.status);
-          owner.className = "route-meta route-owner";
-          owner.textContent = tracking.owner || "Sin responsable";
-          date.className = "route-meta route-date";
-          date.textContent = tracking.targetDate || "Sin fecha";
-          button.append(routeIndex,name,status,owner,date);
-          button.addEventListener("click", () => selectNode(id));
-          item.append(button);
-          list.append(item);
-        });
-        if (!list.children.length) {
-          const empty = document.createElement("li");
-          empty.className = "empty-view";
-          empty.textContent = "Ningún paso de la ruta crítica coincide con los filtros.";
-          list.append(empty);
-        }
-      }
-
-      function renderBacklog() {
-        const list = document.getElementById("backlog-list");
-        const statusPriority = {EN_CURSO:1,LISTO_PARA_QA:2,PENDIENTE:3,BLOQUEADO:5,VERIFICADO:6};
-        const ordered = filteredNodes().sort((a,b) => {
-          const readyDelta = Number(!isReady(a.id)) - Number(!isReady(b.id));
-          if (readyDelta) return readyDelta;
-          const criticalDelta = Number(!criticalIds.has(a.id)) - Number(!criticalIds.has(b.id));
-          if (criticalDelta) return criticalDelta;
-          return statusPriority[state[a.id].status] - statusPriority[state[b.id].status] || a.code.localeCompare(b.code);
-        });
-        list.replaceChildren();
-        ordered.forEach(node => {
-          const tracking = state[node.id];
-          const open = openDependencies(node.id);
-          const button = document.createElement("button");
-          const work = document.createElement("span");
-          const name = document.createElement("strong");
-          const code = document.createElement("small");
-          const phase = document.createElement("span");
-          const status = document.createElement("span");
-          const deps = document.createElement("span");
-          const owner = document.createElement("span");
-          const date = document.createElement("span");
-          button.type = "button";
-          button.className = "backlog-row";
-          button.dataset.ready = String(isReady(node.id));
-          button.setAttribute("aria-pressed", String(node.id === selectedId));
-          button.setAttribute("aria-label", `${node.name}. ${statusLabel(tracking.status)}. ${open.length} dependencias abiertas.`);
-          work.className = "backlog-work";
-          name.textContent = node.name;
-          code.textContent = `${node.code}${criticalIds.has(node.id) ? " · RUTA CRÍTICA" : ""}`;
-          work.append(name,code);
-          phase.className = "backlog-phase";
-          phase.textContent = phaseNames.get(node.column);
-          status.className = "status-text";
-          status.dataset.status = tracking.status;
-          status.textContent = isReady(node.id) ? "EJECUTABLE" : statusLabel(tracking.status);
-          deps.className = "backlog-deps";
-          deps.textContent = open.length ? `${open.length} abiertas` : "Libre";
-          owner.className = "backlog-owner";
-          owner.textContent = tracking.owner || "Sin asignar";
-          date.className = "backlog-date";
-          date.textContent = tracking.targetDate || "Sin fecha";
-          button.append(work,phase,status,deps,owner,date);
-          button.addEventListener("click", () => selectNode(node.id));
-          list.append(button);
-        });
-        if (!ordered.length) {
-          const empty = document.createElement("p");
-          empty.className = "empty-view";
-          empty.textContent = "No hay trabajo que coincida con los filtros.";
-          list.append(empty);
-        }
-      }
-
-      function updateFilterSummary() {
-        const count = filteredNodes().length;
-        const activeFilters = [searchInput.value.trim(),statusFilter.value,phaseFilter.value,readyFilter.checked].filter(Boolean).length;
-        document.getElementById("filter-summary").textContent = `${count} de ${nodes.length} nodos visibles${activeFilters ? ` · ${activeFilters} filtros activos` : ""}`;
-      }
-
-      function renderAll() {
-        renderNodes();
-        renderCritical();
-        renderBacklog();
-        updateSummary();
-        renderNextAction();
-        updateFilterSummary();
-      }
-
-      function switchView(view) {
-        activeView = viewPanels[view] ? view : "network";
-        Object.entries(viewPanels).forEach(([key,panel]) => { panel.hidden = key !== activeView; });
-        viewTabs.forEach(tab => tab.setAttribute("aria-selected", String(tab.dataset.view === activeView)));
-        const descriptions = {
-          network:"Explora las dependencias y el impacto aguas arriba y abajo de cada nodo.",
-          critical:"Sigue el hilo de decisión y detecta las dependencias paralelas que aún lo bloquean.",
-          backlog:"Prioriza trabajo ejecutable, ruta crítica, responsables y fechas objetivo."
-        };
-        document.getElementById("view-description").textContent = descriptions[activeView];
-      }
-
-      function selectNode(id) {
-        selectedId = id;
-        const node = nodeMap.get(id);
-        const tracking = state[id];
-        document.getElementById("selected-code").textContent = `${node.code} · ${node.layer}`;
-        document.getElementById("tracker-heading").textContent = node.name;
-        document.getElementById("selected-purpose").textContent = node.purpose;
-        document.getElementById("selected-inputs").replaceChildren(...node.inputs.map(value => { const li = document.createElement("li"); li.textContent = value; return li; }));
-        document.getElementById("selected-output").textContent = node.output;
-        document.getElementById("selected-acceptance").textContent = node.acceptance;
-        document.getElementById("selected-blocker").textContent = node.blocker || "Sin bloqueo registrado.";
-        statusInput.value = tracking.status;
-        ownerInput.value = tracking.owner;
-        dateInput.value = tracking.targetDate;
-        evidenceInput.value = tracking.evidence;
-        notesInput.value = tracking.notes;
-        validation.textContent = "";
-        renderAll();
-      }
-
-      function updateSelected() {
-        const requestedStatus = statusInput.value;
-        if (requestedStatus === "VERIFICADO" && evidenceInput.value.trim().length === 0) {
-          validation.textContent = "Registra una evidencia antes de marcar este nodo como verificado.";
-          statusInput.value = state[selectedId].status;
-          return;
-        }
-        validation.textContent = "";
-        state[selectedId] = {
-          status:requestedStatus,
-          owner:ownerInput.value.trim().slice(0,80),
-          targetDate:dateInput.value,
-          evidence:evidenceInput.value.trim().slice(0,300),
-          notes:notesInput.value.trim().slice(0,1000),
-          updatedAt:new Date().toISOString()
-        };
-        persist();
-        renderAll();
-      }
-
-      form.addEventListener("change", updateSelected);
-      form.addEventListener("input", event => {
-        if (event.target === statusInput) return;
-        window.clearTimeout(form.saveTimer);
-        form.saveTimer = window.setTimeout(updateSelected, 300);
+        const cls = ["edge", fb ? "feedback" : "", critical.has(a) && critical.has(b) && !fb ? "critical" : ""].join(" ");
+        return `<path class="${cls}" data-from="${a}" data-to="${b}" d="${path(pts)}" marker-end="url(#arrow)"/>`;
       });
-
-      viewTabs.forEach(tab => {
-        tab.id = `tab-${tab.dataset.view}`;
-        tab.setAttribute("aria-controls", `${tab.dataset.view}-view`);
-        tab.addEventListener("click", () => switchView(tab.dataset.view));
+      $("edges").setAttribute("viewBox", `0 0 ${W} ${H}`);
+      $("edges").innerHTML = `<defs><marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 8 4 0 8Z" fill="#7f8992"/></marker></defs>${svgEdges.join("")}`;
+      geo = true;
+      applyFilters();
+    }
+    function highlightMap() {
+      if (!geo) return;
+      const lit = selected ? new Set([selected, ...walk(selected, preds), ...walk(selected, succs)]) : null;
+      document.querySelectorAll(".node").forEach((el) => { el.classList.toggle("selected", el.dataset.id === selected); });
+      document.querySelectorAll(".edge").forEach((el) => {
+        const on = lit && lit.has(el.dataset.from) && lit.has(el.dataset.to);
+        el.classList.toggle("lit", !!on); el.classList.toggle("dim", !!lit && !on);
       });
-
-      searchInput.addEventListener("input", renderAll);
-      statusFilter.addEventListener("change", renderAll);
-      phaseFilter.addEventListener("change", renderAll);
-      readyFilter.addEventListener("change", renderAll);
-      document.getElementById("clear-filters").addEventListener("click", () => {
-        searchInput.value = "";
-        statusFilter.value = "";
-        phaseFilter.value = "";
-        readyFilter.checked = false;
-        renderAll();
-        searchInput.focus();
+      applyFilters(lit);
+    }
+    function applyFilters(lit) {
+      if (!geo) return;
+      lit = lit === undefined && selected ? new Set([selected, ...walk(selected, preds), ...walk(selected, succs)]) : lit;
+      const q = $("f-search").value.trim().toLowerCase(), st = $("f-status").value;
+      let visible = 0;
+      document.querySelectorAll(".node").forEach((el) => {
+        const n = byId.get(el.dataset.id);
+        const match = (!q || `${n.code} ${n.name} ${n.inputs.join(" ")}`.toLowerCase().includes(q)) && (!st || n.status === st) && (!ownerFilter || n.owner === ownerFilter);
+        if (match) visible++;
+        el.classList.toggle("dim", !match || (!!lit && !lit.has(n.id)));
       });
-      document.getElementById("next-action-button").addEventListener("click", event => {
-        const nodeId = event.currentTarget.dataset.nodeId;
-        if (!nodeId) return;
-        switchView("network");
-        selectNode(nodeId);
-        document.getElementById("pipeline").scrollIntoView({behavior:"smooth",block:"start"});
-      });
+      $("f-count").textContent = `${visible} de ${nodes.length} nodos coinciden`;
+    }
+    $("f-status").insertAdjacentHTML("beforeend", Object.entries(STATUS_LABEL).map(([k, v]) => `<option value="${k}">${v}</option>`).join(""));
+    $("f-search").addEventListener("input", () => applyFilters());
+    $("f-status").addEventListener("change", () => applyFilters());
+    document.querySelectorAll("#f-owner button").forEach((b) => b.addEventListener("click", () => {
+      ownerFilter = b.dataset.owner;
+      document.querySelectorAll("#f-owner button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+      applyFilters();
+    }));
+    let resizeTimer;
+    window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => { if (!$("view-map").hidden) { drawMap(); highlightMap(); } }, 120); });
 
-      document.getElementById("export-button").addEventListener("click", () => {
-        const payload = JSON.stringify({schema:"los-causas-dop-tracker",version:1,exportedAt:new Date().toISOString(),items:state}, null, 2);
-        const blob = new Blob([payload], {type:"application/json"});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(blob);
-        link.download = `dop-neuronal-${new Date().toISOString().slice(0,10)}.json`;
-        document.body.append(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(link.href);
-        saveState.textContent = "Seguimiento exportado en JSON";
-      });
+    // Red neuronal
+    function drawNeural() {
+      const N = D.neural;
+      $("neural-name").textContent = N.name;
+      $("neural-status").textContent = N.status;
+      const list = (items) => `<ul>${items.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>`;
+      $("neural-spec").innerHTML = `
+        <section class="wide"><h3>Qué decisión mejora</h3><p class="lead">${esc(N.decision)}</p></section>
+        <section><h3>Qué predice</h3><p>${esc(N.target)}</p></section>
+        <section><h3>Etiquetas reales</h3><p>${esc(N.labels)}</p></section>
+        <section><h3>Variables de entrada</h3>${list(N.features)}</section>
+        <section><h3>Baselines que debe superar</h3>${list(N.baselines)}</section>
+        <section><h3>Red candidata</h3><p>${esc(N.candidate)}</p></section>
+        <section><h3>Validación</h3><p>${esc(N.validation)}</p></section>
+        <section class="wide"><h3>Regla de adopción</h3><p>${esc(N.adoption)}</p></section>
+        <section class="wide"><h3>Riesgos y límites</h3>${list(N.risks)}</section>`;
+    }
 
-      document.getElementById("import-file").addEventListener("change", async event => {
-        const file = event.target.files && event.target.files[0];
-        event.target.value = "";
-        if (!file) return;
-        if (file.size > MAX_IMPORT_BYTES) { saveState.textContent = "Importación rechazada: archivo mayor a 1 MB"; return; }
-        try {
-          const payload = JSON.parse(await file.text());
-          if (payload.schema !== "los-causas-dop-tracker" || payload.version !== 1 || !payload.items) throw new Error("schema");
-          state = Object.fromEntries(nodes.map(node => [node.id, sanitizeRecord(payload.items[node.id], defaults[node.id])]));
-          persist("Seguimiento importado y guardado localmente");
-          selectNode(selectedId);
-        } catch {
-          saveState.textContent = "Importación rechazada: JSON incompatible o inválido";
-        }
-      });
+    // Plan y responsables
+    function drawPlan() {
+      const owners = ["Claude", "Codex"];
+      $("owners").innerHTML = owners.map((o) => {
+        const tasks = D.plan.filter((t) => t.owner === o);
+        return `<div><span class="owner ${o}">${o}</span><br><strong>${tasks.filter((t) => t.status === "VERIFICADO").length} / ${tasks.length}</strong> <span style="color:var(--muted)">tareas cerradas</span></div>`;
+      }).join("") + `<div><span class="owner">Nodos del DOP</span><br><strong>${nodes.filter((n) => n.owner === "Claude").length} · ${nodes.filter((n) => n.owner === "Codex").length} · ${nodes.filter((n) => n.owner === "Equipo").length}</strong> <span style="color:var(--muted)">Claude · Codex · Equipo</span></div>`;
+      $("plan-table").innerHTML = `<thead><tr><th>Tarea</th><th>Descripción</th><th>Responsable</th><th>Estado</th><th>Referencia</th><th>Nodos del DOP</th></tr></thead><tbody>${D.plan.map((t) => `
+        <tr class="st-${t.status}"><td class="mono">${esc(t.id)}</td><td>${esc(t.title)}</td><td><span class="owner ${esc(t.owner)}">${esc(t.owner)}</span></td><td><span class="chip">${STATUS_LABEL[t.status]}</span></td><td class="mono">${esc(t.ref)}</td>
+        <td>${t.nodes.map((id) => `<button class="linkchip" data-go="${id}">${esc(byId.get(id).code)}</button>`).join("") || '<span class="empty">—</span>'}</td></tr>`).join("")}</tbody>`;
+    }
 
-      const resetButton = document.getElementById("reset-button");
-      let resetTimer;
-      resetButton.addEventListener("click", () => {
-        if (resetButton.dataset.confirming !== "true") {
-          resetButton.dataset.confirming = "true";
-          resetButton.textContent = "Confirmar borrado";
-          saveState.textContent = "Pulsa de nuevo en 5 segundos para restablecer todo";
-          window.clearTimeout(resetTimer);
-          resetTimer = window.setTimeout(() => {
-            delete resetButton.dataset.confirming;
-            resetButton.textContent = "Restablecer";
-            saveState.textContent = "Restablecimiento cancelado";
-          }, 5000);
-          return;
-        }
-        window.clearTimeout(resetTimer);
-        state = structuredClone(defaults);
-        localStorage.removeItem(STORAGE_KEY);
-        delete resetButton.dataset.confirming;
-        resetButton.textContent = "Restablecer";
-        saveState.textContent = "Seguimiento restablecido";
-        selectNode("dem");
-      });
+    // Backlog
+    function drawBacklog() {
+      const order = (n) => (executable(n) ? 0 : 100) + (critical.has(n.id) ? D.criticalPath.indexOf(n.id) : 50) + n.phase / 10;
+      const items = nodes.filter((n) => n.status !== "VERIFICADO").sort((a, b) => order(a) - order(b));
+      $("backlog-table").innerHTML = `<thead><tr><th>Nodo</th><th>Estado</th><th>Responsable</th><th>Ejecutable</th><th>Bloqueo o siguiente paso</th></tr></thead><tbody>${items.map((n) => `
+        <tr class="st-${n.status}"><td><button class="linkchip" data-go="${n.id}">${esc(n.code)}</button> ${esc(n.name)}${critical.has(n.id) ? ' <span class="owner">· crítica</span>' : ""}</td><td><span class="chip">${STATUS_LABEL[n.status]}</span></td><td><span class="owner ${esc(n.owner)}">${esc(n.owner)}</span></td><td class="mono">${executable(n) ? "sí" : "no"}</td><td>${esc(n.blocker)}</td></tr>`).join("")}</tbody>`;
+    }
 
-      console.assert(nodes.length === 18, "El DOP debe contener 18 nodos.");
-      console.assert(edges.length === 23, "El DOP debe contener 23 conexiones.");
-      console.assert(nodes.every(node => state[node.id]), "Cada nodo debe tener un registro de seguimiento.");
-      console.assert(criticalPath.every(id => nodeMap.has(id)), "Cada paso crítico debe existir en el mapa.");
-      switchView(activeView);
-      selectNode(selectedId);
-    })();
+    drawAsme(); drawNeural(); drawPlan(); drawBacklog();
+    select(nextNode ? nextNode.id : nodes[0].id);
+    let initial = "asme";
+    try { initial = localStorage.getItem("lce.dop.view") || "asme"; } catch (_) { /* sin almacenamiento */ }
+    showView(document.querySelector(`[data-view="${initial}"]`) ? initial : "asme");
+  })();
   </script>
 </body>
 </html>
