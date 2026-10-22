@@ -9,3 +9,8 @@ frontend/.next/
 coverage/
 .taste-skill/
 .impeccable/review/
+# Evidencia local de QA (capturas, PDF y respuestas de prueba) y dependencias de los scripts de QA
+.claude-qa/
+scripts/qa/node_modules/
+# Next en modo dev genera este archivo para agentes; no forma parte del proyecto
+frontend/AGENTS.md

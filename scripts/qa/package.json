@@ -1,0 +1,8 @@
+{
+  "name": "los-causas-qa",
+  "private": true,
+  "description": "Scripts de QA en navegador (Playwright) para la consola de Los Causas Espaciales.",
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

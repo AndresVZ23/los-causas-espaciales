@@ -82,7 +82,7 @@ Cada rama, antes de pedir revisión:
 
 ## 6. Protocolo de traspaso
 
-- Claude trabaja en una copia de trabajo hermana (`git worktree`, carpeta `Desktop\Codex\los-causas-claude`); la carpeta principal queda para Codex. Así nadie cambia la rama activa del otro ni pisa archivos sin confirmar. El worktree usa `frontend/node_modules` como junction hacia la carpeta principal, y como Turbopack no compila dependencias fuera de su raíz, allí se valida con `npx next build --webpack`. El build oficial con Turbopack se corre en la carpeta principal al fusionar.
+- Claude trabaja en una copia de trabajo hermana (`git worktree`, carpeta `Desktop\Codex\los-causas-claude`); la carpeta principal queda para Codex. Así nadie cambia la rama activa del otro ni pisa archivos sin confirmar. **Por decisión de Christian, Claude trabaja exclusivamente en esa carpeta**: tiene su propio `.venv`, sus `frontend/node_modules`, su `.env` (ignorado por git), su caché NASA en `backend/data/cache` y su Playwright en `scripts/qa/` (ver `scripts/qa/README.md`). Las evidencias de QA quedan en `.claude-qa/`, ignorada por git. Claude no escribe en la carpeta principal ni usa el stack Docker de Codex; para pruebas en navegador levanta su versión en puertos temporales y los apaga al terminar.
 - `docs/coordination/HANDOFF_LOG.md` se fusiona con `merge=union` (`.gitattributes`): las entradas de ambos se unen sin conflicto.
 - Cada rama nace del `master` vigente y trata un solo tema. Antes de pedir revisión, se actualiza con `master`.
 - Al terminar, el agente agrega una entrada a `docs/coordination/HANDOFF_LOG.md` (solo agregar, nunca editar entradas ajenas):
