@@ -50,6 +50,11 @@ class PipelineStage(BaseModel):
     provenance: list[Provenance]
 
 
+class AnnualObservation(BaseModel):
+    year: int
+    value: float
+
+
 class VariableSummary(BaseModel):
     variable: str
     label: str
@@ -64,6 +69,7 @@ class VariableSummary(BaseModel):
     adjusted_p_value: float | None = None
     significant_after_bh: bool = False
     source: SourceMetadata
+    annual_series: list[AnnualObservation]
 
 
 class SolarFinancialProjection(BaseModel):

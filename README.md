@@ -6,6 +6,8 @@ Plataforma de inteligencia territorial para convertir datos de observación de l
 
 - Ejecutar un pipeline visible de nueve pasos, desde la selección del caso hasta la exportación.
 - Consultar cuatro variables reales de NASA POWER para dos a cuatro ubicaciones.
+- Graficar medias anuales reales por sitio y variable después de cada consulta.
+- Usar NASA EOSDIS GIBS Blue Marble como mapa base contextual estático, separado de la evidencia analítica POWER.
 - Comparar irradiancia, temperatura, viento y precipitación sin inventar datos ausentes.
 - Calcular Mann–Kendall, pendiente de Sen, p-value, intervalo de confianza y corrección Benjamini–Hochberg.
 - Ordenar ubicaciones por irradiancia histórica mediante una regla explícita y reproducible, no mediante un puntaje opaco.

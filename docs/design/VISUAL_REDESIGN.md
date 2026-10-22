@@ -20,8 +20,9 @@ El contrato de superficie está en `.impeccable/surfaces/frontend-app-page-tsx.m
 2. Generación de un tablero conceptual con prompt y procedencia conservados.
 3. Tres rondas de implementación y revisión visual.
 4. Revisión independiente de cierre y correcciones de navegación móvil, foco, tipografía y aislamiento de resultados.
-5. Inspección final a 1440, 768 y 390 px: `0 FAIL / 0 WARN`.
-6. Prueba funcional en navegador de consulta real, módulos pendientes y navegación accesible.
+5. Reconstrucción estructural a partir de la referencia aprobada: masthead técnico, rail, mapa, configuración, serie anual y pipeline dentro del primer viewport.
+6. Inspección final a 1440 y 390 px: detector Impeccable sin hallazgos, sin overflow y sin errores de consola.
+7. Prueba funcional en navegador de consulta real, serie temporal anual, módulos pendientes y navegación accesible.
 
 Las comparativas están en `docs/design/audit/before-desktop.png`, `before-mobile.png`, `after-desktop.png` y `after-mobile.png`.
 
@@ -29,14 +30,17 @@ Las comparativas están en `docs/design/audit/before-desktop.png`, `before-mobil
 
 | Punto del concepto | Implementación | Fidelidad / desviación consciente |
 |---|---|---|
-| Mapa nocturno como superficie principal | MapLibre ocupa el centro del primer viewport y muestra Moquegua–Arequipa | Alta; usa OpenStreetMap porque no se presenta una escena satelital inexistente como dato NASA |
+| Cabecera técnica de gran formato | Marca, verbos operativos, contexto, filtros y procedencia forman un masthead de 150 px | Alta; la paleta decorativa del tablero se reemplaza por controles y estado reales |
+| Mapa nocturno como superficie principal | MapLibre usa NASA EOSDIS GIBS Blue Marble, con atribución visible, y conecta Moquegua–Arequipa | Alta; se identifica como mapa base estático y no como observación analítica de POWER |
 | Grafito, blanco frío y cian mineral | Tokens globales en `styles.css` con un solo acento principal | Alta |
-| Rail compacto y línea de selección | Rail de módulos en escritorio; bottom bar de cinco destinos en móvil | Alta; los textos se mantienen para claridad y accesibilidad |
+| Rail compacto y línea de selección | Rail de siete módulos en escritorio; bottom bar de cinco destinos en móvil | Alta; conserva estados reales sin copiar las categorías genéricas de la referencia |
 | Etiquetas de procedencia | `REAL_DATA`, `CACHED_DATA`, `MODEL_ESTIMATE`, `USER_ASSUMPTION`, `DATA_UNAVAILABLE` visibles | Alta |
-| Pipeline de adquisición | Nueve etapas con estado y movimiento solo durante ejecución | Alta |
-| Gráfico temporal con escalas | Recharts aparece después de obtener observaciones reales | Alta; no se renderiza una serie ficticia antes de consultar |
+| Pipeline de adquisición | Nueve etapas y bitácora compacta ocupan la banda inferior del primer viewport | Alta |
+| Gráfico temporal con escalas | Recharts grafica 24 medias anuales por sitio devueltas por la API | Alta; el estado previo conserva la cuadrícula pero declara que no representa observaciones |
 | Adaptación móvil | Mapa, controles y resultados apilados; barra persistente 4 + “Más” | Alta; drawer con `inert`, `aria-hidden`, Escape y gestión de foco |
-| Fotografía/imaginería orbital | No se incorpora en el workspace operativo | Desviación intencional: evitar decorar con imágenes que puedan confundirse con la evidencia analizada |
+| Imaginería terrestre | NASA Blue Marble aporta el contexto visual del mapa con atribución y rótulo de mapa base estático | Alta en composición; desviación consciente respecto a una escena diaria para evitar nubes y falsa actualidad |
+
+Las capturas de cierre están en `.impeccable/review/user-1440.png`, `.impeccable/review/user-390.png`, `.impeccable/review/desktop.png` y `.impeccable/review/mobile.png`.
 
 ## Diferencias de contenido
 

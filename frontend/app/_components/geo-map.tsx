@@ -12,8 +12,10 @@ export default function GeoMap({ sites, onPick }: { sites: Point[]; onPick: (lat
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const onPickRef = useRef(onPick);
+  const sitesRef = useRef(sites);
 
   useEffect(() => { onPickRef.current = onPick; }, [onPick]);
+  useEffect(() => { sitesRef.current = sites; }, [sites]);
 
   useEffect(() => {
     if (!container.current) return;
@@ -22,20 +24,32 @@ export default function GeoMap({ sites, onPick }: { sites: Point[]; onPick: (lat
       style: {
         version: 8,
         sources: {
-          osm: {
+          nasaGibs: {
             type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tiles: ["https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/BlueMarble_ShadedRelief_Bathymetry/default/default/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpg"],
             tileSize: 256,
-            attribution: "© OpenStreetMap contributors",
+            maxzoom: 8,
+            attribution: "NASA EOSDIS GIBS · Blue Marble",
           },
         },
-        layers: [{ id: "osm-dark", type: "raster", source: "osm", minzoom: 0, maxzoom: 19 }],
+        layers: [{ id: "nasa-blue-marble", type: "raster", source: "nasaGibs", minzoom: 0, maxzoom: 8, paint: { "raster-brightness-max": 0.76, "raster-contrast": 0.16, "raster-saturation": -0.04 } }],
       },
       center: [-71.15, -16.8],
       zoom: 6,
       attributionControl: { compact: true },
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    map.on("load", () => {
+      map.addSource("comparison-axis", {
+        type: "geojson",
+        data: {
+          type: "Feature",
+          properties: {},
+          geometry: { type: "LineString", coordinates: sitesRef.current.map((site) => [site.longitude, site.latitude]) },
+        },
+      });
+      map.addLayer({ id: "comparison-axis-line", type: "line", source: "comparison-axis", paint: { "line-color": "#38d9c3", "line-width": 1.5, "line-dasharray": [2, 2] } });
+    });
     map.on("click", (event) => onPickRef.current(+event.lngLat.lat.toFixed(5), +event.lngLat.lng.toFixed(5)));
     mapRef.current = map;
     return () => {
@@ -55,6 +69,12 @@ export default function GeoMap({ sites, onPick }: { sites: Point[]; onPick: (lat
         .setPopup(new maplibregl.Popup({ offset: 22 }).setText(site.label))
         .addTo(map),
     );
+    const comparisonSource = map.getSource("comparison-axis") as maplibregl.GeoJSONSource | undefined;
+    comparisonSource?.setData({
+      type: "Feature",
+      properties: {},
+      geometry: { type: "LineString", coordinates: sites.map((site) => [site.longitude, site.latitude]) },
+    });
     if (sites.length > 1) {
       const bounds = new maplibregl.LngLatBounds();
       sites.forEach((site) => bounds.extend([site.longitude, site.latitude]));

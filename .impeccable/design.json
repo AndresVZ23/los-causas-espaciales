@@ -1,43 +1,134 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-21T15:00:00-05:00",
+  "generatedAt": "2026-10-21T21:11:49-05:00",
   "title": "Design System: Los Causas Espaciales",
   "extensions": {
     "colorMeta": {
-      "mineral-cyan": { "role": "primary", "displayName": "Cian mineral", "canonical": "#38d9c7", "tonalRamp": ["#062523", "#0c3b37", "#12534d", "#1c7269", "#269589", "#38d9c7", "#8bebdf", "#dafaf6"] },
-      "night-ground": { "role": "neutral", "displayName": "Suelo nocturno", "canonical": "#0b0c0d", "tonalRamp": ["#050607", "#0b0c0d", "#191b1d", "#303438", "#565c62", "#818990", "#bdc3c8", "#f1f3f4"] },
-      "instrument-surface": { "role": "neutral", "displayName": "Superficie de instrumento", "canonical": "#141618", "tonalRamp": ["#070809", "#141618", "#24272a", "#3b4045", "#5e666d", "#879097", "#bfc4c8", "#f1f3f4"] },
-      "raised-graphite": { "role": "neutral", "displayName": "Grafito elevado", "canonical": "#1c1f22", "tonalRamp": ["#090a0b", "#1c1f22", "#2b3034", "#444a50", "#656d74", "#8d959b", "#c3c7ca", "#f2f3f4"] },
-      "control-graphite": { "role": "neutral", "displayName": "Grafito de control", "canonical": "#202326", "tonalRamp": ["#0a0b0c", "#202326", "#303438", "#494f55", "#6a7279", "#91999f", "#c5c9cc", "#f2f4f5"] },
-      "structural-border": { "role": "neutral", "displayName": "Borde estructural", "canonical": "#303439", "tonalRamp": ["#0d0f10", "#202326", "#303439", "#4a5057", "#6b737b", "#929aa1", "#c5cacf", "#f1f3f5"] },
-      "quiet-rule": { "role": "neutral", "displayName": "Regla silenciosa", "canonical": "#25282c", "tonalRamp": ["#0a0b0c", "#17191b", "#25282c", "#40454b", "#636a72", "#8c949b", "#c2c7cb", "#f2f3f4"] },
-      "cold-white": { "role": "neutral", "displayName": "Blanco frío", "canonical": "#f0f3f5", "tonalRamp": ["#1a1d1f", "#34393d", "#555c61", "#7c858c", "#a6aeb4", "#cbd0d4", "#e3e7e9", "#f0f3f5"] },
-      "cool-muted": { "role": "neutral", "displayName": "Gris legible", "canonical": "#a7b0b9", "tonalRamp": ["#171b1f", "#2c343a", "#46525c", "#63727e", "#82919d", "#a7b0b9", "#ccd1d6", "#f1f3f5"] },
-      "cool-subtle": { "role": "neutral", "displayName": "Gris secundario", "canonical": "#7f8994", "tonalRamp": ["#15181c", "#293038", "#414b55", "#5d6975", "#7f8994", "#a2aab2", "#cbd0d4", "#f1f3f5"] },
-      "verified-green": { "role": "secondary", "displayName": "Verde verificado", "canonical": "#74d99f", "tonalRamp": ["#10261a", "#183d28", "#255738", "#34764d", "#499965", "#74d99f", "#adebc5", "#e4f8ec"] },
-      "unavailable-red": { "role": "tertiary", "displayName": "Rojo no disponible", "canonical": "#f0717e", "tonalRamp": ["#2b1115", "#481a20", "#692730", "#913844", "#bd4d5a", "#f0717e", "#f8adb5", "#fde5e8"] },
-      "assumption-amber": { "role": "tertiary", "displayName": "Ámbar de supuesto", "canonical": "#e0b85b", "tonalRamp": ["#291f0b", "#443410", "#624b18", "#846624", "#a98234", "#e0b85b", "#efd792", "#faf0d5"] },
-      "cached-blue": { "role": "secondary", "displayName": "Azul de caché", "canonical": "#82aaff", "tonalRamp": ["#111d35", "#1b3058", "#29457e", "#3c60aa", "#577dd7", "#82aaff", "#b5ccff", "#e8efff"] }
+      "mineral-cyan": {
+        "role": "primary",
+        "displayName": "Cian mineral",
+        "canonical": "#38d9c3",
+        "tonalRamp": ["#062523", "#0c3b37", "#12534c", "#1b7167", "#269487", "#38d9c3", "#8aebdd", "#dafaf5"]
+      },
+      "night-ground": {
+        "role": "neutral",
+        "displayName": "Suelo nocturno",
+        "canonical": "#080c0d",
+        "tonalRamp": ["#040606", "#080c0d", "#171b1c", "#2e3335", "#555b5e", "#80878a", "#bcc1c3", "#f0f2f2"]
+      },
+      "instrument-surface": {
+        "role": "neutral",
+        "displayName": "Superficie de instrumento",
+        "canonical": "#141618",
+        "tonalRamp": ["#070809", "#141618", "#24272a", "#3b4045", "#5e666d", "#879097", "#bfc4c8", "#f1f3f4"]
+      },
+      "raised-graphite": {
+        "role": "neutral",
+        "displayName": "Grafito elevado",
+        "canonical": "#1f2226",
+        "tonalRamp": ["#0a0b0c", "#1f2226", "#30343a", "#494f56", "#6a727a", "#91999f", "#c5c9cc", "#f2f4f5"]
+      },
+      "control-graphite": {
+        "role": "neutral",
+        "displayName": "Grafito de control",
+        "canonical": "#202428",
+        "tonalRamp": ["#0a0b0d", "#202428", "#31363b", "#4a5057", "#6b737b", "#929aa1", "#c5cacf", "#f2f4f5"]
+      },
+      "structural-border": {
+        "role": "neutral",
+        "displayName": "Borde estructural",
+        "canonical": "#2e3136",
+        "tonalRamp": ["#0d0e10", "#1f2225", "#2e3136", "#484d53", "#697178", "#90989e", "#c4c9cc", "#f1f3f4"]
+      },
+      "quiet-rule": {
+        "role": "neutral",
+        "displayName": "Regla silenciosa",
+        "canonical": "#25292d",
+        "tonalRamp": ["#0a0b0d", "#171a1c", "#25292d", "#40454a", "#636a71", "#8c949a", "#c2c7ca", "#f2f3f4"]
+      },
+      "cold-white": {
+        "role": "neutral",
+        "displayName": "Blanco frío",
+        "canonical": "#e8eaed",
+        "tonalRamp": ["#191c1f", "#33373c", "#535960", "#798189", "#a2aab1", "#c7ccd1", "#dfe3e6", "#e8eaed"]
+      },
+      "cool-muted": {
+        "role": "neutral",
+        "displayName": "Gris legible",
+        "canonical": "#9aa4ae",
+        "tonalRamp": ["#161a1e", "#2a3238", "#434e57", "#5f6d78", "#7d8b97", "#9aa4ae", "#c7cdd2", "#f0f2f4"]
+      },
+      "cool-subtle": {
+        "role": "neutral",
+        "displayName": "Gris secundario",
+        "canonical": "#818b94",
+        "tonalRamp": ["#15191c", "#293039", "#424c55", "#5e6a75", "#818b94", "#a3abb2", "#cbd0d4", "#f1f3f5"]
+      },
+      "verified-green": {
+        "role": "secondary",
+        "displayName": "Verde verificado",
+        "canonical": "#75e59a",
+        "tonalRamp": ["#102719", "#193f27", "#265b37", "#36794b", "#4e9e63", "#75e59a", "#b0efc3", "#e5faec"]
+      },
+      "unavailable-red": {
+        "role": "tertiary",
+        "displayName": "Rojo no disponible",
+        "canonical": "#ee7180",
+        "tonalRamp": ["#2b1115", "#481a21", "#692730", "#913844", "#bc4d5b", "#ee7180", "#f7adb6", "#fde5e8"]
+      },
+      "assumption-amber": {
+        "role": "tertiary",
+        "displayName": "Ámbar de supuesto",
+        "canonical": "#f1c84b",
+        "tonalRamp": ["#2a2109", "#46370d", "#664f14", "#896b1d", "#b08a2a", "#f1c84b", "#f7dc8a", "#fcf2d2"]
+      },
+      "cached-blue": {
+        "role": "secondary",
+        "displayName": "Azul de caché",
+        "canonical": "#74a0ff",
+        "tonalRamp": ["#101b35", "#192d58", "#26417e", "#385aa9", "#5077d7", "#74a0ff", "#abc7ff", "#e5eeff"]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Display", "purpose": "Encabezados mayores de evidencia y cobertura." },
-      "headline": { "displayName": "Headline", "purpose": "Resultados y estados principales." },
-      "title": { "displayName": "Title", "purpose": "Títulos de panel y control." },
-      "body": { "displayName": "Body", "purpose": "Lectura continua y explicaciones." },
-      "label": { "displayName": "Label", "purpose": "Controles, módulos y acciones." },
-      "data": { "displayName": "Data", "purpose": "Coordenadas, códigos, unidades y cifras tabulares." }
+      "display": { "displayName": "Display", "purpose": "Encabezados de evidencia y cobertura bajo el banco operativo." },
+      "headline": { "displayName": "Headline", "purpose": "Estados vacíos y hallazgos principales." },
+      "title": { "displayName": "Title", "purpose": "Títulos compactos de panel y bloques de resultado." },
+      "body": { "displayName": "Body", "purpose": "Explicación, limitaciones y lectura continua." },
+      "label": { "displayName": "Label", "purpose": "Navegación, acciones y controles." },
+      "data": { "displayName": "Data", "purpose": "Coordenadas, fechas, fuentes, unidades, códigos y registros de proceso." }
     },
     "shadows": [
-      { "name": "map-overlay", "value": "0 6px 18px rgba(0,0,0,.2)", "purpose": "Leyenda y controles que flotan sobre el mapa." },
-      { "name": "evidence-panel", "value": "0 16px 40px rgba(0,0,0,.18)", "purpose": "Bloques de evidencia que requieren separación temporal del suelo." }
+      {
+        "name": "map-control-overlay",
+        "value": "0 7px 18px rgba(0,0,0,.35)",
+        "purpose": "Separa únicamente los controles nativos que se superponen al basemap; no se usa en paneles."
+      },
+      {
+        "name": "map-inner-vignette",
+        "value": "inset 0 0 80px rgba(0,0,0,.42)",
+        "purpose": "Mantiene legibles coordenadas y atribución sobre la imagen cartográfica."
+      }
     ],
     "motion": [
-      { "name": "acquisition-line", "value": "1.5s linear infinite", "purpose": "Indica extracción en curso; se desactiva con prefers-reduced-motion." },
-      { "name": "control-state", "value": "background-color 160ms ease, border-color 160ms ease", "purpose": "Respuesta breve de hover y foco." }
+      {
+        "name": "acquisition-segment",
+        "value": "1.5s linear infinite",
+        "purpose": "Un segmento cian sólido de 1 px recorre el perímetro interior del mapa solo durante la consulta."
+      },
+      {
+        "name": "reduced-motion-fallback",
+        "value": "1ms; offset-distance: 12%",
+        "purpose": "Detiene el recorrido en una posición estable y reduce animaciones y transiciones cuando el sistema lo solicita."
+      },
+      {
+        "name": "drawer-state",
+        "value": "transform .2s ease-out",
+        "purpose": "Abre y cierra el rail móvil; el modo de movimiento reducido lo lleva a 1 ms."
+      }
     ],
     "breakpoints": [
-      { "name": "workspace-collapse", "value": "1180px" },
-      { "name": "mobile-navigation", "value": "820px" },
+      { "name": "workspace-compact", "value": "1180px" },
+      { "name": "mobile-navigation", "value": "900px" },
       { "name": "compact-phone", "value": "560px" }
     ]
   },
@@ -48,72 +139,106 @@
       "refersTo": "button-primary",
       "description": "Ejecuta la única acción primaria de la configuración activa.",
       "html": "<button class=\"ds-run-analysis\">Ejecutar análisis</button>",
-      "css": ".ds-run-analysis{min-height:44px;padding:0 16px;border:0;border-radius:6px;background:var(--accent,#38d9c7);color:#07110f;font:750 13px Public Sans,sans-serif}.ds-run-analysis:hover{background:#55e4d3}.ds-run-analysis:focus-visible{outline:2px solid var(--accent,#38d9c7);outline-offset:3px}.ds-run-analysis:disabled{background:#34383c;color:#8e969e}"
+      "css": ".ds-run-analysis{min-height:35px;padding:0 16px;border:1px solid var(--accent,#38d9c3);border-radius:2px;background:var(--accent,#38d9c3);color:#04110f;font:760 11px Public Sans,sans-serif}.ds-run-analysis:hover:not(:disabled){background:#55e2cf}.ds-run-analysis:focus-visible{outline:2px solid var(--accent,#38d9c3);outline-offset:2px}.ds-run-analysis:disabled{border-color:#343a3e;background:#252a2d;color:#7c858d}@media(max-width:900px){.ds-run-analysis{min-height:44px}}"
     },
     {
-      "name": "Analysis Input",
+      "name": "Instrument Input",
       "kind": "input",
       "refersTo": "input",
-      "description": "Campo compacto para ubicación, fecha o supuesto.",
+      "description": "Campo compacto de ubicación, fecha o supuesto con cifras tabulares.",
       "html": "<label class=\"ds-field\">Latitud<input value=\"-17.193\" aria-label=\"Latitud\"></label>",
-      "css": ".ds-field{display:flex;flex-direction:column;gap:5px;color:var(--muted,#a7b0b9);font:600 13px Public Sans,sans-serif}.ds-field input{min-height:36px;padding:7px 10px;border:1px solid var(--border,#303439);border-radius:6px;background:var(--control,#202326);color:var(--text,#f0f3f5);font:400 14px Public Sans,sans-serif}.ds-field input:hover{border-color:#4a5057}.ds-field input:focus-visible{outline:1px solid var(--accent,#38d9c7);outline-offset:1px;border-color:var(--accent,#38d9c7)}"
+      "css": ".ds-field{display:grid;gap:3px;color:var(--muted,#9aa4ae);font:500 9px/1 IBM Plex Mono,monospace}.ds-field input{width:100%;height:31px;padding:0 8px;border:1px solid #383d42;border-radius:2px;background:var(--control,#202428);color:var(--text,#e8eaed);font:500 10px IBM Plex Mono,monospace;font-variant-numeric:tabular-nums}.ds-field input:hover{border-color:#545b62}.ds-field input:focus-visible{border-color:var(--accent,#38d9c3);outline:2px solid var(--accent,#38d9c3);outline-offset:2px}@media(max-width:900px){.ds-field input{height:44px}}"
     },
     {
-      "name": "Variable Chip",
-      "kind": "chip",
-      "refersTo": "variable-chip",
-      "description": "Etiqueta de variable disponible, nunca navegación principal.",
-      "html": "<span class=\"ds-variable-chip\">Radiación solar</span>",
-      "css": ".ds-variable-chip{display:inline-flex;padding:5px 8px;border-radius:999px;background:var(--raised,#1c1f22);color:#c7ced5;font:500 13px Public Sans,sans-serif}"
-    },
-    {
-      "name": "Evidence Panel",
+      "name": "Structural Evidence Panel",
       "kind": "card",
       "refersTo": "panel",
-      "description": "Contenedor de resultado o decisión con profundidad tonal.",
+      "description": "Contenedor plano de evidencia separado por tono y una regla de 1 px.",
       "html": "<article class=\"ds-evidence-panel\"><h3>Lectura actual</h3><p>Resultado verificable y sus límites.</p></article>",
-      "css": ".ds-evidence-panel{padding:22px;border-radius:10px;background:var(--surface,#141618);color:var(--text,#f0f3f5);font:400 14px/1.45 Public Sans,sans-serif}.ds-evidence-panel h3{margin:0 0 8px;font-size:17px}.ds-evidence-panel p{margin:0;color:var(--muted,#a7b0b9)}"
+      "css": ".ds-evidence-panel{padding:19px;border:1px solid var(--border,#2e3136);border-radius:2px;background:var(--surface,#141618);color:var(--text,#e8eaed);font:400 14px/1.4 Public Sans,sans-serif}.ds-evidence-panel h3{margin:0 0 8px;font-size:14px}.ds-evidence-panel p{margin:0;color:var(--muted,#9aa4ae)}"
+    },
+    {
+      "name": "Provenance Cell",
+      "kind": "custom",
+      "refersTo": "provenance-cell",
+      "description": "Código, descripción y marcador semántico que identifican un tipo de procedencia.",
+      "html": "<div class=\"ds-provenance\"><i></i><b>REAL_DATA</b><small>Observación original</small></div>",
+      "css": ".ds-provenance{display:grid;grid-template-columns:10px 1fr;grid-template-rows:13px 14px;column-gap:6px;align-items:center;padding:6px 7px;border:1px solid var(--border,#2e3136);border-radius:2px;background:var(--ground,#080c0d);color:var(--text,#e8eaed);font-family:IBM Plex Mono,monospace}.ds-provenance i{grid-row:1/3;width:7px;height:7px;border-radius:999px;background:#75e59a}.ds-provenance b{font-size:9px;font-weight:500}.ds-provenance small{color:var(--muted,#9aa4ae);font:9px Public Sans,sans-serif}"
     },
     {
       "name": "Module Rail Item",
       "kind": "nav",
-      "description": "Destino lateral con icono, etiqueta, estado y línea activa.",
-      "html": "<button class=\"ds-module active\" aria-pressed=\"true\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4\"/></svg><span><b>Solar</b><small>Piloto funcional</small></span></button>",
-      "css": ".ds-module{position:relative;display:grid;grid-template-columns:30px 1fr;align-items:center;gap:8px;min-height:54px;width:100%;padding:7px 9px;border:0;border-radius:7px;background:transparent;color:var(--muted,#a7b0b9);text-align:left}.ds-module:before{content:'';position:absolute;left:-10px;top:9px;bottom:9px;width:1px;background:transparent}.ds-module:hover{background:var(--raised,#1c1f22);color:var(--text,#f0f3f5)}.ds-module:focus-visible{outline:2px solid var(--accent,#38d9c7);outline-offset:2px}.ds-module.active{color:var(--text,#f0f3f5)}.ds-module.active:before{background:var(--accent,#38d9c7)}.ds-module span{display:flex;flex-direction:column}.ds-module small{color:var(--subtle,#7f8994)}"
+      "description": "Destino del rail con icono, disponibilidad y segmento activo de 2 px.",
+      "html": "<button class=\"ds-module active\" aria-pressed=\"true\"><svg width=\"21\" height=\"21\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M2 12h2M20 12h2\"/></svg><span>Energía</span><i></i></button>",
+      "css": ".ds-module{position:relative;display:grid;grid-template-columns:30px 1fr 8px;align-items:center;gap:7px;width:190px;min-height:47px;border:0;border-bottom:1px solid #1e2326;background:#0d1112;color:var(--muted,#9aa4ae);text-align:left}.ds-module:before{content:'';position:absolute;left:0;inset-block:0;width:2px;background:transparent}.ds-module:hover{background:#111719;color:var(--text,#e8eaed)}.ds-module:focus-visible{outline:2px solid var(--accent,#38d9c3);outline-offset:-2px}.ds-module.active{color:var(--text,#e8eaed)}.ds-module.active:before{background:var(--accent,#38d9c3)}.ds-module.active svg{color:var(--accent,#38d9c3)}.ds-module i{width:5px;height:5px;border-radius:999px;background:#75e59a}"
     },
     {
       "name": "Mobile Bottom Destination",
       "kind": "nav",
-      "description": "Destino táctil persistente con selección en el borde superior.",
-      "html": "<button class=\"ds-mobile-destination active\" aria-pressed=\"true\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M2 12h2M20 12h2\"/></svg><span>Solar</span></button>",
-      "css": ".ds-mobile-destination{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:62px;border:0;background:#101214;color:var(--muted,#a7b0b9);font:500 11px Public Sans,sans-serif}.ds-mobile-destination:before{content:'';position:absolute;top:0;width:26px;height:1px;background:transparent}.ds-mobile-destination.active{color:var(--text,#f0f3f5)}.ds-mobile-destination.active:before{background:var(--accent,#38d9c7)}.ds-mobile-destination.active svg{color:var(--accent,#38d9c7)}.ds-mobile-destination:focus-visible{outline:2px solid var(--accent,#38d9c7);outline-offset:-3px}"
-    },
-    {
-      "name": "Provenance Row",
-      "kind": "custom",
-      "description": "Origen legible con marcador, nombre y código estable.",
-      "html": "<div class=\"ds-provenance\"><i></i><span>Dato real</span><code>REAL_DATA</code></div>",
-      "css": ".ds-provenance{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:8px;min-height:36px;border-bottom:1px solid var(--rule,#25282c);color:var(--text,#f0f3f5);font:500 13px Public Sans,sans-serif}.ds-provenance i{width:7px;height:7px;border-radius:50%;background:var(--positive,#74d99f)}.ds-provenance code{color:var(--subtle,#7f8994);font:400 12px IBM Plex Mono,monospace}"
+      "description": "Destino táctil de la navegación fija de 66 px con regla superior activa.",
+      "html": "<button class=\"ds-mobile-destination active\" aria-pressed=\"true\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\"><circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M2 12h2M20 12h2\"/></svg><span>Energía</span></button>",
+      "css": ".ds-mobile-destination{position:relative;display:flex;min-height:62px;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;background:#0d1112;color:var(--muted,#9aa4ae);font:500 10px Public Sans,sans-serif}.ds-mobile-destination:before{content:'';position:absolute;top:0;width:28px;height:1px;background:transparent}.ds-mobile-destination.active{color:var(--text,#e8eaed)}.ds-mobile-destination.active:before{background:var(--accent,#38d9c3)}.ds-mobile-destination.active svg{color:var(--accent,#38d9c3)}.ds-mobile-destination:focus-visible{outline:2px solid var(--accent,#38d9c3);outline-offset:-3px}"
     },
     {
       "name": "Pipeline Step",
       "kind": "custom",
-      "description": "Etapa numerada de la cadena trazable de análisis.",
-      "html": "<div class=\"ds-pipeline-step complete\"><span>2</span><b>Configuración</b></div>",
-      "css": ".ds-pipeline-step{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;min-width:90px;color:var(--subtle,#7f8994);font:500 12px Public Sans,sans-serif;text-align:center}.ds-pipeline-step:before{content:'';position:absolute;top:11px;left:0;width:100%;height:1px;background:var(--border,#303439)}.ds-pipeline-step span{z-index:1;display:grid;place-items:center;width:22px;height:22px;border:1px solid var(--border,#303439);border-radius:50%;background:#101214}.ds-pipeline-step.complete{color:var(--text,#f0f3f5)}.ds-pipeline-step.complete span{border-color:var(--accent,#38d9c7);color:var(--accent,#38d9c7)}"
+      "description": "Etapa numerada de la cadena trazable, conectada por una regla estructural de 1 px.",
+      "html": "<div class=\"ds-pipeline-step complete\"><span>3</span><b>Extracción</b></div>",
+      "css": ".ds-pipeline-step{position:relative;display:flex;min-width:90px;flex-direction:column;align-items:center;gap:5px;color:var(--subtle,#818b94);font:500 9px Public Sans,sans-serif;text-align:center}.ds-pipeline-step:before{content:'';position:absolute;top:8px;left:0;width:100%;height:1px;background:#42484e}.ds-pipeline-step span{z-index:1;display:grid;place-items:center;width:17px;height:17px;border:1px solid #596168;border-radius:999px;background:#0d1112;font:8px IBM Plex Mono,monospace}.ds-pipeline-step.complete{color:var(--text,#e8eaed)}.ds-pipeline-step.complete span{border-color:var(--accent,#38d9c3);color:var(--accent,#38d9c3)}"
+    },
+    {
+      "name": "Acquisition Segment",
+      "kind": "custom",
+      "description": "Indicador exclusivo de carga: un segmento sólido recorre el perímetro interior del mapa.",
+      "html": "<div class=\"ds-map-frame\"><div class=\"ds-acquisition\"></div><span>Consultando NASA…</span></div>",
+      "css": ".ds-map-frame{position:relative;width:320px;height:150px;display:grid;place-items:center;background:#101819;color:var(--muted,#9aa4ae);font:11px IBM Plex Mono,monospace}.ds-acquisition{position:absolute;inset:4px;border:1px solid rgba(56,217,195,.2);pointer-events:none}.ds-acquisition:after{content:'';position:absolute;width:86px;height:1px;background:var(--accent,#38d9c3);offset-path:border-box;offset-anchor:0 50%;animation:ds-acquisition-line 1.5s linear infinite}@keyframes ds-acquisition-line{to{offset-distance:100%}}@media(prefers-reduced-motion:reduce){.ds-acquisition:after{animation-duration:1ms;animation-iteration-count:1;offset-distance:12%}}"
     }
   ],
   "narrative": {
-    "northStar": "Mesa nocturna de interpretación terrestre",
-    "overview": "El sistema se comporta como un instrumento de análisis que permanece abierto durante sesiones largas: oscuro, preciso y sobrio. El mapa y la evidencia mandan; la densidad es técnica pero no críptica, y los estados separan observación, caché, estimación, supuesto y dato no disponible.",
-    "keyCharacteristics": ["Mapa geoespacial dominante y controles compactos.", "Procedencia visible en cada estado de datos.", "Una sola voz cromática de selección.", "Numerales tabulares para coordenadas, métricas y códigos.", "Capacidad y brechas declaradas con igual jerarquía."],
-    "rules": [
-      { "name": "The One Acquisition Line Rule", "body": "El cian identifica selección, foco, acción o progreso; no rellena regiones decorativas.", "section": "colors" },
-      { "name": "The Provenance Color Rule", "body": "Los colores semánticos significan origen o estado verificable, nunca decoración.", "section": "colors" },
-      { "name": "The Numeric Instrument Rule", "body": "La monoespaciada se usa solo cuando alinear cifras o distinguir códigos mejora la lectura.", "section": "typography" },
-      { "name": "The Flat-by-Default Rule", "body": "Si un bloque puede separarse con tono o una regla de 1 px, no usa sombra.", "section": "elevation" }
+    "northStar": "Consola nocturna de inteligencia terrestre",
+    "overview": "El sistema es una mesa operativa densa y oscura para comparar ubicaciones, inspeccionar series y seguir una cadena de evidencia. Su autoridad proviene de la estructura: un masthead informativo, reglas finas, tipografía contenida, un mapa contextual verificable y estados explícitos. No intenta parecer una landing ni una cabina de ciencia ficción.\n\nLas superficies son grafitos planos separados por tono y líneas de 1 px. El cian es una señal escasa para selección, foco, acción y adquisición; nunca se convierte en una atmósfera decorativa. No hay gradientes, vidrio, resplandor ni tarjetas redondeadas blandas.",
+    "keyCharacteristics": [
+      "Consola técnica oscura con densidad alta, jerarquía precisa y lectura prolongada.",
+      "Public Sans para lenguaje y estructura; IBM Plex Mono para datos, códigos y procedencia.",
+      "Mapa contextual NASA GIBS, configuración, serie anual y pipeline visibles desde el primer viewport de escritorio.",
+      "Procedencia efectiva y brechas de datos expresadas como texto verificable, no solo color.",
+      "Geometría casi cuadrada de 2 px, superficies planas y reglas estructurales de 1 px."
     ],
-    "dos": ["Do mantener mapa, evidencia y procedencia por encima de mensajes promocionales.", "Do usar Public Sans para lectura e IBM Plex Mono únicamente para datos instrumentales.", "Do declarar DATA_UNAVAILABLE cuando una capa o fuente aún no existe.", "Do mantener controles táctiles de al menos 44 px y foco visible.", "Do limpiar resultados de otro módulo antes de mostrar un estado pendiente."],
-    "donts": ["Don't usar gradientes, vidrio, glow neón ni paletas violeta/índigo de plantilla.", "Don't mostrar métricas, mapas o imágenes orbitales ficticias como evidencia.", "Don't usar tarjetas repetitivas como decoración ni píldoras rellenas para navegación.", "Don't codificar procedencia solo por color.", "Don't presentar el VAN condicionado como recomendación de inversión."]
+    "rules": [
+      {
+        "name": "The One Acquisition Line Rule",
+        "body": "El cian identifica selección, foco, acción o progreso; no rellena regiones decorativas.",
+        "section": "colors"
+      },
+      {
+        "name": "The Provenance Color Rule",
+        "body": "Verde, azul, cian, ámbar y rojo acompañan una etiqueta de procedencia o estado legible; el color nunca carga el significado por sí solo.",
+        "section": "colors"
+      },
+      {
+        "name": "The Numeric Instrument Rule",
+        "body": "La monoespaciada se reserva para información que gana precisión al alinear cifras o distinguir códigos; no sustituye a la tipografía de lectura.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-by-Default Rule",
+        "body": "Si un bloque puede separarse con un cambio tonal o una regla de 1 px, no usa sombra.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do mantener el mapa contextual, la configuración, la serie y el pipeline legibles desde el primer viewport de escritorio.",
+      "Do mostrar procedencia efectiva con sitio, estado, dataset, versión, descarga y resolución cuando existan resultados.",
+      "Do declarar DATA_UNAVAILABLE, “pendiente” o “aún no disponible” cuando falte una fuente o ejecución.",
+      "Do conservar foco visible, semántica, navegación por teclado y objetivos táctiles móviles de al menos 44 px.",
+      "Do usar Public Sans para lectura e IBM Plex Mono para datos instrumentales."
+    ],
+    "donts": [
+      "Don't usar gradientes, vidrio, glow, sombras decorativas ni radios blandos de 6–10 px.",
+      "Don't presentar el basemap NASA GIBS como evidencia analítica ni mostrar métricas o series ficticias.",
+      "Don't codificar procedencia, disponibilidad o riesgo únicamente mediante color.",
+      "Don't convertir una capacidad pendiente en una tarjeta promocional o un estado de éxito.",
+      "Don't presentar el VAN condicionado como recomendación de inversión."
+    ]
   }
 }

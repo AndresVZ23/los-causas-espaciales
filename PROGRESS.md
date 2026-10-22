@@ -7,6 +7,8 @@
 - Backend FastAPI con contratos Pydantic y documentación OpenAPI.
 - Orquestador `POST /api/v1/projects/solar-screening` para ejecutar el caso solar de extremo a extremo.
 - Consulta multiparámetro real a NASA POWER con caché de 24 horas, timeout y procedencia `REAL_DATA` / `CACHED_DATA`.
+- Serie temporal anual real expuesta por la API y representada por sitio después de cada consulta.
+- Mapa base contextual NASA EOSDIS GIBS Blue Marble, identificado como producto visual estático y no como evidencia analítica actual.
 - Pipeline visible de nueve pasos: selección, configuración, extracción, análisis, inteligencia territorial, evaluación, impacto económico, resultados y exportación.
 - Medias anuales, Mann–Kendall, pendiente de Sen, p-value, intervalo de confianza y diagnóstico de autocorrelación lag-1.
 - Corrección Benjamini–Hochberg para comparaciones de tendencias entre ubicaciones.
@@ -21,6 +23,7 @@
 ## Evidencia de integración real
 
 - Una ejecución NASA POWER 2019–2023 recuperó 1,826 observaciones diarias por variable y ubicación para Moquegua y Arequipa.
+- El recorrido visual 2001–2024 representó 24 medias anuales reales por sitio en la gráfica temporal.
 - El pipeline produjo nueve estados trazables: ocho completados y el paso de inteligencia territorial marcado como parcial.
 - El resultado comparativo ubicó a Moquegua primero por irradiancia media histórica (6.5716 kWh/m²/día) y Arequipa segundo (6.5592 kWh/m²/día).
 - Las cifras económicas resultaron negativas bajo los supuestos iniciales, demostrando que el sistema no fuerza una conclusión favorable.

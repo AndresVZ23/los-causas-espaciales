@@ -93,6 +93,9 @@ def test_screening_orchestrates_pipeline_and_preserves_provenance(monkeypatch):
     assert result.sites[0].relative_solar_position == 1
     assert result.sites[1].relative_solar_position == 2
     assert {item.variable for item in result.sites[0].variables} == set(SOLAR_VARIABLES)
+    solar_series = next(item for item in result.sites[0].variables if item.variable == "ALLSKY_SFC_SW_DWN").annual_series
+    assert [item.year for item in solar_series] == list(range(2018, 2024))
+    assert [item.value for item in solar_series] == [6.5, 6.6, 6.7, 6.8, 6.9, 7.0]
     assert all(item.source.provenance == Provenance.CACHED for site in result.sites for item in site.variables)
     assert all(gap.status == Provenance.UNAVAILABLE for gap in result.data_gaps)
     assert result.sites[0].finance.model_provenance == Provenance.MODEL

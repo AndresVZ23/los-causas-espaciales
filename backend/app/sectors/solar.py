@@ -8,6 +8,7 @@ from ..connectors.nasa.power import PowerConnector, PowerConnectorError
 from ..finance.engine import calculate_npv
 from ..schemas.analysis import FinanceRequest, Provenance
 from ..schemas.pipeline import (
+    AnnualObservation,
     DataGap,
     PipelineStage,
     PipelineStatus,
@@ -64,7 +65,8 @@ def _summary(variable: str, observations, source, expected_days: int) -> Variabl
     if not observations:
         raise PowerConnectorError(f"NASA POWER no devolvió observaciones válidas para {variable}.")
     values = [observation.value for observation in observations]
-    annual_values = [observation.value for observation in annual_means(observations)]
+    annual_observations = annual_means(observations)
+    annual_values = [observation.value for observation in annual_observations]
     annual_variability = None
     if len(annual_values) >= 2 and abs(fmean(annual_values)) > 1e-12:
         annual_variability = pstdev(annual_values) / abs(fmean(annual_values)) * 100
@@ -80,6 +82,10 @@ def _summary(variable: str, observations, source, expected_days: int) -> Variabl
         annual_variability_percent=round(annual_variability, 3) if annual_variability is not None else None,
         trend=analyze_trend(observations),
         source=source,
+        annual_series=[
+            AnnualObservation(year=observation.timestamp.year, value=round(observation.value, 6))
+            for observation in annual_observations
+        ],
     )
 
 

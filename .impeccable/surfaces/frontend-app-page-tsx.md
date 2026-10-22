@@ -21,7 +21,7 @@ Pantalla principal operativa de `frontend/app/page.tsx`. Modo: Operate. Permite 
 
 **FIRST VIEWPORT:** Rail compacto a la izquierda; barra superior de contexto; mapa dominante al centro; configuración a la izquierda del mapa; lectura y procedencia a la derecha; una tira temporal y el avance del pipeline cierran la pantalla. La acción principal permanece junto a los filtros.
 
-**FORM:** Mesa de fotointerpretación nocturna, séptima dirección fundamentada y decisión fijada por el brief del usuario. Movimiento distintivo: el avance del pipeline recorre una línea de adquisición sobre el borde del mapa. seed:0d012c9d0aa09998.
+**FORM:** Mesa de fotointerpretación nocturna, dirección `operate-b-exposure-record-zone-sheets` seleccionada en `.impeccable/questions/roll.json` (handId `107c305d120fd246725b775543f67e2e`) y decisión fijada por el brief del usuario. Movimiento distintivo: el avance del pipeline recorre una línea de adquisición sobre el borde del mapa.
 
 **FINISH:** unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 

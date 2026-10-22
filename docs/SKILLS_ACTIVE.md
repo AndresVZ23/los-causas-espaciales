@@ -35,6 +35,8 @@ Los scripts y manifiestos de terceros se revisaron antes de instalarlos. Los hoo
 - Frontend: compilación de producción Next.js y TypeScript aprobada.
 - Dependencias: `npm audit` con 0 vulnerabilidades conocidas.
 - NASA: flujo real y respuesta de caché verificados mediante la API y el navegador.
-- Responsive: inspección a 1440, 768 y 390 px con `0 FAIL / 0 WARN`.
+- NASA GIBS: capa Blue Marble oficial verificada y rotulada como mapa base estático.
+- Serie temporal: medias anuales reales añadidas al contrato de respuesta y probadas de 2018 a 2023 con conector controlado.
+- Responsive: inspección a 1440 y 390 px sin overflow, errores de consola ni hallazgos del detector Impeccable.
 - Interacción móvil: apertura/cierre de drawer, foco, Escape y aislamiento de resultados aprobados.
 - Seguridad científica: sin sustitución de fallos NASA por datos ficticios.
