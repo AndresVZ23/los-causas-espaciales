@@ -3,10 +3,14 @@
 import asyncio
 import hashlib
 import json
+import logging
+import os
 import zipfile
+from collections.abc import Sequence
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, ClassVar
+from urllib.parse import urlparse
 
 import httpx
 
@@ -25,10 +29,37 @@ DOI_BY_PRODUCT = {
     "NASADEM_SC": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
 }
 GRID_SIZE = 3601
+DOWNLOAD_ATTEMPTS = 3
+DOWNLOAD_CHUNK_SIZE = 1024 * 1024
+DOWNLOAD_TIMEOUT = httpx.Timeout(connect=30, read=90, write=30, pool=30)
+EARTHDATA_DOWNLOAD_HOST = "data.lpdaac.earthdatacloud.nasa.gov"
+EARTHDATA_DOWNLOAD_PREFIX = "/lp-prod-protected/"
+LOGGER = logging.getLogger(__name__)
 
 
 class NasademConnectorError(RuntimeError):
     pass
+
+
+class NasademAccessError(NasademConnectorError):
+    """Earthdata rechazó la credencial; no es un fallo transitorio de descarga."""
+
+
+def _is_valid_archive(path: Path) -> bool:
+    try:
+        return path.is_file() and path.stat().st_size > 0 and zipfile.is_zipfile(path)
+    except OSError:
+        return False
+
+
+def _validate_data_url(url: str) -> None:
+    parsed = urlparse(url)
+    if (
+        parsed.scheme != "https"
+        or parsed.hostname != EARTHDATA_DOWNLOAD_HOST
+        or not parsed.path.startswith(EARTHDATA_DOWNLOAD_PREFIX)
+    ):
+        raise NasademConnectorError("CMR devolvió una URL de descarga NASADEM fuera del host LP DAAC permitido.")
 
 
 def tile_origin(tile_id: str) -> tuple[int, int]:
@@ -111,10 +142,15 @@ def _aspect_cardinal(aspect: float | None) -> str | None:
 
 
 class NasademConnector:
-    def __init__(self):
+    _download_locks: ClassVar[dict[tuple[int, str], asyncio.Lock]] = {}
+    _inflight_downloads: ClassVar[dict[tuple[int, str], asyncio.Task[tuple[Path, Provenance]]]] = {}
+    _access_failures: ClassVar[dict[tuple[str, str], str]] = {}
+
+    def __init__(self, *, transport: httpx.AsyncBaseTransport | None = None):
         self.settings = get_settings()
         self.cache_dir = self.settings.cache_dir / "nasadem"
         self.cache_dir.mkdir(parents=True, exist_ok=True)
+        self.transport = transport
 
     def _metadata_cache(self, product: str, latitude: float, longitude: float) -> Path:
         key = hashlib.sha256(f"{product}:001:{longitude:.6f},{latitude:.6f}".encode()).hexdigest()
@@ -132,7 +168,7 @@ class NasademConnector:
             "page_size": "1",
         }
         try:
-            async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
+            async with httpx.AsyncClient(timeout=30, follow_redirects=True, transport=self.transport) as client:
                 response = await client.get(f"{self.settings.cmr_api_base}/granules.json", params=params)
                 response.raise_for_status()
                 payload = response.json()
@@ -155,6 +191,7 @@ class NasademConnector:
         boxes = entry.get("boxes", [])
         if not data_url or not boxes:
             raise NasademConnectorError("CMR devolvió metadatos NASADEM incompletos.")
+        _validate_data_url(str(data_url))
         south, west, north, east = (float(value) for value in str(boxes[0]).split())
         granule = TerrainGranule(
             short_name=product,
@@ -170,53 +207,203 @@ class NasademConnector:
         )
         return granule, metadata_provenance
 
-    async def _download(self, granule: TerrainGranule) -> tuple[Path, Provenance]:
-        target = self.cache_dir / f"{granule.title}.zip"
-        if target.exists() and target.stat().st_size > 0:
-            return target, Provenance.CACHED
-        if not self.settings.earthdata_token:
-            raise NasademConnectorError("EARTHDATA_TOKEN no está configurado; el raster NASADEM requiere Earthdata Login.")
-        temporary = target.with_suffix(".zip.part")
-        try:
-            async with httpx.AsyncClient(timeout=180, follow_redirects=True) as client:
-                async with client.stream(
-                    "GET",
-                    granule.data_url,
-                    headers={"Authorization": f"Bearer {self.settings.earthdata_token}"},
-                ) as response:
-                    response.raise_for_status()
-                    with temporary.open("wb") as output:
-                        async for chunk in response.aiter_bytes():
-                            output.write(chunk)
-            if not zipfile.is_zipfile(temporary):
-                raise NasademConnectorError("Earthdata no devolvió un archivo ZIP NASADEM válido.")
-            temporary.replace(target)
-        except (httpx.HTTPError, OSError, zipfile.BadZipFile) as exc:
-            if temporary.exists():
-                temporary.unlink()
-            raise NasademConnectorError(f"No se pudo descargar el raster NASADEM autenticado: {exc}") from exc
-        return target, Provenance.REAL
+    def _target(self, granule: TerrainGranule) -> Path:
+        title = granule.title
+        if not title or Path(title).name != title or title in (".", ".."):
+            raise NasademConnectorError("El título NASADEM no es un nombre de caché seguro.")
+        return self.cache_dir / f"{title}.zip"
 
-    async def point(self, point: Point) -> TerrainSiteResult:
-        located = [await self._granule(product, point) for product in PRODUCTS]
-        granules = [item[0] for item in located]
-        limitations = [
+    def _token_fingerprint(self) -> str:
+        token = self.settings.earthdata_token or ""
+        return hashlib.sha256(token.encode()).hexdigest()[:12]
+
+    def _access_key(self, granule: TerrainGranule) -> tuple[str, str]:
+        return str(self._target(granule).resolve()), self._token_fingerprint()
+
+    @classmethod
+    def _runtime_key(cls, target: Path) -> tuple[int, str]:
+        return id(asyncio.get_running_loop()), str(target.resolve())
+
+    @classmethod
+    def _download_lock(cls, target: Path) -> asyncio.Lock:
+        key = cls._runtime_key(target)
+        lock = cls._download_locks.get(key)
+        if lock is None:
+            lock = asyncio.Lock()
+            cls._download_locks[key] = lock
+        return lock
+
+    async def _stream_to_partial(self, granule: TerrainGranule, temporary: Path) -> None:
+        offset = temporary.stat().st_size if temporary.exists() else 0
+        _validate_data_url(granule.data_url)
+        headers = {
+            "Authorization": f"Bearer {self.settings.earthdata_token}",
+            "Accept-Encoding": "identity",
+        }
+        if offset:
+            headers["Range"] = f"bytes={offset}-"
+
+        async with httpx.AsyncClient(
+            timeout=DOWNLOAD_TIMEOUT,
+            follow_redirects=True,
+            transport=self.transport,
+        ) as client:
+            async with client.stream("GET", granule.data_url, headers=headers) as response:
+                if response.status_code in (401, 403):
+                    raise NasademAccessError(
+                        f"Earthdata rechazó el acceso al raster NASADEM con HTTP {response.status_code}."
+                    )
+                if response.status_code == 416:
+                    if offset and await asyncio.to_thread(_is_valid_archive, temporary):
+                        return
+                    if temporary.exists():
+                        temporary.unlink()
+                    raise NasademConnectorError(
+                        "Earthdata rechazó el rango guardado; la siguiente tentativa reiniciará la descarga."
+                    )
+                response.raise_for_status()
+
+                if response.status_code == 206:
+                    content_range = response.headers.get("Content-Range", "")
+                    if not content_range.startswith(f"bytes {offset}-"):
+                        raise NasademConnectorError(
+                            "Earthdata devolvió un Content-Range incompatible con el archivo parcial."
+                        )
+                    mode = "ab" if offset else "wb"
+                else:
+                    # Algunos servidores ignoran Range. Un 200 reinicia de forma segura el parcial.
+                    mode = "wb"
+
+                with temporary.open(mode) as output:
+                    async for chunk in response.aiter_bytes(DOWNLOAD_CHUNK_SIZE):
+                        if chunk:
+                            output.write(chunk)
+                    output.flush()
+                    os.fsync(output.fileno())
+
+    async def _download(self, granule: TerrainGranule) -> tuple[Path, Provenance]:
+        target = self._target(granule)
+        async with self._download_lock(target):
+            if await asyncio.to_thread(_is_valid_archive, target):
+                return target, Provenance.CACHED
+            if not self.settings.earthdata_token:
+                raise NasademAccessError(
+                    "EARTHDATA_TOKEN no está configurado; el raster NASADEM requiere Earthdata Login."
+                )
+
+            temporary = target.with_suffix(".zip.part")
+            last_error: Exception | None = None
+            for attempt in range(DOWNLOAD_ATTEMPTS):
+                try:
+                    await self._stream_to_partial(granule, temporary)
+                    if not await asyncio.to_thread(_is_valid_archive, temporary):
+                        if temporary.exists():
+                            temporary.unlink()
+                        raise NasademConnectorError(
+                            "Earthdata no devolvió un archivo ZIP NASADEM válido; se reiniciará la descarga."
+                        )
+                    await asyncio.to_thread(temporary.replace, target)
+                    return target, Provenance.REAL
+                except NasademAccessError:
+                    raise
+                except asyncio.CancelledError:
+                    # El parcial se conserva para que la siguiente tarea continúe con Range.
+                    raise
+                except (httpx.HTTPError, OSError, NasademConnectorError) as exc:
+                    last_error = exc
+                    if attempt + 1 < DOWNLOAD_ATTEMPTS:
+                        await asyncio.sleep(0.25 * (2**attempt))
+
+            raise NasademConnectorError(
+                f"No se pudo completar el raster NASADEM tras {DOWNLOAD_ATTEMPTS} intentos: {last_error}"
+            ) from last_error
+
+    @classmethod
+    def _finish_background_download(
+        cls,
+        task: asyncio.Task[tuple[Path, Provenance]],
+        runtime_key: tuple[int, str],
+        access_key: tuple[str, str],
+    ) -> None:
+        if cls._inflight_downloads.get(runtime_key) is task:
+            cls._inflight_downloads.pop(runtime_key, None)
+        if task.cancelled():
+            return
+        try:
+            task.result()
+            cls._access_failures.pop(access_key, None)
+        except NasademAccessError as exc:
+            cls._access_failures[access_key] = str(exc)
+            LOGGER.warning("NASADEM no tiene acceso al gránulo %s", Path(runtime_key[1]).name)
+        except Exception as exc:  # noqa: BLE001 - la tarea no debe dejar excepciones sin consumir
+            LOGGER.warning("Descarga NASADEM en segundo plano incompleta: %s", exc)
+
+    def _schedule_download(self, granule: TerrainGranule) -> asyncio.Task[tuple[Path, Provenance]] | None:
+        target = self._target(granule)
+        if _is_valid_archive(target) or not self.settings.earthdata_token:
+            return None
+        access_key = self._access_key(granule)
+        if access_key in self._access_failures:
+            return None
+        runtime_key = self._runtime_key(target)
+        current = self._inflight_downloads.get(runtime_key)
+        if current and not current.done():
+            return current
+        task = asyncio.create_task(self._download(granule), name=f"nasadem:{granule.short_name}:{granule.tile_id}")
+        self._inflight_downloads[runtime_key] = task
+        task.add_done_callback(
+            lambda completed: self._finish_background_download(completed, runtime_key, access_key)
+        )
+        return task
+
+    async def _located_granules(self, point: Point) -> list[TerrainGranule]:
+        located = await asyncio.gather(*(self._granule(product, point) for product in PRODUCTS))
+        return [item[0] for item in located]
+
+    @staticmethod
+    def _base_limitations() -> list[str]:
+        return [
             "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
             "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
         ]
-        try:
-            hgt_archive, hgt_provenance = await self._download(granules[0])
-            sc_archive, sc_provenance = await self._download(granules[1])
-            metrics = read_metrics(hgt_archive, sc_archive, granules[0].tile_id, point)
-            provenance = Provenance.CACHED if hgt_provenance == sc_provenance == Provenance.CACHED else Provenance.REAL
+
+    async def point(self, point: Point) -> TerrainSiteResult:
+        granules = await self._located_granules(point)
+        limitations = self._base_limitations()
+        targets = [self._target(granule) for granule in granules]
+
+        if all(_is_valid_archive(target) for target in targets):
+            metrics = await asyncio.to_thread(read_metrics, targets[0], targets[1], granules[0].tile_id, point)
+            provenance = Provenance.CACHED
             status = "READY" if all(value is not None for value in (metrics.elevation_m, metrics.slope_degrees)) else "PARTIAL"
             if metrics.aspect_degrees is None:
                 limitations.append("La orientación igual a 0° no se informa porque el producto también usa 0 para agua; se requiere validar la máscara SWB.")
-        except NasademConnectorError as exc:
+        elif not self.settings.earthdata_token:
             metrics = TerrainMetrics()
             provenance = Provenance.UNAVAILABLE
             status = "METADATA_ONLY"
-            limitations.append(str(exc))
+            limitations.append("EARTHDATA_TOKEN no está configurado; el raster NASADEM requiere Earthdata Login.")
+        else:
+            access_errors = [
+                self._access_failures[self._access_key(granule)]
+                for granule in granules
+                if self._access_key(granule) in self._access_failures
+            ]
+            if access_errors:
+                metrics = TerrainMetrics()
+                provenance = Provenance.UNAVAILABLE
+                status = "METADATA_ONLY"
+                limitations.extend(dict.fromkeys(access_errors))
+            else:
+                for granule, target in zip(granules, targets, strict=True):
+                    if not _is_valid_archive(target):
+                        self._schedule_download(granule)
+                metrics = TerrainMetrics()
+                provenance = Provenance.UNAVAILABLE
+                status = "PENDING"
+                limitations.append(
+                    "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+                )
         return TerrainSiteResult(
             location=point,
             status=status,
@@ -228,13 +415,28 @@ class NasademConnector:
 
     async def points(self, sites: list[Point]) -> TerrainResponse:
         results = list(await asyncio.gather(*(self.point(site) for site in sites)))
-        ready = sum(site.status == "READY" for site in results)
+        ready = sum(site.status in ("READY", "PARTIAL") for site in results)
+        pending = sum(site.status == "PENDING" for site in results)
+        metadata_only = sum(site.status == "METADATA_ONLY" for site in results)
         note = (
-            f"{ready} de {len(results)} ubicaciones tienen métricas raster. "
-            "Las demás conservan metadatos y vista previa oficiales sin convertir la ausencia de credenciales en datos ficticios."
+            f"{ready} de {len(results)} ubicaciones tienen métricas raster; "
+            f"{pending} descargan teselas en segundo plano y {metadata_only} permanecen solo con metadatos. "
+            "Ningún estado pendiente o sin acceso se convierte en datos ficticios."
         )
         return TerrainResponse(
             generated_at=datetime.now(timezone.utc),
             sites=results,
             note=note,
         )
+
+    async def prefetch(self, points: Sequence[Point]) -> None:
+        """Localiza teselas y dispara descargas deduplicadas sin esperar a que terminen."""
+
+        async def schedule(point: Point) -> None:
+            granules = await self._located_granules(point)
+            if not self.settings.earthdata_token:
+                return
+            for granule in granules:
+                self._schedule_download(granule)
+
+        await asyncio.gather(*(schedule(point) for point in points))

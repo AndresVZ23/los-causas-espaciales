@@ -37,7 +37,7 @@ class TerrainMetrics(BaseModel):
 
 class TerrainSiteResult(BaseModel):
     location: Point
-    status: Literal["READY", "METADATA_ONLY", "PARTIAL"]
+    status: Literal["READY", "PENDING", "METADATA_ONLY", "PARTIAL"]
     metrics: TerrainMetrics
     granules: list[TerrainGranule]
     provenance: Provenance
