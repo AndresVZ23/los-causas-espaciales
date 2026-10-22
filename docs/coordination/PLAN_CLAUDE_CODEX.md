@@ -15,7 +15,14 @@ Las reglas de `AGENTS.md` y `DESIGN.md` siguen vigentes. Nada se presenta como d
 
 ## 2. Reparto: quién hace qué
 
-Regla general: **Codex es dueño de los datos** (conectores, geoespacial, sectores nuevos). **Claude es dueño de la capa de decisión y de la experiencia** (estadística de tendencias, contrato de respuestas, reporte, asistente, pantalla principal).
+### Roles vigentes desde el 2026-10-22 (decisión de Christian)
+
+- **Claude Code es dueño del producto visible en `localhost:3100`:** todo el frontend, el diseño (`DESIGN.md`), la experiencia, el mapa y las pantallas de los pilotos, además de la capa de decisión (estadística de tendencias, contrato C2, PDF y asistente). **Claude sirve el 3100 y el 8000 desde su carpeta** (`Desktop\Codex\los-causas-claude`) y decide qué versión se ve.
+- **Codex es soporte operativo:** conectores y datos NASA (NASADEM asíncrono, IMERG, LHASA, fuentes peruanas), muestreo geoespacial y backend de datos de los pilotos (K1, K1b, K2 y K3 sin interfaz), infraestructura (Docker, dependencias, rendimiento, seguridad), revisión de código y QA de las ramas de Claude, operaciones git (fusionar en `master` y subir a GitHub, siempre con la aprobación de Christian), el DOP interno y la documentación de fuentes y arquitectura técnica.
+- Codex no edita `frontend/**`, `DESIGN.md` ni archivos visuales. Si detecta un problema visual o de experiencia, lo reporta en el registro con evidencia (captura, viewport, pasos) y Claude lo corrige.
+- Codex no levanta servicios en 3100 ni 8000. Para sus pruebas usa `pytest`, `TestClient` o puertos temporales que apaga al terminar.
+
+Regla general de datos y decisión: **Codex entrega datos verificados** (conectores, geoespacial, lógica sectorial). **Claude los convierte en experiencia y decisión** (lecturas, pipeline, preguntas NASA, PDF, asistente, pantalla).
 
 | ID | Entrega | Dueño | Depende de | Rama |
 |---|---|---|---|---|
@@ -25,11 +32,12 @@ Regla general: **Codex es dueño de los datos** (conectores, geoespacial, sector
 | K1 | Muestreo NASA POWER sobre corredores y polígonos (geodésico, deduplicado por celda de grilla) | **Codex** | X0 | `codex/muestreo-geometrias` |
 | K1b | Verificar acceso real a IMERG V07, LHASA y una capa oficial peruana de amenazas; registrar en `DATA_SOURCES.md` | **Codex** | — | `codex/fuentes-amenazas` |
 | C3 | Reporte PDF ejecutivo (backend + botón) a partir del contrato C2 | **Claude** | C2 | `claude/reporte-pdf` |
-| K2 | Piloto vial: corredor, extremos de precipitación por tramo, relieve, amenazas disponibles y escenario de interrupción | **Codex** | C2, K1 | `codex/piloto-vial` |
+| K0 | Descarga NASADEM asíncrona: reanudable, atómica, con bloqueo por tesela, precarga y estado `PENDING` (en curso) | **Codex** | C2 | `codex/nasadem-asincrono` |
+| K2 | Piloto vial (backend): corredor, extremos de precipitación por tramo, relieve, amenazas disponibles y escenario de interrupción; responde con el sobre C2 | **Codex** | C2, K1 | `codex/piloto-vial` |
 | C4 | Asistente analítico: reglas deterministas con citas al resultado + proveedor IA opcional por variables de entorno | **Claude** | C2 | `claude/asistente` |
-| K3 | Piloto inmobiliario: polígonos de terreno, relieve, precipitación, restricciones y comparación entre terrenos | **Codex** | C2, K1 | `codex/piloto-inmobiliario` |
-| K4 | Capas de línea y polígono en el mapa (`geo-map.tsx`) | **Codex** | K1 | dentro de K2 |
-| C5 | Integración de los pilotos en la consola (selector, lecturas, pipeline, preguntas, PDF) | **Claude** | K2, K3, K4 | `claude/integracion-pilotos` |
+| K3 | Piloto inmobiliario (backend): polígonos de terreno, relieve, precipitación, restricciones y comparación entre terrenos; responde con el sobre C2 | **Codex** | C2, K1 | `codex/piloto-inmobiliario` |
+| C5 | Pantallas de los pilotos en la consola: selector, capas de línea y polígono en el mapa, lecturas, pipeline, preguntas y PDF | **Claude** | K2, K3 | `claude/integracion-pilotos` |
+| O1 | Operación continua: revisar y fusionar ramas aprobadas, subir a GitHub con aprobación, mantener dependencias y Docker, y vigilar el vencimiento del token Earthdata (21-dic-2026) | **Codex** | — | — |
 | Q1 | QA cruzado y materiales del jurado: Claude redacta `PITCH.md` y `DEMO_SCENARIOS.md`; Codex `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` | Ambos | todo lo anterior | — |
 
 ### Orden
@@ -50,13 +58,20 @@ Solo el dueño edita su archivo. Si el otro necesita un cambio, lo pide en el re
 | Archivos | Dueño |
 |---|---|
 | `backend/app/connectors/**`, `backend/app/geospatial/**`, `backend/app/sectors/road.py`, `backend/app/sectors/real_estate.py`, `backend/app/schemas/terrain.py` y los esquemas de geometría | Codex |
-| `frontend/app/_components/geo-map.tsx`, `docs/interno/**` (DOP y plan operativo) | Codex |
+| `docs/interno/**` (DOP y plan operativo), `docker-compose.yml`, `backend/Dockerfile`, `frontend/Dockerfile`, `docs/nasa-submission/DATA_SOURCES.md`, `docs/nasa-submission/TECHNICAL_ARCHITECTURE.md` | Codex |
+| **Todo `frontend/**`** (incluido `geo-map.tsx`), `DESIGN.md`, `PRODUCT.md`, `docs/design/**`, `.taste-skill/`, `.impeccable/` | Claude |
 | `backend/app/statistics/trends.py`, `backend/app/orchestration/**`, `backend/app/reports/**`, `backend/app/assistant/**`, `backend/app/schemas/screening.py` | Claude |
 | `frontend/app/_components/workspace.tsx`, `styles.css`, `pipeline-panel.tsx`, `nasa-questions.tsx`, `site-verdict.tsx`, `temporal-chart.tsx` y los componentes nuevos de reporte y asistente | Claude |
 | `backend/app/sectors/solar.py` | Claude (orquestación); Codex lo toca solo para cambios de conector |
 | `README.md`, `PROGRESS.md`, `DECISION_LOG.md` | Ambos, solo agregando secciones propias; nunca reescribir la del otro |
 
-Los pilotos de Codex entregan su interfaz como componentes en `frontend/app/_components/pilots/` (por ejemplo `road-reading.tsx`), sin tocar `workspace.tsx`. Claude los conecta en C5.
+Los pilotos de Codex entregan solo backend: un endpoint por sector que responde con el sobre C2 y su prueba de conformidad, más un ejemplo JSON real en `docs/coordination/contracts/`. Claude diseña y construye sus pantallas en C5.
+
+### Quién sirve el 3100 y el 8000
+
+1. Codex apaga su stack (`docker compose down`, sin `-v`, para conservar el volumen de caché `power-cache`) y lo anota en el registro.
+2. Claude levanta `docker compose up -d --build` desde `Desktop\Codex\los-causas-claude`. Mismo proyecto Compose, mismos puertos y mismo volumen de caché.
+3. Para que su trabajo se vea en el 3100, Codex lo entrega en una rama y Claude la integra en la suya antes de redesplegar. `master` sigue siendo la línea estable: Codex fusiona allí lo aprobado por Christian.
 
 ## 4. Contrato compartido (C2) — entregado
 
