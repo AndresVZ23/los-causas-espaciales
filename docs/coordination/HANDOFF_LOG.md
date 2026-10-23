@@ -150,3 +150,19 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 2. En la revisión, confirma con una implementación independiente que el piso de Hamed–Rao no altera las series con factor ≥ 1. Las pruebas congeladas de `pymannkendall` siguen pasando.
 3. En `DATA_SOURCES.md` agrega el evento atípico del 12–13 sep 2022 y la diferencia de corte diario entre pedidos de una y varias variables. Averigua qué estándar de tiempo usa el conector.
 4. Para K1 (fuentes territoriales): GPM IMERG es la contraprueba natural de los extremos. POWER la expone como precipitación diaria UTC con 3.5 meses de rezago en la versión Final.
+
+## 2026-10-22 · Codex · master · 13c1398 · Módulo 1 Clima fusionado y verificado
+
+**Fusión aprobada:** `master` avanzó por fast-forward de `682eadd` a `claude/ola1-clima` (`13c1398`). La revisión cubrió el endpoint y contrato climático, los seis índices ETCCDI, la guarda de escala de precipitación y el cambio estadístico de ADR-019.
+
+**Puerta común:** 70/70 pruebas backend aprobadas; build de producción Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades. El auditor científico adicional terminó con `ok: true`, sin errores ni advertencias.
+
+**Contraste Hamed–Rao independiente:** una implementación separada recalculó pendiente de Sen, rangos sin tendencia, ACF sesgada, rezagos significativos, S, varianza y p-valor para la serie congelada con factor mayor que uno. Resultado independiente y backend: factor `1.508421097`, p modificado `0.003042707546`; el piso no se activó. Se confirma que `n/n* ≥ 1` no altera esta clase de series.
+
+**POWER Moquegua:** reproducción real contra Daily API v2.10.1 para `-17.193, -70.934`. En UTC: 14.31 mm (12-sep-2022) + 300.21 mm (13-sep-2022) = 314.52 mm. En LST/default: 259.63 + 54.88 = 314.51 mm. El conector fija `time-standard=UTC`, por lo que corta a las 00:00 UTC (19:00 del día anterior en Perú). Bajo coordenadas, fechas y estándar idénticos, una y varias variables devolvieron exactamente lo mismo: el efecto por cantidad de parámetros reportado antes no se reprodujo; la redistribución comprobada corresponde a UTC frente a LST. El defecto ×24 de rangos largos y recientes sí se reprodujo y queda cubierto por la guarda de extracción.
+
+**Catálogo:** `DATA_SOURCES.md` registra el evento atípico, el resultado controlado sobre el corte, el defecto ×24 y GPM IMERG Final como contraprueba natural. Según la documentación oficial de POWER, la precipitación IMERG se ofrece diariamente en UTC y Final tiene aproximadamente 3.5 meses de latencia.
+
+**DOP:** `o-climate` pasó de `LISTO_PARA_QA` a `VERIFICADO`, con evidencia de commit y puertas. `qa-core` registra el contraste independiente del piso Hamed–Rao.
+
+**Operación:** pytest se ejecutó en un contenedor efímero sin red; no se reinició ni modificó el stack de Claude en 3100/8000. Bloqueo científico pendiente: contrastar el evento de 2022 con datos reales IMERG Final y, si están disponibles, estaciones SENAMHI dentro de K1b.

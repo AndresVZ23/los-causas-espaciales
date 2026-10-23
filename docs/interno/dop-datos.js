@@ -8,8 +8,8 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T00:40:00Z",
-  updatedBy: "Claude",
+  updatedAt: "2026-10-23T01:50:37Z",
+  updatedBy: "Codex",
 
   statuses: {
     VERIFICADO: "Verificado con evidencia en el repositorio",
@@ -43,10 +43,13 @@ window.DOP_DATA = {
     { id: "qa-core", code: "00B", name: "QA científico", phase: 1, row: 3, owner: "Claude", status: "VERIFICADO",
       purpose: "Puertas de datos, estadística, geoespacio, inversión y reproducibilidad en cada incremento.",
       inputs: ["Skills de dominio", "Casos controlados", "Referencias independientes"],
-      output: "Auditor sin errores; Mann–Kendall con corrección de Hamed–Rao contrastado con pymannkendall.",
-      acceptance: "Auditor ok, 36 pruebas y validadores especializados.",
+      output: "Auditor sin errores; Mann–Kendall con corrección de Hamed–Rao contrastado con pymannkendall y una implementación independiente.",
+      acceptance: "Auditor ok, 70 pruebas y validadores especializados.",
       blocker: "Debe repetirse en cada incremento.",
-      evidence: [{ label: "Hamed–Rao como prueba de decisión (ADR-014)", ref: "5d307f9" }] },
+      evidence: [
+        { label: "Hamed–Rao como prueba de decisión (ADR-014)", ref: "5d307f9" },
+        { label: "Piso n/n* ≥ 1 y clima revisados; factor ≥ 1 inalterado", ref: "13c1398 · HANDOFF_LOG 2026-10-22" },
+      ] },
 
     { id: "gpm", code: "01A", name: "GPM IMERG V07", phase: 2, row: 1, owner: "Codex", status: "PENDIENTE", planTask: "K1b",
       purpose: "Precipitación espacial de alta frecuencia con QA del producto, para extremos y exposición hidrometeorológica.",
@@ -228,7 +231,7 @@ window.DOP_DATA = {
       { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
 
       // Resultados
-      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "LISTO_PARA_QA", detail: "Pantalla y endpoint climate-screening: año en curso, tendencias, 6 índices ETCCDI con años atípicos marcados, PDF y JSON; QA 1440/390 aprobado (ADR-019). Falta la revisión de Codex." },
+      { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "VERIFICADO", detail: "Pantalla y endpoint climate-screening: año en curso, tendencias, 6 índices ETCCDI con años atípicos marcados, PDF y JSON. QA visual 1440/390 de Claude y puerta común de Codex aprobadas; Hamed–Rao contrastado de forma independiente.", evidence: ["13c1398", "70 pruebas", "build Next.js", "audit 0 vulnerabilidades", "HANDOFF_LOG 2026-10-22"] },
       { id: "o-energy", layer: "out", group: "Módulos", name: "2 · Energía renovable", owner: "Claude", status: "VERIFICADO", detail: "Solar operativo; eólica e hidro pendientes." },
       { id: "o-hazards", layer: "out", group: "Módulos", name: "3 · Amenazas naturales", owner: "Claude", status: "PENDIENTE", detail: "Requiere capas de amenaza y extremos de lluvia." },
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },
@@ -331,7 +334,7 @@ window.DOP_DATA = {
 
   // Tareas del plan conjunto (docs/coordination/PLAN_CLAUDE_CODEX.md) y su relación con el DOP.
   plan: [
-    { id: "X0", owner: "Codex", title: "Revisar y fusionar las ramas de Claude en master", status: "VERIFICADO", ref: "7a43c10 · merge K0 7a42125 · puerta común aprobada", nodes: [] },
+    { id: "X0", owner: "Codex", title: "Revisar y fusionar las ramas de Claude en master", status: "VERIFICADO", ref: "7a43c10 · merge K0 7a42125 · clima 13c1398 · puertas comunes aprobadas", nodes: [] },
     { id: "C1", owner: "Claude", title: "Mann–Kendall con Hamed–Rao", status: "VERIFICADO", ref: "5d307f9", nodes: ["qa-core"] },
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
