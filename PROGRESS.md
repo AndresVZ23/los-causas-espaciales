@@ -144,6 +144,16 @@
 - Pruebas K1 aisladas: 6/6, incluidos caché, duplicados, valor faltante, corredor, geometría inválida, fallo externo y límite espacial; sin iniciar 8000.
 - Puerta completa K1: 118/118 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; sin cambios en `frontend/**` ni uso de 3100/8000.
 
+## Piloto vial K2 (rama `codex/piloto-vial`)
+
+- Endpoint tipado `POST /api/v1/projects/road-screening`, backend-only, compatible con `ScreeningEnvelope` v1.0 y sus nueve etapas.
+- Corredor público Moquegua–Ilo calculado con OSRM sobre OpenStreetMap, ODbL 1.0, 89.157 km de ruta y cinco tramos contiguos; se declara que no es eje ni inventario oficial del MTC.
+- Por tramo: NASA POWER diario para precipitación y temperatura, exposición espacial K1 del último año, NASADEM cuando está disponible e intersecciones de CENEPRED, SERNANP, Cultura e INGEMMET. Un cero de intersecciones no se presenta como ausencia de riesgo o restricción.
+- Puntaje de prioridad con escalas y pesos explícitos, cobertura por faltantes y estabilidad; VAN de mitigación con días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte etiquetados `USER_ASSUMPTION`.
+- Sensibilidad con escenarios base/adverso/favorable, tornado y puntos de equilibrio mediante el motor común. El VAN fue contrastado con una suma descontada independiente.
+- Ejecución real 2018–2023 conforme a C2: cinco series y exposiciones POWER disponibles; CENEPRED con intersecciones reales, SERNANP/Cultura con ceros neutrales, INGEMMET y NASADEM como brechas visibles. Ejemplo reproducible en `docs/coordination/contracts/road-screening-v1.0.example.json`.
+- Pruebas K2 aisladas: 4/4, incluidas conformidad `envelope_violations == []`, VAN independiente, degradación honesta por faltantes y validación HTTP de geometría.
+
 ## Brechas prioritarias
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).
@@ -154,7 +164,7 @@
 4. Incorporar sensibilidad social y comunidades; Cultura SIGDA ya aporta la alerta arqueológica inicial, sin reemplazar CIRA ni debida diligencia.
 5. Integrar GPM IMERG V07 y LHASA. AppEEARS MOD13Q1/MOD44W ya está verificado con descarga y QA reales.
 6. Implementar muestreo NASA a lo largo de corredores y polígonos; hoy esas geometrías solo se validan y miden.
-7. Construir los pilotos vial y de desarrollo inmobiliario después de contar con las capas territoriales mínimas.
+7. ~~Construir el backend del piloto vial~~ **K2 listo en `codex/piloto-vial`**; falta la pantalla de Claude y permanece pendiente K3 inmobiliario.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.
 
 ## Traspaso a Claude Code

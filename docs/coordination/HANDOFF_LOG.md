@@ -324,6 +324,20 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 
 **Para Claude:** K1 y K5 quedan `VERIFICADO`; C7 puede consumir `cells[]` para tendencias/mapa y `aggregate[]` para la serie del territorio. `grid_spacing_degrees` y `spatial_coverage_percent` deben quedar visibles para no exagerar resolución. Esta rama incluye K5, pero no `codex/fuentes-amenazas`; al integrarlas conservar el `RawPayloadCache` común y todos los routers. Rama no fusionada ni subida; requiere aprobación de Christian.
 
+## 2026-10-23 · Codex · codex/piloto-vial · 39cb5df · K2 backend vial
+
+**Entrega:** `POST /api/v1/projects/road-screening` implementa el piloto vial backend sobre `ScreeningEnvelope` v1.0. La entrada acepta de uno a doce LineString WGS84 o usa por defecto el corredor público Moquegua–Ilo. La respuesta contiene las nueve etapas, cinco preguntas NASA, tendencias Hamed–Rao + BH, relieve, brechas, resultados tipados por tramo, sensibilidad financiera y scorecard. La prueba obligatoria devuelve `envelope_violations(respuesta) == []`.
+
+**Geometría y licencia:** la ruta pública fue calculada el 23-oct-2026 con OSRM sobre OpenStreetMap entre Moquegua e Ilo. OSRM informó 89.157 km; la instantánea simplificada se preserva en cinco tramos contiguos, con atribución `© OpenStreetMap contributors` y ODbL 1.0. Se declara expresamente que no es eje oficial del MTC, inventario de puentes/drenajes, levantamiento, derecho de vía ni dato de cliente.
+
+**Método:** por tramo se ejecutan en paralelo POWER puntual (`PRECTOTCORR`, `T2M`), exposición espacial K1 del último año, NASADEM y las capas CENEPRED/SERNANP/Cultura/INGEMMET. El score combina RX1DAY reciente, días sobre el umbral de lluvia, pendiente, longitud, interrupción supuesta y VAN/CAPEX con escalas y pesos declarados. Si falta una fuente, se omite el criterio, se informa cobertura y se crea una brecha; un cero de intersecciones nunca se convierte en ausencia de riesgo. El VAN de mitigación reutiliza `finance/sensitivity.py`: días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte son `USER_ASSUMPTION`; hay base/adverso/favorable, tornado y equilibrios. Una implementación independiente de flujo descontado reprodujo el VAN a centavos.
+
+**Ejecución real:** `scripts/export_road_contract.py`, período 2018–2023, generó `docs/coordination/contracts/road-screening-v1.0.example.json` con conformidad C2. Los cinco tramos recuperaron POWER puntual y exposición espacial `REAL_DATA`. En el primer tramo, CENEPRED devolvió dos intersecciones de inundación y dos de movimientos en masa; SERNANP y ambas capas de Cultura devolvieron cero, conservado como resultado neutral. INGEMMET quedó `DATA_UNAVAILABLE`. Earthdata rechazó las teselas NASADEM durante esta ejecución; la pendiente salió del score y quedó una brecha visible. Resultado: etapa territorial `PARCIAL`, seis brechas y ningún faltante convertido en cero.
+
+**Puerta común:** 4/4 pruebas K2 y 149/149 backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; `node --check` del DOP y `git diff --check` se ejecutan antes del cierre. Dos advertencias son deprecaciones ya conocidas de ReportLab/Starlette. No se editó manualmente `frontend/**`, no se usó Gemini y no se levantaron 3100/8000.
+
+**Para Claude:** integrar `codex/piloto-vial` y construir C5 leyendo el sobre común y los campos `segments`, `territorial_evidence`, `financial_sensitivity` y `scorecard`. Mostrar la licencia ODbL, cobertura del score y brechas. El resultado debe llamarse screening/prioridad de estudio, nunca seguridad, factibilidad ni recomendación de inversión. La rama no fue fusionada ni subida; requiere aprobación de Christian.
+
 ## 2026-10-23 · Claude · claude/capas-territorio · selector territorial y tendencias por celda (C7, ADR-025)
 
 **Integré localmente** `master` (0510656), `codex/fuentes-amenazas` y `codex/regional-sampling` en mi rama. Los conflictos fueron de documentación y de `main.py`; los resolví conservando ambos lados. Agregué `openpyxl` y `defusedxml` a mi `.venv`, según `requirements.txt`.
@@ -335,3 +349,7 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 - Grilla de tendencias por celda en el mapa, con leyenda y cambio de variable.
 - Etiqueta de escala por territorio.
 - 145/145 pruebas. QA `scripts/qa/territory_ui.cjs` en 1440/390 sin errores.
+
+## 2026-10-23 · Codex · cierre de QA K2
+
+Se cerró `codex/piloto-vial` sobre `39cb5df` con la documentación y el DOP sincronizados. Puerta final: 149/149 pruebas, build, audit 0, auditor científico `ok`, sintaxis DOP y `git diff --check`. Sigue sin fusionar ni subir; Claude puede integrar la rama cuando Christian lo apruebe. Los arreglos K1 multianual (`codex/k1-multiyear`) y diagnóstico NASADEM (`codex/nasadem-s17w071`) permanecen en ramas separadas para respetar una entrega por rama.
