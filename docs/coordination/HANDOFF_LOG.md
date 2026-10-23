@@ -268,3 +268,15 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Gemini y operación:** `GEMINI_API_KEY` está ausente en esta carpeta. Los dos casos `use_gemini=true` sustituyen `generate` por una función local y una clave ficticia; no hubo llamada externa ni consumo de cuota. No se iniciaron ni modificaron los servicios 3100/8000 y Codex no editó manualmente `frontend/**`.
 
 **Veredicto:** incremento aprobado para `master` y para publicación. IMERG vía POWER, scorecard y C4 pasan a `VERIFICADO`; el acceso IMERG directo de 0.1° y el resto de K1b continúan como trabajo separado. Siguiente entrega Codex: reintegrar `codex/fuentes-amenazas` sobre este master, corregir COES al contrato XLSX `ExportarGeneracion` y confirmar LHASA antes de K5.
+
+## 2026-10-23 · Codex · codex/territorio · 2af9c55 · K5 índice territorial IGN/OCHA
+
+**Entrega:** catálogo reproducible COD-AB Perú v01 con 25 departamentos, 196 provincias y 1,873 distritos; búsqueda por nombre o ubigeo, jerarquía departamento → provincia → distrito y geometría GeoJSON individual. Endpoints: `GET /api/v1/territories/search`, `GET /api/v1/territories/hierarchy` y `GET /api/v1/territories/{level}/{ubigeo}/geometry`. No se tocó `frontend/**`.
+
+**Fuente y límites:** IGN del Perú vía OCHA/HDX, licencia CC BY-IGO. El ZIP oficial quedó fijado por SHA-256 `2f0ec51b7a0899b407546aa644621e1c3255cba59fdda76fcde6975ca6baafb3`; geometrías CRS84, creadas en 2015, válidas para uso humanitario desde 2020 y revisadas en 2025. Se declara en toda respuesta que faltan distritos creados después de 2015 y que no es una fuente catastral/legal actualizada.
+
+**Procesamiento verificable:** `scripts/data/build_peru_territory.py` valida hash, CRS, conteos, ubigeos únicos y geometrías. Simplifica en metros y reduce adaptativamente la tolerancia hasta cambio de área geodésica ≤1%; salida EPSG:4326. Reducción de vértices: 98.587% departamentos, 97.214% provincias y 92.655% distritos; máximo cambio de área: 0.8461%, 0.9502% y 0.9969%. Cada activo tiene SHA-256 y el API lo verifica antes de cargar.
+
+**Puerta:** 5/5 pruebas K5 y 112/112 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; sintaxis DOP válida. Sin secretos, sin Gemini y sin iniciar 3100/8000.
+
+**Para Claude:** K5 queda `VERIFICADO`; C7 ya puede consumir el selector territorial, aunque el mapa de tendencias por celda aún depende de K1. Esta rama nació de `master`, no contiene `codex/fuentes-amenazas`; al apilar ambas habrá conflictos aditivos esperables en `main.py`, `routes.py`, `DATA_SOURCES.md`, `TECHNICAL_ARCHITECTURE.md`, `PROGRESS.md` y `dop-datos.js`. Conservar ambos routers y ambas evidencias. Rama no fusionada ni subida; requiere aprobación de Christian.
