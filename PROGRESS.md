@@ -135,14 +135,16 @@
 - Pruebas K5 aisladas: 5/5 con conteos, acentos, ubigeo, jerarquía, geometría, errores y TestClient, sin levantar 8000.
 - Puerta completa K5: 112/112 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; no se modificó `frontend/**` ni se inició 3100/8000.
 
-## Muestreo espacial K1 (rama `codex/regional-sampling`)
+## Muestreo espacial K1 (ramas `codex/regional-sampling` y `codex/k1-multiyear`)
 
 - Endpoint tipado para puntos, corredores, polígonos y territorios; acepta los GeoJSON exportados por Claude con `properties.kind`, `name` y `origin`.
 - Corredores amortiguados en proyección azimutal equidistante local; polígonos subcelda declarados como punto; áreas mayores consultadas en NASA POWER Regional con un parámetro por pedido.
 - Celdas deduplicadas por centro, series por celda conservadas, promedio y desviación estándar diarios ponderados por área geodésica de intersección, y faltantes nunca convertidos en cero.
 - Ejecución real Moquegua: 9 celdas, cobertura 99.5833%, grilla devuelta 0.5° lat × 0.625° lon, `REAL_DATA`. Ejecución real La Punta: 0.773019 km², modo `POINT`, una celda.
-- Pruebas K1 aisladas: 6/6, incluidos caché, duplicados, valor faltante, corredor, geometría inválida, fallo externo y límite espacial; sin iniciar 8000.
-- Puerta completa K1: 118/118 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; sin cambios en `frontend/**` ni uso de 3100/8000.
+- El límite operativo confirmado del endpoint Regional (máximo 366 días por solicitud) se resuelve dividiendo períodos largos por año calendario. Cada fragmento conserva caché cruda propia; la unión exige las mismas celdas y unidades, rechaza fechas o valores conflictivos y propaga `REAL_DATA` si al menos un fragmento se descargó de la fuente.
+- Ejecución real multianual del 30-dic-2023 al 2-ene-2025: tres solicitudes oficiales, incluida una de 366 días para 2024, 6 celdas y 370 observaciones diarias agregadas continuas (`REAL_DATA`, POWER v2.10.1).
+- Pruebas K1 aisladas: 7/7 en `test_spatial_sampling.py` y 12/12 junto con el análisis territorial; incluyen caché completa/mixta, renormalización diaria, duplicados, valor faltante, corredor, geometría inválida, fallo externo y límite espacial; sin iniciar 8000.
+- Puerta completa de `codex/k1-multiyear`: 146/146 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
 
 ## Brechas prioritarias
 

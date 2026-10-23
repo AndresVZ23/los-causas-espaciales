@@ -102,6 +102,8 @@ Each generated asset and the search index has its own SHA-256 in `backend/data/t
 
 Regional responses are deduplicated by returned cell center. Cell footprints are inferred halfway between the centers actually returned, intersected with the subject, and weighted by geodesic overlap area. The contract returns every cell series plus a daily weighted mean, weighted standard deviation, minimum, maximum and contributing-cell count. Missing cell-days are excluded and the available weights are renormalized for that date; no missing value becomes zero. The raw response is cached by request hash and retains `REAL_DATA`/`CACHED_DATA` provenance.
 
+The live Regional endpoint returned HTTP 422 when asked for more than 366 days (`Please do not request a time period greater than 366 days`). K1 therefore partitions an inclusive long range by calendar year; each raw fragment has its own immutable cache key. Merging requires identical returned cell centers and units across fragments, rejects out-of-range dates and conflicting duplicates, and marks the combined source `REAL_DATA` when any fragment came from the provider (`CACHED_DATA` only when every fragment came from cache). A live check on 23-Oct-2026 requested 30-Dec-2023 through 2-Jan-2025 as three fragments (2 + 366 + 2 days) and returned 370 continuous daily aggregates for six intersecting cells using POWER API v2.10.1.
+
 NASA's documentation describes regional output on a 0.5° × 0.5° grid and limits a regional request to one parameter. The live `T2M` response reflects the native MERRA-2 grid: **0.5° latitude × 0.625° longitude**. K1 therefore records the actual center spacing instead of hard-coding 0.5° in both axes.
 
 Live checks on 23-Oct-2026, UTC daily data for 1–3 Jan 2026:

@@ -39,6 +39,17 @@ class RegionalPowerError(RuntimeError):
     pass
 
 
+def _annual_periods(start: date, end: date) -> list[tuple[date, date]]:
+    """Split an inclusive range into calendar years accepted by POWER Regional."""
+    periods: list[tuple[date, date]] = []
+    cursor = start
+    while cursor <= end:
+        chunk_end = min(end, date(cursor.year, 12, 31))
+        periods.append((cursor, chunk_end))
+        cursor = chunk_end + timedelta(days=1)
+    return periods
+
+
 def _geodesic_area_sqkm(geometry) -> float:
     area, _ = GEOD.geometry_area_perimeter(geometry)
     return abs(area) / 1_000_000
@@ -171,7 +182,13 @@ class RegionalPowerConnector:
         if parsed.scheme != "https" or parsed.hostname != "power.larc.nasa.gov":
             raise RegionalPowerError("NASA POWER debe usar el host HTTPS oficial.")
 
-    async def _regional_payload(self, request: SpatialSamplingRequest, bounds):
+    async def _regional_payload(
+        self,
+        request: SpatialSamplingRequest,
+        bounds,
+        start: date,
+        end: date,
+    ):
         minimum_x, minimum_y, maximum_x, maximum_y = bounds
         params: dict[str, str | float] = {
             "latitude-min": round(minimum_y, 6),
@@ -180,8 +197,8 @@ class RegionalPowerConnector:
             "longitude-max": round(maximum_x, 6),
             "parameters": request.variable,
             "community": "RE",
-            "start": request.start_date.strftime("%Y%m%d"),
-            "end": request.end_date.strftime("%Y%m%d"),
+            "start": start.strftime("%Y%m%d"),
+            "end": end.strftime("%Y%m%d"),
             "format": "JSON",
             "time-standard": "UTC",
         }
@@ -264,32 +281,92 @@ class RegionalPowerConnector:
             )
 
         bounds = _request_bounds(analytic_geometry)
-        payload, provenance, downloaded_at = await self._regional_payload(request, bounds)
-        features = payload.get("features")
-        if not isinstance(features, list) or not features:
-            raise RegionalPowerError("NASA POWER no devolvió celdas regionales.")
         parsed_cells: dict[tuple[float, float], dict[date, float]] = {}
         elevations: dict[tuple[float, float], float | None] = {}
-        for feature in features:
-            coordinates = feature.get("geometry", {}).get("coordinates", [])
-            if len(coordinates) < 2:
-                continue
-            longitude, latitude = float(coordinates[0]), float(coordinates[1])
-            key = (round(longitude, 8), round(latitude, 8))
-            raw_series = feature.get("properties", {}).get("parameter", {}).get(request.variable)
-            if not isinstance(raw_series, dict):
-                continue
-            series = {
-                date(int(stamp[:4]), int(stamp[4:6]), int(stamp[6:8])): float(value)
-                for stamp, value in raw_series.items()
-                if value is not None and math.isfinite(float(value)) and float(value) > -900
-            }
-            if key in parsed_cells and parsed_cells[key] != series:
-                raise RegionalPowerError(f"NASA POWER devolvió valores conflictivos para la celda {key}.")
-            parsed_cells[key] = series
-            elevations[key] = float(coordinates[2]) if len(coordinates) > 2 and coordinates[2] is not None else None
+        expected_cell_keys: set[tuple[float, float]] | None = None
+        parameter_metadata: dict[str, Any] | None = None
+        api_versions: set[str] = set()
+        provenances: list[Provenance] = []
+        download_times = []
+        periods = _annual_periods(request.start_date, request.end_date)
+        for chunk_start, chunk_end in periods:
+            payload, chunk_provenance, chunk_downloaded_at = await self._regional_payload(
+                request,
+                bounds,
+                chunk_start,
+                chunk_end,
+            )
+            provenances.append(chunk_provenance)
+            download_times.append(chunk_downloaded_at)
+            header = payload.get("header", {})
+            api_versions.add(str(header.get("api", {}).get("version", "respuesta vigente del API")))
+            chunk_metadata = payload.get("parameters", {}).get(request.variable, {})
+            if parameter_metadata is None:
+                parameter_metadata = chunk_metadata
+            elif chunk_metadata.get("units") != parameter_metadata.get("units"):
+                raise RegionalPowerError("NASA POWER devolvió unidades incompatibles entre tramos anuales.")
+
+            features = payload.get("features")
+            if not isinstance(features, list) or not features:
+                raise RegionalPowerError("NASA POWER no devolvió celdas regionales.")
+            chunk_cells: dict[tuple[float, float], dict[date, float]] = {}
+            chunk_elevations: dict[tuple[float, float], float | None] = {}
+            for feature in features:
+                coordinates = feature.get("geometry", {}).get("coordinates", [])
+                if len(coordinates) < 2:
+                    continue
+                longitude, latitude = float(coordinates[0]), float(coordinates[1])
+                key = (round(longitude, 8), round(latitude, 8))
+                raw_series = feature.get("properties", {}).get("parameter", {}).get(request.variable)
+                if not isinstance(raw_series, dict):
+                    continue
+                series: dict[date, float] = {}
+                for raw_stamp, raw_value in raw_series.items():
+                    if raw_value is None:
+                        continue
+                    try:
+                        stamp = date(int(raw_stamp[:4]), int(raw_stamp[4:6]), int(raw_stamp[6:8]))
+                        value = float(raw_value)
+                    except (TypeError, ValueError) as exc:
+                        raise RegionalPowerError("NASA POWER devolvió una fecha o valor regional inválido.") from exc
+                    if stamp < chunk_start or stamp > chunk_end:
+                        raise RegionalPowerError("NASA POWER devolvió una fecha fuera del tramo anual solicitado.")
+                    if not math.isfinite(value) or value <= -900:
+                        continue
+                    if stamp in series and series[stamp] != value:
+                        raise RegionalPowerError(f"NASA POWER devolvió valores conflictivos para la celda {key}.")
+                    series[stamp] = value
+                if key in chunk_cells and chunk_cells[key] != series:
+                    raise RegionalPowerError(f"NASA POWER devolvió valores conflictivos para la celda {key}.")
+                chunk_cells[key] = series
+                elevation = float(coordinates[2]) if len(coordinates) > 2 and coordinates[2] is not None else None
+                if key in chunk_elevations and chunk_elevations[key] != elevation:
+                    raise RegionalPowerError(f"NASA POWER devolvió elevaciones conflictivas para la celda {key}.")
+                chunk_elevations[key] = elevation
+            if not chunk_cells:
+                raise RegionalPowerError("NASA POWER no devolvió series válidas para la variable solicitada.")
+            chunk_cell_keys = set(chunk_cells)
+            if expected_cell_keys is None:
+                expected_cell_keys = chunk_cell_keys
+            elif chunk_cell_keys != expected_cell_keys:
+                raise RegionalPowerError("NASA POWER cambió el conjunto de celdas entre tramos anuales.")
+            for key, series in chunk_cells.items():
+                existing = parsed_cells.setdefault(key, {})
+                for stamp, value in series.items():
+                    if stamp in existing and existing[stamp] != value:
+                        raise RegionalPowerError(
+                            f"NASA POWER devolvió valores conflictivos para la celda {key} en {stamp.isoformat()}."
+                        )
+                    existing[stamp] = value
+                elevation = chunk_elevations[key]
+                if key in elevations and elevations[key] != elevation:
+                    raise RegionalPowerError(f"NASA POWER devolvió elevaciones conflictivas para la celda {key}.")
+                elevations[key] = elevation
         if not parsed_cells:
             raise RegionalPowerError("NASA POWER no devolvió series válidas para la variable solicitada.")
+
+        provenance = Provenance.REAL if Provenance.REAL in provenances else Provenance.CACHED
+        downloaded_at = max(download_times)
 
         longitude_spacing = _spacing([item[0] for item in parsed_cells])
         latitude_spacing = _spacing([item[1] for item in parsed_cells])
@@ -318,12 +395,13 @@ class RegionalPowerConnector:
         ) for longitude, latitude, cell_bounds, overlap, series, _ in intersecting]
 
         aggregate = aggregate_cells(cells)
-        metadata = payload.get("parameters", {}).get(request.variable, {})
-        header = payload.get("header", {})
+        metadata = parameter_metadata or {}
+        real_chunks = sum(item == Provenance.REAL for item in provenances)
+        cached_chunks = len(provenances) - real_chunks
         source = SourceMetadata(
             source_id="nasa-power",
             dataset="NASA POWER Daily Regional",
-            version=str(header.get("api", {}).get("version", "respuesta vigente del API")),
+            version=", ".join(sorted(api_versions)),
             variable=request.variable,
             unit=str(metadata.get("units", VARIABLE_UNITS.get(request.variable, "unidad no informada"))),
             temporal_resolution="diaria UTC",
@@ -331,7 +409,13 @@ class RegionalPowerConnector:
             downloaded_at=downloaded_at,
             source_url=f"{self.settings.power_api_base}/temporal/daily/regional",
             provenance=provenance,
-            quality_notes=["Se deduplicaron celdas por centro y se conservaron series por celda."],
+            quality_notes=[
+                "Se deduplicaron celdas por centro y se conservaron series por celda.",
+                (
+                    f"El período se dividió en {len(periods)} solicitud(es) por año calendario, "
+                    f"cada una de hasta 366 días inclusivos: {real_chunks} nueva(s) y {cached_chunks} en caché."
+                ),
+            ],
         )
         coverage = min(100, total_overlap / (subject.area_km2 or total_overlap) * 100)
         return SpatialSamplingResponse(
