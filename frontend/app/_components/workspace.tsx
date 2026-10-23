@@ -9,12 +9,13 @@ import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import GeometryPanel from "./geometry-panel";
+import { LayerControl, LayerLegend } from "./layer-control";
 import ScorecardPanel from "./scorecard-panel";
 import SensitivityPanel from "./sensitivity-panel";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
 import { isClimate } from "./types";
-import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage } from "./types";
+import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage, VisualLayerState } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -92,6 +93,7 @@ export default function Workspace() {
   const assumptionPanelRef = useRef<HTMLDetailsElement>(null);
   const mobileVerdictRef = useRef<HTMLDivElement>(null);
   const study = useStudyGeometries();
+  const [visualLayer, setVisualLayer] = useState<VisualLayerState | null>(null);
   const geometryHint = GEOMETRY_HINTS[activeModule];
   const mapGeometries = useMemo(() => study.geometries.map((item) => ({ id: item.id, name: item.name, geometry: item.geometry, valid: item.status !== "invalida" })), [study.geometries]);
   const mapDrawing = useMemo(() => (study.draft ? { draft: study.draft, onVertex: study.addVertex, onFinish: study.finishDraft } : null), [study.draft, study.addVertex, study.finishDraft]);
@@ -292,13 +294,15 @@ export default function Workspace() {
 
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
-          <div className={`mapViewport ${loading ? "isAcquiring" : ""}`}>
-            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible}
+          <div className={`mapViewport ${loading ? "isAcquiring" : ""} ${visualLayer ? "hasVisualLayer" : ""}`}>
+            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
                     onPick={(latitude, longitude) => { if (!geometryHint) setSites((current) => [{ ...current[0], latitude, longitude }, ...current.slice(1)]); }} />
             {loading && <div className="acquisitionLine" aria-hidden="true" />}
             <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>
-            <div className="mapSource">NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO</div>
+            <div className="mapSource">{visualLayer ? `NASA GIBS · ${visualLayer.layer.label.toUpperCase()} · CAPA VISUAL` : "NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO"}</div>
+            <LayerControl value={visualLayer} onChange={setVisualLayer} />
+            {visualLayer && <LayerLegend value={visualLayer} />}
           </div>
         </section>
 

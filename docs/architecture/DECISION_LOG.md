@@ -123,3 +123,19 @@ Con datos reales, Arequipa (67) y Moquegua (66) quedan en empate práctico: Areq
 Decisión de Christian (2026-10-23): ningún gasto adicional. El asistente (C4, `POST /api/v1/assistant/ask`) responde **por defecto con reglas**: arma la respuesta con los textos y cifras del propio análisis, sin llamadas externas ni límite de uso. Cubre las 5 preguntas NASA, la tendencia y el año en curso por variable, los extremos de lluvia con su contraste IMERG, el puntaje, los escenarios del VAN, el relieve, las brechas y las fuentes, y filtra por el sitio que nombra la pregunta.
 
 Gemini es **opcional y por pregunta**. El botón «Preguntar a Gemini» solo aparece si hay `GEMINI_API_KEY` y avisa que gasta la cuota gratuita. Se usa la API REST con `httpx`, sin SDK nuevo, y el alias estable `gemini-flash-latest` (verificado con ListModels, que no consume cuota). El contexto es solo el análisis, a temperatura 0.2, y la respuesta debe citar sus fuentes. El backend verifica que cada cifra de la respuesta salga del contexto, admitiendo redondeo, %, millones y por década. Si alguna no aparece, si Gemini falla o si se agota la cuota, se responde con reglas y se explica por qué. Las pruebas simulan Gemini sin red y afirman que una pregunta normal nunca lo llama.
+## ADR-024 — Capas visuales NASA GIBS: fechas leídas de NASA y verificadas con una tesela
+
+La consola ofrece ocho capas visuales de NASA GIBS (WMTS, EPSG:3857):
+- color real del día;
+- temperatura del mar y su anomalía (GHRSST MUR);
+- viento sobre el mar (AMSR2);
+- lluvia (IMERG);
+- temperatura de la superficie (MODIS);
+- vegetación (NDVI de 16 días);
+- humedad del suelo (SMAP L4).
+
+La lista curada vive en `backend/app/maplayers/catalog.py`. La fecha más reciente, el nivel máximo de zoom, el formato y la leyenda oficial se leen de las capacidades de GIBS y se guardan 6 h en caché, en `GET /api/v1/map/layers`.
+
+La fecha `Default` de GIBS no siempre tiene teselas: AMSR2 declara el 01-09-2025, que da 404, mientras el 31-08-2025 sí existe. Por eso se pide una tesela z=2 sobre el Perú y se retrocede período a período hasta encontrar una publicada, y se avisa del ajuste. Una serie sin datos hace más de 30 días se marca como detenida. Si GIBS no responde, se sirve la lista sin fechas, con aviso.
+
+Son capas **visuales**: la etiqueta y la leyenda dicen «no entra en el cálculo». Mientras hay una capa activa se quita el filtro de color del lienzo, para que los colores coincidan con la leyenda oficial.

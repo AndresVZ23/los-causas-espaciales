@@ -100,6 +100,28 @@ a { color: inherit; text-decoration: none; }
 .geoMap .maplibregl-popup-tip { border-top-color: #0b1011; }
 .mapCoordinates { position: absolute; left: 13px; bottom: 13px; padding: 7px 8px; background: rgba(8,12,13,.88); border-left: 1px solid var(--accent); display: grid; grid-template-columns: auto auto; gap: 2px 8px; font: 10px/1.15 var(--font-data-mono), monospace; }
 .mapCoordinates span { grid-column: 1 / -1; color: var(--muted); }
+/* Capas visuales GIBS: sin filtro de lienzo ni viñeta, para que los colores coincidan con la leyenda oficial. */
+.hasVisualLayer .geoMap .maplibregl-canvas { filter: none; }.hasVisualLayer .geoMap::after { display: none; }
+.layerControl { position: absolute; left: 13px; top: 42px; z-index: 3; max-width: calc(100% - 70px); }
+.layerToggle { min-height: 30px; padding: 0 10px; border: 1px solid #465058; border-radius: 2px; background: rgba(8,12,13,.9); color: var(--text); font-size: 11px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layerToggle[aria-expanded="true"] { border-color: var(--accent); }
+.layerPanel { margin-top: 6px; width: 290px; max-width: calc(100vw - 60px); max-height: 330px; overflow-y: auto; padding: 10px 12px; background: rgba(11,16,17,.97); border: 1px solid var(--border); box-shadow: 0 10px 24px rgba(0,0,0,.45); }
+.layerPanel fieldset { border: 0; margin: 0; padding: 0; }
+.layerPanelHead { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: start; }
+.layerPanelHead button { min-height: 26px; padding: 0 8px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; }
+@media (max-width: 560px) { .layerPanel { max-height: 205px; width: 260px; }.layerPanelHead button { min-height: 36px; }.layerLegend p { font-size: 9px; } }
+.layerPanelNote { margin: 0 0 8px; color: var(--muted); font-size: 11px; line-height: 1.45; }.layerPanelNote b { color: var(--text); font-weight: 600; }
+.layerGroup > span { display: block; margin: 8px 0 2px; color: var(--subtle); font: 10px var(--font-data-mono), monospace; text-transform: uppercase; letter-spacing: .06em; }
+.layerOption { display: grid; grid-template-columns: 18px 1fr; gap: 6px; align-items: start; padding: 4px 0; font-size: 12px; cursor: pointer; }
+.layerOption input { margin-top: 2px; accent-color: var(--accent); }.layerOption small { display: block; color: var(--subtle); font: 10px var(--font-data-mono), monospace; }
+.layerSettings { margin-top: 8px; border-top: 1px solid var(--rule); padding-top: 8px; display: grid; gap: 6px; }
+.layerSettings p, .layerSettings small { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }.layerSettings .layerNotice { color: var(--warning); }
+.layerSettings label { display: grid; gap: 3px; color: var(--muted); font: 10px var(--font-data-mono), monospace; }
+.layerSettings input[type="date"] { min-height: 28px; border: 1px solid var(--border); background: var(--control); color: var(--text); padding: 0 6px; }
+.layerSettings input[type="range"] { accent-color: var(--accent); }
+.layerLegend { position: absolute; right: 10px; bottom: 30px; z-index: 2; width: min(340px, calc(100% - 20px)); padding: 6px 8px; background: rgba(8,12,13,.9); border: 1px solid var(--border); }
+.layerLegend p { margin: 0 0 4px; color: var(--muted); font: 10px/1.35 var(--font-data-mono), monospace; }.layerLegend b { color: var(--text); }
+.layerLegend img { display: block; width: 100%; height: auto; max-height: 52px; object-fit: contain; background: #e9edf0; border-radius: 2px; }
 .mapSource { position: absolute; left: 13px; top: 12px; padding: 6px 8px; background: rgba(8,12,13,.86); color: #c5ccd1; font: 10px/1 var(--font-data-mono), monospace; letter-spacing: .025em; }
 
 .controlPane { grid-column: 3; grid-row: 1; min-width: 0; background: #0d1112; display: grid; grid-template-rows: 32px 1fr; }

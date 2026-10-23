@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api.assistant import router as assistant_router
 from .api.climate import router as climate_router
+from .api.map_layers import router as map_router
 from .api.reports import router as reports_router
 from .api.routes import router
 from .api.scoring import router as scoring_router
@@ -22,6 +23,7 @@ app.include_router(reports_router)
 app.include_router(climate_router)
 app.include_router(scoring_router)
 app.include_router(assistant_router)
+app.include_router(map_router)
 
 
 @app.get("/")

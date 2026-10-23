@@ -3,7 +3,11 @@
 import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import type { StudyShape } from "./geojson-import";
+import type { VisualLayerState } from "./types";
 import type { Draft } from "./use-study-geometries";
+
+const VISUAL_SOURCE = "visual-gibs";
+const VISUAL_LAYER = "visual-gibs-layer";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
@@ -33,9 +37,9 @@ function draftFeatures(draft: Draft | null): GeoJSON.FeatureCollection {
   };
 }
 
-export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null }: {
+export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null }: {
   sites: Point[]; onPick: (latitude: number, longitude: number) => void; terrainOverlay: TerrainOverlay | null; showTerrain: boolean;
-  geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null;
+  geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null; visualLayer?: VisualLayerState | null;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -162,6 +166,30 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     whenReady(map, () => (map.getSource("draft") as maplibregl.GeoJSONSource | undefined)?.setData(draftFeatures(draft)));
     map.getCanvas().style.cursor = draft ? "crosshair" : "";
   }, [drawing?.draft]);
+
+  // Capa visual GIBS: sobre el mapa base y bajo todo lo demás. Cambiar solo la opacidad no recarga teselas.
+  const visualUrl = visualLayer ? visualLayer.layer.tile_url.replace("{time}", visualLayer.date) : null;
+  const visualZoom = visualLayer?.layer.max_zoom ?? null;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(map, () => {
+      if (map.getLayer(VISUAL_LAYER)) map.removeLayer(VISUAL_LAYER);
+      if (map.getSource(VISUAL_SOURCE)) map.removeSource(VISUAL_SOURCE);
+      if (!visualUrl || visualZoom == null) return;
+      map.addSource(VISUAL_SOURCE, { type: "raster", tiles: [visualUrl], tileSize: 256, maxzoom: visualZoom, attribution: "NASA EOSDIS GIBS" });
+      const above = ["nasadem-preview-layer", "comparison-axis-line"].find((id) => map.getLayer(id));
+      map.addLayer({ id: VISUAL_LAYER, type: "raster", source: VISUAL_SOURCE, paint: { "raster-opacity": visualLayer?.opacity ?? 0.75 } }, above);
+    });
+    // La opacidad se aplica en su propio efecto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visualUrl, visualZoom]);
+  const visualOpacity = visualLayer?.opacity ?? null;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || visualOpacity == null) return;
+    whenReady(map, () => { if (map.getLayer(VISUAL_LAYER)) map.setPaintProperty(VISUAL_LAYER, "raster-opacity", visualOpacity); });
+  }, [visualOpacity]);
 
   useEffect(() => {
     const map = mapRef.current;

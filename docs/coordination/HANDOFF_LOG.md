@@ -244,3 +244,7 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 - **Contenido:** trae las centrales solares del sur.
 - **Términos:** el portal no publica términos de uso y no tiene `robots.txt`.
 - **Mi prueba:** una sola descarga de un día, guardada en `.claude-qa/`.
+## 2026-10-23 · Claude · claude/capas-territorio · capas visuales GIBS (C6, ADR-024)
+
+**Entrega:** botón «Capas» sobre el mapa con las 8 capas GIBS, fecha, opacidad y leyenda oficial, en todos los módulos. Endpoint `GET /api/v1/map/layers`. 112/112 pruebas. QA `scripts/qa/layers_ui.cjs` en 1440/390: teselas reales 200, leyenda cargada, 0 errores de consola, sin desborde.
+**Rama nueva** `claude/capas-territorio`, que parte de `2ec78b8`. La fusión de `claude/ola1-clima` sigue en pie; esta rama va después.

@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T15:00:00Z",
+  updatedAt: "2026-10-23T18:00:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -191,7 +191,7 @@ window.DOP_DATA = {
       { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Claude", status: "LISTO_PARA_QA", provenance: "REAL_DATA", planTask: "K1b", dopNode: "gpm", detail: "Activo vía NASA POWER (IMERG_PRECTOT, diario UTC, hasta ~5 semanas atrás): contraste satelital de los extremos ETCCDI (ADR-021). Desmintió los 314 mm de MERRA-2 en Moquegua (2022)." },
       { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "appeears", detail: "Índices de vegetación, cobertura y agua superficial para el módulo ambiental." },
       { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Susceptibilidad y alerta de deslizamientos, según su propósito y límites." },
-      { id: "in-gibs", layer: "in", group: "NASA", name: "Capas visuales NASA GIBS", owner: "Claude", status: "PENDIENTE", provenance: "REAL_DATA", planTask: "C6", detail: "Verificadas 23-oct: temperatura del mar y su anomalía (GHRSST MUR), viento sobre el mar (AMSR2), lluvia (IMERG), temperatura de superficie y NDVI (MODIS), humedad del suelo. Solo visualización: no entran en el cálculo." },
+      { id: "in-gibs", layer: "in", group: "NASA", name: "Capas visuales NASA GIBS", owner: "Claude", status: "LISTO_PARA_QA", provenance: "REAL_DATA", planTask: "C6", detail: "Verificadas 23-oct: temperatura del mar y su anomalía (GHRSST MUR), viento sobre el mar (AMSR2), lluvia (IMERG), temperatura de superficie y NDVI (MODIS), humedad del suelo. Solo visualización: no entran en el cálculo." },
       { id: "in-grid", layer: "in", group: "Territorio Perú", name: "Red eléctrica y subestaciones", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "MINEM y COES: distancia y capacidad de conexión." },
       { id: "in-protected", layer: "in", group: "Territorio Perú", name: "Áreas protegidas", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "SERNANP y ecosistemas frágiles." },
       { id: "in-heritage", layer: "in", group: "Territorio Perú", name: "Patrimonio arqueológico", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Ministerio de Cultura; la ausencia de registro no prueba ausencia de patrimonio." },
@@ -248,7 +248,7 @@ window.DOP_DATA = {
       { id: "o-api", layer: "out", group: "Entregables", name: "API para terceros", owner: "Codex", status: "EN_CURSO", detail: "OpenAPI operativa; falta versionado público y límites de uso." },
       { id: "o-monitor", layer: "out", group: "Entregables", name: "Monitoreo recurrente de activos", owner: "Codex", status: "PENDIENTE", detail: "Línea comercial futura: re-ejecutar y alertar cambios." },
       { id: "o-territory", layer: "out", group: "Consola", name: "Selector territorial", owner: "Claude", status: "PENDIENTE", planTask: "C7", detail: "Departamento → provincia → distrito, zona propia (dibujo o GeoJSON) o clic; compara de 2 a 4 territorios de cualquier tipo, con la escala de la grilla a la vista." },
-      { id: "o-layers", layer: "out", group: "Consola", name: "Capas visuales del mapa", owner: "Claude", status: "PENDIENTE", planTask: "C6", detail: "Selector de capas GIBS con fecha, leyenda y etiqueta «visual, no entra en el cálculo»; viento sobre tierra con flechas de NASA POWER (opcional)." },
+      { id: "o-layers", layer: "out", group: "Consola", name: "Capas visuales del mapa", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C6", detail: "Selector de capas GIBS con fecha, leyenda y etiqueta «visual, no entra en el cálculo»; viento sobre tierra con flechas de NASA POWER (opcional)." },
     ],
     // [origen, destino, tipo]: sin tipo = requerida (sin ella el destino no funciona); "E" = enriquece, amplía pero no bloquea.
     // La cobertura y las olas solo cuentan las requeridas.
@@ -353,7 +353,7 @@ window.DOP_DATA = {
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
     { id: "C4", owner: "Claude", title: "Asistente analítico (reglas sin costo; Gemini a pedido)", status: "LISTO_PARA_QA", ref: "f3074cb · ADR-023", nodes: ["delivery"] },
     { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "PENDIENTE", ref: "depende de K2 y K3", nodes: ["pilots"] },
-    { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "PENDIENTE", ref: "propuesta 23-oct", nodes: ["delivery"] },
+    { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-024", nodes: ["delivery"] },
     { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "PENDIENTE", ref: "depende de K5 y K1", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
     { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "PENDIENTE", ref: "—", nodes: ["sampling"] },
