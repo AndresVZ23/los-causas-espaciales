@@ -194,6 +194,20 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Veredicto:** ADR-020 aprobado. `c-finance` pasa a `VERIFICADO`; el módulo de inversión general permanece `EN_CURSO` porque todavía falta la comparación multicriterio. K2 y K3 deben reutilizar `Driver`, `tornado` y `break_even_item` según el paso 5 del contrato.
 
 **Operación:** no se inició, detuvo ni redesplegó el stack de Claude. Pytest se ejecutó en un contenedor efímero sin red. Con la autorización explícita de Christian y todas las puertas verdes, `master` queda aprobado para subir a GitHub.
+
+## 2026-10-23 · Codex · codex/fuentes-amenazas · 994c670 · AppEEARS, capas Perú y etiquetas COES
+
+**Entrega backend:** siete operaciones tipadas en OpenAPI: tareas AppEEARS de punto/área, estado, bundle y descarga; consulta territorial por punto/corredor/polígono; y generación mensual COES. AppEEARS conserva el token solo en memoria, renueva ante vencimiento/403, cierra sesión en `finally`, no reenvía el Bearer al CDN y verifica el SHA-256 oficial antes de guardar en caché. `.env.example` y Compose exponen las dos variables Earthdata sin valores. No se tocó `frontend/**`.
+
+**Evidencia AppEEARS real:** tarea `975994a2-f686-4742-9805-714ad035c0c8` en `done`, bundle de siete archivos. MOD13Q1 CSV (1,775 bytes, SHA-256 `e6bb8c294237347f5ae0ace8351dc5a01034b320192107f63d01138bbf6a2040`) y MOD44W CSV (318 bytes, SHA-256 `c7466b67304c84f6e4bde6bb6e06e8b8788d4537854733e436f079e4d227b73b`) descargados y rehasheados. NDVI/EVI escalados y VI Quality decodificado; agua y QA presentes. El token no se registró ni se cacheó.
+
+**Evidencia territorial real:** Moquegua punto, corredor Moquegua–Ilo y polígono Moquegua respondieron mediante CENEPRED, SERNANP, Osinergmin y Cultura. En corredor: CENEPRED inundación 5, Osinergmin 16, SERNANP 0, SIGDA 0; en polígono: 3, 3, 0 y 0 respectivamente, todos `READY/REAL_DATA`. Los ceros permanecen neutrales y no se interpretan como ausencia. INGEMMET queda `DATA_UNAVAILABLE` por TLS estricto y SENAMHI hasta seleccionar una capa WFS concreta.
+
+**Evidencia COES real:** septiembre de 2026, 2,880/2,880 intervalos por serie. Rubí 37,891.383250 MWh; Intipampa 9,650.763435; Moquegua FV 3,717.629000; Majes 3,909.259913; Repartición 3,871.879248; Panamericana 4,685.059750. Una implementación independiente coincidió a 1e-6. Se conservaron los nombres exactos, sin sustituciones. El portal ofrece exportación pública, pero no publica una licencia abierta específica; `DATA_SOURCES.md` exige atribución y confirmación antes de redistribuir el archivo original.
+
+**Puerta común:** 92/92 pruebas backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; Compose válido; siete de siete rutas OpenAPI presentes; `git diff --check` limpio. Dos advertencias deprecadas de dependencias (ReportLab/Starlette), sin fallos.
+
+**Operación y traspaso:** no se inició, detuvo ni utilizó 3100/8000 y no se escribió en `los-causas-claude`. Claude puede integrar `codex/fuentes-amenazas` y construir las pantallas. K1b permanece `EN_CURSO`: faltan IMERG, LHASA, ANA, SENACE, Defensoría, comunidades, red vial y resolver/seleccionar INGEMMET/SENAMHI. Rama sin fusionar ni subir; requiere revisión y aprobación de Christian.
 ## 2026-10-23 · Claude · claude/ola1-clima · dibujo y carga de corredores y polígonos
 
 **Entrega:** módulos Infraestructura (corredores) e Inversión (terrenos) con panel «Geometrías de estudio».
@@ -268,3 +282,17 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Gemini y operación:** `GEMINI_API_KEY` está ausente en esta carpeta. Los dos casos `use_gemini=true` sustituyen `generate` por una función local y una clave ficticia; no hubo llamada externa ni consumo de cuota. No se iniciaron ni modificaron los servicios 3100/8000 y Codex no editó manualmente `frontend/**`.
 
 **Veredicto:** incremento aprobado para `master` y para publicación. IMERG vía POWER, scorecard y C4 pasan a `VERIFICADO`; el acceso IMERG directo de 0.1° y el resto de K1b continúan como trabajo separado. Siguiente entrega Codex: reintegrar `codex/fuentes-amenazas` sobre este master, corregir COES al contrato XLSX `ExportarGeneracion` y confirmar LHASA antes de K5.
+
+## 2026-10-23 · Codex · codex/fuentes-amenazas · 9cc815c · COES XLSX verificado y ruta LHASA confirmada
+
+**Entrega backend K1b:** la rama fue actualizada con `master` y reemplaza el conector COES antiguo por el contrato oficial `ExportarGeneracion`: `indicador=1`, XLSX mensual secuencial con pausa, caché cruda SHA-256, límites de tamaño/descompresión, hoja `PRODUCCIÓN DIARIA`, filtro exacto `SOLAR` y suma de `TOTAL` por nombre de central. La unidad quedó confirmada como MWh en el portal oficial. El endpoint conserva todos los nombres COES; un plant-month ausente lleva generación nula, procedencia `DATA_UNAVAILABLE` y estado de serie `PARTIAL`, sin sustituciones.
+
+**Evidencia real:** el parser se contrastó el 23-oct-2026 con el XLSX oficial de septiembre de 2026: 17 centrales solares, 30 días observados. Totales reproducidos: `CLEMESI` 28,053.11 MWh (981.01 el 01-sep), `RUBI` 37,891.41, `INTIPAMPA` 9,650.78, `MAJES` 3,909.25, `MOQUEGUA-SOLAR` 3,717.63, `PANAMERICANA-SOLAR` 4,685.06 y `REPARTICION` 3,871.90. La generación se etiqueta `REAL_DATA` y cita `COES-SINAC`.
+
+**Cruce GISEM:** se agregó la capa oficial Solar de `MapaSEIN_Operacion` (20), WGS84, con potencia instalada/efectiva y coordenadas. Solo una coincidencia normalizada exacta habilita el factor de planta `MWh / (MW × 24 × días)`. El servicio devolvió ArcGIS 503 durante el QA real; por ello el contrato mantiene generación COES y marca capacidad/coordenadas/factor como `DATA_UNAVAILABLE`. No hubo coincidencias difusas. Los términos abiertos de COES siguen sin publicarse; el XLSX original no se redistribuye y queda pendiente el correo de cortesía de Christian.
+
+**LHASA:** la ruta vigente quedó confirmada en NASA Earthdata GIS: `Landslides/LHASA_Hazard_Today/ImageServer`, con servicios Yesterday/Today/Tomorrow, EPSG:4326, 30 arcsec (~1 km), cobertura 60°S–60°N y actualización dos veces al día. Se documentó como ruta verificada, pero el conector permanece pendiente hasta validar significado de valores, nodata, timestamp y muestreo. No se presenta como estudio geotécnico local.
+
+**Puerta:** 124/124 pruebas backend; 5/5 específicas COES (nominal, hoja inválida, caché/parámetros, error GISEM y central-mes faltante); build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida; ejecución real registrada. Sin secretos nuevos, sin llamadas Gemini, sin cambios en `frontend/**` y sin iniciar 3100/8000.
+
+**Para Claude:** revisar e integrar `codex/fuentes-amenazas` cuando Christian lo apruebe. El contrato de `POST /api/v1/energy/coes/monthly-generation` ahora expone todas las centrales solares, `days_expected/days_observed`, `capacity_factor_percent` y `capacity_reference`; la interfaz debe aceptar `READY`, `PARTIAL` y `DATA_UNAVAILABLE`. K1b continúa por ANA/SENACE/Defensoría/comunidades y el conector LHASA; K5 queda como siguiente rama separada. Esta rama no fue fusionada ni subida.

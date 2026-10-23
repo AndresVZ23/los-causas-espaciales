@@ -7,7 +7,8 @@
 | [NASA LP DAAC](https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001) | NASADEM HGT V001 | Public CMR metadata; raster via Earthdata Login | Global land, approximately 30 m / 1 arc-second; elevation in metres relative to EGM96 | Metadata and public preview integrated; raster values require `EARTHDATA_TOKEN` |
 | [NASA LP DAAC](https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001) | NASADEM SC V001 | Public CMR metadata; raster via Earthdata Login | Global land, approximately 30 m / 1 arc-second; slope and aspect in hundredths of degrees | Metadata and public preview integrated; raster values require `EARTHDATA_TOKEN` |
 | [NASA GPM IMERG](https://gpm.nasa.gov/data/imerg) | IMERG V07 | Earthdata/PPS; registration may be required | From 1998; products down to 0.1° and 30 minutes; POWER exposes precipitation as daily UTC and documents 3.5 months of latency for Final | Cataloged; designated countercheck for rainfall extremes |
-| [NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/) | Earth-observation product extraction | Earthdata Login | Product dependent | Cataloged |
+| [NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/api/) | MOD13Q1.061 NDVI/EVI + QA; MOD44W.061 water mask + QA | Earthdata Login; asynchronous point/area tasks | 250 m; MOD13Q1 every 16 days, MOD44W yearly | Integrated; live task and checksummed downloads verified 23-Oct-2026 |
+| [NASA LHASA](https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/LHASA_Hazard_Today/ImageServer) | LHASA 2.x near-real-time landslide hazard | Public NASA ArcGIS ImageServer | Global 60°S–60°N; EPSG:4326; 30 arcseconds (~1 km); updated twice daily | Current service route verified 23-Oct-2026; connector and value semantics pending |
 
 NASA POWER limits a point request to 20 parameters and may return HTTP 429. The MVP requests four supported parameters in one multiparameter request per site and caches responses for 24 hours. NASADEM granules are discovered through NASA CMR; the system does not claim terrain metrics unless the protected HGT and SC archives were downloaded and parsed successfully. IMERG differentiates Early, Late, and Final products; the research workflow will prioritize Final after version, units, authentication, and access are verified.
 
@@ -25,4 +26,55 @@ GPM IMERG is the designated independent satellite countercheck for rainfall extr
 
 Verification sources (accessed 2026-10-22): [POWER Daily API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/), [POWER temporal processing](https://power.larc.nasa.gov/docs/methodology/data/processing/), [POWER data sources and IMERG latency](https://power.larc.nasa.gov/docs/methodology/data/sources/), and [GPM IMERG](https://gpm.nasa.gov/data/imerg).
 
-Peruvian sources remain `DATA_UNAVAILABLE` until service availability, licensing, resolution, coverage, and update metadata have been verified. No endpoint has been invented.
+## AppEEARS: authenticated task contract
+
+AppEEARS is integrated through its official HTTPS API. `POST /api/login` uses Earthdata Basic Auth, and the returned Bearer token remains only in process memory. The connector proactively renews an expiring token, retries once after HTTP 403 as required by NASA, and invokes `POST /api/logout` in a `finally` block after every submission, status, bundle or download operation. Tokens, passwords and `user_id` are removed before any provider response reaches the content-addressed cache. Downloads follow only HTTPS redirects to NASA domains or the exact CloudFront distribution observed from the official bundle API; the Bearer token is never forwarded to object storage.
+
+Selected products and layers, verified against the live catalog on 22-Oct-2026:
+
+| Product | Layers used | Native cadence / resolution | Quality handling |
+|---|---|---|---|
+| [MOD13Q1.061](https://doi.org/10.5067/MODIS/MOD13Q1.061) | `_250m_16_days_NDVI`, `_250m_16_days_EVI` | 16 days / 250 m | `_250m_16_days_VI_Quality`; scale factor 0.0001; fill -3000; valid scaled range -0.2 to 1.0 |
+| [MOD44W.061](https://doi.org/10.5067/MODIS/MOD44W.061) | `water_mask` | yearly / 250 m | `water_mask_QA`; fill 253; categorical values must not be treated as continuous measurements |
+
+Live evidence: task `975994a2-f686-4742-9805-714ad035c0c8` was accepted as `pending`, progressed through `processing`, and reached `done`. Its official bundle contains seven files (`csv`, `json`, `txt`, and `xml`) and every file includes a 64-character SHA-256 checksum. On 23-Oct-2026 the connector downloaded and independently rehashed both result CSVs: MOD13Q1, 1,775 bytes, SHA-256 `e6bb8c294237347f5ae0ace8351dc5a01034b320192107f63d01138bbf6a2040`; MOD44W, 318 bytes, SHA-256 `c7466b67304c84f6e4bde6bb6e06e8b8788d4537854733e436f079e4d227b73b`. The MOD13Q1 output contains two observations, scaled NDVI/EVI values and decoded VI-quality fields; the first Moquegua observation is NDVI 0.0832, EVI 0.0575 and `MODLAND=good quality`. The MOD44W output contains the expected categorical water-mask and QA fields for the same point. These values demonstrate transport, schema and QA availability; they are not generalized into a land-cover or risk conclusion from one point.
+
+## Official Peruvian territorial layers
+
+All application requests use GeoJSON RFC 7946 in WGS84 longitude/latitude. ArcGIS receives `inSR=4326`, applies `esriSpatialRelIntersects`, and returns attributes without geometry. Raw responses are preserved by SHA-256 before normalization. A zero-feature response means only **no intersection returned by that service**; it never means “no risk”, “no protected area” or “no archaeological heritage”.
+
+| Source | Dataset / service | Coverage, CRS, scale | Access and reuse status (reviewed 22-Oct-2026) | Connector status |
+|---|---|---|---|---|
+| [CENEPRED SIGRID](https://sigrid.cenepred.gob.pe/arcgis/rest/services/FEN/ER_NINO2027_BD/MapServer) | Layers 4 and 5: risk from flooding and mass movements under intense rains / El Niño | Peru; source EPSG:32718, requested as EPSG:4326; scale not declared | Public ArcGIS REST; metadata does not state a reuse license. Scenario references SENAMHI Technical Report 69-2026 | Active for point, corridor and polygon. It is a prospective district-level scenario, not parcel risk |
+| [SERNANP](https://geoservicios.sernanp.gob.pe/arcgis/rest/services/servicios_ogc/peru_sernanp_0102/MapServer) | National definitive/transitional, regional and private protected areas (layers 0–3) | Peru; vector EPSG:4326; compilation scale not declared | Public REST/WMS/WFS with SERNANP attribution; `licenseInfo` is empty | Active for point, corridor and polygon; legal compatibility still requires SERNANP review |
+| [Osinergmin GISEM](https://gisem.osinergmin.gob.pe/serverosih/rest/services/Electricidad/ELECTRICIDAD/MapServer) | Transmission in operation (15) and substations in operation (18) | Peru; vector EPSG:4326; scale not declared | Public ArcGIS REST; copyright credits MINEM, COES, Osinergmin and sector companies; no explicit reuse license in REST metadata | Active for point, corridor and polygon; intersection says nothing about available connection capacity |
+| [Ministerio de Cultura SIGDA](https://sigda.cultura.gob.pe/sigda/rest/services) | Registered-reference (`v_4/registrado_v4`) and declared (`v_4/declarados_v4`) pre-Hispanic real estate | Peru; vector EPSG:4326; survey scale not declared | Public ArcGIS REST; attribution DSFL/Geomática; no explicit reuse license in REST metadata | Active for point, corridor and polygon. Absence is not proof of no heritage and does not replace a CIRA |
+| [INGEMMET GEOCATMIN](https://geocatminapp.ingemmet.gob.pe/arcgis/rest/services) | Geological hazards to be selected from the official catalog | Peru | INGEMMET describes GEOCATMIN data as public and free to use, but both official hosts failed strict TLS certificate validation in the runtime | `DATA_UNAVAILABLE`; TLS verification is not disabled |
+| [SENAMHI IDESEP](https://idesep.senamhi.gob.pe/portalidesep/idesep_componente_catalogo_geoservicios_wfs.jsp) | Official WFS catalog | Peru; product-dependent | WFS 2.0 capabilities responded successfully; explicit reuse license not found in the catalog page | Catalog verified; `DATA_UNAVAILABLE` in the territorial endpoint until a specific hazard layer is selected |
+
+The active Peru services have live response evidence for Moquegua (`-17.193, -70.934`). CENEPRED returned one district feature in each scenario; SERNANP, Osinergmin and both Cultura layers returned zero features at that exact point. On 23-Oct-2026 the same connector was exercised with a Moquegua–Ilo corridor and a small Moquegua polygon: CENEPRED flood risk returned 5 and 3 features respectively, while Osinergmin returned 16 and 3; SERNANP and registered SIGDA returned zero for both geometries. Every source returned `READY` and `REAL_DATA`. All zeros are retained as neutral query results, not as claims of absence. ANA, SENACE, Defensoría and community layers remain pending and are not represented by substitutes.
+
+## NASA LHASA route verification
+
+The current operational route is NASA Earthdata GIS, not the previously tested NCCS address. The public ImageServers are `Landslides/LHASA_Hazard_Yesterday`, `LHASA_Hazard_Today`, and `LHASA_Hazard_Tomorrow`; the `Today` service is the canonical candidate for K1b. NASA declares WGS84 (`EPSG:4326`), 30 arcseconds (approximately 1 km), one raster band, coverage from 60°S to 60°N, and twice-daily updates. It exposes `Get Samples`, `Identify`, and `Export Image` operations. LHASA 2.x is a machine-learning situational-awareness product based on GPM rainfall, SMAP soil moisture and susceptibility factors; it is not a substitute for a local geotechnical study. The route is verified, but the connector stays pending until the numeric value semantics, nodata, timestamps, citation and point/area sampling are tested against the live service.
+
+## COES generation labels (`in-coes`)
+
+The connector uses the official [COES generation portal](https://www.coes.org.pe/Portal/portalinformacion/generacion) and its public `ExportarGeneracion` endpoint. It requests one closed month at a time with `indicador=1` (medidores), pauses between network requests, stores each original XLSX by SHA-256, and reads only the `PRODUCCIÓN DIARIA` sheet. The provider columns are `FECHA`, `EMPRESA`, `GRUPO/CENTRAL`, `TIPO GENERACIÓN`, and `TOTAL`. The portal labels production as **MWh**, so `TOTAL` is summed directly by exact central name and month; the connector does not integrate a 15-minute MW series.
+
+Only rows whose exact normalized generation type is `SOLAR` are included. All provider plant names are retained, rather than replacing an absent requested plant with a similar facility. Missing plant-months are emitted with null generation and `PARTIAL` status. Raw files are not redistributed. The COES pages reviewed on 23-Oct-2026 did not publish specific data-reuse terms or an open license; the API therefore cites **COES-SINAC**, records that caveat, and awaits Christian's courtesy email.
+
+Independent live verification of the September 2026 XLSX found 17 solar central names and 30 daily observations for each of the following priority facilities:
+
+| Exact COES central | Sep-2026 MWh | Daily value on 01-Sep where checked |
+|---|---:|---:|
+| `CLEMESI` | 28,053.11 | 981.01 |
+| `EXPANSIÓN INTIPAMPA` | 13,460.82 | — |
+| `INTIPAMPA` | 9,650.78 | 333.28 |
+| `MAJES` | 3,909.25 | — |
+| `MOQUEGUA-SOLAR` | 3,717.63 | — |
+| `PANAMERICANA-SOLAR` | 4,685.06 | — |
+| `REPARTICION` | 3,871.90 | — |
+| `RUBI` | 37,891.41 | — |
+
+Coordinates and installed/effective capacity are requested from the official Osinergmin GISEM `MapaSEIN_Operacion` Solar layer (20), in WGS84. A capacity factor is calculated only when the normalized GISEM name is an exact, unique match and installed capacity is positive: `MWh / (MW × 24 × calendar days)`. The live GISEM query returned an ArcGIS 503 during QA on 23-Oct-2026; consequently the generation remains `REAL_DATA`, while unmatched capacity, coordinates and capacity factor are explicitly `DATA_UNAVAILABLE`. No fuzzy match or substitution is made. Curtailment, outages and maintenance still need a separate verified source before these labels can train the proposed calibrator.
