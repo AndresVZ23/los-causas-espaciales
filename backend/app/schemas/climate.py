@@ -1,6 +1,7 @@
 """Contratos del módulo de inteligencia climática (sector `climate` del sobre C2)."""
 
 from datetime import date
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -15,6 +16,28 @@ class AtypicalYear(BaseModel):
     year: int
     value: float
     robust_z: float
+    countercheck_value: float | None = Field(default=None, description="Mismo índice y año según la fuente de contraste (GPM IMERG).")
+
+
+class Agreement(StrEnum):
+    COINCIDE = "coincide"           # ambas fuentes significativas, misma dirección
+    CONTRADICE = "contradice"       # ambas significativas, direcciones opuestas
+    SIN_RESPALDO = "sin_respaldo"   # solo la fuente principal es significativa
+    SOLO_CONTRASTE = "solo_contraste"
+    SIN_TENDENCIA = "sin_tendencia"
+
+
+class ExtremeCountercheck(BaseModel):
+    """El mismo índice ETCCDI calculado con una segunda fuente independiente y su acuerdo con la principal."""
+
+    source: str
+    valid_years: int
+    direction: str
+    slope_per_year: float | None
+    adjusted_p_value: float | None
+    significant_after_bh: bool
+    agreement: Agreement
+    annual_series: list[AnnualObservation]
 
 
 class ExtremeIndexSummary(BaseModel):
@@ -35,6 +58,7 @@ class ExtremeIndexSummary(BaseModel):
     significant_after_bh: bool = False
     annual_series: list[AnnualObservation]
     atypical_years: list[AtypicalYear] = Field(default_factory=list, description="Años con z robusto > 10, para contrastar con estaciones.")
+    countercheck: ExtremeCountercheck | None = None
 
 
 class ClimateSiteResult(BaseModel):

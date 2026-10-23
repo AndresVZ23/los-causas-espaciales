@@ -89,3 +89,19 @@ La pregunta «¿Cuánto está cambiando?» elegía el mayor cambio comparando ma
 El sobre C2 agrega `financial_sensitivity` (aditivo; el contrato sigue en v1.0). Por cada sujeto incluye el VAN base, los escenarios base, adverso y favorable, el tornado y los puntos de equilibrio. El motor `backend/app/finance/sensitivity.py` es genérico: recibe la función de VAN del sector, así la fórmula vive en un solo lugar. El tornado mueve un factor a la vez y ordena por efecto. Los equilibrios se resuelven por bisección; el del precio se contrastó con la fórmula cerrada y el VAN con `verify_cashflow.py` de la skill de inversión. El verificador de conformidad exige escenario base y adverso, y un VAN base igual al de su escenario.
 
 En el piloto solar, el rango del recurso no es un supuesto: sale de los percentiles 10 y 90 de las medias anuales observadas por NASA POWER (`MODEL_ESTIMATE`). Los rangos de precio, CAPEX, OPEX (±20 %), performance ratio (±0.05) y tasa (±2 puntos) son supuestos editables y quedan en `assumption_items`. Los escenarios combinados mueven recurso, precio, CAPEX y OPEX; el performance ratio y la tasa solo entran en el tornado. Con los supuestos por defecto, el recurso es el factor que menos mueve el VAN, y la irradiancia de equilibrio (7.7 kWh/m²/día) supera el mejor año observado. Para que el VAN sea positivo hace falta un precio cerca de 64 USD/MWh o un CAPEX cerca de USD 15 M, no más sol. Para K2 y K3: cada sector define sus `Driver` y su modelo, y el resto (tornado, escenarios, PDF y pantalla) se reutiliza.
+## ADR-021 — GPM IMERG como contraste independiente de los extremos de lluvia
+
+NASA POWER publica `IMERG_PRECTOT` (GPM IMERG, mm/día, UTC) en la misma API diaria; se verificó el 2026-10-23. El módulo climático lo pide junto con las demás variables y calcula los mismos seis índices ETCCDI con IMERG. La prueba de tendencia es la misma (Hamed–Rao + BH por índice entre sitios). Cada índice informa su `countercheck` con un acuerdo:
+- **coincide:** ambas fuentes son significativas y van en la misma dirección.
+- **contradice:** ambas son significativas, en direcciones opuestas.
+- **sin respaldo:** solo MERRA-2 es significativa.
+- **solo IMERG:** solo IMERG es significativa.
+- **sin tendencia:** ninguna lo es.
+
+Una tendencia de extremos se considera robusta solo si coincide. La pregunta de significancia lo dice y la de inversión agrega una salvedad cuando no hay respaldo. Si IMERG falla, el contraste se declara como brecha y el análisis sigue.
+
+Resultado con datos reales (2001–2025):
+- La única tendencia significativa de extremos, la lluvia máxima de 5 días en Arequipa (moderada), no se repite con IMERG (p BH 0.87): queda como indicio.
+- IMERG no respalda los valores atípicos de MERRA-2 en Moquegua. El 12 y el 13 de septiembre de 2022 IMERG marca 0.0 mm frente a 314.5 mm del reanálisis, y el máximo diario de 2022 es de 12 mm en IMERG frente a 300 mm. IMERG sí registra lluvia en temporada húmeda (Arequipa, enero a marzo de 2023: 111.5 mm), así que el cero no es un relleno.
+- El último dato válido de IMERG en POWER es del 2026-09-14.
+- IMERG no mostró el defecto × 24, y ese día tampoco PRECTOTCORR al pedir hasta hoy; la guardia del ADR-017 se mantiene.

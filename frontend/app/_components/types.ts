@@ -54,7 +54,13 @@ export type ExtremeIndex = {
   variable: string; label: string; description: string; unit: string; display_unit: string;
   mean: number; minimum: number; maximum: number; valid_years: number; discarded_years: number;
   trend: Trend; adjusted_p_value: number | null; significant_after_bh: boolean; annual_series: { year: number; value: number }[];
-  atypical_years?: { year: number; value: number; robust_z: number }[];
+  atypical_years?: { year: number; value: number; robust_z: number; countercheck_value?: number | null }[];
+  countercheck?: ExtremeCountercheck | null;
+};
+export type Agreement = "coincide" | "contradice" | "sin_respaldo" | "solo_contraste" | "sin_tendencia";
+export type ExtremeCountercheck = {
+  source: string; valid_years: number; direction: string; slope_per_year: number | null; adjusted_p_value: number | null;
+  significant_after_bh: boolean; agreement: Agreement; annual_series: { year: number; value: number }[];
 };
 export type ClimateSite = { location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null };
 export type ClimateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & { sector: "climate"; sites: ClimateSite[]; method_notes: string[] };

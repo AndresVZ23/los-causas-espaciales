@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T03:20:00Z",
+  updatedAt: "2026-10-23T04:30:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -188,7 +188,7 @@ window.DOP_DATA = {
       // Entradas
       { id: "in-power", layer: "in", group: "NASA", name: "NASA POWER diario", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", detail: "Irradiancia, temperatura, viento y precipitación desde 1981, con caché y procedencia." },
       { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; caché real 2 de 2 READY en 470.6 ms.", evidence: ["df128a0", "7a42125", "14 pruebas K0", "contraste ZIP independiente"] },
-      { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "gpm", detail: "Precipitación satelital de alta frecuencia para extremos y huaicos." },
+      { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Claude", status: "LISTO_PARA_QA", provenance: "REAL_DATA", planTask: "K1b", dopNode: "gpm", detail: "Activo vía NASA POWER (IMERG_PRECTOT, diario UTC, hasta ~5 semanas atrás): contraste satelital de los extremos ETCCDI (ADR-021). Desmintió los 314 mm de MERRA-2 en Moquegua (2022)." },
       { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "appeears", detail: "Índices de vegetación, cobertura y agua superficial para el módulo ambiental." },
       { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Susceptibilidad y alerta de deslizamientos, según su propósito y límites." },
       { id: "in-grid", layer: "in", group: "Territorio Perú", name: "Red eléctrica y subestaciones", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "MINEM y COES: distancia y capacidad de conexión." },
@@ -282,7 +282,8 @@ window.DOP_DATA = {
     inputs: [
       { id: "in-power", label: "Series diarias NASA POWER", provenance: "REAL_DATA", entersAt: "op1" },
       { id: "in-dem", label: "Teselas NASADEM HGT/SC", provenance: "REAL_DATA", entersAt: "op2" },
-      { id: "in-imerg", label: "GPM IMERG · AppEEARS · capas Perú", provenance: "DATA_UNAVAILABLE", entersAt: "op5" },
+      { id: "in-imerg", label: "GPM IMERG (contraste de extremos)", provenance: "REAL_DATA", entersAt: "op5" },
+      { id: "in-peru", label: "AppEEARS · capas Perú", provenance: "DATA_UNAVAILABLE", entersAt: "op5" },
       { id: "in-labels", label: "Generación real COES (etiquetas)", provenance: "DATA_UNAVAILABLE", entersAt: "op7" },
       { id: "in-user", label: "Supuestos del usuario", provenance: "USER_ASSUMPTION", entersAt: "op10" },
     ],
