@@ -300,3 +300,26 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Puerta:** 124/124 pruebas backend; 5/5 específicas COES (nominal, hoja inválida, caché/parámetros, error GISEM y central-mes faltante); build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida; ejecución real registrada. Sin secretos nuevos, sin llamadas Gemini, sin cambios en `frontend/**` y sin iniciar 3100/8000.
 
 **Para Claude:** revisar e integrar `codex/fuentes-amenazas` cuando Christian lo apruebe. El contrato de `POST /api/v1/energy/coes/monthly-generation` ahora expone todas las centrales solares, `days_expected/days_observed`, `capacity_factor_percent` y `capacity_reference`; la interfaz debe aceptar `READY`, `PARTIAL` y `DATA_UNAVAILABLE`. K1b continúa por ANA/SENACE/Defensoría/comunidades y el conector LHASA; K5 queda como siguiente rama separada. Esta rama no fue fusionada ni subida.
+## 2026-10-23 · Codex · codex/territorio · 2af9c55 · K5 índice territorial IGN/OCHA
+
+**Entrega:** catálogo reproducible COD-AB Perú v01 con 25 departamentos, 196 provincias y 1,873 distritos; búsqueda por nombre o ubigeo, jerarquía departamento → provincia → distrito y geometría GeoJSON individual. Endpoints: `GET /api/v1/territories/search`, `GET /api/v1/territories/hierarchy` y `GET /api/v1/territories/{level}/{ubigeo}/geometry`. No se tocó `frontend/**`.
+
+**Fuente y límites:** IGN del Perú vía OCHA/HDX, licencia CC BY-IGO. El ZIP oficial quedó fijado por SHA-256 `2f0ec51b7a0899b407546aa644621e1c3255cba59fdda76fcde6975ca6baafb3`; geometrías CRS84, creadas en 2015, válidas para uso humanitario desde 2020 y revisadas en 2025. Se declara en toda respuesta que faltan distritos creados después de 2015 y que no es una fuente catastral/legal actualizada.
+
+**Procesamiento verificable:** `scripts/data/build_peru_territory.py` valida hash, CRS, conteos, ubigeos únicos y geometrías. Simplifica en metros y reduce adaptativamente la tolerancia hasta cambio de área geodésica ≤1%; salida EPSG:4326. Reducción de vértices: 98.587% departamentos, 97.214% provincias y 92.655% distritos; máximo cambio de área: 0.8461%, 0.9502% y 0.9969%. Cada activo tiene SHA-256 y el API lo verifica antes de cargar.
+
+**Puerta:** 5/5 pruebas K5 y 112/112 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; sintaxis DOP válida. Sin secretos, sin Gemini y sin iniciar 3100/8000.
+
+**Para Claude:** K5 queda `VERIFICADO`; C7 ya puede consumir el selector territorial, aunque el mapa de tendencias por celda aún depende de K1. Esta rama nació de `master`, no contiene `codex/fuentes-amenazas`; al apilar ambas habrá conflictos aditivos esperables en `main.py`, `routes.py`, `DATA_SOURCES.md`, `TECHNICAL_ARCHITECTURE.md`, `PROGRESS.md` y `dop-datos.js`. Conservar ambos routers y ambas evidencias. Rama no fusionada ni subida; requiere aprobación de Christian.
+
+## 2026-10-23 · Codex · codex/regional-sampling · 3b72de7 · K1 muestreo espacial NASA POWER
+
+**Entrega:** rama apilada sobre `codex/territorio`. `POST /api/v1/spatial-sampling/power/daily` acepta Point, LineString/MultiLineString, Polygon/MultiPolygon y Features GeoJSON; conserva `properties.kind`, `name` y `origin`. Los corredores usan `corridor_buffer_km` en una proyección azimutal equidistante local. Los polígonos menores que una celda nominal se declaran `POINT`; los mayores usan POWER `/api/temporal/daily/regional` con un solo parámetro por pedido.
+
+**Método:** caché cruda content-addressed, celdas deduplicadas por centro, límites inferidos a mitad entre centros devueltos, intersección con el sujeto y peso por área geodésica WGS84. La respuesta entrega serie de cada celda y agregado diario con media ponderada, desviación estándar ponderada, mínimo, máximo y número de celdas. Un faltante se excluye y renormaliza pesos; nunca se vuelve cero. Duplicados conflictivos, geometrías inválidas, regiones >10° y respuestas >100 MB detienen la operación.
+
+**Evidencia real 23-oct-2026:** Moquegua departamento, T2M UTC 1–3 ene 2026: `REGIONAL`, 9 celdas, cobertura inferida 99.5833%, grilla observada 0.5° lat × 0.625° lon, medias 13.0592 / 11.9289 / 13.5450 °C, `REAL_DATA`. La separación longitudinal demuestra que la grilla MERRA-2 real no debe forzarse a la etiqueta documental 0.5°×0.5°. La Punta (Callao), 0.773019 km²: `POINT`, una celda, 19.18 / 19.02 / 19.03 °C.
+
+**Puerta:** 6/6 pruebas K1 y 118/118 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; sintaxis DOP válida. Sin secretos, sin Gemini, sin cambios en `frontend/**` y sin iniciar 3100/8000.
+
+**Para Claude:** K1 y K5 quedan `VERIFICADO`; C7 puede consumir `cells[]` para tendencias/mapa y `aggregate[]` para la serie del territorio. `grid_spacing_degrees` y `spatial_coverage_percent` deben quedar visibles para no exagerar resolución. Esta rama incluye K5, pero no `codex/fuentes-amenazas`; al integrarlas conservar el `RawPayloadCache` común y todos los routers. Rama no fusionada ni subida; requiere aprobación de Christian.

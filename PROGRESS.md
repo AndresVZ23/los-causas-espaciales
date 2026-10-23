@@ -126,6 +126,24 @@
 - Puerta de la rama: 124/124 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; no se inició 3100/8000 ni se modificó `frontend/**`.
 - INGEMMET permanece `DATA_UNAVAILABLE` porque la cadena TLS oficial no pasa validación estricta; SENAMHI tiene catálogo WFS accesible, pero aún falta seleccionar una capa de amenaza concreta. ANA, SENACE, Defensoría y comunidades siguen pendientes.
 
+## Selector territorial K5 (rama `codex/territorio`)
+
+- COD-AB Perú v01 del IGN vía OCHA/HDX incorporado bajo CC BY-IGO: 25 departamentos, 196 provincias y 1,873 distritos.
+- Búsqueda por nombre/ubigeo, jerarquía departamento → provincia → distrito y geometría GeoJSON por territorio mediante tres endpoints tipados.
+- Activos simplificados reproducibles: 92.655–98.587% menos vértices, con geometrías válidas y cambio de área geodésica ≤1%; cada archivo se verifica por SHA-256 al cargarse.
+- Los trazos se declaran como referencia de 2015, sin distritos posteriores y sin valor catastral; no se presentan como límites actuales exhaustivos.
+- Pruebas K5 aisladas: 5/5 con conteos, acentos, ubigeo, jerarquía, geometría, errores y TestClient, sin levantar 8000.
+- Puerta completa K5: 112/112 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; no se modificó `frontend/**` ni se inició 3100/8000.
+
+## Muestreo espacial K1 (rama `codex/regional-sampling`)
+
+- Endpoint tipado para puntos, corredores, polígonos y territorios; acepta los GeoJSON exportados por Claude con `properties.kind`, `name` y `origin`.
+- Corredores amortiguados en proyección azimutal equidistante local; polígonos subcelda declarados como punto; áreas mayores consultadas en NASA POWER Regional con un parámetro por pedido.
+- Celdas deduplicadas por centro, series por celda conservadas, promedio y desviación estándar diarios ponderados por área geodésica de intersección, y faltantes nunca convertidos en cero.
+- Ejecución real Moquegua: 9 celdas, cobertura 99.5833%, grilla devuelta 0.5° lat × 0.625° lon, `REAL_DATA`. Ejecución real La Punta: 0.773019 km², modo `POINT`, una celda.
+- Pruebas K1 aisladas: 6/6, incluidos caché, duplicados, valor faltante, corredor, geometría inválida, fallo externo y límite espacial; sin iniciar 8000.
+- Puerta completa K1: 118/118 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; sin cambios en `frontend/**` ni uso de 3100/8000.
+
 ## Brechas prioritarias
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).

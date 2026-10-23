@@ -47,6 +47,7 @@ def sources():
         {"id": "osinergmin-grid", "name": "Osinergmin GISEM", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://gisem.osinergmin.gob.pe/"},
         {"id": "cultura-sigda", "name": "Ministerio de Cultura SIGDA", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://sigda.cultura.gob.pe/"},
         {"id": "coes-generation", "name": "COES-SINAC Producción diaria por central", "status": "integrated_with_license_caveat", "access": "public monthly XLSX export; indicador=1 (medidores)", "url": "https://www.coes.org.pe/Portal/portalinformacion/generacion"},
+        {"id": "peru-cod-ab", "name": "Peru COD-AB v01 (IGN via OCHA/HDX)", "status": "integrated_web_reference", "access": "versioned local derivative of public GeoJSON, CC BY-IGO", "url": "https://data.humdata.org/dataset/cod-ab-per"},
     ]
 
 
