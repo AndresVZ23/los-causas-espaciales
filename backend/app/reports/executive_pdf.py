@@ -77,6 +77,7 @@ def _styles() -> dict[str, ParagraphStyle]:
         "title": ParagraphStyle("title", fontName=SANS_BOLD, fontSize=19, leading=23, textColor=INK, spaceAfter=3),
         "subtitle": ParagraphStyle("subtitle", fontName=SANS, fontSize=9.5, leading=13, textColor=MUTED),
         "h2": ParagraphStyle("h2", fontName=SANS_BOLD, fontSize=12, leading=15, textColor=INK, spaceBefore=12, spaceAfter=5),
+        "h3": ParagraphStyle("h3", fontName=SANS_BOLD, fontSize=9.4, leading=12, textColor=INK, spaceBefore=8, spaceAfter=3),
         "lede": ParagraphStyle("lede", fontName=SANS, fontSize=8.6, leading=12, textColor=MUTED, spaceAfter=6),
         "body": ParagraphStyle("body", fontName=SANS, fontSize=8.8, leading=12.4, textColor=INK),
         "cell": ParagraphStyle("cell", fontName=SANS, fontSize=8.2, leading=11.2, textColor=INK),
@@ -172,7 +173,7 @@ def _decorate(envelope: ScreeningEnvelope, short_hash: str):
         canvas.line(left, 13 * mm, right, 13 * mm)
         canvas.setFont(SANS, 6.8)
         basis = "datos NASA y supuestos del usuario" if envelope.assumption_items else "datos NASA, sin supuestos financieros"
-        canvas.drawString(left, 9 * mm, f"Screening preliminar con {basis}; no sustituye estudios de factibilidad ni mediciones in situ.")
+        canvas.drawString(left, 9 * mm, f"Screening preliminar con {basis}; no sustituye factibilidad ni mediciones in situ.")
         canvas.drawRightString(right, 9 * mm, f"Huella {short_hash} · página {doc.page}")
         canvas.restoreState()
     return draw
@@ -182,6 +183,54 @@ def _plain(value: str) -> str:
     for char, replacement in GLYPH_FALLBACK.items():
         value = value.replace(char, replacement)
     return value
+
+
+def _musd(value: float) -> str:
+    return f"{value / 1e6:,.2f} M" if value >= 0 else f"−{abs(value) / 1e6:,.2f} M"
+
+
+def _factor_value(value: float, unit: str) -> str:
+    if unit == "fracción":
+        return f"{value * 100:.1f} %"
+    if unit.startswith("USD") and abs(value) >= 1e5:
+        return f"{value / 1e6:,.2f} M {unit}"
+    return f"{value:,.2f} {unit}".strip()
+
+
+def _sensitivity_section(envelope: ScreeningEnvelope, styles: dict[str, ParagraphStyle], usable: float) -> list:
+    items = envelope.financial_sensitivity
+    currency = items[0].currency
+    out: list = [
+        Paragraph("Escenarios y sensibilidad del VAN", styles["h2"]),
+        Paragraph(_text(f"VAN en {currency}. El tornado mueve un factor a la vez, con el resto en el caso base; los escenarios los mueven juntos. "
+                        "Los rangos son supuestos del usuario, salvo los marcados MODEL_ESTIMATE, que salen de los años observados."), styles["lede"]),
+    ]
+    keys = [scenario.key for scenario in items[0].scenarios]
+    rows = [[Paragraph("Escenario", styles["cellHead"])] + [Paragraph(_text(item.subject), styles["cellHead"]) for item in items]]
+    for key in keys:
+        label = next(scenario.label for scenario in items[0].scenarios if scenario.key == key)
+        npvs = [next(scenario.npv for scenario in item.scenarios if scenario.key == key) for item in items]
+        rows.append([Paragraph(f"<b>{_text(label)}</b>", styles["cell"])] + [Paragraph(_text(_musd(value)), styles["mono"]) for value in npvs])
+    first = 40 * mm
+    out.append(_table(rows, [first] + [(usable - first) / len(items)] * len(items)))
+    for key in keys:
+        changes = next(scenario.changes for scenario in items[0].scenarios if scenario.key == key)
+        if key != "base":
+            out.append(Paragraph(_text(f"{key.capitalize()} ({items[0].subject}): " + "; ".join(changes) + "."), styles["cellMuted"]))
+    for item in items:
+        bar_rows = [[Paragraph(h, styles["cellHead"]) for h in ("Factor", "Rango: desfavorable a favorable", "VAN desfavorable", "VAN favorable", "Origen")]]
+        for bar in item.tornado:
+            bar_rows.append([
+                Paragraph(_text(bar.label), styles["cell"]),
+                Paragraph(_text(f"{_factor_value(bar.low_value, bar.unit)} → {_factor_value(bar.high_value, bar.unit)}"), styles["mono"]),
+                Paragraph(_text(_musd(bar.npv_at_low)), styles["mono"]), Paragraph(_text(_musd(bar.npv_at_high)), styles["mono"]),
+                Paragraph(f"<font name='{MONO}' size='6.5'>{bar.provenance.value}</font>", styles["cellMuted"]),
+            ])
+        block = [Paragraph(_text(f"{item.subject} · VAN base {_musd(item.base_npv)} {item.currency}"), styles["h3"]),
+                 _table(bar_rows, [38 * mm, 52 * mm, 24 * mm, 24 * mm, usable - 138 * mm])]
+        block += [Paragraph(_text(f"• {even.note}"), styles["cell"]) for even in item.break_evens]
+        out.append(KeepTogether(block))
+    return out
 
 
 def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
@@ -294,6 +343,9 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
             assumption_rows.append([Paragraph(_text(item.label), styles["cell"]), Paragraph(value, styles["mono"]),
                                     Paragraph(_text("" if item.unit == "fracción" else item.unit), styles["cellMuted"])])
         story.append(_table(assumption_rows, [70 * mm, 40 * mm, usable - 110 * mm]))
+
+    if envelope.financial_sensitivity:
+        story += _sensitivity_section(envelope, styles, usable)
 
     if envelope.data_gaps:
         story.append(Paragraph("Brechas antes de invertir", styles["h2"]))

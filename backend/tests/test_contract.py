@@ -59,6 +59,16 @@ def test_conformance_detects_broken_envelopes(solar_response):
     assert any("geometría es Polygon" in problem for problem in problems)
 
 
+def test_conformance_requires_adverse_scenario(solar_response):
+    assert len(solar_response.financial_sensitivity) == len(solar_response.subjects)
+    broken = solar_response.model_copy(deep=True)
+    broken.financial_sensitivity[0].scenarios = [item for item in broken.financial_sensitivity[0].scenarios if item.key != "adverso"]
+    broken.financial_sensitivity[1].subject = "Sitio inexistente"
+    problems = envelope_violations(broken)
+    assert any("base y adverso" in problem for problem in problems)
+    assert any("sensibilidad cita un sujeto inexistente" in problem for problem in problems)
+
+
 def test_assemble_pipeline_rejects_missing_stage(solar_response):
     with pytest.raises(ValueError, match="nueve etapas"):
         assemble_pipeline(solar_response.pipeline[:8])

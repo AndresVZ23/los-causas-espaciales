@@ -20,6 +20,7 @@ Todo sector responde con el mismo sobre. La interfaz (pipeline, preguntas NASA),
 | `terrain` | Respuesta NASADEM o `null` |
 | `data_gaps` | Brechas; una `DATA_UNAVAILABLE` impide que la etapa territorial sea `COMPLETADO` |
 | `assumption_items` | Supuestos del usuario con etiqueta, valor, unidad y `USER_ASSUMPTION` |
+| `financial_sensitivity` | Por sujeto: VAN base, escenarios `base`/`adverso`/`favorable`, tornado (un factor a la vez, con procedencia y origen del rango) y puntos de equilibrio. Vacío si el sector no evalúa finanzas (ADR-020) |
 | `disclaimer` | Alcance y límites |
 
 Los campos propios del sector se agregan **heredando** el sobre (por ejemplo, `SolarScreeningResponse(ScreeningEnvelope)` agrega `sites`, `comparative_findings` y `assumptions`). Así no se rompe ningún consumidor existente. Los cambios al sobre son solo aditivos; uno incompatible exige un ADR y subir `contract_version`.
@@ -38,7 +39,8 @@ from backend.app.orchestration.stages import (selection_stage, configuration_sta
 2. `extract_power(points, variables, inicio, fin)` y `extract_terrain(points)` en paralelo.
 3. `analyze_subjects(datasets, variables, días_esperados)`: resúmenes por sujeto con Hamed–Rao y BH por variable.
 4. `collect_trend_findings` y `answer_nasa_questions(..., lens=SectorLens(readings, stable_notes, economics))`. El lente lo define el sector: qué significa cada tendencia para una carretera o un terreno, y la frase con su escenario económico (por ejemplo, días de interrupción × costo, con supuestos del usuario).
-5. Etapas 1–5, 8 y 9 con los constructores comunes; las etapas 6 (evaluación) y 7 (impacto económico) con `stage("evaluation", ...)` y `stage("finance", ...)`; unir con `assemble_pipeline`.
-6. Una prueba que afirme `envelope_violations(respuesta) == []` (ver `backend/tests/test_contract.py`).
+5. Si el sector evalúa finanzas: definir sus `Driver` y su función de VAN, y llamar a `tornado` y `break_even_item` de `backend/app/finance/sensitivity.py` para llenar `financial_sensitivity` (ver `solar_sensitivity`).
+6. Etapas 1–5, 8 y 9 con los constructores comunes; las etapas 6 (evaluación) y 7 (impacto económico) con `stage("evaluation", ...)` y `stage("finance", ...)`; unir con `assemble_pipeline`.
+7. Una prueba que afirme `envelope_violations(respuesta) == []` (ver `backend/tests/test_contract.py`).
 
 Variables nuevas de NASA POWER se registran en `backend/app/core/variables.py` y sus unidades en `backend/app/core/units.py`; ningún sector mantiene su propio catálogo.

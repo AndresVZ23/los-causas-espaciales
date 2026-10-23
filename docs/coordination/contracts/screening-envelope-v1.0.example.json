@@ -1,7 +1,7 @@
 {
   "contract_version": "1.0",
-  "analysis_id": "b94b00e68841712a",
-  "generated_at": "2026-10-22T20:08:55.293804Z",
+  "analysis_id": "bba22be1de6faa5d",
+  "generated_at": "2026-10-23T01:56:13.881933Z",
   "sector": "solar",
   "sector_label": "Energía solar fotovoltaica",
   "title": "Screening solar comparativo — sur del Perú",
@@ -142,9 +142,14 @@
           "label": "Descarga NASA (UTC)",
           "value": "2026-10-22 a 2026-10-22",
           "provenance": null
+        },
+        {
+          "label": "Último dato publicado",
+          "value": "ALLSKY_SFC_SW_DWN, T2M, WS10M, PRECTOTCORR: 2024-12-31",
+          "provenance": null
         }
       ],
-      "duration_ms": 1155.2,
+      "duration_ms": 1129.9,
       "answers": [
         "what"
       ]
@@ -185,7 +190,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 202.0,
+      "duration_ms": 374.5,
       "answers": [
         "what",
         "how_much",
@@ -220,7 +225,7 @@
           "provenance": "DATA_UNAVAILABLE"
         }
       ],
-      "duration_ms": 1155.0,
+      "duration_ms": 1198.7,
       "answers": [
         "where",
         "so_what"
@@ -263,7 +268,7 @@
       "key": "finance",
       "name": "Impacto económico",
       "status": "COMPLETADO",
-      "summary": "VAN positivo en 0 de 2 sitios con los supuestos del usuario.",
+      "summary": "VAN positivo en 0 de 2 sitios con los supuestos del usuario y en 0 de 2 en el escenario adverso.",
       "provenance": [
         "MODEL_ESTIMATE",
         "USER_ASSUMPTION"
@@ -283,9 +288,29 @@
           "label": "Fórmula",
           "value": "Energía = MW × irradiancia × 365 × PR; VAN a tasa del usuario",
           "provenance": null
+        },
+        {
+          "label": "Adverso · Moquegua",
+          "value": "USD -11,204,616",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Adverso · Arequipa",
+          "value": "USD -11,180,472",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Factor dominante · Moquegua",
+          "value": "Precio de energía",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Arequipa",
+          "value": "Precio de energía",
+          "provenance": "USER_ASSUMPTION"
         }
       ],
-      "duration_ms": 0.3,
+      "duration_ms": 10.4,
       "answers": [
         "so_what"
       ]
@@ -389,7 +414,7 @@
       "question": "How much is it changing?",
       "question_es": "¿Cuánto está cambiando?",
       "status": "RESPONDIDA",
-      "answer": "Temperatura del aire a 2 m en Moquegua: +0.80 °C entre 2001 y 2024 (+0.0350 °C/año, pendiente de Sen).",
+      "answer": "Temperatura del aire a 2 m: +0.80 °C en Moquegua y +0.72 °C en Arequipa; velocidad del viento a 10 m: -0.07 m/s en Moquegua, entre 2001 y 2024 (pendiente de Sen por los años del período).",
       "evidence": [
         "Temperatura del aire a 2 m en Moquegua: +0.0350 °C/año (IC 95 %: +0.0140 a +0.0611); +0.80 °C entre 2001 y 2024.",
         "Velocidad del viento a 10 m en Moquegua: -0.0032 m/s/año (IC 95 %: -0.0061 a -0.0004); -0.07 m/s entre 2001 y 2024, -1.9 % de la media.",
@@ -407,7 +432,7 @@
       "question": "Is the change statistically significant?",
       "question_es": "¿El cambio es estadísticamente significativo?",
       "status": "RESPONDIDA",
-      "answer": "Sí en 3 de 8 pruebas, con Mann–Kendall corregido por autocorrelación y ajuste Benjamini–Hochberg. La autocorrelación bruta (hasta 0.48) proviene de la propia tendencia: sin ella, la de los rangos es 0.10 o menor y la corrección no altera la varianza.",
+      "answer": "Sí en 3 de 8 pruebas, con Mann–Kendall corregido por autocorrelación y ajuste Benjamini–Hochberg. La autocorrelación bruta (hasta 0.48) proviene de la propia tendencia: sin ella, la de los rangos es 0.10 o menor y la corrección no altera la varianza. Evidencia fuerte (p BH < 0.01) en 1; moderada en 2 (velocidad del viento a 10 m en Moquegua y temperatura del aire a 2 m en Arequipa), que conviene confirmar con más años o con otra fuente.",
       "evidence": [
         "Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998) y pendiente de Sen sobre 24 medias anuales; familia Benjamini–Hochberg = cada variable entre 2 sitios; α = 0.05.",
         "Significativas antes del ajuste BH: 3 de 8; después: 3 de 8.",
@@ -427,7 +452,7 @@
       "question": "What do these changes mean for investment decisions?",
       "question_es": "¿Qué significan estos cambios para invertir?",
       "status": "PARCIAL",
-      "answer": "El recurso solar no muestra deriva significativa en ningún sitio: no hay evidencia para castigar la media histórica por tendencia, lo que no prueba que sea constante. En Moquegua y Arequipa, la temperatura sube: aumentan las pérdidas térmicas de los módulos, que el cálculo de energía actual no modela. En Moquegua, el viento a 10 m disminuye: menor enfriamiento convectivo de los módulos. Con los supuestos del usuario, el VAN es positivo en 0 de 2 sitios (de −USD 3.01 M a −USD 2.97 M).",
+      "answer": "El recurso solar no muestra deriva significativa en ningún sitio: no hay evidencia para castigar la media histórica por tendencia, lo que no prueba que sea constante. En Moquegua y Arequipa, la temperatura sube: aumentan las pérdidas térmicas de los módulos, que el cálculo de energía actual no modela. En Moquegua, el viento a 10 m disminuye: menor enfriamiento convectivo de los módulos. Con los supuestos del usuario, el VAN es positivo en 0 de 2 sitios (de −USD 3.01 M a −USD 2.97 M); en el escenario adverso, en 0 de 2. El factor que más mueve el VAN es el precio de energía.",
       "evidence": [
         "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
         "4 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
@@ -805,7 +830,7 @@
     }
   ],
   "terrain": {
-    "generated_at": "2026-10-22T20:08:55.089914Z",
+    "generated_at": "2026-10-23T01:56:13.495904Z",
     "dataset": "NASADEM V001",
     "crs": "EPSG:4326; longitude/latitude",
     "spatial_resolution": "1 arc-second (~30 m at the equator)",
@@ -931,7 +956,7 @@
         ]
       }
     ],
-    "note": "2 de 2 ubicaciones tienen métricas raster. Las demás conservan metadatos y vista previa oficiales sin convertir la ausencia de credenciales en datos ficticios."
+    "note": "2 de 2 ubicaciones tienen métricas raster; 0 descargan teselas en segundo plano y 0 permanecen solo con metadatos. Ningún estado pendiente o sin acceso se convierte en datos ficticios."
   },
   "data_gaps": [
     {
@@ -1015,6 +1040,331 @@
       "value": 20.0,
       "unit": "años",
       "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "price_sensitivity",
+      "label": "Rango del precio (±)",
+      "value": 0.2,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "capex_sensitivity",
+      "label": "Rango del CAPEX (±)",
+      "value": 0.2,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "opex_sensitivity",
+      "label": "Rango del OPEX (±)",
+      "value": 0.2,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "performance_ratio_sensitivity",
+      "label": "Rango del performance ratio (±)",
+      "value": 0.05,
+      "unit": "puntos",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "discount_rate_sensitivity",
+      "label": "Rango de la tasa (±)",
+      "value": 0.02,
+      "unit": "puntos",
+      "provenance": "USER_ASSUMPTION"
+    }
+  ],
+  "financial_sensitivity": [
+    {
+      "subject": "Moquegua",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": -3012648.8,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": -3012648.8,
+          "changes": [
+            "Todos los supuestos en su valor declarado; recurso = media observada."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -11204615.68,
+          "changes": [
+            "Recurso solar (año bajo / alto): 6.43 kWh/m²/día",
+            "Precio de energía: 44.00 USD/MWh",
+            "CAPEX inicial: USD 21.60 M",
+            "OPEX anual: USD 432,000/año"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 5346841.39,
+          "changes": [
+            "Recurso solar (año bajo / alto): 6.76 kWh/m²/día",
+            "Precio de energía: 66.00 USD/MWh",
+            "CAPEX inicial: USD 14.40 M",
+            "OPEX anual: USD 288,000/año"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "energy_price_usd_mwh",
+          "label": "Precio de energía",
+          "unit": "USD/MWh",
+          "base_value": 55.0,
+          "low_value": 44.0,
+          "high_value": 66.0,
+          "npv_at_low": -6623095.63,
+          "npv_at_high": 597798.03,
+          "swing": 7220893.66,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "initial_capex_usd",
+          "label": "CAPEX inicial",
+          "unit": "USD",
+          "base_value": 18000000.0,
+          "low_value": 21600000.0,
+          "high_value": 14400000.0,
+          "npv_at_low": -6612648.8,
+          "npv_at_high": 587351.2,
+          "swing": 7200000.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": -4850726.85,
+          "npv_at_high": -716048.39,
+          "swing": 4134678.46,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "performance_ratio",
+          "label": "Performance ratio",
+          "unit": "",
+          "base_value": 0.8,
+          "low_value": 0.75,
+          "high_value": 0.8500000000000001,
+          "npv_at_low": -4140913.43,
+          "npv_at_high": -1884384.17,
+          "swing": 2256529.26,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.05."
+        },
+        {
+          "key": "annual_opex_usd",
+          "label": "OPEX anual",
+          "unit": "USD/año",
+          "base_value": 360000.0,
+          "low_value": 432000.0,
+          "high_value": 288000.0,
+          "npv_at_low": -3625625.39,
+          "npv_at_high": -2399672.21,
+          "swing": 1225953.18,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "irradiance",
+          "label": "Recurso solar (año bajo / alto)",
+          "unit": "kWh/m²/día",
+          "base_value": 6.601521321013005,
+          "low_value": 6.4330555,
+          "high_value": 6.7648832,
+          "npv_at_low": -3473328.13,
+          "npv_at_high": -2565926.48,
+          "swing": 907401.65,
+          "provenance": "MODEL_ESTIMATE",
+          "basis": "Percentiles 10 y 90 de 24 medias anuales observadas (2001–2024), NASA POWER."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "energy_price_usd_mwh",
+          "label": "Precio de equilibrio",
+          "unit": "USD/MWh",
+          "assumed_value": 55.0,
+          "break_even_value": 64.1787,
+          "note": "Precio mínimo para VAN ≥ 0: 64.18 USD/MWh; el supuesto está 14 % por debajo (déficit)."
+        },
+        {
+          "key": "initial_capex_usd",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 18000000.0,
+          "break_even_value": 14987351.1909,
+          "note": "CAPEX máximo para VAN ≥ 0: USD 14.99 M; el supuesto está 20 % por encima (déficit)."
+        },
+        {
+          "key": "irradiance",
+          "label": "Irradiancia de equilibrio",
+          "unit": "kWh/m²/día",
+          "assumed_value": 6.601521321013005,
+          "break_even_value": 7.7032,
+          "note": "Irradiancia mínima para VAN ≥ 0: 7.70 kWh/m²/día; ningún año observado la alcanza (mejor año: 6.88)."
+        }
+      ]
+    },
+    {
+      "subject": "Arequipa",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": -2973077.18,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": -2973077.18,
+          "changes": [
+            "Todos los supuestos en su valor declarado; recurso = media observada."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -11180472.39,
+          "changes": [
+            "Recurso solar (año bajo / alto): 6.44 kWh/m²/día",
+            "Precio de energía: 44.00 USD/MWh",
+            "CAPEX inicial: USD 21.60 M",
+            "OPEX anual: USD 432,000/año"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 5434808.04,
+          "changes": [
+            "Recurso solar (año bajo / alto): 6.79 kWh/m²/día",
+            "Precio de energía: 66.00 USD/MWh",
+            "CAPEX inicial: USD 14.40 M",
+            "OPEX anual: USD 288,000/año"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "energy_price_usd_mwh",
+          "label": "Precio de energía",
+          "unit": "USD/MWh",
+          "base_value": 55.0,
+          "low_value": 44.0,
+          "high_value": 66.0,
+          "npv_at_low": -6591438.33,
+          "npv_at_high": 645283.97,
+          "swing": 7236722.3,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "initial_capex_usd",
+          "label": "CAPEX inicial",
+          "unit": "USD",
+          "base_value": 18000000.0,
+          "low_value": 21600000.0,
+          "high_value": 14400000.0,
+          "npv_at_low": -6573077.18,
+          "npv_at_high": 626922.82,
+          "swing": 7200000.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": -4816008.37,
+          "npv_at_high": -670412.98,
+          "swing": 4145595.39,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "performance_ratio",
+          "label": "Performance ratio",
+          "unit": "",
+          "base_value": 0.8,
+          "low_value": 0.75,
+          "high_value": 0.8500000000000001,
+          "npv_at_low": -4103815.04,
+          "npv_at_high": -1842339.32,
+          "swing": 2261475.72,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.05."
+        },
+        {
+          "key": "annual_opex_usd",
+          "label": "OPEX anual",
+          "unit": "USD/año",
+          "base_value": 360000.0,
+          "low_value": 432000.0,
+          "high_value": 288000.0,
+          "npv_at_low": -3586053.77,
+          "npv_at_high": -2360100.59,
+          "swing": 1225953.18,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "irradiance",
+          "label": "Recurso solar (año bajo / alto)",
+          "unit": "kWh/m²/día",
+          "base_value": 6.615992265571527,
+          "low_value": 6.4440917,
+          "high_value": 6.7916903,
+          "npv_at_low": -3443149.02,
+          "npv_at_high": -2492620.95,
+          "swing": 950528.07,
+          "provenance": "MODEL_ESTIMATE",
+          "basis": "Percentiles 10 y 90 de 24 medias anuales observadas (2001–2024), NASA POWER."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "energy_price_usd_mwh",
+          "label": "Precio de equilibrio",
+          "unit": "USD/MWh",
+          "assumed_value": 55.0,
+          "break_even_value": 64.0383,
+          "note": "Precio mínimo para VAN ≥ 0: 64.04 USD/MWh; el supuesto está 14 % por debajo (déficit)."
+        },
+        {
+          "key": "initial_capex_usd",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 18000000.0,
+          "break_even_value": 15026922.8158,
+          "note": "CAPEX máximo para VAN ≥ 0: USD 15.03 M; el supuesto está 20 % por encima (déficit)."
+        },
+        {
+          "key": "irradiance",
+          "label": "Irradiancia de equilibrio",
+          "unit": "kWh/m²/día",
+          "assumed_value": 6.615992265571527,
+          "break_even_value": 7.7032,
+          "note": "Irradiancia mínima para VAN ≥ 0: 7.70 kWh/m²/día; ningún año observado la alcanza (mejor año: 6.94)."
+        }
+      ]
     }
   ],
   "disclaimer": "Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera."

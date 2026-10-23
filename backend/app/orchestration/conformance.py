@@ -71,6 +71,17 @@ def envelope_violations(envelope: ScreeningEnvelope) -> list[str]:
             problems.append(f"Tendencia duplicada para {finding.site} · {finding.variable}.")
         seen.add((finding.site, finding.variable))
 
+    for sensitivity in envelope.financial_sensitivity:
+        keys = [scenario.key for scenario in sensitivity.scenarios]
+        if sensitivity.subject not in labels:
+            problems.append(f"La sensibilidad cita un sujeto inexistente: {sensitivity.subject}.")
+        if "base" not in keys or "adverso" not in keys:
+            problems.append(f"La sensibilidad de {sensitivity.subject} debe incluir los escenarios base y adverso.")
+        elif next(scenario.npv for scenario in sensitivity.scenarios if scenario.key == "base") != sensitivity.base_npv:
+            problems.append(f"El VAN base de {sensitivity.subject} no coincide con su escenario base.")
+        if not sensitivity.tornado:
+            problems.append(f"La sensibilidad de {sensitivity.subject} no informa factores.")
+
     for item in envelope.assumption_items:
         if item.provenance != Provenance.ASSUMPTION:
             problems.append(f"El supuesto {item.key} debe tener procedencia USER_ASSUMPTION.")

@@ -132,6 +132,50 @@ class DataGap(BaseModel):
     next_action: str
 
 
+class SensitivityBar(BaseModel):
+    """Una barra del tornado: el VAN al llevar un solo factor a su extremo bajo y alto, con el resto en el caso base."""
+
+    key: str
+    label: str
+    unit: str
+    base_value: float
+    low_value: float
+    high_value: float
+    npv_at_low: float
+    npv_at_high: float
+    swing: float = Field(description="|VAN alto − VAN bajo|; el tornado se ordena por este valor.")
+    provenance: Provenance
+    basis: str = Field(description="De dónde sale el rango: dato observado o supuesto del usuario.")
+
+
+class FinanceScenario(BaseModel):
+    key: Literal["base", "adverso", "favorable"]
+    label: str
+    npv: float
+    changes: list[str] = Field(description="Factores que se mueven respecto del caso base, en lenguaje claro.")
+
+
+class BreakEven(BaseModel):
+    """Valor de un factor en el que el VAN es cero, con los demás en el caso base."""
+
+    key: str
+    label: str
+    unit: str
+    assumed_value: float
+    break_even_value: float | None = Field(description="None si el VAN no cruza cero dentro del rango buscado.")
+    note: str
+
+
+class SubjectSensitivity(BaseModel):
+    subject: str = Field(description="Etiqueta del sujeto de estudio.")
+    metric: str = "VAN"
+    currency: str = "USD"
+    base_npv: float
+    scenarios: list[FinanceScenario]
+    tornado: list[SensitivityBar]
+    break_evens: list[BreakEven]
+
+
 class ScreeningEnvelope(BaseModel):
     contract_version: Literal["1.0"] = CONTRACT_VERSION
     analysis_id: str
@@ -147,4 +191,7 @@ class ScreeningEnvelope(BaseModel):
     terrain: TerrainResponse | None = None
     data_gaps: list[DataGap]
     assumption_items: list[AssumptionItem]
+    financial_sensitivity: list[SubjectSensitivity] = Field(
+        default_factory=list, description="Escenarios, tornado y equilibrios por sujeto; vacío si el sector no evalúa finanzas."
+    )
     disclaimer: str

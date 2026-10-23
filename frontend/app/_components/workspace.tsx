@@ -7,6 +7,7 @@ import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
+import SensitivityPanel from "./sensitivity-panel";
 import SiteVerdict from "./site-verdict";
 import { isClimate } from "./types";
 import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage } from "./types";
@@ -29,7 +30,10 @@ const initialSites: Point[] = [
   { label: "Moquegua", latitude: -17.193, longitude: -70.934 },
   { label: "Arequipa", latitude: -16.409, longitude: -71.537 },
 ];
-const initialAssumptions: Assumptions = { capacity_mw: 20, performance_ratio: 0.8, initial_capex_usd: 18000000, annual_opex_usd: 360000, energy_price_usd_mwh: 55, mitigation_capex_usd: 0, discount_rate: 0.1, horizon_years: 20 };
+const initialAssumptions: Assumptions = {
+  capacity_mw: 20, performance_ratio: 0.8, initial_capex_usd: 18000000, annual_opex_usd: 360000, energy_price_usd_mwh: 55, mitigation_capex_usd: 0, discount_rate: 0.1, horizon_years: 20,
+  price_sensitivity: 0.2, capex_sensitivity: 0.2, opex_sensitivity: 0.2, performance_ratio_sensitivity: 0.05, discount_rate_sensitivity: 0.02,
+};
 const provenanceLabels: Record<string, string> = { REAL_DATA: "Observación original", CACHED_DATA: "Copia validada en caché", MODEL_ESTIMATE: "Cálculo derivado", USER_ASSUMPTION: "Supuesto editable", DATA_UNAVAILABLE: "Fuente pendiente" };
 const solarTabs = [
   { id: "ALLSKY_SFC_SW_DWN", short: "Radiación solar" },
@@ -350,6 +354,14 @@ export default function Workspace() {
                 <label>OPEX anual USD<input type="number" value={assumptions.annual_opex_usd} onChange={(event) => updateAssumption("annual_opex_usd", event.target.value)} /></label>
                 <label>Tasa descuento<input type="number" step="0.01" value={assumptions.discount_rate} onChange={(event) => updateAssumption("discount_rate", event.target.value)} /></label>
               </div>
+              <p className="assumptionGroup">Rangos de sensibilidad (±) · el del recurso sale de los años observados</p>
+              <div className="assumptionFields">
+                <label>Precio ± (fracción)<input type="number" step="0.05" min="0" max="0.95" value={assumptions.price_sensitivity} onChange={(event) => updateAssumption("price_sensitivity", event.target.value)} /></label>
+                <label>CAPEX ± (fracción)<input type="number" step="0.05" min="0" max="0.95" value={assumptions.capex_sensitivity} onChange={(event) => updateAssumption("capex_sensitivity", event.target.value)} /></label>
+                <label>OPEX ± (fracción)<input type="number" step="0.05" min="0" max="0.95" value={assumptions.opex_sensitivity} onChange={(event) => updateAssumption("opex_sensitivity", event.target.value)} /></label>
+                <label>PR ± (puntos)<input type="number" step="0.01" min="0" max="0.45" value={assumptions.performance_ratio_sensitivity} onChange={(event) => updateAssumption("performance_ratio_sensitivity", event.target.value)} /></label>
+                <label>Tasa ± (puntos)<input type="number" step="0.005" min="0" max="0.45" value={assumptions.discount_rate_sensitivity} onChange={(event) => updateAssumption("discount_rate_sensitivity", event.target.value)} /></label>
+              </div>
             </details>}
           </div>
         </aside>
@@ -382,6 +394,7 @@ export default function Workspace() {
             <article className="chartPanel"><div className="panelHeader"><div><h3>Irradiancia histórica media</h3><p>Comparación relativa con observaciones NASA POWER</p></div><span>kWh/m²/día</span></div><ComparisonChart data={comparisonData} /></article>
             <article className="decisionPanel"><h3>Escenario económico</h3>{solarResult.sites.map((site) => <div className="decisionRow" key={site.location.label}><div><b>{site.location.label}</b><span>{formatNumber(site.finance.annual_energy_mwh, 0)} MWh/año</span></div><strong className={site.finance.npv_usd >= 0 ? "positive" : "negative"}>{formatMoney(site.finance.npv_usd)}</strong></div>)}<p>MODEL_ESTIMATE · condicionado a USER_ASSUMPTION</p></article>
           </div>
+          {solarResult.financial_sensitivity?.length ? <SensitivityPanel items={solarResult.financial_sensitivity} stale={staleAssumptions} /> : null}
           <div className="siteResults">
             {solarResult.sites.map((site) => (
               <article className="siteResult" key={site.location.label}>

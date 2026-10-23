@@ -28,6 +28,12 @@ class SolarAssumptions(BaseModel):
     mitigation_capex_usd: float = Field(default=0, ge=0)
     discount_rate: float = Field(default=0.10, gt=-1, le=1)
     horizon_years: int = Field(default=20, ge=1, le=50)
+    # Rangos de sensibilidad (supuestos del usuario). El rango del recurso no está aquí: sale de los años observados.
+    price_sensitivity: float = Field(default=0.20, ge=0, lt=1, description="Variación relativa del precio (±).")
+    capex_sensitivity: float = Field(default=0.20, ge=0, lt=1, description="Variación relativa del CAPEX inicial (±).")
+    opex_sensitivity: float = Field(default=0.20, ge=0, lt=1, description="Variación relativa del OPEX anual (±).")
+    performance_ratio_sensitivity: float = Field(default=0.05, ge=0, lt=0.5, description="Variación absoluta del performance ratio (±).")
+    discount_rate_sensitivity: float = Field(default=0.02, ge=0, lt=0.5, description="Variación absoluta de la tasa de descuento (±).")
 
 
 class SolarScreeningRequest(BaseModel):

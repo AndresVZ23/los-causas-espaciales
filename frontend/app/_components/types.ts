@@ -1,7 +1,19 @@
 import type { IconName } from "./icons";
 
 export type Point = { latitude: number; longitude: number; label: string };
-export type Assumptions = { capacity_mw: number; performance_ratio: number; initial_capex_usd: number; annual_opex_usd: number; energy_price_usd_mwh: number; mitigation_capex_usd: number; discount_rate: number; horizon_years: number };
+export type Assumptions = {
+  capacity_mw: number; performance_ratio: number; initial_capex_usd: number; annual_opex_usd: number; energy_price_usd_mwh: number; mitigation_capex_usd: number; discount_rate: number; horizon_years: number;
+  // Rangos de sensibilidad (±); el orden de claves replica el del backend para comparar supuestos vigentes.
+  price_sensitivity: number; capex_sensitivity: number; opex_sensitivity: number; performance_ratio_sensitivity: number; discount_rate_sensitivity: number;
+};
+// Contrato C2 · sensibilidad del VAN (común a todos los sectores con finanzas).
+export type SensitivityBar = {
+  key: string; label: string; unit: string; base_value: number; low_value: number; high_value: number;
+  npv_at_low: number; npv_at_high: number; swing: number; provenance: string; basis: string;
+};
+export type FinanceScenario = { key: "base" | "adverso" | "favorable"; label: string; npv: number; changes: string[] };
+export type BreakEven = { key: string; label: string; unit: string; assumed_value: number; break_even_value: number | null; note: string };
+export type SubjectSensitivity = { subject: string; metric: string; currency: string; base_npv: number; scenarios: FinanceScenario[]; tornado: SensitivityBar[]; break_evens: BreakEven[] };
 export type Trend = {
   direction: string; slope_per_year: number | null; p_value: number | null; p_value_modified?: number | null; variance_correction?: number | null;
   confidence_interval: [number, number] | null; significant: boolean;
@@ -32,7 +44,7 @@ export type StudySubject = { id: string; label: string; kind: "point" | "segment
 export type AssumptionItem = { key: string; label: string; value: number; unit: string; provenance: string };
 export type ScreeningResult = {
   contract_version?: string; analysis_id: string; generated_at: string; title: string; sector: string; sector_label?: string; period: string;
-  subjects?: StudySubject[]; assumption_items?: AssumptionItem[];
+  subjects?: StudySubject[]; assumption_items?: AssumptionItem[]; financial_sensitivity?: SubjectSensitivity[];
   pipeline: Stage[]; nasa_questions: NasaQuestion[]; trend_findings: TrendFinding[];
   sites: SiteResult[]; terrain: TerrainResult | null;
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; disclaimer: string;
