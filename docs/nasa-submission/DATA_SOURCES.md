@@ -13,6 +13,10 @@
 
 NASA POWER limits a point request to 20 parameters and may return HTTP 429. The MVP requests four supported parameters in one multiparameter request per site and caches responses for 24 hours. NASADEM granules are discovered through NASA CMR; the system does not claim terrain metrics unless the protected HGT and SC archives were downloaded and parsed successfully. IMERG differentiates Early, Late, and Final products; the research workflow will prioritize Final after version, units, authentication, and access are verified.
 
+### NASADEM access incident: `s17w071`
+
+CMR live discovery on 23-Oct-2026 confirmed that both requested granules exist: `NASADEM_HGT_s17w071` (`G2816776437-LPCLOUD`) and `NASADEM_SC_s17w071` (`G2816803398-LPCLOUD`), each with the expected protected LP DAAC HTTPS ZIP path. A one-byte authenticated range request returned HTTP 401 for both. The identical check also returned 401 for the previously validated `s18w071` and `s17w072` granules, while the JWT's embedded expiry remains 21-Dec-2026. Therefore the evidence points to a rejected/revoked credential or Earthdata authorization state, not to a missing or misnamed `s17w071` tile. Existing validated archives remain usable from cache; new downloads stay `METADATA_ONLY` after the background attempt reports 401. Renew `EARTHDATA_TOKEN` and re-authorize LP DAAC before retrying. The connector distinguishes 401 (renew token) from 403 (authorize LP DAAC) and never logs the token.
+
 ## NASA POWER precipitation: temporal convention and QA finding
 
 The connector explicitly sends `time-standard=UTC` to the NASA POWER Daily Point API. Therefore its operational day boundary is **00:00 UTC**: a dated value covers 00:00–23:59 UTC. In continental Peru (UTC−05:00), that corresponds approximately to 19:00 on the preceding local date through 18:59 on the labelled local date. POWER also supports Local Solar Time (`LST`) and uses LST by default when `time-standard` is omitted; UTC and LST daily bins must not be compared as though they shared the same cutoff.

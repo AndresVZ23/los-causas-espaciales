@@ -8,8 +8,8 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T22:00:00Z",
-  updatedBy: "Claude",
+  updatedAt: "2026-10-23T19:15:00Z",
+  updatedBy: "Codex",
 
   statuses: {
     VERIFICADO: "Verificado con evidencia en el repositorio",
@@ -67,6 +67,7 @@ window.DOP_DATA = {
       evidence: [
         { label: "Integración CMR y vista previa", ref: "08be4ff" },
         { label: "Descarga autenticada real: 2 de 2 sitios READY", ref: "HANDOFF_LOG 2026-10-22" },
+        { label: "s17w071 existe; token actual rechazado globalmente con 401", ref: "CMR G2816776437/G2816803398 · QA 23-oct-2026" },
         { label: "Descarga asíncrona, reanudable, atómica y con precarga", ref: "df128a0 · merge 7a42125" },
         { label: "14 pruebas K0: fría, Range, caché, concurrencia, PENDING y prefetch", ref: "pytest backend/tests/test_nasadem.py" },
         { label: "Celdas contrastadas por lectura ZIP independiente", ref: "Moquegua 1420 m · 5.47° · 315.12°; Arequipa 2316 m · 3.67° · 225.3°" },

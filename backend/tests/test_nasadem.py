@@ -281,9 +281,18 @@ def test_points_returns_pending_without_waiting_for_background_download(monkeypa
     assert any("segundo plano" in limitation for limitation in response.sites[0].limitations)
 
 
-def test_access_denied_changes_followup_status_to_metadata_only(monkeypatch, tmp_path):
+@pytest.mark.parametrize(
+    ("status_code", "expected_guidance"),
+    [(401, "renueve el token"), (403, "aplicación LP DAAC")],
+)
+def test_access_denied_changes_followup_status_to_metadata_only(
+    monkeypatch,
+    tmp_path,
+    status_code,
+    expected_guidance,
+):
     def handler(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(403, request=request)
+        return httpx.Response(status_code, request=request)
 
     connector = NasademConnector(transport=httpx.MockTransport(handler))
     connector.cache_dir = tmp_path
@@ -307,7 +316,8 @@ def test_access_denied_changes_followup_status_to_metadata_only(monkeypatch, tmp
 
     assert first.sites[0].status == "PENDING"
     assert second.sites[0].status == "METADATA_ONLY"
-    assert any("HTTP 403" in limitation for limitation in second.sites[0].limitations)
+    assert any(f"HTTP {status_code}" in limitation for limitation in second.sites[0].limitations)
+    assert any(expected_guidance in limitation for limitation in second.sites[0].limitations)
 
 
 def test_prefetch_starts_downloads_without_waiting_for_completion(monkeypatch, tmp_path):
