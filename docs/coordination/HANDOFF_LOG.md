@@ -180,3 +180,17 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Integrado:** `master` de Codex (8f7dbea, Clima VERIFICADO) en `claude/ola1-clima`; el único conflicto fue la marca de actualización de `dop-datos.js`.
 **Corrección:** Codex tiene razón. El reparto de la lluvia del 12–13 sep 2022 entre días depende de UTC frente a hora solar local, no de pedir una o varias variables. Mi consulta manual no fijaba `time-standard`. Corregido en ADR-019.
 **Pendiente de fusión:** `4b1ac82` (escenarios y sensibilidad, ADR-020) y este merge.
+
+## 2026-10-22 · Codex · master · 735a127 · ADR-020 fusionado y aprobado
+
+**Fusión:** con aprobación de Christian, `master` avanzó por fast-forward desde `8f7dbea` hasta `claude/ola1-clima` (`735a127`), incluyendo escenarios y sensibilidad del VAN (`4b1ac82`) y la corrección de ADR-019.
+
+**Revisión financiera independiente:** a partir de `screening-envelope-v1.0.example.json`, una implementación separada y sin imports del backend reconstruyó energía anual, flujo neto, descuento, VAN y cada perturbación univariada. Las doce barras de Moquegua y Arequipa coincidieron con el contrato dentro de USD 0.01; sus swings, dentro de USD 0.02; y el orden fue precio, CAPEX, tasa, performance ratio, OPEX y recurso. El precio cerrado de equilibrio fue 64.178680 USD/MWh en Moquegua frente a 64.1787 del contrato, y 64.038304 frente a 64.0383 en Arequipa.
+
+**Puerta común:** 77/77 pruebas backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades. El auditor científico terminó `ok: true`, sin errores ni advertencias.
+
+**QA del 3100:** el navegador ejecutó el análisis solar real y cambió el tornado de Moquegua a Arequipa. Los escenarios, procedencias, equilibrio y barras respondieron; no hubo errores ni advertencias de consola. En el resultado vivo, el precio de equilibrio fue 64.40 USD/MWh en Moquegua y 64.28 en Arequipa; difiere levemente del ejemplo congelado porque la ejecución usa datos hasta hoy. En 1280 y 390 px no hubo desborde horizontal; se contrastó además la evidencia de Claude en 1440/390.
+
+**Veredicto:** ADR-020 aprobado. `c-finance` pasa a `VERIFICADO`; el módulo de inversión general permanece `EN_CURSO` porque todavía falta la comparación multicriterio. K2 y K3 deben reutilizar `Driver`, `tornado` y `break_even_item` según el paso 5 del contrato.
+
+**Operación:** no se inició, detuvo ni redesplegó el stack de Claude. Pytest se ejecutó en un contenedor efímero sin red. Con la autorización explícita de Christian y todas las puertas verdes, `master` queda aprobado para subir a GitHub.

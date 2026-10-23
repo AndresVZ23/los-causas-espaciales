@@ -8,8 +8,8 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T02:10:00Z",
-  updatedBy: "Claude",
+  updatedAt: "2026-10-23T02:19:00Z",
+  updatedBy: "Codex",
 
   statuses: {
     VERIFICADO: "Verificado con evidencia en el repositorio",
@@ -226,7 +226,7 @@ window.DOP_DATA = {
       { id: "c-road", layer: "C", name: "Lente vial", owner: "Codex", status: "PENDIENTE", planTask: "K2", detail: "Exposición por tramo y escenario de interrupción con supuestos del usuario." },
       { id: "c-realestate", layer: "C", name: "Lente inmobiliario", owner: "Codex", status: "PENDIENTE", planTask: "K3", detail: "Terreno, amenazas, restricciones y mitigación por polígono." },
       { id: "c-windhydro", layer: "C", name: "Lentes eólico e hidroeléctrico", owner: "Claude", status: "PENDIENTE", detail: "Viento a 10 m no sustituye medición a altura de buje; lluvia no es caudal." },
-      { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "LISTO_PARA_QA", detail: "VAN con escenarios base, adverso y favorable, tornado y equilibrios (precio, CAPEX, recurso); motor genérico finance/sensitivity.py para los tres pilotos (ADR-020)." },
+      { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "VERIFICADO", detail: "VAN con escenarios base, adverso y favorable, tornado y equilibrios (precio, CAPEX, recurso); motor genérico finance/sensitivity.py para los tres pilotos (ADR-020). Contraste independiente del tornado y precio de equilibrio aprobado.", evidence: ["4b1ac82", "merge 735a127", "77 pruebas", "VAN y tornado recalculados sin importar el backend", "QA 1280/390 sin errores"] },
       { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "PENDIENTE", detail: "Ponderaciones explícitas por sector, cobertura y sensibilidad; nunca un 90/100 sin método." },
       { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
 
@@ -334,7 +334,7 @@ window.DOP_DATA = {
 
   // Tareas del plan conjunto (docs/coordination/PLAN_CLAUDE_CODEX.md) y su relación con el DOP.
   plan: [
-    { id: "X0", owner: "Codex", title: "Revisar y fusionar las ramas de Claude en master", status: "VERIFICADO", ref: "7a43c10 · merge K0 7a42125 · clima 13c1398 · puertas comunes aprobadas", nodes: [] },
+    { id: "X0", owner: "Codex", title: "Revisar y fusionar las ramas de Claude en master", status: "VERIFICADO", ref: "7a43c10 · merge K0 7a42125 · clima 13c1398 · sensibilidad 735a127 · puertas comunes aprobadas", nodes: [] },
     { id: "C1", owner: "Claude", title: "Mann–Kendall con Hamed–Rao", status: "VERIFICADO", ref: "5d307f9", nodes: ["qa-core"] },
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
