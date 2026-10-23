@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T02:10:00Z",
+  updatedAt: "2026-10-23T03:20:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -197,7 +197,7 @@ window.DOP_DATA = {
       { id: "in-hazards-pe", layer: "in", group: "Territorio Perú", name: "Peligros geológicos e inundación", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "peru", detail: "INGEMMET, CENEPRED y ANA." },
       { id: "in-social", layer: "in", group: "Territorio Perú", name: "Comunidades y conflictos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Defensoría del Pueblo y SENACE; solo alertas de debida diligencia." },
       { id: "in-roads", layer: "in", group: "Territorio Perú", name: "Red vial", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K2", detail: "MTC u OpenStreetMap (ODbL) para la geometría del corredor piloto." },
-      { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Puntos operativos; dibujo y carga de corredores y polígonos pendientes." },
+      { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "LISTO_PARA_QA", provenance: "USER_ASSUMPTION", detail: "Puntos, y corredores y polígonos dibujados o cargados (GeoJSON RFC 7946, sin reparaciones ocultas), validados y medidos por /geospatial/inspect y exportables para K1." },
       { id: "in-assumptions", layer: "in", group: "Usuario", name: "Supuestos financieros y técnicos", owner: "Claude", status: "VERIFICADO", provenance: "USER_ASSUMPTION", detail: "CAPEX, OPEX, precio, tasa, horizonte, performance ratio y rangos de sensibilidad (±)." },
       { id: "in-sector", layer: "in", group: "Usuario", name: "Sector y criterios de comparación", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Hoy solo solar; ponderaciones por sector pendientes." },
       { id: "in-coes", layer: "in", group: "Resultados reales", name: "Generación real por central (COES)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "labels", detail: "Etiquetas para el calibrador neuronal; acceso y licencia por verificar." },

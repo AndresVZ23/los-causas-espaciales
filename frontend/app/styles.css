@@ -74,7 +74,7 @@ a { color: inherit; text-decoration: none; }
 .mapKey > span { display: block; margin-bottom: 11px; color: #b8c0c7; letter-spacing: .07em; }
 .mapKey p { margin: 9px 0; display: flex; align-items: center; gap: 9px; }
 .mapKey p i { flex: 0 0 27px; height: 8px; }
-.keyLine { border-top: 1px dashed var(--accent); }.keyPrimary { background: var(--accent); width: 7px !important; height: 7px !important; flex-basis: 7px !important; border-radius: 50%; margin-right: 20px; }.keySecondary { border: 1px solid var(--text); width: 7px !important; height: 7px !important; flex-basis: 7px !important; border-radius: 50%; margin-right: 20px; }.keyImagery { background: #304b42; border: 1px solid #477261; }
+.keyLine { border-top: 1px dashed var(--accent); }.keyPrimary { background: var(--accent); width: 7px !important; height: 7px !important; flex-basis: 7px !important; border-radius: 50%; margin-right: 20px; }.keySecondary { border: 1px solid var(--text); width: 7px !important; height: 7px !important; flex-basis: 7px !important; border-radius: 50%; margin-right: 20px; }.keyImagery { background: #304b42; border: 1px solid #477261; }.keyStudy { border-top: 2px solid #b49cff; }
 .scaleBar { margin-top: 16px; padding-top: 8px; display: grid; grid-template-columns: 1fr auto; position: relative; border-top: 1px solid var(--border); }
 .scaleBar i { position: absolute; top: 8px; left: 0; width: 90px; height: 7px; border: 1px solid var(--muted); border-top: 0; }
 .scaleBar span { padding-top: 14px; font-size: 10px; }
@@ -322,6 +322,37 @@ tbody th small.atypical { margin-top: 3px; color: var(--warning); }
 .tornadoTip { position: absolute; right: 0; bottom: calc(100% - 4px); z-index: 5; width: min(320px, 100%); padding: 9px 11px; display: none; flex-direction: column; gap: 4px; background: var(--raised); border: 1px solid var(--border); box-shadow: 0 6px 18px rgb(0 0 0 / .4); font-size: 11px; color: var(--text); }
 .tornadoTip small { color: var(--muted); line-height: 1.4; }
 .tornadoRow:hover .tornadoTip, .tornadoRow:focus-visible .tornadoTip { display: flex; }
+/* Geometrías de estudio: corredores y polígonos (violeta en el mapa, distinto de sitios y estados). */
+.geometryPanel { padding: 4px 0 12px; border-bottom: 1px solid var(--rule); }
+.geometryHead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.geometryHead h3 { margin: 0; font-size: 13px; }.geometryHead span { color: var(--warning); font: 10px var(--font-data-mono), monospace; }
+.geometryHint, .geometryEmpty, .geometryMethod { margin: 6px 0 10px; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.geometryMethod { margin: 10px 0 0; color: var(--subtle); }
+.geometryActions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.geometryActions button, .drawBar button { min-height: 34px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--text); font-size: 11px; padding: 0 10px; }
+.geometryActions button:hover:not(:disabled), .drawBar button:hover:not(:disabled) { border-color: #b49cff; }
+.geometryActions button:disabled, .drawBar button:disabled { color: var(--subtle); border-color: var(--border); cursor: not-allowed; }
+.drawBar { padding: 10px; border: 1px solid #4d4370; background: #17141f; }
+.drawBar p { margin: 0 0 8px; color: #d9d0f5; font-size: 11px; line-height: 1.45; }.drawBar p b { color: #fff; }
+.drawBar > div { display: flex; gap: 7px; flex-wrap: wrap; }.drawBar button.primary { border-color: #b49cff; color: #fff; }
+.geometryNotice { position: relative; margin-top: 10px; padding: 8px 30px 8px 10px; border: 1px solid var(--border); font-size: 11px; line-height: 1.45; }
+.geometryNotice p { margin: 0; }.geometryNotice p + p { margin-top: 4px; color: var(--muted); }
+.geometryNotice.error { border-color: #44262c; background: #1d1416; color: #edc9cd; }.geometryNotice.info { background: var(--surface); }
+.geometryNotice button { position: absolute; top: 4px; right: 4px; width: 24px; height: 24px; border: 0; background: transparent; color: var(--muted); font-size: 15px; }
+.geometryList { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.geometryList li { display: grid; grid-template-columns: 26px minmax(0, 1fr) auto; grid-template-rows: auto auto; gap: 2px 8px; align-items: start; padding: 8px; border: 1px solid var(--border); background: var(--surface); }
+.geometryList li.selected { border-color: #b49cff; }
+.geometrySelect { grid-row: 1 / 3; width: 26px; height: 26px; border: 0; background: transparent; display: grid; place-items: center; }
+.geometrySelect i { display: block; width: 16px; }
+.geometrySelect i.segment { height: 0; border-top: 2px solid #b49cff; transform: rotate(-30deg); }
+.geometrySelect i.polygon { height: 12px; border: 2px solid #b49cff; background: rgb(180 156 255 / .2); }
+.geometryList input { width: 100%; min-height: 26px; border: 1px solid transparent; background: transparent; color: var(--text); font-size: 12px; font-weight: 600; padding: 0 4px; }
+.geometryList input:hover, .geometryList input:focus { border-color: var(--border); background: var(--control); }
+.geometryList small { display: block; padding-left: 4px; color: var(--subtle); font-size: 10px; line-height: 1.5; }
+.geometryList small.figure { color: var(--text); font: 11px var(--font-data-mono), monospace; }.geometryList small.invalid { color: var(--negative); }
+.geometryStatus { font: 10px var(--font-data-mono), monospace; color: var(--muted); padding-top: 6px; }
+.geometryStatus.valida { color: var(--positive); }.geometryStatus.invalida { color: var(--negative); }
+.geometryRemove { grid-column: 3; justify-self: end; min-height: 26px; border: 0; background: transparent; color: var(--muted); font-size: 11px; text-decoration: underline; }
 .assumptionGroup { margin: 4px 0 2px; color: var(--muted); font: 10px/1.3 var(--font-data-mono), monospace; }
 .gapPanel { margin-top: 42px; display: grid; grid-template-columns: 260px 1fr; gap: 22px; }.gapPanel > div:first-child p { color: var(--muted); }.gapPanel > div:last-child { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }.gapPanel article { background: #1d1416; border: 1px solid #44262c; padding: 14px; }.gapPanel article > span { color: var(--negative); font: 10px var(--font-data-mono), monospace; }.gapPanel h4 { margin: 7px 0; }.gapPanel article p, .gapPanel article b { color: #c7b9bc; font-size: 11px; }.gapPanel article b { color: #edc9cd; }
 .disclaimer { border: 1px solid #514529; background: #201c13; color: #d8cba9; padding: 12px; font-size: 11px; }

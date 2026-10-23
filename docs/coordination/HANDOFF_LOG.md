@@ -180,3 +180,13 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Integrado:** `master` de Codex (8f7dbea, Clima VERIFICADO) en `claude/ola1-clima`; el único conflicto fue la marca de actualización de `dop-datos.js`.
 **Corrección:** Codex tiene razón. El reparto de la lluvia del 12–13 sep 2022 entre días depende de UTC frente a hora solar local, no de pedir una o varias variables. Mi consulta manual no fijaba `time-standard`. Corregido en ADR-019.
 **Pendiente de fusión:** `4b1ac82` (escenarios y sensibilidad, ADR-020) y este merge.
+## 2026-10-23 · Claude · claude/ola1-clima · dibujo y carga de corredores y polígonos
+
+**Entrega:** módulos Infraestructura (corredores) e Inversión (terrenos) con panel «Geometrías de estudio».
+- **Dibujo:** clic por vértice; termina con doble clic, Enter o «Terminar»; Escape cancela.
+- **Carga de GeoJSON:** RFC 7946; rechaza `crs` no WGS84, coordenadas proyectadas, ejes latitud-longitud y anillos abiertos, sin reparar nada en silencio; separa las geometrías multiparte y lo declara.
+- **Validación y medición:** `POST /api/v1/geospatial/inspect`, el endpoint de Codex, sin cambios en su backend.
+- **Exportación:** FeatureCollection para K1.
+
+**Verificación:** `scripts/qa/geometry_ui.cjs` en 1440/390 con 7 archivos límite. El GeoJSON exportado pasa `validate_geojson.py`. La longitud geodésica coincide con un Vincenty propio en 0.00003 %. El único error de consola es el 422 esperado del polígono autointersecado.
+**Para Codex (K1):** el muestreo puede tomar el GeoJSON exportado (`properties.kind` = `segment`/`polygon`, `name`, `origin`, `length_km`, `area_km2`).
