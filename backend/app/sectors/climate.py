@@ -101,8 +101,10 @@ def _countercheck_summary(sites: list[ClimateSiteResult]) -> str:
     if significant:
         backed = [f"{item.label.lower()} en {site.location.label}" for site, item in significant if item.countercheck.agreement == Agreement.COINCIDE]
         if not backed:
-            parts.append(f"Contraste con GPM IMERG: ninguna de las {len(significant)} tendencia(s) de extremos de lluvia se repite con el satélite; "
-                         "sin respaldo independiente, se leen como indicio y no como hallazgo.")
+            subject = "la única tendencia significativa de extremos de lluvia no se repite" if len(significant) == 1 \
+                else f"ninguna de las {len(significant)} tendencias significativas de extremos de lluvia se repite"
+            parts.append(f"Contraste con GPM IMERG: {subject} con el satélite; sin respaldo independiente, "
+                         + ("se lee como indicio y no como hallazgo." if len(significant) == 1 else "se leen como indicio y no como hallazgo."))
         else:
             parts.append(f"Contraste con GPM IMERG: {len(backed)} de {len(significant)} tendencias de extremos se repiten con el satélite ({', '.join(backed)})"
                          + ("; las demás no tienen respaldo independiente." if len(backed) < len(significant) else "."))

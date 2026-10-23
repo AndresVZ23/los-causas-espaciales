@@ -100,6 +100,7 @@
 - Corredores y polígonos: dibujo y carga de GeoJSON en Infraestructura e Inversión, con validación y medición geodésica y exportación para K1. La longitud coincide con un Vincenty independiente (0.00003 %).
 - GPM IMERG activo como contraste de los extremos (ADR-021): desmiente el atípico de 314 mm de Moquegua 2022 (IMERG: 0 mm) y no respalda la tendencia de RX5DAY en Arequipa. Ninguna tendencia de extremos de lluvia es robusta todavía. Backend: 85/85.
 - Puntaje multicriterio (ADR-022, ola 2): escalas declaradas, pesos editables, estabilidad con 2 000 combinaciones de pesos y empate práctico. Arequipa 67 frente a Moquegua 66: empate, honesto. Backend: 92/92.
+- Asistente C4 (ADR-023): reglas sin costo por defecto; Gemini solo a pedido y con verificación de cifras. Backend: 107/107.
 - Pendientes de K1b (Codex): AppEEARS (falta usuario y contraseña de Earthdata en `.env`), capas Perú (CENEPRED, SERNANP y Osinergmin responden; INGEMMET, Cultura y SENAMHI por ubicar) y generación COES.
 
 ## Contrato común entre sectores (C2)

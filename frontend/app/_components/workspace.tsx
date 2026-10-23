@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
+import AssistantPanel from "./assistant-panel";
 import { ClimateEvidence, ClimateReading } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
@@ -403,6 +404,7 @@ export default function Workspace() {
         {pdfError && <p className="errorMessage" role="alert">{pdfError}</p>}
         {!result ? <div className="emptyEvidence"><div><h3>El flujo está preparado</h3><p>NASA POWER, Mann–Kendall, pendiente de Sen, ajuste BH y VAN condicionado se ejecutan únicamente al solicitar el análisis.</p></div><ul><li>Comparación Moquegua–Arequipa</li><li>Cobertura y limitaciones por variable</li><li>Supuestos financieros explícitos</li><li>Brechas para debida diligencia</li></ul></div> : <>
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
+          <AssistantPanel result={result} />
           {climateResult && <ClimateEvidence result={climateResult} />}
           {solarResult && <>
           <div className="findingsPanel"><h3>Lectura comparativa</h3>{solarResult.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>

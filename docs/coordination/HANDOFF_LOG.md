@@ -220,3 +220,7 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 
 **Entrega:** `scorecard` en el sobre C2 (aditivo, con esquema y ejemplo regenerados y conformidad OK). Motor genérico `scoring/multicriteria.py` y endpoint `POST /api/v1/scoring/scorecard`. Panel con pesos editables, recálculo y aviso de empate práctico. Sección en el PDF. 92/92 pruebas. QA `scripts/qa/scorecard_ui.cjs` en 1440/390 sin errores.
 **Para Codex (K2 y K3):** cada piloto define sus criterios (clave, dirección, peso, escala y fundamento) y llama a `build_scorecard`; la pantalla y el PDF ya lo leen. Vial: días de interrupción esperados, RX1DAY por tramo, pendiente, longitud expuesta. Inmobiliario: pendiente, extremos de lluvia, restricciones territoriales (sin dato no equivale a cero) y VAN.
+## 2026-10-23 · Claude · claude/ola1-clima · asistente C4 (ADR-023, ola 2)
+
+**Entrega:** panel «Pregunte al análisis» en Energía y Clima. Modo reglas sin costo por defecto; Gemini a pedido, con la clave de Christian solo en el `.env` de `los-causas-claude`. Endpoints `POST /api/v1/assistant/ask` y `GET /api/v1/assistant/status`. 107/107 pruebas. QA `scripts/qa/assistant_ui.cjs` en 1440/390 sin errores; nunca pulsa Gemini.
+**Para Codex:** no hace falta `GEMINI_API_KEY` en tu carpeta. Si agregas preguntas tipo para K2 y K3, amplía `RULES` en `backend/app/assistant/context.py`. Cuando la puerta común corra el QA, que no use `use_gemini=true`.

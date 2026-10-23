@@ -325,6 +325,26 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .tornadoTip { position: absolute; right: 0; bottom: calc(100% - 4px); z-index: 5; width: min(320px, 100%); padding: 9px 11px; display: none; flex-direction: column; gap: 4px; background: var(--raised); border: 1px solid var(--border); box-shadow: 0 6px 18px rgb(0 0 0 / .4); font-size: 11px; color: var(--text); }
 .tornadoTip small { color: var(--muted); line-height: 1.4; }
 .tornadoRow:hover .tornadoTip, .tornadoRow:focus-visible .tornadoTip { display: flex; }
+/* Asistente C4: preguntas sobre el análisis (modo reglas por defecto). */
+.assistantPanel { margin: 0 0 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
+.assistantPanel .panelHeader > span { color: var(--positive); font: 10px var(--font-data-mono), monospace; }
+.assistantForm { margin-top: 14px; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+.assistantForm button.geminiAsk { border-color: #465058; color: var(--muted); }
+.assistantQuota { margin: 6px 0 0; color: var(--subtle); font-size: 11px; line-height: 1.45; }
+@media (max-width: 560px) { .assistantForm { grid-template-columns: 1fr 1fr; }.assistantForm input { grid-column: 1 / -1; }.assistantPanel { padding: 15px; }.assistantPanel .panelHeader { flex-direction: column; gap: 6px; } }
+.assistantForm input { min-height: 40px; border: 1px solid var(--border); background: var(--control); color: var(--text); padding: 0 12px; font-size: 13px; }
+.assistantForm input:focus { outline: 1px solid var(--accent); }
+.assistantForm button { min-height: 40px; padding: 0 16px; border: 1px solid var(--accent); border-radius: 2px; background: transparent; color: var(--text); font-size: 12px; }
+.assistantForm button:disabled { border-color: var(--border); color: var(--subtle); }
+.assistantSuggestions { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.assistantSuggestions button { min-height: 30px; padding: 0 10px; border: 1px solid #465058; border-radius: 15px; background: transparent; color: var(--muted); font-size: 11px; }
+.assistantSuggestions button:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+.assistantLog { display: grid; gap: 10px; margin-top: 12px; }
+.assistantLog article { padding: 12px 14px; border-left: 2px solid var(--accent); background: var(--ground); }
+.assistantQuestion { margin: 0 0 6px; color: var(--muted); font-size: 12px; }
+.assistantAnswer { margin: 0; font-size: 13px; line-height: 1.55; white-space: pre-line; }
+.assistantMeta { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 12px; color: var(--subtle); font: 10px var(--font-data-mono), monospace; }
+.assistantNotice { margin: 6px 0 0; color: var(--warning); font-size: 11px; }
 /* Puntaje multicriterio (contrato C2 · scorecard). */
 .scorecardPanel { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
 .scoreVerdict { margin: 14px 0 0; padding: 9px 11px; border-left: 2px solid var(--accent); background: var(--ground); font-size: 12px; line-height: 1.5; }

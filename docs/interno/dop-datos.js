@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T06:00:00Z",
+  updatedAt: "2026-10-23T08:00:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -228,7 +228,7 @@ window.DOP_DATA = {
       { id: "c-windhydro", layer: "C", name: "Lentes eólico e hidroeléctrico", owner: "Claude", status: "PENDIENTE", detail: "Viento a 10 m no sustituye medición a altura de buje; lluvia no es caudal." },
       { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "LISTO_PARA_QA", detail: "VAN con escenarios base, adverso y favorable, tornado y equilibrios (precio, CAPEX, recurso); motor genérico finance/sensitivity.py para los tres pilotos (ADR-020)." },
       { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "LISTO_PARA_QA", detail: "Escalas declaradas, pesos editables, cobertura, estabilidad Dirichlet y empate práctico (ADR-022); solar operativo, vial e inmobiliario con K2/K3." },
-      { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
+      { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al análisis, sin costo; Gemini solo a pedido con verificación de cifras (ADR-023)." },
 
       // Resultados
       { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "VERIFICADO", detail: "Pantalla y endpoint climate-screening: año en curso, tendencias, 6 índices ETCCDI con años atípicos marcados, PDF y JSON. QA visual 1440/390 de Claude y puerta común de Codex aprobadas; Hamed–Rao contrastado de forma independiente.", evidence: ["13c1398", "70 pruebas", "build Next.js", "audit 0 vulnerabilidades", "HANDOFF_LOG 2026-10-22"] },
