@@ -1,0 +1,3919 @@
+{
+  "contract_version": "1.0",
+  "analysis_id": "51c9fdaaa7e2711a",
+  "generated_at": "2026-10-23T19:19:38.932050Z",
+  "sector": "road",
+  "sector_label": "Infraestructura vial",
+  "title": "Screening vial preliminar — corredor Moquegua–Ilo",
+  "period": "2018-01-01/2023-12-31",
+  "subjects": [
+    {
+      "id": "segmento-1",
+      "label": "Tramo 1 de 5",
+      "kind": "segment",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -70.933942,
+            -17.193101
+          ],
+          [
+            -70.930707,
+            -17.195367
+          ],
+          [
+            -70.941848,
+            -17.202953
+          ],
+          [
+            -70.942332,
+            -17.215117
+          ],
+          [
+            -70.968501,
+            -17.213152
+          ],
+          [
+            -70.985673,
+            -17.240485
+          ],
+          [
+            -70.987696,
+            -17.349473
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.250924578769144,
+        "longitude": -70.98586677608407,
+        "label": "Tramo 1 de 5"
+      }
+    },
+    {
+      "id": "segmento-2",
+      "label": "Tramo 2 de 5",
+      "kind": "segment",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -70.987696,
+            -17.349473
+          ],
+          [
+            -70.995502,
+            -17.356123
+          ],
+          [
+            -70.994189,
+            -17.368688
+          ],
+          [
+            -71.01018,
+            -17.389211
+          ],
+          [
+            -71.029467,
+            -17.404831
+          ],
+          [
+            -71.042938,
+            -17.408602
+          ],
+          [
+            -71.051878,
+            -17.456874
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.40148202158564,
+        "longitude": -71.0253318049502,
+        "label": "Tramo 2 de 5"
+      }
+    },
+    {
+      "id": "segmento-3",
+      "label": "Tramo 3 de 5",
+      "kind": "segment",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -71.051878,
+            -17.456874
+          ],
+          [
+            -71.073785,
+            -17.495283
+          ],
+          [
+            -71.073528,
+            -17.513393
+          ],
+          [
+            -71.079545,
+            -17.519612
+          ],
+          [
+            -71.085098,
+            -17.555159
+          ],
+          [
+            -71.100298,
+            -17.56093
+          ],
+          [
+            -71.11765,
+            -17.579551
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.52292527811481,
+        "longitude": -71.08006258610773,
+        "label": "Tramo 3 de 5"
+      }
+    },
+    {
+      "id": "segmento-4",
+      "label": "Tramo 4 de 5",
+      "kind": "segment",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -71.11765,
+            -17.579551
+          ],
+          [
+            -71.144985,
+            -17.592679
+          ],
+          [
+            -71.164264,
+            -17.616371
+          ],
+          [
+            -71.187987,
+            -17.626746
+          ],
+          [
+            -71.192476,
+            -17.633315
+          ],
+          [
+            -71.202392,
+            -17.633094
+          ],
+          [
+            -71.228405,
+            -17.675762
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.622956562978597,
+        "longitude": -71.17932224679916,
+        "label": "Tramo 4 de 5"
+      }
+    },
+    {
+      "id": "segmento-5",
+      "label": "Tramo 5 de 5",
+      "kind": "segment",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [
+            -71.228405,
+            -17.675762
+          ],
+          [
+            -71.24893,
+            -17.697225
+          ],
+          [
+            -71.287481,
+            -17.687497
+          ],
+          [
+            -71.295863,
+            -17.662692
+          ],
+          [
+            -71.332256,
+            -17.660528
+          ],
+          [
+            -71.340216,
+            -17.652565
+          ],
+          [
+            -71.336971,
+            -17.639025
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.678797255300786,
+        "longitude": -71.29042078069214,
+        "label": "Tramo 5 de 5"
+      }
+    }
+  ],
+  "pipeline": [
+    {
+      "step": 1,
+      "key": "selection",
+      "name": "Selección",
+      "status": "COMPLETADO",
+      "summary": "5 tramos WGS84 validados.",
+      "provenance": [
+        "USER_ASSUMPTION",
+        "REAL_DATA"
+      ],
+      "evidence": [
+        {
+          "label": "Tramo 1 de 5",
+          "value": "-17.251, -70.986",
+          "provenance": null
+        },
+        {
+          "label": "Tramo 2 de 5",
+          "value": "-17.401, -71.025",
+          "provenance": null
+        },
+        {
+          "label": "Tramo 3 de 5",
+          "value": "-17.523, -71.080",
+          "provenance": null
+        },
+        {
+          "label": "Tramo 4 de 5",
+          "value": "-17.623, -71.179",
+          "provenance": null
+        },
+        {
+          "label": "Tramo 5 de 5",
+          "value": "-17.679, -71.290",
+          "provenance": null
+        },
+        {
+          "label": "Separación geodésica máxima",
+          "value": "57.3 km (WGS84)",
+          "provenance": null
+        },
+        {
+          "label": "Geometría del corredor",
+          "value": "© OpenStreetMap contributors · ruta calculada con OSRM · 86.518 km en 5 tramos",
+          "provenance": "REAL_DATA"
+        }
+      ],
+      "duration_ms": null,
+      "answers": [
+        "where"
+      ]
+    },
+    {
+      "step": 2,
+      "key": "configuration",
+      "name": "Configuración",
+      "status": "COMPLETADO",
+      "summary": "Infraestructura vial, 2 variables NASA, 6 años y supuestos explícitos.",
+      "provenance": [
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Sector",
+          "value": "Infraestructura vial",
+          "provenance": null
+        },
+        {
+          "label": "Variables NASA POWER",
+          "value": "PRECTOTCORR, T2M",
+          "provenance": null
+        },
+        {
+          "label": "Período",
+          "value": "2018-01-01 a 2023-12-31 · 6 años",
+          "provenance": null
+        },
+        {
+          "label": "Significancia",
+          "value": "α = 0.05 · Hamed–Rao · BH por variable entre sujetos",
+          "provenance": null
+        },
+        {
+          "label": "Supuestos",
+          "value": "5 días/año · USD 200,000/día · tasa 10%",
+          "provenance": "USER_ASSUMPTION"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    },
+    {
+      "step": 3,
+      "key": "extraction",
+      "name": "Extracción",
+      "status": "COMPLETADO",
+      "summary": "NASA POWER entregó 21,910 observaciones diarias para 2 variables en 5 sujetos.",
+      "provenance": [
+        "REAL_DATA"
+      ],
+      "evidence": [
+        {
+          "label": "Observaciones diarias válidas",
+          "value": "21,910",
+          "provenance": null
+        },
+        {
+          "label": "Cobertura mínima",
+          "value": "100.0 %",
+          "provenance": null
+        },
+        {
+          "label": "Series desde caché",
+          "value": "0 de 10",
+          "provenance": "REAL_DATA"
+        },
+        {
+          "label": "Descarga NASA (UTC)",
+          "value": "2026-10-23 a 2026-10-23",
+          "provenance": null
+        },
+        {
+          "label": "Último dato publicado",
+          "value": "PRECTOTCORR, T2M: 2023-12-31",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 13352.1,
+      "answers": [
+        "what"
+      ]
+    },
+    {
+      "step": 4,
+      "key": "analysis",
+      "name": "Análisis",
+      "status": "COMPLETADO",
+      "summary": "Mann–Kendall corregido (Hamed–Rao) y Sen sobre medias anuales; ninguna tendencia conserva significancia tras BH.",
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "evidence": [
+        {
+          "label": "Pruebas Mann–Kendall (Hamed–Rao)",
+          "value": "10 (2 variables × 5 sujetos)",
+          "provenance": null
+        },
+        {
+          "label": "Significativas antes de BH",
+          "value": "0 de 10",
+          "provenance": null
+        },
+        {
+          "label": "Significativas tras BH",
+          "value": "0 de 10",
+          "provenance": null
+        },
+        {
+          "label": "Varianza corregida por autocorrelación",
+          "value": "0 de 10 series",
+          "provenance": null
+        },
+        {
+          "label": "Lag-1 máx. de rangos sin tendencia",
+          "value": "0.81",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 213.6,
+      "answers": [
+        "what",
+        "how_much",
+        "significant"
+      ]
+    },
+    {
+      "step": 5,
+      "key": "territorial",
+      "name": "Inteligencia territorial",
+      "status": "PARCIAL",
+      "summary": "NASADEM localizó 5 de 5 sujetos y calculó métricas en 0. 5 tesela(s) se descargan en segundo plano. 6 capas oficiales siguen pendientes y no se interpretan como riesgo cero.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Gránulos NASADEM localizados",
+          "value": "5 de 5 · s18w071, s18w072",
+          "provenance": "REAL_DATA"
+        },
+        {
+          "label": "Elevación y pendiente calculadas",
+          "value": "0 de 5",
+          "provenance": "DATA_UNAVAILABLE"
+        },
+        {
+          "label": "Teselas descargándose",
+          "value": "5 · vuelva a ejecutar en unos minutos",
+          "provenance": "DATA_UNAVAILABLE"
+        },
+        {
+          "label": "Capas pendientes",
+          "value": "Métricas raster NASADEM, ingemmet-geohazards, cultura-archaeology-declared, Eje vial e inventario de activos MTC, Interrupciones, tránsito y pérdidas observadas, Comunidades y conflictos",
+          "provenance": "DATA_UNAVAILABLE"
+        },
+        {
+          "label": "Intersecciones de capas oficiales",
+          "value": "20; cero no demuestra ausencia de amenaza o restricción",
+          "provenance": "MODEL_ESTIMATE"
+        }
+      ],
+      "duration_ms": 13722.0,
+      "answers": [
+        "where",
+        "so_what"
+      ]
+    },
+    {
+      "step": 6,
+      "key": "evaluation",
+      "name": "Evaluación",
+      "status": "COMPLETADO",
+      "summary": "Prioridad multicriterio calculada para 5 tramos; líder Tramo 5 de 5.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "1.º Tramo 5 de 5",
+          "value": "40.5/100 · cobertura 85%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "2.º Tramo 4 de 5",
+          "value": "40.4/100 · cobertura 85%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "3.º Tramo 3 de 5",
+          "value": "40.2/100 · cobertura 85%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "4.º Tramo 2 de 5",
+          "value": "39.7/100 · cobertura 85%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "5.º Tramo 1 de 5",
+          "value": "38.1/100 · cobertura 85%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Lectura del score",
+          "value": "Mayor puntaje = mayor prioridad preliminar de estudio/mitigación; no significa tramo seguro ni proyecto factible.",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": [
+        "so_what"
+      ]
+    },
+    {
+      "step": 7,
+      "key": "finance",
+      "name": "Impacto económico",
+      "status": "COMPLETADO",
+      "summary": "VAN de mitigación positivo en 5 de 5 tramos en el caso base y en 0 de 5 en el adverso.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Tramo 1 de 5",
+          "value": "VAN USD 1,476,674 · 3.00 días evitados/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Tramo 2 de 5",
+          "value": "VAN USD 2,429,700 · 3.00 días evitados/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Tramo 3 de 5",
+          "value": "VAN USD 2,240,352 · 3.00 días evitados/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Tramo 4 de 5",
+          "value": "VAN USD 2,174,313 · 3.00 días evitados/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Tramo 5 de 5",
+          "value": "VAN USD 2,140,793 · 3.00 días evitados/año",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Factor dominante · Tramo 1 de 5",
+          "value": "Días de interrupción base",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Tramo 2 de 5",
+          "value": "Días de interrupción base",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Tramo 3 de 5",
+          "value": "Días de interrupción base",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Tramo 4 de 5",
+          "value": "Días de interrupción base",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Tramo 5 de 5",
+          "value": "Días de interrupción base",
+          "provenance": "USER_ASSUMPTION"
+        }
+      ],
+      "duration_ms": 39.7,
+      "answers": [
+        "so_what"
+      ]
+    },
+    {
+      "step": 8,
+      "key": "results",
+      "name": "Resultados",
+      "status": "COMPLETADO",
+      "summary": "Respuestas a las preguntas NASA, 0 tendencias significativas y 6 brechas documentadas.",
+      "provenance": [
+        "REAL_DATA",
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Tendencias significativas",
+          "value": "0",
+          "provenance": null
+        },
+        {
+          "label": "Brechas para debida diligencia",
+          "value": "6",
+          "provenance": "DATA_UNAVAILABLE"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    },
+    {
+      "step": 9,
+      "key": "export",
+      "name": "Exportación",
+      "status": "LISTO",
+      "summary": "Reporte JSON y PDF ejecutivo disponibles; la etapa se marca completada al descargar uno de ellos.",
+      "provenance": [
+        "REAL_DATA",
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Formato",
+          "value": "JSON con identificador, período, supuestos, procedencia y métodos",
+          "provenance": null
+        },
+        {
+          "label": "PDF ejecutivo",
+          "value": "Preguntas NASA, tendencias, relieve, pipeline, supuestos, brechas y huella SHA-256",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    }
+  ],
+  "nasa_questions": [
+    {
+      "key": "what",
+      "question": "What is changing?",
+      "question_es": "¿Qué está cambiando?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa. Ninguna de las 10 pruebas conserva significancia tras Benjamini–Hochberg.",
+      "evidence": [
+        "Variables analizadas: Precipitación corregida y Temperatura del aire a 2 m."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        3,
+        4
+      ]
+    },
+    {
+      "key": "where",
+      "question": "Where is it changing?",
+      "question_es": "¿Dónde está cambiando?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa. No se identifica un lugar con cambio significativo entre Tramo 1 de 5, Tramo 2 de 5, Tramo 3 de 5, Tramo 4 de 5 y Tramo 5 de 5.",
+      "evidence": [
+        "Tramo 1 de 5: -17.251, -70.986 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Tramo 2 de 5: -17.401, -71.025 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Tramo 3 de 5: -17.523, -71.080 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Tramo 4 de 5: -17.623, -71.179 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Tramo 5 de 5: -17.679, -71.290 (WGS84) · celda de grilla NASA POWER, no medición en sitio"
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        1,
+        5
+      ]
+    },
+    {
+      "key": "how_much",
+      "question": "How much is it changing?",
+      "question_es": "¿Cuánto está cambiando?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa. No se informa magnitud sin una tendencia significativa.",
+      "evidence": [],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        4
+      ]
+    },
+    {
+      "key": "significant",
+      "question": "Is the change statistically significant?",
+      "question_es": "¿El cambio es estadísticamente significativo?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+      "evidence": [
+        "Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998) y pendiente de Sen sobre 6 medias anuales; familia Benjamini–Hochberg = cada variable entre 5 sitios; α = 0.05.",
+        "Significativas antes del ajuste BH: 0 de 10; después: 0 de 10."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        4
+      ]
+    },
+    {
+      "key": "so_what",
+      "question": "What do these changes mean for investment decisions?",
+      "question_es": "¿Qué significan estos cambios para invertir?",
+      "status": "PARCIAL",
+      "answer": "La precipitación media no cambia con significancia en los tramos; eso no demuestra estabilidad de los extremos diarios. Con supuestos del usuario, el VAN de mitigación va de USD 1.48 M a USD 2.43 M; 5 de 5 tramos son no negativos. Esto prioriza estudios y no constituye una decisión de inversión.",
+      "evidence": [
+        "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
+        "6 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
+        "Screening preliminar: no sustituye estudios de recurso, ingeniería, impacto ambiental ni factibilidad."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "stage_steps": [
+        5,
+        6,
+        7
+      ]
+    }
+  ],
+  "trend_findings": [],
+  "terrain": {
+    "generated_at": "2026-10-23T19:19:04.623596Z",
+    "dataset": "NASADEM V001",
+    "crs": "EPSG:4326; longitude/latitude",
+    "spatial_resolution": "1 arc-second (~30 m at the equator)",
+    "sites": [
+      {
+        "location": {
+          "latitude": -17.250924578769144,
+          "longitude": -70.98586677608407,
+          "label": "Tramo 1 de 5"
+        },
+        "status": "PENDING",
+        "metrics": {
+          "elevation_m": null,
+          "slope_degrees": null,
+          "aspect_degrees": null,
+          "aspect_cardinal": null,
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777918-LPCLOUD",
+            "title": "NASADEM_HGT_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.916000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816797784-LPCLOUD",
+            "title": "NASADEM_SC_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:26.378000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "DATA_UNAVAILABLE",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
+          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -17.40148202158564,
+          "longitude": -71.0253318049502,
+          "label": "Tramo 2 de 5"
+        },
+        "status": "PENDING",
+        "metrics": {
+          "elevation_m": null,
+          "slope_degrees": null,
+          "aspect_degrees": null,
+          "aspect_cardinal": null,
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777939-LPCLOUD",
+            "title": "NASADEM_HGT_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.618000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816809338-LPCLOUD",
+            "title": "NASADEM_SC_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:25.741000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "DATA_UNAVAILABLE",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
+          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -17.52292527811481,
+          "longitude": -71.08006258610773,
+          "label": "Tramo 3 de 5"
+        },
+        "status": "PENDING",
+        "metrics": {
+          "elevation_m": null,
+          "slope_degrees": null,
+          "aspect_degrees": null,
+          "aspect_cardinal": null,
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777939-LPCLOUD",
+            "title": "NASADEM_HGT_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.618000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816809338-LPCLOUD",
+            "title": "NASADEM_SC_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:25.741000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "DATA_UNAVAILABLE",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
+          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -17.622956562978597,
+          "longitude": -71.17932224679916,
+          "label": "Tramo 4 de 5"
+        },
+        "status": "PENDING",
+        "metrics": {
+          "elevation_m": null,
+          "slope_degrees": null,
+          "aspect_degrees": null,
+          "aspect_cardinal": null,
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777939-LPCLOUD",
+            "title": "NASADEM_HGT_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.618000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816809338-LPCLOUD",
+            "title": "NASADEM_SC_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:25.741000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "DATA_UNAVAILABLE",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
+          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -17.678797255300786,
+          "longitude": -71.29042078069214,
+          "label": "Tramo 5 de 5"
+        },
+        "status": "PENDING",
+        "metrics": {
+          "elevation_m": null,
+          "slope_degrees": null,
+          "aspect_degrees": null,
+          "aspect_cardinal": null,
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777939-LPCLOUD",
+            "title": "NASADEM_HGT_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.618000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w072/NASADEM_HGT_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816809338-LPCLOUD",
+            "title": "NASADEM_SC_s18w072",
+            "tile_id": "s18w072",
+            "bounding_box": [
+              -72.0001389,
+              -18.0001389,
+              -70.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:25.741000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w072/NASADEM_SC_s18w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "DATA_UNAVAILABLE",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
+          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+        ]
+      }
+    ],
+    "note": "0 de 5 ubicaciones tienen métricas raster; 5 descargan teselas en segundo plano y 0 permanecen solo con metadatos. Ningún estado pendiente o sin acceso se convierte en datos ficticios."
+  },
+  "data_gaps": [
+    {
+      "dataset": "Métricas raster NASADEM",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No hay pendiente/elevación disponible para todos los tramos; el score redistribuye ese peso.",
+      "next_action": "Renovar Earthdata si corresponde y precargar las teselas del corredor."
+    },
+    {
+      "dataset": "ingemmet-geohazards",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La capa territorial no pudo verificarse: El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+      "next_action": "Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas."
+    },
+    {
+      "dataset": "cultura-archaeology-declared",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La capa territorial no pudo verificarse: El servicio oficial no respondió con datos utilizables: ",
+      "next_action": "Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas."
+    },
+    {
+      "dataset": "Eje vial e inventario de activos MTC",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La geometría OSM no acredita eje oficial, puentes, drenajes, estado ni derecho de vía.",
+      "next_action": "Sustituir la instantánea OSM por geometría e inventario oficiales del MTC antes de prefactibilidad."
+    },
+    {
+      "dataset": "Interrupciones, tránsito y pérdidas observadas",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "Los días y costos de interrupción son supuestos del usuario; no existe calibración con cierres reales.",
+      "next_action": "Cruzar emergencias INDECI/MTC, aforos, tiempos de cierre y costos logísticos observados."
+    },
+    {
+      "dataset": "Comunidades y conflictos",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No se descartan afectaciones sociales, prediales ni conflictos.",
+      "next_action": "Validar Defensoría, SENACE, consulta previa y catastro con los organismos competentes."
+    }
+  ],
+  "assumption_items": [
+    {
+      "key": "baseline_interruption_days_per_year",
+      "label": "Interrupción anual base",
+      "value": 5.0,
+      "unit": "días/año",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "residual_interruption_fraction",
+      "label": "Fracción residual tras mitigación",
+      "value": 0.4,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "cost_per_interruption_day_usd",
+      "label": "Costo por día de interrupción",
+      "value": 200000.0,
+      "unit": "USD/día",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "mitigation_capex_usd_per_km",
+      "label": "CAPEX de mitigación",
+      "value": 120000.0,
+      "unit": "USD/km",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "annual_maintenance_usd_per_km",
+      "label": "Mantenimiento incremental",
+      "value": 3000.0,
+      "unit": "USD/km/año",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "discount_rate",
+      "label": "Tasa de descuento",
+      "value": 0.1,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "horizon_years",
+      "label": "Horizonte",
+      "value": 15.0,
+      "unit": "años",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "heavy_rain_threshold_mm_day",
+      "label": "Umbral operativo de lluvia fuerte",
+      "value": 20.0,
+      "unit": "mm/día",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "interruption_days_sensitivity",
+      "label": "Rango de días interrumpidos (±)",
+      "value": 0.4,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "cost_per_day_sensitivity",
+      "label": "Rango del costo diario (±)",
+      "value": 0.3,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "capex_sensitivity",
+      "label": "Rango del CAPEX (±)",
+      "value": 0.25,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "maintenance_sensitivity",
+      "label": "Rango del mantenimiento (±)",
+      "value": 0.25,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "residual_fraction_sensitivity",
+      "label": "Rango de la fracción residual (±)",
+      "value": 0.15,
+      "unit": "puntos",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "discount_rate_sensitivity",
+      "label": "Rango de la tasa (±)",
+      "value": 0.02,
+      "unit": "puntos",
+      "provenance": "USER_ASSUMPTION"
+    }
+  ],
+  "financial_sensitivity": [
+    {
+      "subject": "Tramo 1 de 5",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 1476674.32,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 1476674.32,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -2507007.08,
+          "changes": [
+            "Días de interrupción base: 3.00 días/año",
+            "Costo por día interrumpido: 140,000.00 USD/día",
+            "CAPEX de mitigación: 3,242,205.00 USD",
+            "Mantenimiento incremental: 81,055.12 USD/año",
+            "Fracción residual de interrupción: 0.55 fracción",
+            "Tasa de descuento: 0.12 fracción"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 9322091.64,
+          "changes": [
+            "Días de interrupción base: 7.00 días/año",
+            "Costo por día interrumpido: 260,000.00 USD/día",
+            "CAPEX de mitigación: 1,945,323.00 USD",
+            "Mantenimiento incremental: 48,633.07 USD/año",
+            "Fracción residual de interrupción: 0.25 fracción",
+            "Tasa de descuento: 0.08 fracción"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "interruption_days",
+          "label": "Días de interrupción base",
+          "unit": "días/año",
+          "base_value": 5.0,
+          "low_value": 3.0,
+          "high_value": 7.0,
+          "npv_at_low": -348784.76,
+          "npv_at_high": 3302133.41,
+          "swing": 3650918.17,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±40%."
+        },
+        {
+          "key": "cost_per_day",
+          "label": "Costo por día interrumpido",
+          "unit": "USD/día",
+          "base_value": 200000.0,
+          "low_value": 140000.0,
+          "high_value": 260000.0,
+          "npv_at_low": 107580.01,
+          "npv_at_high": 2845768.63,
+          "swing": 2738188.62,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        },
+        {
+          "key": "residual_fraction",
+          "label": "Fracción residual de interrupción",
+          "unit": "fracción",
+          "base_value": 0.4,
+          "low_value": 0.55,
+          "high_value": 0.25,
+          "npv_at_low": 335762.4,
+          "npv_at_high": 2617586.25,
+          "swing": 2281823.85,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.15."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX de mitigación",
+          "unit": "USD",
+          "base_value": 2593764.0,
+          "low_value": 3242205.0,
+          "high_value": 1945323.0,
+          "npv_at_low": 828233.32,
+          "npv_at_high": 2125115.32,
+          "swing": 1296882.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": 1051110.32,
+          "npv_at_high": 1986891.52,
+          "swing": 935781.2,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "annual_maintenance",
+          "label": "Mantenimiento incremental",
+          "unit": "USD/año",
+          "base_value": 64844.1,
+          "low_value": 81055.125,
+          "high_value": 48633.075,
+          "npv_at_low": 1353371.98,
+          "npv_at_high": 1599976.67,
+          "swing": 246604.69,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "cost_per_day",
+          "label": "Costo diario de equilibrio",
+          "unit": "USD/día",
+          "assumed_value": 200000.0,
+          "break_even_value": 135285.3501,
+          "note": "El VAN llega a cero con USD 135,285 por día."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 2593764.0,
+          "break_even_value": 4070438.3175,
+          "note": "El VAN llega a cero con CAPEX de USD 4,070,438."
+        },
+        {
+          "key": "interruption_days",
+          "label": "Días base de equilibrio",
+          "unit": "días/año",
+          "assumed_value": 5.0,
+          "break_even_value": 3.3821,
+          "note": "El VAN llega a cero con 3.38 días/año."
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 2 de 5",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 2429700.43,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 2429700.43,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -1335623.71,
+          "changes": [
+            "Días de interrupción base: 3.00 días/año",
+            "Costo por día interrumpido: 140,000.00 USD/día",
+            "CAPEX de mitigación: 2,241,255.00 USD",
+            "Mantenimiento incremental: 56,031.38 USD/año",
+            "Fracción residual de interrupción: 0.55 fracción",
+            "Tasa de descuento: 0.12 fracción"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 10051175.79,
+          "changes": [
+            "Días de interrupción base: 7.00 días/año",
+            "Costo por día interrumpido: 260,000.00 USD/día",
+            "CAPEX de mitigación: 1,344,753.00 USD",
+            "Mantenimiento incremental: 33,618.83 USD/año",
+            "Fracción residual de interrupción: 0.25 fracción",
+            "Tasa de descuento: 0.08 fracción"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "interruption_days",
+          "label": "Días de interrupción base",
+          "unit": "días/año",
+          "base_value": 5.0,
+          "low_value": 3.0,
+          "high_value": 7.0,
+          "npv_at_low": 604241.35,
+          "npv_at_high": 4255159.51,
+          "swing": 3650918.16,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±40%."
+        },
+        {
+          "key": "cost_per_day",
+          "label": "Costo por día interrumpido",
+          "unit": "USD/día",
+          "base_value": 200000.0,
+          "low_value": 140000.0,
+          "high_value": 260000.0,
+          "npv_at_low": 1060606.12,
+          "npv_at_high": 3798794.74,
+          "swing": 2738188.62,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        },
+        {
+          "key": "residual_fraction",
+          "label": "Fracción residual de interrupción",
+          "unit": "fracción",
+          "base_value": 0.4,
+          "low_value": 0.55,
+          "high_value": 0.25,
+          "npv_at_low": 1288788.5,
+          "npv_at_high": 3570612.36,
+          "swing": 2281823.86,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.15."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": 1988217.01,
+          "npv_at_high": 2959003.72,
+          "swing": 970786.71,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX de mitigación",
+          "unit": "USD",
+          "base_value": 1793004.0,
+          "low_value": 2241255.0,
+          "high_value": 1344753.0,
+          "npv_at_low": 1981449.43,
+          "npv_at_high": 2877951.43,
+          "swing": 896502.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "annual_maintenance",
+          "label": "Mantenimiento incremental",
+          "unit": "USD/año",
+          "base_value": 44825.100000000006,
+          "low_value": 56031.37500000001,
+          "high_value": 33618.825000000004,
+          "npv_at_low": 2344464.61,
+          "npv_at_high": 2514936.25,
+          "swing": 170471.64,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "cost_per_day",
+          "label": "Costo diario de equilibrio",
+          "unit": "USD/día",
+          "assumed_value": 200000.0,
+          "break_even_value": 93519.3695,
+          "note": "El VAN llega a cero con USD 93,519 por día."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 1793004.0,
+          "break_even_value": 4222704.4257,
+          "note": "El VAN llega a cero con CAPEX de USD 4,222,704."
+        },
+        {
+          "key": "interruption_days",
+          "label": "Días base de equilibrio",
+          "unit": "días/año",
+          "assumed_value": 5.0,
+          "break_even_value": 2.338,
+          "note": "El VAN llega a cero con 2.34 días/año."
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 3 de 5",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 2240352.01,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 2240352.01,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -1568355.63,
+          "changes": [
+            "Días de interrupción base: 3.00 días/año",
+            "Costo por día interrumpido: 140,000.00 USD/día",
+            "CAPEX de mitigación: 2,440,125.00 USD",
+            "Mantenimiento incremental: 61,003.12 USD/año",
+            "Fracción residual de interrupción: 0.55 fracción",
+            "Tasa de descuento: 0.12 fracción"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 9906320.44,
+          "changes": [
+            "Días de interrupción base: 7.00 días/año",
+            "Costo por día interrumpido: 260,000.00 USD/día",
+            "CAPEX de mitigación: 1,464,075.00 USD",
+            "Mantenimiento incremental: 36,601.87 USD/año",
+            "Fracción residual de interrupción: 0.25 fracción",
+            "Tasa de descuento: 0.08 fracción"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "interruption_days",
+          "label": "Días de interrupción base",
+          "unit": "días/año",
+          "base_value": 5.0,
+          "low_value": 3.0,
+          "high_value": 7.0,
+          "npv_at_low": 414892.93,
+          "npv_at_high": 4065811.09,
+          "swing": 3650918.16,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±40%."
+        },
+        {
+          "key": "cost_per_day",
+          "label": "Costo por día interrumpido",
+          "unit": "USD/día",
+          "base_value": 200000.0,
+          "low_value": 140000.0,
+          "high_value": 260000.0,
+          "npv_at_low": 871257.7,
+          "npv_at_high": 3609446.32,
+          "swing": 2738188.62,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        },
+        {
+          "key": "residual_fraction",
+          "label": "Fracción residual de interrupción",
+          "unit": "fracción",
+          "base_value": 0.4,
+          "low_value": 0.55,
+          "high_value": 0.25,
+          "npv_at_low": 1099440.08,
+          "npv_at_high": 3381263.93,
+          "swing": 2281823.85,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.15."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX de mitigación",
+          "unit": "USD",
+          "base_value": 1952099.9999999998,
+          "low_value": 2440124.9999999995,
+          "high_value": 1464074.9999999998,
+          "npv_at_low": 1752327.01,
+          "npv_at_high": 2728377.01,
+          "swing": 976050.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": 1802031.48,
+          "npv_at_high": 2765863.25,
+          "swing": 963831.77,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "annual_maintenance",
+          "label": "Mantenimiento incremental",
+          "unit": "USD/año",
+          "base_value": 48802.49999999999,
+          "low_value": 61003.12499999999,
+          "high_value": 36601.87499999999,
+          "npv_at_low": 2147553.08,
+          "npv_at_high": 2333150.93,
+          "swing": 185597.85,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "cost_per_day",
+          "label": "Costo diario de equilibrio",
+          "unit": "USD/día",
+          "assumed_value": 200000.0,
+          "break_even_value": 101817.4868,
+          "note": "El VAN llega a cero con USD 101,817 por día."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 1952099.9999999998,
+          "break_even_value": 4192452.0031,
+          "note": "El VAN llega a cero con CAPEX de USD 4,192,452."
+        },
+        {
+          "key": "interruption_days",
+          "label": "Días base de equilibrio",
+          "unit": "días/año",
+          "assumed_value": 5.0,
+          "break_even_value": 2.5454,
+          "note": "El VAN llega a cero con 2.55 días/año."
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 4 de 5",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 2174312.86,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 2174312.86,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -1649525.67,
+          "changes": [
+            "Días de interrupción base: 3.00 días/año",
+            "Costo por día interrumpido: 140,000.00 USD/día",
+            "CAPEX de mitigación: 2,509,485.00 USD",
+            "Mantenimiento incremental: 62,737.13 USD/año",
+            "Fracción residual de interrupción: 0.55 fracción",
+            "Tasa de descuento: 0.12 fracción"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 9855799.16,
+          "changes": [
+            "Días de interrupción base: 7.00 días/año",
+            "Costo por día interrumpido: 260,000.00 USD/día",
+            "CAPEX de mitigación: 1,505,691.00 USD",
+            "Mantenimiento incremental: 37,642.28 USD/año",
+            "Fracción residual de interrupción: 0.25 fracción",
+            "Tasa de descuento: 0.08 fracción"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "interruption_days",
+          "label": "Días de interrupción base",
+          "unit": "días/año",
+          "base_value": 5.0,
+          "low_value": 3.0,
+          "high_value": 7.0,
+          "npv_at_low": 348853.77,
+          "npv_at_high": 3999771.94,
+          "swing": 3650918.17,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±40%."
+        },
+        {
+          "key": "cost_per_day",
+          "label": "Costo por día interrumpido",
+          "unit": "USD/día",
+          "base_value": 200000.0,
+          "low_value": 140000.0,
+          "high_value": 260000.0,
+          "npv_at_low": 805218.54,
+          "npv_at_high": 3543407.17,
+          "swing": 2738188.63,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        },
+        {
+          "key": "residual_fraction",
+          "label": "Fracción residual de interrupción",
+          "unit": "fracción",
+          "base_value": 0.4,
+          "low_value": 0.55,
+          "high_value": 0.25,
+          "npv_at_low": 1033400.93,
+          "npv_at_high": 3315224.78,
+          "swing": 2281823.85,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.15."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX de mitigación",
+          "unit": "USD",
+          "base_value": 2007588.0,
+          "low_value": 2509485.0,
+          "high_value": 1505691.0,
+          "npv_at_low": 1672415.86,
+          "npv_at_high": 2676209.86,
+          "swing": 1003794.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": 1737095.45,
+          "npv_at_high": 2698501.55,
+          "swing": 961406.1,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "annual_maintenance",
+          "label": "Mantenimiento incremental",
+          "unit": "USD/año",
+          "base_value": 50189.700000000004,
+          "low_value": 62737.12500000001,
+          "high_value": 37642.275,
+          "npv_at_low": 2078876.14,
+          "npv_at_high": 2269749.57,
+          "swing": 190873.43,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "cost_per_day",
+          "label": "Costo diario de equilibrio",
+          "unit": "USD/día",
+          "assumed_value": 200000.0,
+          "break_even_value": 104711.6258,
+          "note": "El VAN llega a cero con USD 104,712 por día."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 2007588.0,
+          "break_even_value": 4181900.8492,
+          "note": "El VAN llega a cero con CAPEX de USD 4,181,901."
+        },
+        {
+          "key": "interruption_days",
+          "label": "Días base de equilibrio",
+          "unit": "días/año",
+          "assumed_value": 5.0,
+          "break_even_value": 2.6178,
+          "note": "El VAN llega a cero con 2.62 días/año."
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 5 de 5",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 2140793.41,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 2140793.41,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -1690725.08,
+          "changes": [
+            "Días de interrupción base: 3.00 días/año",
+            "Costo por día interrumpido: 140,000.00 USD/día",
+            "CAPEX de mitigación: 2,544,690.00 USD",
+            "Mantenimiento incremental: 63,617.25 USD/año",
+            "Fracción residual de interrupción: 0.55 fracción",
+            "Tasa de descuento: 0.12 fracción"
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 9830156.11,
+          "changes": [
+            "Días de interrupción base: 7.00 días/año",
+            "Costo por día interrumpido: 260,000.00 USD/día",
+            "CAPEX de mitigación: 1,526,814.00 USD",
+            "Mantenimiento incremental: 38,170.35 USD/año",
+            "Fracción residual de interrupción: 0.25 fracción",
+            "Tasa de descuento: 0.08 fracción"
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "interruption_days",
+          "label": "Días de interrupción base",
+          "unit": "días/año",
+          "base_value": 5.0,
+          "low_value": 3.0,
+          "high_value": 7.0,
+          "npv_at_low": 315334.33,
+          "npv_at_high": 3966252.5,
+          "swing": 3650918.17,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±40%."
+        },
+        {
+          "key": "cost_per_day",
+          "label": "Costo por día interrumpido",
+          "unit": "USD/día",
+          "base_value": 200000.0,
+          "low_value": 140000.0,
+          "high_value": 260000.0,
+          "npv_at_low": 771699.1,
+          "npv_at_high": 3509887.73,
+          "swing": 2738188.63,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        },
+        {
+          "key": "residual_fraction",
+          "label": "Fracción residual de interrupción",
+          "unit": "fracción",
+          "base_value": 0.4,
+          "low_value": 0.55,
+          "high_value": 0.25,
+          "npv_at_low": 999881.49,
+          "npv_at_high": 3281705.34,
+          "swing": 2281823.85,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.15."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX de mitigación",
+          "unit": "USD",
+          "base_value": 2035752.0,
+          "low_value": 2544690.0,
+          "high_value": 1526814.0,
+          "npv_at_low": 1631855.41,
+          "npv_at_high": 2649731.41,
+          "swing": 1017876.0,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.1,
+          "low_value": 0.12000000000000001,
+          "high_value": 0.08,
+          "npv_at_low": 1704135.92,
+          "npv_at_high": 2664310.82,
+          "swing": 960174.9,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "annual_maintenance",
+          "label": "Mantenimiento incremental",
+          "unit": "USD/año",
+          "base_value": 50893.8,
+          "low_value": 63617.25,
+          "high_value": 38170.350000000006,
+          "npv_at_low": 2044017.84,
+          "npv_at_high": 2237568.99,
+          "swing": 193551.15,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "cost_per_day",
+          "label": "Costo diario de equilibrio",
+          "unit": "USD/día",
+          "assumed_value": 200000.0,
+          "break_even_value": 106180.6016,
+          "note": "El VAN llega a cero con USD 106,181 por día."
+        },
+        {
+          "key": "mitigation_capex",
+          "label": "CAPEX máximo",
+          "unit": "USD",
+          "assumed_value": 2035752.0,
+          "break_even_value": 4176545.4101,
+          "note": "El VAN llega a cero con CAPEX de USD 4,176,545."
+        },
+        {
+          "key": "interruption_days",
+          "label": "Días base de equilibrio",
+          "unit": "días/año",
+          "assumed_value": 5.0,
+          "break_even_value": 2.6545,
+          "note": "El VAN llega a cero con 2.65 días/año."
+        }
+      ]
+    }
+  ],
+  "scorecard": {
+    "method": "Suma ponderada de puntajes 0–100. Cada criterio se lleva a 0–100 con una escala de referencia declarada (peor valor = 0  mejor valor = 100  con recorte fuera del rango). Sin dato  el criterio sale y su peso se reparte entre los demás. Estabilidad: 2 000 combinaciones de pesos Dirichlet centradas en los pesos elegidos.",
+    "criteria": [
+      {
+        "key": "recent_rx1day",
+        "label": "Máximo diario espacial reciente",
+        "unit": "mm/día",
+        "direction": "mayor_es_mejor",
+        "weight": 0.2,
+        "worst": 0.0,
+        "best": 100.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Máximo del agregado K1 del último año; mayor exposición implica mayor prioridad de estudio."
+      },
+      {
+        "key": "heavy_rain_days",
+        "label": "Días de lluvia fuerte",
+        "unit": "días/año",
+        "direction": "mayor_es_mejor",
+        "weight": 0.15,
+        "worst": 0.0,
+        "best": 30.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Promedio de años con ≥95% de cobertura que superan el umbral del usuario."
+      },
+      {
+        "key": "terrain_slope",
+        "label": "Pendiente NASADEM",
+        "unit": "°",
+        "direction": "mayor_es_mejor",
+        "weight": 0.15,
+        "worst": 0.0,
+        "best": 20.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Pendiente en el punto representativo; mayor pendiente eleva la prioridad geotécnica."
+      },
+      {
+        "key": "length",
+        "label": "Longitud expuesta",
+        "unit": "km",
+        "direction": "mayor_es_mejor",
+        "weight": 0.1,
+        "worst": 0.0,
+        "best": 30.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Longitud geodésica WGS84 del tramo; no sustituye inventario de activos."
+      },
+      {
+        "key": "interruption_days",
+        "label": "Interrupción base",
+        "unit": "días/año",
+        "direction": "mayor_es_mejor",
+        "weight": 0.15,
+        "worst": 0.0,
+        "best": 30.0,
+        "provenance": "USER_ASSUMPTION",
+        "basis": "Supuesto del usuario, no observado por NASA; mayor valor eleva prioridad."
+      },
+      {
+        "key": "npv_ratio",
+        "label": "VAN / CAPEX",
+        "unit": "fracción",
+        "direction": "mayor_es_mejor",
+        "weight": 0.25,
+        "worst": -1.0,
+        "best": 1.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "VAN de mitigación sobre CAPEX, basado exclusivamente en supuestos del usuario."
+      }
+    ],
+    "subjects": [
+      {
+        "subject": "Tramo 1 de 5",
+        "score": 38.1,
+        "coverage": 0.85,
+        "rank": 5,
+        "first_place_share": 0.23,
+        "criteria": [
+          {
+            "key": "recent_rx1day",
+            "value": 14.1941,
+            "score": 14.2,
+            "contribution": 3.3
+          },
+          {
+            "key": "heavy_rain_days",
+            "value": 0.5,
+            "score": 1.7,
+            "contribution": 0.3
+          },
+          {
+            "key": "terrain_slope",
+            "value": null,
+            "score": null,
+            "contribution": null
+          },
+          {
+            "key": "length",
+            "value": 21.6147,
+            "score": 72.0,
+            "contribution": 8.5
+          },
+          {
+            "key": "interruption_days",
+            "value": 5.0,
+            "score": 16.7,
+            "contribution": 2.9
+          },
+          {
+            "key": "npv_ratio",
+            "value": 0.5693171468182919,
+            "score": 78.5,
+            "contribution": 23.1
+          }
+        ]
+      },
+      {
+        "subject": "Tramo 2 de 5",
+        "score": 39.7,
+        "coverage": 0.85,
+        "rank": 4,
+        "first_place_share": 0.0,
+        "criteria": [
+          {
+            "key": "recent_rx1day",
+            "value": 4.99,
+            "score": 5.0,
+            "contribution": 1.2
+          },
+          {
+            "key": "heavy_rain_days",
+            "value": 0.5,
+            "score": 1.7,
+            "contribution": 0.3
+          },
+          {
+            "key": "terrain_slope",
+            "value": null,
+            "score": null,
+            "contribution": null
+          },
+          {
+            "key": "length",
+            "value": 14.9417,
+            "score": 49.8,
+            "contribution": 5.9
+          },
+          {
+            "key": "interruption_days",
+            "value": 5.0,
+            "score": 16.7,
+            "contribution": 2.9
+          },
+          {
+            "key": "npv_ratio",
+            "value": 1.355100395760411,
+            "score": 100.0,
+            "contribution": 29.4
+          }
+        ]
+      },
+      {
+        "subject": "Tramo 3 de 5",
+        "score": 40.2,
+        "coverage": 0.85,
+        "rank": 3,
+        "first_place_share": 0.0,
+        "criteria": [
+          {
+            "key": "recent_rx1day",
+            "value": 4.99,
+            "score": 5.0,
+            "contribution": 1.2
+          },
+          {
+            "key": "heavy_rain_days",
+            "value": 0.5,
+            "score": 1.7,
+            "contribution": 0.3
+          },
+          {
+            "key": "terrain_slope",
+            "value": null,
+            "score": null,
+            "contribution": null
+          },
+          {
+            "key": "length",
+            "value": 16.2675,
+            "score": 54.2,
+            "contribution": 6.4
+          },
+          {
+            "key": "interruption_days",
+            "value": 5.0,
+            "score": 16.7,
+            "contribution": 2.9
+          },
+          {
+            "key": "npv_ratio",
+            "value": 1.1476625224117618,
+            "score": 100.0,
+            "contribution": 29.4
+          }
+        ]
+      },
+      {
+        "subject": "Tramo 4 de 5",
+        "score": 40.4,
+        "coverage": 0.85,
+        "rank": 2,
+        "first_place_share": 0.0,
+        "criteria": [
+          {
+            "key": "recent_rx1day",
+            "value": 4.99,
+            "score": 5.0,
+            "contribution": 1.2
+          },
+          {
+            "key": "heavy_rain_days",
+            "value": 0.5,
+            "score": 1.7,
+            "contribution": 0.3
+          },
+          {
+            "key": "terrain_slope",
+            "value": null,
+            "score": null,
+            "contribution": null
+          },
+          {
+            "key": "length",
+            "value": 16.7299,
+            "score": 55.8,
+            "contribution": 6.6
+          },
+          {
+            "key": "interruption_days",
+            "value": 5.0,
+            "score": 16.7,
+            "contribution": 2.9
+          },
+          {
+            "key": "npv_ratio",
+            "value": 1.083047348360321,
+            "score": 100.0,
+            "contribution": 29.4
+          }
+        ]
+      },
+      {
+        "subject": "Tramo 5 de 5",
+        "score": 40.5,
+        "coverage": 0.85,
+        "rank": 1,
+        "first_place_share": 0.77,
+        "criteria": [
+          {
+            "key": "recent_rx1day",
+            "value": 4.99,
+            "score": 5.0,
+            "contribution": 1.2
+          },
+          {
+            "key": "heavy_rain_days",
+            "value": 0.5,
+            "score": 1.7,
+            "contribution": 0.3
+          },
+          {
+            "key": "terrain_slope",
+            "value": null,
+            "score": null,
+            "contribution": null
+          },
+          {
+            "key": "length",
+            "value": 16.9646,
+            "score": 56.5,
+            "contribution": 6.7
+          },
+          {
+            "key": "interruption_days",
+            "value": 5.0,
+            "score": 16.7,
+            "contribution": 2.9
+          },
+          {
+            "key": "npv_ratio",
+            "value": 1.051598333195792,
+            "score": 100.0,
+            "contribution": 29.4
+          }
+        ]
+      }
+    ],
+    "leader": "Tramo 5 de 5",
+    "margin": 0.1,
+    "tie": true,
+    "stability_draws": 2000,
+    "weight_sensitivity": [
+      {
+        "key": "recent_rx1day",
+        "leader_at_half": "Tramo 5 de 5",
+        "leader_at_one_and_half": "Tramo 5 de 5",
+        "changes_leader": false
+      },
+      {
+        "key": "heavy_rain_days",
+        "leader_at_half": "Tramo 5 de 5",
+        "leader_at_one_and_half": "Tramo 5 de 5",
+        "changes_leader": false
+      },
+      {
+        "key": "terrain_slope",
+        "leader_at_half": "Tramo 5 de 5",
+        "leader_at_one_and_half": "Tramo 5 de 5",
+        "changes_leader": false
+      },
+      {
+        "key": "length",
+        "leader_at_half": "Tramo 5 de 5",
+        "leader_at_one_and_half": "Tramo 5 de 5",
+        "changes_leader": false
+      },
+      {
+        "key": "interruption_days",
+        "leader_at_half": "Tramo 5 de 5",
+        "leader_at_one_and_half": "Tramo 5 de 5",
+        "changes_leader": false
+      },
+      {
+        "key": "npv_ratio",
+        "leader_at_half": "Tramo 1 de 5",
+        "leader_at_one_and_half": "Tramo 5 de 5",
+        "changes_leader": true
+      }
+    ],
+    "notes": [
+      "El puntaje ordena prioridad de estudio/mitigación; no declara seguridad vial ni factibilidad.",
+      "Más exposición aumenta la prioridad, mientras que un mayor VAN/CAPEX mejora el caso económico preliminar.",
+      "Los criterios sin dato salen del cálculo y su peso se redistribuye; revise la cobertura por tramo.",
+      "Sin pendiente NASADEM para Tramo 1 de 5, Tramo 2 de 5, Tramo 3 de 5, Tramo 4 de 5, Tramo 5 de 5; el criterio se omite para esos tramos."
+    ]
+  },
+  "disclaimer": "Screening preliminar de resiliencia vial con datos NASA, capas públicas y supuestos del usuario. No sustituye ingeniería vial, hidrología/hidráulica, geotecnia, inventario de activos, tránsito, debida diligencia ambiental/social, presupuesto ni factibilidad financiera.",
+  "corridor_source": {
+    "name": "Corredor piloto Moquegua–Ilo",
+    "source": "© OpenStreetMap contributors · ruta calculada con OSRM",
+    "source_url": "https://www.openstreetmap.org/copyright",
+    "license": "ODbL 1.0",
+    "retrieved_at": "2026-10-23T19:30:00Z",
+    "provenance": "REAL_DATA",
+    "limitations": [
+      "Geometría simplificada de screening calculada sobre OpenStreetMap; no es un eje oficial del MTC.",
+      "No contiene inventario de puentes, drenajes, estado del pavimento ni derecho de vía."
+    ]
+  },
+  "segments": [
+    {
+      "subject_id": "segmento-1",
+      "label": "Tramo 1 de 5",
+      "representative_point": {
+        "latitude": -17.250924578769144,
+        "longitude": -70.98586677608407,
+        "label": "Tramo 1 de 5"
+      },
+      "length_km": 21.6147,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.2664673664993154,
+          "minimum": 0.0,
+          "maximum": 286.58,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 140.205,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.020082191780821906,
+            "p_value": 0.46944444444444444,
+            "p_value_modified": 0.4523703606773608,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.1209082266636724,
+              0.4646828729695336
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.30132310435168247,
+            "autocorrelation_lag1_detrended": -0.8088235294117646,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.191); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.45237036067736086,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:51.447604Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.074548
+            },
+            {
+              "year": 2019,
+              "value": 0.09463
+            },
+            {
+              "year": 2020,
+              "value": 0.168497
+            },
+            {
+              "year": 2021,
+              "value": 0.047589
+            },
+            {
+              "year": 2022,
+              "value": 1.097863
+            },
+            {
+              "year": 2023,
+              "value": 0.115945
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 18.480926517571884,
+          "minimum": 12.59,
+          "maximum": 23.73,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 3.247,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": -0.20736073059360768,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.4782174938243866,
+              0.6695205479452042
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.3567164703270368,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:51.447604Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 18.712466
+            },
+            {
+              "year": 2019,
+              "value": 18.72737
+            },
+            {
+              "year": 2020,
+              "value": 18.44123
+            },
+            {
+              "year": 2021,
+              "value": 18.090384
+            },
+            {
+              "year": 2022,
+              "value": 17.484795
+            },
+            {
+              "year": 2023,
+              "value": 19.429425
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "heavy_rain_days_per_year": 0.5,
+      "heavy_rain_years": 6,
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "cell_count": 3,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.2018,
+        "rx1day_mm": 14.1941,
+        "cells": [
+          {
+            "cell_id": "-17.500000,-71.250000",
+            "center": {
+              "latitude": -17.5,
+              "longitude": -71.25,
+              "label": null
+            },
+            "weight": 0.5160332982436002,
+            "mean_precipitation_mm_day": 0.1159,
+            "rx1day_mm": 4.99
+          },
+          {
+            "cell_id": "-17.000000,-71.250000",
+            "center": {
+              "latitude": -17.0,
+              "longitude": -71.25,
+              "label": null
+            },
+            "weight": 0.3915025418017747,
+            "mean_precipitation_mm_day": 0.2692,
+            "rx1day_mm": 22.81
+          },
+          {
+            "cell_id": "-17.000000,-70.625000",
+            "center": {
+              "latitude": -17.0,
+              "longitude": -70.625,
+              "label": null
+            },
+            "weight": 0.09246415995462517,
+            "mean_precipitation_mm_day": 0.3956,
+            "rx1day_mm": 43.2
+          }
+        ],
+        "provenance": "REAL_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
+        "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
+        "limitations": [
+          "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
+          "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
+          "NASA POWER es una grilla y no sustituye medición in situ."
+        ]
+      },
+      "terrain_slope_degrees": null,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 2,
+        "cenepred-mass-movement-risk": 2,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "baseline_interruption_days_per_year": 5.0,
+        "residual_interruption_days_per_year": 2.0,
+        "avoided_interruption_days_per_year": 3.0,
+        "cost_per_interruption_day_usd": 200000.0,
+        "annual_avoided_cost_usd": 600000.0,
+        "mitigation_capex_usd": 2593764.0,
+        "annual_maintenance_usd": 64844.1,
+        "npv_usd": 1476674.32,
+        "cash_flows_usd": [
+          -2593764.0,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9,
+          535155.9
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN mitigación = −CAPEX + Σ[(días evitados × costo/día) − mantenimiento] / (1+r)^t",
+        "limitations": [
+          "Los días de interrupción, costo diario, CAPEX, mantenimiento, tasa y horizonte son supuestos del usuario.",
+          "NASA no observa cierres viales ni pérdidas económicas; la lluvia y el relieve solo describen exposición.",
+          "El CAPEX por defecto escala linealmente con 21.615 km; requiere presupuesto de ingeniería."
+        ]
+      },
+      "opportunities": [
+        "La geometría pública del tramo mide 21.615 km geodésicos.",
+        "El VAN preliminar de mitigación es USD 1,476,674 bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
+        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+      ]
+    },
+    {
+      "subject_id": "segmento-2",
+      "label": "Tramo 2 de 5",
+      "representative_point": {
+        "latitude": -17.40148202158564,
+        "longitude": -71.0253318049502,
+        "label": "Tramo 2 de 5"
+      },
+      "length_km": 14.9417,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.2664673664993154,
+          "minimum": 0.0,
+          "maximum": 286.58,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 140.205,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.020082191780821906,
+            "p_value": 0.46944444444444444,
+            "p_value_modified": 0.4523703606773608,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.1209082266636724,
+              0.4646828729695336
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.30132310435168247,
+            "autocorrelation_lag1_detrended": -0.8088235294117646,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.191); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.45237036067736086,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:51.882921Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.074548
+            },
+            {
+              "year": 2019,
+              "value": 0.09463
+            },
+            {
+              "year": 2020,
+              "value": 0.168497
+            },
+            {
+              "year": 2021,
+              "value": 0.047589
+            },
+            {
+              "year": 2022,
+              "value": 1.097863
+            },
+            {
+              "year": 2023,
+              "value": 0.115945
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 18.480926517571884,
+          "minimum": 12.59,
+          "maximum": 23.73,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 3.247,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": -0.20736073059360768,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.4782174938243866,
+              0.6695205479452042
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.3567164703270368,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:51.882921Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 18.712466
+            },
+            {
+              "year": 2019,
+              "value": 18.72737
+            },
+            {
+              "year": 2020,
+              "value": 18.44123
+            },
+            {
+              "year": 2021,
+              "value": 18.090384
+            },
+            {
+              "year": 2022,
+              "value": 17.484795
+            },
+            {
+              "year": 2023,
+              "value": 19.429425
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "heavy_rain_days_per_year": 0.5,
+      "heavy_rain_years": 6,
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.1159,
+        "rx1day_mm": 4.99,
+        "cells": [
+          {
+            "cell_id": "-17.500000,-71.250000",
+            "center": {
+              "latitude": -17.5,
+              "longitude": -71.25,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.1159,
+            "rx1day_mm": 4.99
+          }
+        ],
+        "provenance": "REAL_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
+        "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
+        "limitations": [
+          "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
+          "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
+          "NASA POWER es una grilla y no sustituye medición in situ."
+        ]
+      },
+      "terrain_slope_degrees": null,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 1,
+        "cenepred-mass-movement-risk": 1,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": null,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "baseline_interruption_days_per_year": 5.0,
+        "residual_interruption_days_per_year": 2.0,
+        "avoided_interruption_days_per_year": 3.0,
+        "cost_per_interruption_day_usd": 200000.0,
+        "annual_avoided_cost_usd": 600000.0,
+        "mitigation_capex_usd": 1793004.0,
+        "annual_maintenance_usd": 44825.100000000006,
+        "npv_usd": 2429700.43,
+        "cash_flows_usd": [
+          -1793004.0,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9,
+          555174.9
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN mitigación = −CAPEX + Σ[(días evitados × costo/día) − mantenimiento] / (1+r)^t",
+        "limitations": [
+          "Los días de interrupción, costo diario, CAPEX, mantenimiento, tasa y horizonte son supuestos del usuario.",
+          "NASA no observa cierres viales ni pérdidas económicas; la lluvia y el relieve solo describen exposición.",
+          "El CAPEX por defecto escala linealmente con 14.942 km; requiere presupuesto de ingeniería."
+        ]
+      },
+      "opportunities": [
+        "La geometría pública del tramo mide 14.942 km geodésicos.",
+        "El VAN preliminar de mitigación es USD 2,429,700 bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
+        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+      ]
+    },
+    {
+      "subject_id": "segmento-3",
+      "label": "Tramo 3 de 5",
+      "representative_point": {
+        "latitude": -17.52292527811481,
+        "longitude": -71.08006258610773,
+        "label": "Tramo 3 de 5"
+      },
+      "length_km": 16.2675,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.2664673664993154,
+          "minimum": 0.0,
+          "maximum": 286.58,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 140.205,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.020082191780821906,
+            "p_value": 0.46944444444444444,
+            "p_value_modified": 0.4523703606773608,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.1209082266636724,
+              0.4646828729695336
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.30132310435168247,
+            "autocorrelation_lag1_detrended": -0.8088235294117646,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.191); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.45237036067736086,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:52.316929Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.074548
+            },
+            {
+              "year": 2019,
+              "value": 0.09463
+            },
+            {
+              "year": 2020,
+              "value": 0.168497
+            },
+            {
+              "year": 2021,
+              "value": 0.047589
+            },
+            {
+              "year": 2022,
+              "value": 1.097863
+            },
+            {
+              "year": 2023,
+              "value": 0.115945
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 18.480926517571884,
+          "minimum": 12.59,
+          "maximum": 23.73,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 3.247,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": -0.20736073059360768,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.4782174938243866,
+              0.6695205479452042
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.3567164703270368,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:52.316929Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 18.712466
+            },
+            {
+              "year": 2019,
+              "value": 18.72737
+            },
+            {
+              "year": 2020,
+              "value": 18.44123
+            },
+            {
+              "year": 2021,
+              "value": 18.090384
+            },
+            {
+              "year": 2022,
+              "value": 17.484795
+            },
+            {
+              "year": 2023,
+              "value": 19.429425
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "heavy_rain_days_per_year": 0.5,
+      "heavy_rain_years": 6,
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.1159,
+        "rx1day_mm": 4.99,
+        "cells": [
+          {
+            "cell_id": "-17.500000,-71.250000",
+            "center": {
+              "latitude": -17.5,
+              "longitude": -71.25,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.1159,
+            "rx1day_mm": 4.99
+          }
+        ],
+        "provenance": "REAL_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
+        "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
+        "limitations": [
+          "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
+          "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
+          "NASA POWER es una grilla y no sustituye medición in situ."
+        ]
+      },
+      "terrain_slope_degrees": null,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 3,
+        "cenepred-mass-movement-risk": 3,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "baseline_interruption_days_per_year": 5.0,
+        "residual_interruption_days_per_year": 2.0,
+        "avoided_interruption_days_per_year": 3.0,
+        "cost_per_interruption_day_usd": 200000.0,
+        "annual_avoided_cost_usd": 600000.0,
+        "mitigation_capex_usd": 1952099.9999999998,
+        "annual_maintenance_usd": 48802.49999999999,
+        "npv_usd": 2240352.01,
+        "cash_flows_usd": [
+          -1952100.0,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5,
+          551197.5
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN mitigación = −CAPEX + Σ[(días evitados × costo/día) − mantenimiento] / (1+r)^t",
+        "limitations": [
+          "Los días de interrupción, costo diario, CAPEX, mantenimiento, tasa y horizonte son supuestos del usuario.",
+          "NASA no observa cierres viales ni pérdidas económicas; la lluvia y el relieve solo describen exposición.",
+          "El CAPEX por defecto escala linealmente con 16.267 km; requiere presupuesto de ingeniería."
+        ]
+      },
+      "opportunities": [
+        "La geometría pública del tramo mide 16.267 km geodésicos.",
+        "El VAN preliminar de mitigación es USD 2,240,352 bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
+        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+      ]
+    },
+    {
+      "subject_id": "segmento-4",
+      "label": "Tramo 4 de 5",
+      "representative_point": {
+        "latitude": -17.622956562978597,
+        "longitude": -71.17932224679916,
+        "label": "Tramo 4 de 5"
+      },
+      "length_km": 16.7299,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.2664673664993154,
+          "minimum": 0.0,
+          "maximum": 286.58,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 140.205,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.020082191780821906,
+            "p_value": 0.46944444444444444,
+            "p_value_modified": 0.4523703606773608,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.1209082266636724,
+              0.4646828729695336
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.30132310435168247,
+            "autocorrelation_lag1_detrended": -0.8088235294117646,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.191); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.45237036067736086,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:52.693951Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.074548
+            },
+            {
+              "year": 2019,
+              "value": 0.09463
+            },
+            {
+              "year": 2020,
+              "value": 0.168497
+            },
+            {
+              "year": 2021,
+              "value": 0.047589
+            },
+            {
+              "year": 2022,
+              "value": 1.097863
+            },
+            {
+              "year": 2023,
+              "value": 0.115945
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 18.480926517571884,
+          "minimum": 12.59,
+          "maximum": 23.73,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 3.247,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": -0.20736073059360768,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.4782174938243866,
+              0.6695205479452042
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.3567164703270368,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:52.693951Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 18.712466
+            },
+            {
+              "year": 2019,
+              "value": 18.72737
+            },
+            {
+              "year": 2020,
+              "value": 18.44123
+            },
+            {
+              "year": 2021,
+              "value": 18.090384
+            },
+            {
+              "year": 2022,
+              "value": 17.484795
+            },
+            {
+              "year": 2023,
+              "value": 19.429425
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "heavy_rain_days_per_year": 0.5,
+      "heavy_rain_years": 6,
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.1159,
+        "rx1day_mm": 4.99,
+        "cells": [
+          {
+            "cell_id": "-17.500000,-71.250000",
+            "center": {
+              "latitude": -17.5,
+              "longitude": -71.25,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.1159,
+            "rx1day_mm": 4.99
+          }
+        ],
+        "provenance": "REAL_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
+        "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
+        "limitations": [
+          "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
+          "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
+          "NASA POWER es una grilla y no sustituye medición in situ."
+        ]
+      },
+      "terrain_slope_degrees": null,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 2,
+        "cenepred-mass-movement-risk": 2,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "baseline_interruption_days_per_year": 5.0,
+        "residual_interruption_days_per_year": 2.0,
+        "avoided_interruption_days_per_year": 3.0,
+        "cost_per_interruption_day_usd": 200000.0,
+        "annual_avoided_cost_usd": 600000.0,
+        "mitigation_capex_usd": 2007588.0,
+        "annual_maintenance_usd": 50189.700000000004,
+        "npv_usd": 2174312.86,
+        "cash_flows_usd": [
+          -2007588.0,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3,
+          549810.3
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN mitigación = −CAPEX + Σ[(días evitados × costo/día) − mantenimiento] / (1+r)^t",
+        "limitations": [
+          "Los días de interrupción, costo diario, CAPEX, mantenimiento, tasa y horizonte son supuestos del usuario.",
+          "NASA no observa cierres viales ni pérdidas económicas; la lluvia y el relieve solo describen exposición.",
+          "El CAPEX por defecto escala linealmente con 16.730 km; requiere presupuesto de ingeniería."
+        ]
+      },
+      "opportunities": [
+        "La geometría pública del tramo mide 16.730 km geodésicos.",
+        "El VAN preliminar de mitigación es USD 2,174,313 bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
+        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+      ]
+    },
+    {
+      "subject_id": "segmento-5",
+      "label": "Tramo 5 de 5",
+      "representative_point": {
+        "latitude": -17.678797255300786,
+        "longitude": -71.29042078069214,
+        "label": "Tramo 5 de 5"
+      },
+      "length_km": 16.9646,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.2664673664993154,
+          "minimum": 0.0,
+          "maximum": 286.58,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 140.205,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.020082191780821906,
+            "p_value": 0.46944444444444444,
+            "p_value_modified": 0.4523703606773608,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.1209082266636724,
+              0.4646828729695336
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.30132310435168247,
+            "autocorrelation_lag1_detrended": -0.8088235294117646,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.191); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.45237036067736086,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:53.077373Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.074548
+            },
+            {
+              "year": 2019,
+              "value": 0.09463
+            },
+            {
+              "year": 2020,
+              "value": 0.168497
+            },
+            {
+              "year": 2021,
+              "value": 0.047589
+            },
+            {
+              "year": 2022,
+              "value": 1.097863
+            },
+            {
+              "year": 2023,
+              "value": 0.115945
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 18.480926517571884,
+          "minimum": 12.59,
+          "maximum": 23.73,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 3.247,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": -0.20736073059360768,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.4782174938243866,
+              0.6695205479452042
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.3567164703270368,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T19:18:53.077373Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "REAL_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 18.712466
+            },
+            {
+              "year": 2019,
+              "value": 18.72737
+            },
+            {
+              "year": 2020,
+              "value": 18.44123
+            },
+            {
+              "year": 2021,
+              "value": 18.090384
+            },
+            {
+              "year": 2022,
+              "value": 17.484795
+            },
+            {
+              "year": 2023,
+              "value": 19.429425
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "heavy_rain_days_per_year": 0.5,
+      "heavy_rain_years": 6,
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.1159,
+        "rx1day_mm": 4.99,
+        "cells": [
+          {
+            "cell_id": "-17.500000,-71.250000",
+            "center": {
+              "latitude": -17.5,
+              "longitude": -71.25,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.1159,
+            "rx1day_mm": 4.99
+          }
+        ],
+        "provenance": "REAL_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
+        "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
+        "limitations": [
+          "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
+          "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
+          "NASA POWER es una grilla y no sustituye medición in situ."
+        ]
+      },
+      "terrain_slope_degrees": null,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 2,
+        "cenepred-mass-movement-risk": 2,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "baseline_interruption_days_per_year": 5.0,
+        "residual_interruption_days_per_year": 2.0,
+        "avoided_interruption_days_per_year": 3.0,
+        "cost_per_interruption_day_usd": 200000.0,
+        "annual_avoided_cost_usd": 600000.0,
+        "mitigation_capex_usd": 2035752.0,
+        "annual_maintenance_usd": 50893.8,
+        "npv_usd": 2140793.41,
+        "cash_flows_usd": [
+          -2035752.0,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2,
+          549106.2
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN mitigación = −CAPEX + Σ[(días evitados × costo/día) − mantenimiento] / (1+r)^t",
+        "limitations": [
+          "Los días de interrupción, costo diario, CAPEX, mantenimiento, tasa y horizonte son supuestos del usuario.",
+          "NASA no observa cierres viales ni pérdidas económicas; la lluvia y el relieve solo describen exposición.",
+          "El CAPEX por defecto escala linealmente con 16.965 km; requiere presupuesto de ingeniería."
+        ]
+      },
+      "opportunities": [
+        "La geometría pública del tramo mide 16.965 km geodésicos.",
+        "El VAN preliminar de mitigación es USD 2,140,793 bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
+        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+      ]
+    }
+  ],
+  "territorial_evidence": [
+    {
+      "subject": "Tramo 1 de 5",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:02.104988Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:04.638545Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:02.440035Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:04.648626Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:04.648626Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 2 de 5",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 1,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:08.348058Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 1,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:08.338338Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:08.439518Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:08.375993Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El servicio oficial no respondió con datos utilizables: ",
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 3 de 5",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 3,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:31.420330Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 3,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:31.430440Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:31.471226Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:31.437988Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:31.451022Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 4 de 5",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:35.022842Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:35.016874Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:35.079038Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:35.065556Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:35.076062Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "Tramo 5 de 5",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:38.513268Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:38.488493Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:38.532217Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:38.667803Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T19:19:38.603304Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    }
+  ],
+  "assumptions": {
+    "baseline_interruption_days_per_year": 5.0,
+    "residual_interruption_fraction": 0.4,
+    "cost_per_interruption_day_usd": 200000.0,
+    "mitigation_capex_usd_per_km": 120000.0,
+    "annual_maintenance_usd_per_km": 3000.0,
+    "discount_rate": 0.1,
+    "horizon_years": 15,
+    "heavy_rain_threshold_mm_day": 20.0,
+    "interruption_days_sensitivity": 0.4,
+    "cost_per_day_sensitivity": 0.3,
+    "capex_sensitivity": 0.25,
+    "maintenance_sensitivity": 0.25,
+    "residual_fraction_sensitivity": 0.15,
+    "discount_rate_sensitivity": 0.02
+  }
+}
