@@ -8,6 +8,7 @@
 | [NASA LP DAAC](https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001) | NASADEM SC V001 | Public CMR metadata; raster via Earthdata Login | Global land, approximately 30 m / 1 arc-second; slope and aspect in hundredths of degrees | Metadata and public preview integrated; raster values require `EARTHDATA_TOKEN` |
 | [NASA GPM IMERG](https://gpm.nasa.gov/data/imerg) | IMERG V07 | Earthdata/PPS; registration may be required | From 1998; products down to 0.1° and 30 minutes; POWER exposes precipitation as daily UTC and documents 3.5 months of latency for Final | Cataloged; designated countercheck for rainfall extremes |
 | [NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/) | Earth-observation product extraction | Earthdata Login | Product dependent | Cataloged |
+| [Peru COD-AB](https://data.humdata.org/dataset/cod-ab-per) | IGN administrative boundaries v01 via OCHA/HDX | Public GeoJSON; CC BY-IGO | 25 departments, 196 provinces, 1,873 districts; CRS84 | Integrated as pinned, simplified web-reference assets |
 
 NASA POWER limits a point request to 20 parameters and may return HTTP 429. The MVP requests four supported parameters in one multiparameter request per site and caches responses for 24 hours. NASADEM granules are discovered through NASA CMR; the system does not claim terrain metrics unless the protected HGT and SC archives were downloaded and parsed successfully. IMERG differentiates Early, Late, and Final products; the research workflow will prioritize Final after version, units, authentication, and access are verified.
 
@@ -25,4 +26,18 @@ GPM IMERG is the designated independent satellite countercheck for rainfall extr
 
 Verification sources (accessed 2026-10-22): [POWER Daily API](https://power.larc.nasa.gov/docs/services/api/temporal/daily/), [POWER temporal processing](https://power.larc.nasa.gov/docs/methodology/data/processing/), [POWER data sources and IMERG latency](https://power.larc.nasa.gov/docs/methodology/data/sources/), and [GPM IMERG](https://gpm.nasa.gov/data/imerg).
 
-Peruvian sources remain `DATA_UNAVAILABLE` until service availability, licensing, resolution, coverage, and update metadata have been verified. No endpoint has been invented.
+Other Peruvian sources remain `DATA_UNAVAILABLE` until service availability, licensing, resolution, coverage, and update metadata have been verified. No endpoint has been invented.
+
+## Peru administrative territories (K5)
+
+The selector uses **Peru - Subnational Administrative Boundaries (COD-AB) v01**, sourced from Peru's Instituto Geográfico Nacional (IGN), contributed through OCHA ROLAC, quality-assured by OCHA Field Information Services and published by HDX under **CC BY-IGO**. HDX reports 25 admin-1 departments, 196 admin-2 provinces and 1,873 admin-3 districts. The boundaries were created on 24-Jul-2015, accepted for humanitarian use on 14-Jul-2020 and reviewed on 30-Oct-2025. Districts created after the 2015 source snapshot are absent; these are reference boundaries, not cadastral or legal demarcations.
+
+The exact GeoJSON ZIP downloaded on 23-Oct-2026 is pinned by SHA-256 `2f0ec51b7a0899b407546aa644621e1c3255cba59fdda76fcde6975ca6baafb3`. The reproducible builder validates CRS84 (longitude/latitude), counts, unique P-codes/derived ubigeos and every source geometry. It simplifies in EPSG:3857 using a maximum tolerance by level (1,500 m / 750 m / 250 m), then adaptively reduces the tolerance per feature until geodesic area change is at most 1%. Output returns to EPSG:4326.
+
+| Level | Count | Vertex reduction | Maximum geodesic area change | Web GeoJSON size |
+|---|---:|---:|---:|---:|
+| Department | 25 | 98.587% | 0.8461% | 182,217 bytes |
+| Province | 196 | 97.214% | 0.9502% | 849,234 bytes |
+| District | 1,873 | 92.655% | 0.9969% | 5,451,565 bytes |
+
+Each generated asset and the search index has its own SHA-256 in `backend/data/territory/manifest.json`. The API exposes accent-insensitive name search, exact/partial ubigeo search, department → province → district hierarchy, and one simplified GeoJSON feature per territory. Simplification is for web visualization and subject selection; later analytical sampling must explicitly state whether it uses these display geometries or a higher-fidelity official source.

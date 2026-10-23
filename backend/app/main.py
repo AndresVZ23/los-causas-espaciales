@@ -6,6 +6,7 @@ from .api.climate import router as climate_router
 from .api.reports import router as reports_router
 from .api.routes import router
 from .api.scoring import router as scoring_router
+from .api.territories import router as territories_router
 from .core.config import get_settings
 
 settings = get_settings()
@@ -22,6 +23,7 @@ app.include_router(reports_router)
 app.include_router(climate_router)
 app.include_router(scoring_router)
 app.include_router(assistant_router)
+app.include_router(territories_router)
 
 
 @app.get("/")

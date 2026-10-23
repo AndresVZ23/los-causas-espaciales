@@ -7,9 +7,11 @@ flowchart LR
   POWER --> CACHE[File cache]
   API --> STATS[Mann-Kendall + Sen]
   API --> GEO[Shapely + PROJ geometry engine]
+  API --> TERR[IGN/OCHA territorial index]
   API --> FIN[Financial scenarios]
   STATS --> CONTRACT[Traceable result contracts]
   GEO --> CONTRACT
+  TERR --> CONTRACT
   FIN --> CONTRACT
   CONTRACT --> UI
 ```
@@ -24,5 +26,10 @@ Current endpoints:
 - `POST /api/v1/comparisons/sites`
 - `POST /api/v1/geospatial/inspect`
 - `POST /api/v1/finance/npv`
+- `GET /api/v1/territories/search`
+- `GET /api/v1/territories/hierarchy`
+- `GET /api/v1/territories/{level}/{ubigeo}/geometry`
+
+K5 is served from versioned, read-only GeoJSON assets under `backend/data/territory`. `scripts/data/build_peru_territory.py` pins the official HDX ZIP by SHA-256, validates the 25/196/1,873 hierarchy in CRS84, simplifies in metres with an adaptive ≤1% geodesic-area-change gate, and writes per-asset hashes. The API verifies those hashes before loading. Search and hierarchy use a geometry-free index; only the requested level GeoJSON is loaded lazily. This keeps 2015 boundaries visibly qualified and prevents a corrupted asset from silently entering the selector.
 
 PostGIS and a job queue remain planned for persistent geometries, corridor sampling, and raster workloads.

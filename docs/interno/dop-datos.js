@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T16:00:00Z",
+  updatedAt: "2026-10-23T13:30:00Z",
   updatedBy: "Codex",
 
   statuses: {
@@ -198,7 +198,7 @@ window.DOP_DATA = {
       { id: "in-hazards-pe", layer: "in", group: "Territorio Perú", name: "Peligros geológicos e inundación", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "peru", detail: "INGEMMET, CENEPRED y ANA." },
       { id: "in-social", layer: "in", group: "Territorio Perú", name: "Comunidades y conflictos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Defensoría del Pueblo y SENACE; solo alertas de debida diligencia." },
       { id: "in-roads", layer: "in", group: "Territorio Perú", name: "Red vial", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K2", detail: "MTC u OpenStreetMap (ODbL) para la geometría del corredor piloto." },
-      { id: "in-admin", layer: "in", group: "Territorio Perú", name: "Límites oficiales IGN (COD-AB)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K5", detail: "25 departamentos, 196 provincias y 1,873 distritos del IGN vía OCHA (CC BY-IGO, citar). Trazos de 2015: los distritos creados después no figuran." },
+      { id: "in-admin", layer: "in", group: "Territorio Perú", name: "Límites oficiales IGN (COD-AB)", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K5", detail: "25 departamentos, 196 provincias y 1,873 distritos del IGN vía OCHA/HDX (CC BY-IGO). ZIP oficial fijado por SHA-256; trazos de 2015, sin distritos posteriores y no catastrales.", evidence: ["backend/data/territory/manifest.json", "DATA_SOURCES.md", "backend/tests/test_territories.py"] },
       { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "LISTO_PARA_QA", provenance: "USER_ASSUMPTION", detail: "Puntos, y corredores y polígonos dibujados o cargados (GeoJSON RFC 7946, sin reparaciones ocultas), validados y medidos por /geospatial/inspect y exportables para K1." },
       { id: "in-assumptions", layer: "in", group: "Usuario", name: "Supuestos financieros y técnicos", owner: "Claude", status: "VERIFICADO", provenance: "USER_ASSUMPTION", detail: "CAPEX, OPEX, precio, tasa, horizonte, performance ratio y rangos de sensibilidad (±)." },
       { id: "in-sector", layer: "in", group: "Usuario", name: "Sector y criterios de comparación", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Hoy solo solar; ponderaciones por sector pendientes." },
@@ -211,7 +211,7 @@ window.DOP_DATA = {
       { id: "a-catalog", layer: "A", name: "Catálogo de fuentes y licencias", owner: "Codex", status: "EN_CURSO", planTask: "K1b", detail: "Existencia, acceso, licencia, resolución, cobertura y fecha de cada fuente." },
       { id: "a-harmonize", layer: "A", name: "Armonización espacial", owner: "Codex", status: "PENDIENTE", dopNode: "harmonize", detail: "CRS, resolución, nodata y temporalidad sin degradación silenciosa." },
       { id: "a-sampling", layer: "A", name: "Muestreo de corredores, polígonos y territorios", owner: "Codex", status: "PENDIENTE", planTask: "K1", dopNode: "sampling", detail: "Convierte geometrías y territorios en sujetos C2: celdas NASA POWER dentro del área (pedido regional, una variable por pedido), deduplicadas, con promedio ponderado por área y dispersión. Un distrito menor que una celda se declara como punto." },
-      { id: "a-admin", layer: "A", name: "Índice territorial", owner: "Codex", status: "PENDIENTE", planTask: "K5", dopNode: "sampling", detail: "Límites IGN simplificados por nivel, búsqueda por nombre y ubigeo, y geometría por territorio vía API." },
+      { id: "a-admin", layer: "A", name: "Índice territorial", owner: "Codex", status: "VERIFICADO", planTask: "K5", dopNode: "sampling", detail: "API tipada de búsqueda por nombre/ubigeo, jerarquía y geometría. Simplificación métrica adaptativa: 92.655–98.587% menos vértices, geometrías válidas y cambio de área geodésica ≤1%; hashes verificados al cargar.", evidence: ["5 pruebas K5", "scripts/data/build_peru_territory.py", "TECHNICAL_ARCHITECTURE.md"] },
       { id: "a-store", layer: "A", name: "Persistencia y trabajos", owner: "Codex", status: "PENDIENTE", dopNode: "platform", detail: "PostGIS, cola de trabajos y ejecuciones versionadas." },
 
       // Capa B
@@ -358,7 +358,7 @@ window.DOP_DATA = {
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
     { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "PENDIENTE", ref: "—", nodes: ["sampling"] },
     { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS verificado; COES ExportarGeneracion verificado 23-oct", nodes: ["gpm", "peru", "labels"] },
-    { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "PENDIENTE", ref: "COD-AB Perú, CC BY-IGO", nodes: ["sampling"] },
+    { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "VERIFICADO", ref: "COD-AB Perú · CC BY-IGO · 25/196/1,873 · 5 pruebas", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
     { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
     { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 21-dic-2026)", status: "EN_CURSO", ref: "continuo", nodes: [] },

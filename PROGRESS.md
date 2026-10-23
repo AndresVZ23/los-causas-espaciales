@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Última actualización: 2026-10-22
+Última actualización: 2026-10-23
 
 ## Versión operativa verificada
 
@@ -114,6 +114,15 @@
 - Botón «PDF ejecutivo» en la consola y `POST /api/v1/reports/executive-pdf`, genérico para cualquier sector (ADR-016).
 - PDF de 3 páginas con datos reales: las cinco preguntas NASA en la portada, tendencias con minigráfico y recta de Sen, relieve NASADEM, pipeline, supuestos, brechas, método, fuentes con DOI y huella SHA-256.
 - Verificado: 36/36 pruebas backend (el texto del PDF se lee con pypdf) y descarga real en navegador a 1440 y 390 px, con la etapa 9 en «Completado» y sin errores de consola.
+
+## Selector territorial K5 (rama `codex/territorio`)
+
+- COD-AB Perú v01 del IGN vía OCHA/HDX incorporado bajo CC BY-IGO: 25 departamentos, 196 provincias y 1,873 distritos.
+- Búsqueda por nombre/ubigeo, jerarquía departamento → provincia → distrito y geometría GeoJSON por territorio mediante tres endpoints tipados.
+- Activos simplificados reproducibles: 92.655–98.587% menos vértices, con geometrías válidas y cambio de área geodésica ≤1%; cada archivo se verifica por SHA-256 al cargarse.
+- Los trazos se declaran como referencia de 2015, sin distritos posteriores y sin valor catastral; no se presentan como límites actuales exhaustivos.
+- Pruebas K5 aisladas: 5/5 con conteos, acentos, ubigeo, jerarquía, geometría, errores y TestClient, sin levantar 8000.
+- Puerta completa K5: 112/112 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; no se modificó `frontend/**` ni se inició 3100/8000.
 
 ## Brechas prioritarias
 
