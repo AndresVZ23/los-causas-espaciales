@@ -41,7 +41,12 @@ def sources():
         {"id": "nasadem-hgt", "name": "NASADEM HGT V001", "status": "metadata_integrated_raster_requires_auth", "access": "CMR público; raster con Earthdata Login", "url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001"},
         {"id": "nasadem-sc", "name": "NASADEM Slope and Curvature V001", "status": "metadata_integrated_raster_requires_auth", "access": "CMR público; raster con Earthdata Login", "url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001"},
         {"id": "nasa-gpm-imerg", "name": "NASA GPM IMERG V07", "status": "catalogued_not_integrated", "access": "Earthdata/PPS; authentication may apply", "url": "https://gpm.nasa.gov/data/imerg"},
-        {"id": "appeears", "name": "NASA AppEEARS", "status": "catalogued_not_integrated", "access": "Earthdata authentication", "url": "https://appeears.earthdatacloud.nasa.gov/"},
+        {"id": "appeears", "name": "NASA AppEEARS", "status": "integrated_async", "access": "Earthdata Login; token kept in memory and revoked after each operation", "url": "https://appeears.earthdatacloud.nasa.gov/api/"},
+        {"id": "cenepred-sigrid", "name": "CENEPRED SIGRID", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://sigrid.cenepred.gob.pe/sigridv3/"},
+        {"id": "sernanp-anp", "name": "SERNANP Áreas Naturales Protegidas", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://geoportal.sernanp.gob.pe/servicios-list/"},
+        {"id": "osinergmin-grid", "name": "Osinergmin GISEM", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://gisem.osinergmin.gob.pe/"},
+        {"id": "cultura-sigda", "name": "Ministerio de Cultura SIGDA", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://sigda.cultura.gob.pe/"},
+        {"id": "coes-generation", "name": "COES Medidores de Generación", "status": "integrated_with_license_caveat", "access": "public monthly CSV export", "url": "https://www.coes.org.pe/Portal/mediciones/medidoresgeneracion"},
     ]
 
 

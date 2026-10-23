@@ -110,15 +110,23 @@
 - PDF de 3 páginas con datos reales: las cinco preguntas NASA en la portada, tendencias con minigráfico y recta de Sen, relieve NASADEM, pipeline, supuestos, brechas, método, fuentes con DOI y huella SHA-256.
 - Verificado: 36/36 pruebas backend (el texto del PDF se lee con pypdf) y descarga real en navegador a 1440 y 390 px, con la etapa 9 en «Completado» y sin errores de consola.
 
+## Fuentes ambientales, territoriales y etiquetas COES (rama `codex/fuentes-amenazas`)
+
+- AppEEARS opera con tareas asíncronas de punto y área para MOD13Q1.061 (NDVI/EVI y VI Quality) y MOD44W.061 (agua y QA). El token Earthdata solo vive en memoria, se renueva ante vencimiento/403 y se revoca al terminar cada operación.
+- La tarea real `975994a2-f686-4742-9805-714ad035c0c8` llegó a READY. Sus dos CSV se descargaron mediante el conector, coincidieron con los SHA-256 oficiales y expusieron los valores escalados y campos QA esperados para Moquegua.
+- El endpoint territorial consulta puntos, corredores y polígonos en CENEPRED, SERNANP, Osinergmin GISEM y Cultura SIGDA usando intersección en EPSG:4326. Un resultado de cero entidades permanece neutral y nunca se convierte en «no existe riesgo/restricción».
+- El conector COES agrega potencia activa de 15 minutos a MWh mensuales para los seis nombres solicitados, sin sustituciones. Septiembre de 2026 fue contrastado con una segunda implementación; los términos públicos no declaran una licencia abierta explícita, por lo que la reutilización conserva atribución y cautela.
+- INGEMMET permanece `DATA_UNAVAILABLE` porque la cadena TLS oficial no pasa validación estricta; SENAMHI tiene catálogo WFS accesible, pero aún falta seleccionar una capa de amenaza concreta. IMERG, LHASA, ANA, SENACE, Defensoría y comunidades siguen pendientes.
+
 ## Brechas prioritarias
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).
 
 1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
-2. Incorporar red eléctrica, subestaciones y distancia de conexión con fuente y fecha verificadas.
-3. Añadir áreas protegidas, ecosistemas frágiles y restricciones ambientales oficiales.
-4. Incorporar sensibilidad social, comunidades y patrimonio arqueológico con salvaguardas adecuadas.
-5. Integrar GPM IMERG V07 y AppEEARS cuando exista acceso Earthdata configurado y verificable.
+2. ~~Incorporar red eléctrica y subestaciones~~ **Fuente activa:** Osinergmin GISEM; falta calcular distancia y verificar capacidad de conexión.
+3. ~~Añadir áreas protegidas~~ **Fuente activa:** SERNANP; faltan ecosistemas frágiles y el análisis normativo de restricciones.
+4. Incorporar sensibilidad social y comunidades; Cultura SIGDA ya aporta la alerta arqueológica inicial, sin reemplazar CIRA ni debida diligencia.
+5. Integrar GPM IMERG V07 y LHASA. AppEEARS MOD13Q1/MOD44W ya está verificado con descarga y QA reales.
 6. Implementar muestreo NASA a lo largo de corredores y polígonos; hoy esas geometrías solo se validan y miden.
 7. Construir los pilotos vial y de desarrollo inmobiliario después de contar con las capas territoriales mínimas.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.

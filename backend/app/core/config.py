@@ -9,6 +9,10 @@ class Settings(BaseSettings):
     power_api_base: str = "https://power.larc.nasa.gov/api"
     cmr_api_base: str = "https://cmr.earthdata.nasa.gov/search"
     earthdata_token: str | None = None
+    earthdata_username: str | None = None
+    earthdata_password: str | None = None
+    appeears_api_base: str = "https://appeears.earthdatacloud.nasa.gov/api"
+    coes_export_url: str = "https://www.coes.org.pe/Portal/mediciones/medidoresgeneracion/Exportar"
     cache_ttl_hours: int = 24
     cors_origins: str = "http://localhost:3100"
     cache_dir: Path = Path(__file__).resolve().parents[2] / "data" / "cache"
