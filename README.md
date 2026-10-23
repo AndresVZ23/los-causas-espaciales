@@ -15,8 +15,11 @@ Plataforma de inteligencia territorial para convertir datos de observación de l
 - Estimar energía anual y VAN utilizando únicamente supuestos editables del usuario.
 - Mostrar oportunidades, cautelas, procedencia del dato y brechas que todavía impiden una decisión de factibilidad.
 - Descargar el resultado completo en JSON.
+- Crear tareas asíncronas AppEEARS para MOD13Q1.061 (NDVI/EVI + QA) y MOD44W.061 (agua + QA), consultar su estado, listar el bundle y descargar archivos con verificación SHA-256.
+- Consultar intersecciones de punto, corredor o polígono en CENEPRED, SERNANP, Osinergmin y Cultura, conservando CRS, procedencia y límites de interpretación.
+- Obtener generación mensual real de COES para Rubí, Intipampa, Moquegua FV, Majes, Repartición y Panamericana como etiquetas `in-coes`.
 
-La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY`. Las capas de red eléctrica, restricciones ambientales, sensibilidad social y arqueológica, GPM IMERG y fuentes oficiales peruanas todavía no están integradas. La interfaz las muestra como brechas, nunca como resultados terminados.
+La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY`. AppEEARS requiere `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`: el token temporal permanece en memoria, se renueva al vencer y se revoca al terminar. Las fuentes activas y sus cautelas de licencia están en `docs/nasa-submission/DATA_SOURCES.md`. GPM IMERG directo, LHASA, ANA, SENACE, Defensoría y comunidades siguen pendientes; INGEMMET queda `DATA_UNAVAILABLE` mientras su cadena TLS no sea verificable.
 
 ## Ejecución con Docker
 

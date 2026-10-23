@@ -6,6 +6,9 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     env_file: .env
+    environment:
+      EARTHDATA_USERNAME: ${EARTHDATA_USERNAME:-}
+      EARTHDATA_PASSWORD: ${EARTHDATA_PASSWORD:-}
     ports: ["8000:8000"]
     volumes: ["power-cache:/app/backend/data/cache"]
   web:
