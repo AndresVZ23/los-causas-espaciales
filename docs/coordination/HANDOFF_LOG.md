@@ -280,3 +280,15 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Puerta:** 5/5 pruebas K5 y 112/112 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; sintaxis DOP válida. Sin secretos, sin Gemini y sin iniciar 3100/8000.
 
 **Para Claude:** K5 queda `VERIFICADO`; C7 ya puede consumir el selector territorial, aunque el mapa de tendencias por celda aún depende de K1. Esta rama nació de `master`, no contiene `codex/fuentes-amenazas`; al apilar ambas habrá conflictos aditivos esperables en `main.py`, `routes.py`, `DATA_SOURCES.md`, `TECHNICAL_ARCHITECTURE.md`, `PROGRESS.md` y `dop-datos.js`. Conservar ambos routers y ambas evidencias. Rama no fusionada ni subida; requiere aprobación de Christian.
+
+## 2026-10-23 · Codex · codex/regional-sampling · 3b72de7 · K1 muestreo espacial NASA POWER
+
+**Entrega:** rama apilada sobre `codex/territorio`. `POST /api/v1/spatial-sampling/power/daily` acepta Point, LineString/MultiLineString, Polygon/MultiPolygon y Features GeoJSON; conserva `properties.kind`, `name` y `origin`. Los corredores usan `corridor_buffer_km` en una proyección azimutal equidistante local. Los polígonos menores que una celda nominal se declaran `POINT`; los mayores usan POWER `/api/temporal/daily/regional` con un solo parámetro por pedido.
+
+**Método:** caché cruda content-addressed, celdas deduplicadas por centro, límites inferidos a mitad entre centros devueltos, intersección con el sujeto y peso por área geodésica WGS84. La respuesta entrega serie de cada celda y agregado diario con media ponderada, desviación estándar ponderada, mínimo, máximo y número de celdas. Un faltante se excluye y renormaliza pesos; nunca se vuelve cero. Duplicados conflictivos, geometrías inválidas, regiones >10° y respuestas >100 MB detienen la operación.
+
+**Evidencia real 23-oct-2026:** Moquegua departamento, T2M UTC 1–3 ene 2026: `REGIONAL`, 9 celdas, cobertura inferida 99.5833%, grilla observada 0.5° lat × 0.625° lon, medias 13.0592 / 11.9289 / 13.5450 °C, `REAL_DATA`. La separación longitudinal demuestra que la grilla MERRA-2 real no debe forzarse a la etiqueta documental 0.5°×0.5°. La Punta (Callao), 0.773019 km²: `POINT`, una celda, 19.18 / 19.02 / 19.03 °C.
+
+**Puerta:** 6/6 pruebas K1 y 118/118 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; sintaxis DOP válida. Sin secretos, sin Gemini, sin cambios en `frontend/**` y sin iniciar 3100/8000.
+
+**Para Claude:** K1 y K5 quedan `VERIFICADO`; C7 puede consumir `cells[]` para tendencias/mapa y `aggregate[]` para la serie del territorio. `grid_spacing_degrees` y `spatial_coverage_percent` deben quedar visibles para no exagerar resolución. Esta rama incluye K5, pero no `codex/fuentes-amenazas`; al integrarlas conservar el `RawPayloadCache` común y todos los routers. Rama no fusionada ni subida; requiere aprobación de Christian.
