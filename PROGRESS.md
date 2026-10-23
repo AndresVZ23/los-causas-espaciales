@@ -160,14 +160,22 @@
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).
 
-1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
+1. Renovar `EARTHDATA_TOKEN` o reautorizar LP DAAC: el token local declara vigencia hasta el 21-dic-2026, pero el servicio protegido devuelve 401 para teselas nuevas y también para las dos ya validadas. Los archivos previamente descargados siguen disponibles en caché.
 2. ~~Incorporar red eléctrica y subestaciones~~ **Fuente activa:** Osinergmin GISEM; falta calcular distancia y verificar capacidad de conexión.
 3. ~~Añadir áreas protegidas~~ **Fuente activa:** SERNANP; faltan ecosistemas frágiles y el análisis normativo de restricciones.
 4. Incorporar sensibilidad social y comunidades; Cultura SIGDA ya aporta la alerta arqueológica inicial, sin reemplazar CIRA ni debida diligencia.
+
 5. Integrar GPM IMERG V07 y LHASA. AppEEARS MOD13Q1/MOD44W ya está verificado con descarga y QA reales.
 6. Implementar muestreo NASA a lo largo de corredores y polígonos; hoy esas geometrías solo se validan y miden.
 7. ~~Construir el backend del piloto vial~~ **K2 listo en `codex/piloto-vial`**; falta la pantalla de Claude y permanece pendiente K3 inmobiliario.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.
+
+## Diagnóstico NASADEM `s17w071` (rama `codex/nasadem-s17w071`)
+
+- CMR confirmó `NASADEM_HGT_s17w071` (`G2816776437-LPCLOUD`) y `NASADEM_SC_s17w071` (`G2816803398-LPCLOUD`) con nombres y rutas LP DAAC correctos; la tesela no está ausente ni mal identificada.
+- Lecturas de un byte devolvieron HTTP 401 en ambos gránulos y también en `s18w071`/`s17w072`, previamente accesibles. La causa observable es la credencial/autorización Earthdata actual, no el contenido de `s17w071`.
+- El conector ahora distingue 401 («renueve el token») de 403 («autorice LP DAAC») y el log ya no atribuye el rechazo a un gránulo específico. El secreto nunca se imprime ni se cachea.
+- Puerta: 15/15 pruebas NASADEM y 146/146 backend; build Next.js aprobado; auditoría npm con 0 vulnerabilidades; auditor científico `ok: true`; sin tocar 3100/8000.
 
 ## Traspaso a Claude Code
 

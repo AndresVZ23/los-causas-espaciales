@@ -249,9 +249,15 @@ class NasademConnector:
             transport=self.transport,
         ) as client:
             async with client.stream("GET", granule.data_url, headers=headers) as response:
-                if response.status_code in (401, 403):
+                if response.status_code == 401:
                     raise NasademAccessError(
-                        f"Earthdata rechazó el acceso al raster NASADEM con HTTP {response.status_code}."
+                        "Earthdata rechazó EARTHDATA_TOKEN con HTTP 401; renueve el token antes de descargar "
+                        "teselas NASADEM nuevas."
+                    )
+                if response.status_code == 403:
+                    raise NasademAccessError(
+                        "Earthdata negó el acceso al raster NASADEM con HTTP 403; confirme que la cuenta autorizó "
+                        "la aplicación LP DAAC."
                     )
                 if response.status_code == 416:
                     if offset and await asyncio.to_thread(_is_valid_archive, temporary):
@@ -334,7 +340,7 @@ class NasademConnector:
             cls._access_failures.pop(access_key, None)
         except NasademAccessError as exc:
             cls._access_failures[access_key] = str(exc)
-            LOGGER.warning("NASADEM no tiene acceso al gránulo %s", Path(runtime_key[1]).name)
+            LOGGER.warning("Earthdata rechazó la credencial al descargar %s", Path(runtime_key[1]).name)
         except Exception as exc:  # noqa: BLE001 - la tarea no debe dejar excepciones sin consumir
             LOGGER.warning("Descarga NASADEM en segundo plano incompleta: %s", exc)
 
