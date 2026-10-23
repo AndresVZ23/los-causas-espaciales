@@ -23,8 +23,18 @@ from ..orchestration.stages import (
     territorial_stage,
     unique,
 )
-from ..schemas.analysis import Provenance
-from ..schemas.climate import Agreement, ClimateScreeningRequest, ClimateScreeningResponse, ClimateSiteResult
+from ..connectors.peru.admin_boundaries import PeruTerritoryCatalog, TerritoryCatalogError
+from ..orchestration.territory import TerritoryAnalysisError, TerritoryExtraction, cell_trends, extract_territories
+from ..schemas.analysis import Point, Provenance
+from ..schemas.climate import (
+    Agreement,
+    CellTrend,
+    ClimateScreeningRequest,
+    ClimateScreeningResponse,
+    ClimateSiteResult,
+    TerritoryInfo,
+)
+from ..schemas.territory import TerritoryGeometryResponse
 from ..schemas.pipeline import DataGap
 from ..schemas.screening import PipelineStatus, StageEvidence, StudySubject, SubjectKind
 from ..schemas.terrain import TerrainResponse
@@ -70,14 +80,52 @@ CLIMATE_STABLE_NOTES = {
 ECONOMICS_NOTE = "El módulo climático no usa supuestos financieros: el impacto económico de estos cambios se cuantifica en los pilotos sectoriales, con supuestos explícitos del usuario."
 
 
-def _subjects(request: ClimateScreeningRequest) -> list[StudySubject]:
-    return [
+LEVEL_SUFFIX = {"department": "depto.", "province": "prov.", "district": "dist."}
+# Tendencias por celda que se dibujan en el mapa: las dos variables con lectura territorial más directa.
+CELL_TREND_VARIABLES = ["T2M", "PRECTOTCORR"]
+TERRITORY_NOTE = (
+    "Territorios: cada variable es el promedio diario ponderado por área de las celdas NASA POWER que lo cubren. "
+    "Los extremos de lluvia de un promedio areal son más suaves que los de un punto; la dispersión entre celdas y las "
+    "tendencias por celda muestran la variación interna."
+)
+
+
+def _subjects(request: ClimateScreeningRequest, geometries: list[TerritoryGeometryResponse]) -> list[StudySubject]:
+    sites = [
         StudySubject(
             id=f"sitio-{index + 1}", label=site.label or f"Sitio {index + 1}", kind=SubjectKind.POINT,
             geometry={"type": "Point", "coordinates": [site.longitude, site.latitude]}, representative_point=site,
         )
         for index, site in enumerate(request.sites)
     ]
+    territories = []
+    for geometry in geometries:
+        summary = geometry.territory
+        label = f"{summary.name} ({LEVEL_SUFFIX[summary.level]})"
+        territories.append(StudySubject(
+            id=f"territorio-{summary.ubigeo}", label=label, kind=SubjectKind.POLYGON,
+            geometry=geometry.feature.get("geometry", geometry.feature),
+            representative_point=Point(latitude=summary.center.latitude, longitude=summary.center.longitude, label=label),
+        ))
+    return sites + territories
+
+
+def _territory_info(extraction: TerritoryExtraction) -> TerritoryInfo:
+    summary = extraction.summary
+    return TerritoryInfo(level=summary.level, ubigeo=summary.ubigeo, name=summary.name, area_km2=summary.area_sqkm, mode=extraction.mode,
+                         cells=len(extraction.cells), coverage_percent=extraction.coverage_percent, grid_degrees=extraction.grid_degrees,
+                         geometry=extraction.geometry)
+
+
+async def _extract(request: ClimateScreeningRequest) -> tuple[list, list[TerritoryExtraction]]:
+    async def sites():
+        if not request.sites:
+            return []
+        return (await extract_power(request.sites, REQUEST_VARIABLES, request.start_date, request.end_date))[0]
+
+    refs = [(item.level, item.ubigeo) for item in request.territories]
+    site_data, territories = await asyncio.gather(sites(), extract_territories(refs, REQUEST_VARIABLES, request.start_date, request.end_date))
+    return site_data + [item.dataset for item in territories], territories
 
 
 def _data_gaps(terrain: TerrainResponse | None, countercheck_error: str | None) -> list[DataGap]:
@@ -115,11 +163,15 @@ def _countercheck_summary(sites: list[ClimateSiteResult]) -> str:
 
 async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScreeningResponse:
     timings = StageTimings()
-    subjects = _subjects(request)
+    try:
+        geometries = [PeruTerritoryCatalog().geometry(item.level, item.ubigeo) for item in request.territories]
+    except TerritoryCatalogError as exc:
+        raise TerritoryAnalysisError(str(exc)) from exc
+    subjects = _subjects(request, geometries)
     points = [subject.representative_point for subject in subjects]
-    (datasets, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms) = await asyncio.gather(
-        extract_power(points, REQUEST_VARIABLES, request.start_date, request.end_date), extract_terrain(points)
-    )
+    extraction_start = perf_counter()
+    ((datasets, territories), (terrain, terrain_error, timings.terrain_ms)) = await asyncio.gather(_extract(request), extract_terrain(points))
+    timings.extraction_ms = elapsed_ms(extraction_start)
     expected_days = (request.end_date - request.start_date).days + 1
 
     analysis_start = perf_counter()
@@ -133,10 +185,16 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         countercheck_error = str(exc)
     timings.analysis_ms = elapsed_ms(analysis_start)
 
-    sites = [
-        ClimateSiteResult(location=site, variables=variables, extremes=extremes, wet_day_p95_mm=threshold)
-        for site, variables, extremes, threshold in zip(request.sites, variables_by_site, extremes_by_site, thresholds, strict=True)
-    ]
+    extra = {len(request.sites) + index: territory for index, territory in enumerate(territories)}
+    sites = []
+    for index, (subject, variables, extremes, threshold) in enumerate(zip(subjects, variables_by_site, extremes_by_site, thresholds, strict=True)):
+        point = subject.representative_point
+        territory = extra.get(index)
+        sites.append(ClimateSiteResult(
+            location=Point(latitude=point.latitude, longitude=point.longitude, label=subject.label), variables=variables, extremes=extremes,
+            wet_day_p95_mm=threshold, territory=_territory_info(territory) if territory else None,
+            cell_trends=[CellTrend(**vars(item)) for item in cell_trends(territory, CELL_TREND_VARIABLES)] if territory and territory.mode == "REGIONAL" else [],
+        ))
     labelled = [
         SubjectSummaries(label=subject.label, summaries=[*variables, *extremes])
         for subject, variables, extremes in zip(subjects, variables_by_site, extremes_by_site, strict=True)
@@ -212,5 +270,5 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         assumption_items=[],
         disclaimer="Análisis de tendencias con estimaciones en grilla de NASA POWER. No sustituye estaciones meteorológicas, estudios hidrológicos ni evaluaciones de riesgo de desastres.",
         sites=sites,
-        method_notes=[*METHOD_NOTES, COUNTERCHECK_NOTE] if countercheck_error is None else list(METHOD_NOTES),
+        method_notes=[*METHOD_NOTES, *([COUNTERCHECK_NOTE] if countercheck_error is None else []), *([TERRITORY_NOTE] if territories else [])],
     )
