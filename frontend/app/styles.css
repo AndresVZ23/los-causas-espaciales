@@ -347,6 +347,38 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .tornadoTip { position: absolute; right: 0; bottom: calc(100% - 4px); z-index: 5; width: min(320px, 100%); padding: 9px 11px; display: none; flex-direction: column; gap: 4px; background: var(--raised); border: 1px solid var(--border); box-shadow: 0 6px 18px rgb(0 0 0 / .4); font-size: 11px; color: var(--text); }
 .tornadoTip small { color: var(--muted); line-height: 1.4; }
 .tornadoRow:hover .tornadoTip, .tornadoRow:focus-visible .tornadoTip { display: flex; }
+/* Territorios oficiales (IGN) y grilla de tendencias por celda. */
+.siteRemove { align-self: end; min-height: 30px; padding: 0 8px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; }
+.territorySection { margin: 10px 0 4px; padding-top: 10px; border-top: 1px solid var(--rule); }
+.territorySection h3 { margin: 0 0 8px; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.territorySection h3 span { color: var(--subtle); font: 10px var(--font-data-mono), monospace; font-weight: 400; }
+.territoryChosen { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 5px; }
+.territoryChosen li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 9px; border: 1px solid var(--border); border-left: 2px solid var(--text); background: var(--surface); }
+.territoryChosen b { display: block; font-size: 12px; }.territoryChosen span { color: var(--subtle); font: 10px var(--font-data-mono), monospace; }
+.territoryChosen button { min-height: 28px; padding: 0 8px; border: 0; background: transparent; color: var(--muted); font-size: 11px; text-decoration: underline; }
+.territoryModes { display: inline-flex; gap: 4px; margin-bottom: 6px; }
+.territoryModes button { min-height: 28px; padding: 0 10px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; }
+.territoryModes button.active { border-color: var(--accent); color: var(--text); }
+.territorySearch { width: 100%; min-height: 36px; border: 1px solid var(--border); background: var(--control); color: var(--text); padding: 0 10px; font-size: 12px; }
+.territoryResults { list-style: none; margin: 4px 0 0; padding: 0; border: 1px solid var(--border); max-height: 220px; overflow-y: auto; }
+.territoryResults button { width: 100%; padding: 7px 10px; border: 0; border-bottom: 1px solid var(--rule); background: var(--surface); color: var(--text); text-align: left; display: grid; gap: 2px; }
+.territoryResults button:hover:not(:disabled) { background: var(--raised); }.territoryResults button:disabled { color: var(--subtle); }
+.territoryResults b { font-size: 12px; }.territoryResults span { color: var(--subtle); font: 10px var(--font-data-mono), monospace; }
+.territoryLevels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-items: end; }
+.territoryField { display: grid; gap: 3px; min-width: 0; }.territoryField label { color: var(--muted); font: 10px var(--font-data-mono), monospace; }
+.territoryLevels select { min-height: 32px; border: 1px solid var(--border); background: var(--control); color: var(--text); padding: 0 6px; font-size: 12px; min-width: 0; }
+.territoryAdd { grid-column: 1 / -1; min-height: 34px; border: 1px solid var(--accent); border-radius: 2px; background: transparent; color: var(--text); font-size: 12px; }
+.territoryAdd:disabled { border-color: var(--border); color: var(--subtle); }
+.territoryHint { margin: 6px 0 0; color: var(--subtle); font-size: 11px; line-height: 1.45; }
+.territoryScale { color: var(--muted); font: 10px/1.4 var(--font-data-mono), monospace; }
+.cellLegend { position: absolute; left: 13px; bottom: 54px; z-index: 2; max-width: min(300px, calc(100% - 26px)); padding: 7px 9px; background: rgba(8,12,13,.9); border: 1px solid var(--border); }
+.cellLegend [role="group"] { display: flex; gap: 4px; margin-bottom: 5px; }
+.cellLegend button { min-height: 24px; padding: 0 8px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 10px; }
+.cellLegend button.active { border-color: var(--accent); color: var(--text); }
+.cellLegend p { margin: 2px 0; color: var(--muted); font: 10px/1.35 var(--font-data-mono), monospace; }.cellLegend b { color: var(--text); }
+.cellScale { display: flex; flex-wrap: wrap; gap: 8px; }.cellScale i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; border-radius: 2px; }
+.cellScale i.cellNone { border: 1px dashed #818b94; }
+@media (max-width: 560px) { .territoryLevels { grid-template-columns: 1fr; }.cellLegend { bottom: 48px; } }
 /* Asistente C4: preguntas sobre el análisis (modo reglas por defecto). */
 .assistantPanel { margin: 0 0 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
 .assistantPanel .panelHeader > span { color: var(--positive); font: 10px var(--font-data-mono), monospace; }

@@ -74,7 +74,25 @@ export type ExtremeCountercheck = {
   source: string; valid_years: number; direction: string; slope_per_year: number | null; adjusted_p_value: number | null;
   significant_after_bh: boolean; agreement: Agreement; annual_series: { year: number; value: number }[];
 };
-export type ClimateSite = { location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null };
+// Territorios oficiales (IGN · COD-AB vía API de Codex) y su análisis por celdas NASA POWER.
+export type TerritoryLevel = "department" | "province" | "district";
+export type TerritorySummary = {
+  level: TerritoryLevel; name: string; ubigeo: string; pcode: string; parent_ubigeo: string | null;
+  department: string | null; province: string | null; area_sqkm: number; center: { latitude: number; longitude: number };
+};
+export type TerritoryPick = { level: TerritoryLevel; ubigeo: string; name: string; context: string; geometry: GeoJSON.Geometry | null };
+export type CellTrend = {
+  cell_id: string; center: { latitude: number; longitude: number }; bounds: [number, number, number, number]; weight: number;
+  variable: string; direction: string; slope_per_year: number | null; p_value: number | null; adjusted_p_value: number | null; significant: boolean; valid_years: number;
+};
+export type TerritoryInfo = {
+  level: TerritoryLevel; ubigeo: string; name: string; area_km2: number; mode: "REGIONAL" | "POINT"; cells: number;
+  coverage_percent: number; grid_degrees: [number, number] | null; geometry: GeoJSON.Geometry; source: string;
+};
+export type ClimateSite = {
+  location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null;
+  territory?: TerritoryInfo | null; cell_trends?: CellTrend[];
+};
 export type ClimateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & { sector: "climate"; sites: ClimateSite[]; method_notes: string[] };
 export type AnyResult = ScreeningResult | ClimateResult;
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";

@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T18:00:00Z",
+  updatedAt: "2026-10-23T22:00:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -238,7 +238,7 @@ window.DOP_DATA = {
       { id: "b-hazard", layer: "B", name: "Exposición a amenazas", owner: "Codex", status: "PENDIENTE", detail: "Superposición con capas oficiales; susceptibilidad, amenaza, exposición y riesgo son distintos." },
       { id: "b-constraints", layer: "B", name: "Restricciones territoriales", owner: "Codex", status: "PENDIENTE", detail: "Áreas protegidas, patrimonio y comunidades como alertas, no conclusiones legales." },
       { id: "b-environment", layer: "B", name: "Cambio de cobertura y vegetación", owner: "Codex", status: "PENDIENTE", detail: "Tendencias en índices de vegetación y agua." },
-      { id: "b-celltrends", layer: "B", name: "Tendencias por celda", owner: "Claude", status: "PENDIENTE", planTask: "C7", detail: "Mann–Kendall con Hamed–Rao y BH en cada celda del territorio: mapa de dónde cambia y cuánto, con celdas no significativas atenuadas. Responde visualmente «¿dónde está cambiando?»." },
+      { id: "b-celltrends", layer: "B", name: "Tendencias por celda", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C7", detail: "Mann–Kendall con Hamed–Rao y BH en cada celda del territorio: mapa de dónde cambia y cuánto, con celdas no significativas atenuadas. Responde visualmente «¿dónde está cambiando?»." },
       { id: "b-pvnn", layer: "B", name: "Calibrador FV (red neuronal)", owner: "Claude", status: "BLOQUEADO", dopNode: "candidates", detail: "Propuesta: factor de planta mensual contra el baseline físico. Ver la pestaña «Calibrador neuronal»." },
 
       // Capa C
@@ -264,7 +264,7 @@ window.DOP_DATA = {
       { id: "o-reports", layer: "out", group: "Entregables", name: "Reportes PDF y JSON", owner: "Claude", status: "VERIFICADO", detail: "PDF ejecutivo con huella SHA-256 y JSON reproducible." },
       { id: "o-api", layer: "out", group: "Entregables", name: "API para terceros", owner: "Codex", status: "EN_CURSO", detail: "OpenAPI operativa; falta versionado público y límites de uso." },
       { id: "o-monitor", layer: "out", group: "Entregables", name: "Monitoreo recurrente de activos", owner: "Codex", status: "PENDIENTE", detail: "Línea comercial futura: re-ejecutar y alertar cambios." },
-      { id: "o-territory", layer: "out", group: "Consola", name: "Selector territorial", owner: "Claude", status: "PENDIENTE", planTask: "C7", detail: "Departamento → provincia → distrito, zona propia (dibujo o GeoJSON) o clic; compara de 2 a 4 territorios de cualquier tipo, con la escala de la grilla a la vista." },
+      { id: "o-territory", layer: "out", group: "Consola", name: "Selector territorial", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C7", detail: "Departamento → provincia → distrito, zona propia (dibujo o GeoJSON) o clic; compara de 2 a 4 territorios de cualquier tipo, con la escala de la grilla a la vista." },
       { id: "o-layers", layer: "out", group: "Consola", name: "Capas visuales del mapa", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C6", detail: "Selector de capas GIBS con fecha, leyenda y etiqueta «visual, no entra en el cálculo»; viento sobre tierra con flechas de NASA POWER (opcional)." },
     ],
     // [origen, destino, tipo]: sin tipo = requerida (sin ella el destino no funciona); "E" = enriquece, amplía pero no bloquea.
@@ -371,7 +371,7 @@ window.DOP_DATA = {
     { id: "C4", owner: "Claude", title: "Asistente analítico (reglas sin costo; Gemini a pedido)", status: "VERIFICADO", ref: "f3074cb · merge 63e0f36 · puerta común aprobada sin clave Gemini", nodes: ["delivery"] },
     { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "PENDIENTE", ref: "depende de K2 y K3", nodes: ["pilots"] },
     { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-024", nodes: ["delivery"] },
-    { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "PENDIENTE", ref: "depende de K5 y K1", nodes: ["sampling", "delivery"] },
+    { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-025", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
     { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "VERIFICADO", ref: "Moquegua 9 celdas · La Punta POINT · 6 pruebas", nodes: ["sampling"] },
     { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS, capas activas y COES XLSX verificados; ruta LHASA confirmada, conector LHASA y fuentes Perú restantes pendientes", nodes: ["gpm", "peru", "labels"] },

@@ -139,3 +139,17 @@ La lista curada vive en `backend/app/maplayers/catalog.py`. La fecha más recien
 La fecha `Default` de GIBS no siempre tiene teselas: AMSR2 declara el 01-09-2025, que da 404, mientras el 31-08-2025 sí existe. Por eso se pide una tesela z=2 sobre el Perú y se retrocede período a período hasta encontrar una publicada, y se avisa del ajuste. Una serie sin datos hace más de 30 días se marca como detenida. Si GIBS no responde, se sirve la lista sin fechas, con aviso.
 
 Son capas **visuales**: la etiqueta y la leyenda dicen «no entra en el cálculo». Mientras hay una capa activa se quita el filtro de color del lienzo, para que los colores coincidan con la leyenda oficial.
+## ADR-025 — Análisis por territorio: celdas descubiertas por el regional y pedidas como punto
+
+El 2026-10-23 se verificó que el endpoint regional diario de NASA POWER rechaza períodos mayores de 366 días con un 422: «Please do not request a time period greater than 366 days». El conector K1 aceptaba 30 años y fallaba siempre con períodos de tendencia.
+
+Para analizar un territorio, `backend/app/orchestration/territory.py` hace tres cosas:
+1. Usa el regional **una sola vez, con el último año**, para descubrir qué celdas cubren el territorio y su peso por área de intersección (conector de Codex).
+2. Pide cada celda **como punto**, que devuelve exactamente esa celda, con las 5 variables y todo el período en una consulta. Van en tandas de 4 para evitar 429 y cada celda pasa por la verificación de escala de precipitación del ADR-017.
+3. Promedia con `aggregate_cells`, extraída sin cambios del conector de Codex para no duplicar la fórmula.
+
+Moquegua con 9 celdas tarda unos 25 s la primera vez y luego queda en caché. Si un territorio supera 60 celdas, se pide uno menor. Un distrito menor que una celda se analiza como punto y se declara.
+
+El módulo de Clima acepta de 1 a 4 sujetos entre sitios y territorios del IGN. Cada territorio informa nivel, ubigeo, área, celdas, cobertura y grilla. Las **tendencias por celda** (T2M y PRECTOTCORR) aplican Hamed–Rao y Benjamini–Hochberg entre las celdas y se dibujan como grilla con el par divergente validado; las celdas sin evidencia van atenuadas.
+
+Con datos reales, la temperatura sube con significancia en las 9 celdas de Moquegua (hasta +0.42 °C por década) y la lluvia no muestra tendencia en ninguna. Los índices de extremos de un promedio areal son más suaves que los de un punto, y así se declara en el método.
