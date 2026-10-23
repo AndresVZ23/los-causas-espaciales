@@ -83,6 +83,7 @@ async def _spatial(subjects, request):
             spatial_coverage_percent=100,
             mean_precipitation_mm_day=1.5 + index,
             rx1day_mm=30 + index,
+            p99_precipitation_mm_day=10 + index,
             cells=[],
             provenance=Provenance.CACHED,
             source_url="https://power.larc.nasa.gov/api/temporal/daily/regional",
@@ -147,6 +148,8 @@ def test_road_response_conforms_and_preserves_provenance(road_response):
     assert all(item.spatial_exposure.provenance == Provenance.CACHED for item in road_response.segments)
     assert any(item.dataset == "ingemmet-geohazards" for item in road_response.data_gaps)
     assert "No sustituye ingeniería vial" in road_response.disclaimer
+    rain = next(item for item in road_response.scorecard.subjects[0].criteria if item.key == "recent_p99_precip")
+    assert rain.value == 10
 
 
 def test_road_npv_matches_independent_discounted_cash_flow():
@@ -164,6 +167,14 @@ def test_road_npv_matches_independent_discounted_cash_flow():
     independent = -1_000_000 + sum(annual_net / 1.1**year for year in range(1, 4))
     assert result.npv_usd == pytest.approx(independent, abs=0.01)
     assert result.avoided_interruption_days_per_year == 3
+
+
+def test_p99_prevents_one_provider_artifact_from_dominating_the_score():
+    values = [1.0] * 361 + [2.0, 3.0, 4.0, 151.0]
+    p99 = road._percentile(values, 0.99)
+    assert max(values) == 151
+    assert p99 == pytest.approx(1.36)
+    assert p99 < 0.02 * max(values)
 
 
 def test_missing_evidence_becomes_gap_and_reduces_score_coverage(monkeypatch):

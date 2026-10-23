@@ -1,7 +1,7 @@
 {
   "contract_version": "1.0",
   "analysis_id": "51c9fdaaa7e2711a",
-  "generated_at": "2026-10-23T19:19:38.932050Z",
+  "generated_at": "2026-10-23T20:11:54.907713Z",
   "sector": "road",
   "sector_label": "Infraestructura vial",
   "title": "Screening vial preliminar — corredor Moquegua–Ilo",
@@ -322,7 +322,7 @@
       "status": "COMPLETADO",
       "summary": "NASA POWER entregó 21,910 observaciones diarias para 2 variables en 5 sujetos.",
       "provenance": [
-        "REAL_DATA"
+        "CACHED_DATA"
       ],
       "evidence": [
         {
@@ -337,8 +337,8 @@
         },
         {
           "label": "Series desde caché",
-          "value": "0 de 10",
-          "provenance": "REAL_DATA"
+          "value": "10 de 10",
+          "provenance": "CACHED_DATA"
         },
         {
           "label": "Descarga NASA (UTC)",
@@ -351,7 +351,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 13352.1,
+      "duration_ms": 1084.2,
       "answers": [
         "what"
       ]
@@ -392,7 +392,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 213.6,
+      "duration_ms": 220.7,
       "answers": [
         "what",
         "how_much",
@@ -404,9 +404,10 @@
       "key": "territorial",
       "name": "Inteligencia territorial",
       "status": "PARCIAL",
-      "summary": "NASADEM localizó 5 de 5 sujetos y calculó métricas en 0. 5 tesela(s) se descargan en segundo plano. 6 capas oficiales siguen pendientes y no se interpretan como riesgo cero.",
+      "summary": "NASADEM localizó 5 de 5 sujetos y calculó métricas en 5. 4 capas oficiales siguen pendientes y no se interpretan como riesgo cero.",
       "provenance": [
         "MODEL_ESTIMATE",
+        "CACHED_DATA",
         "DATA_UNAVAILABLE"
       ],
       "evidence": [
@@ -417,17 +418,12 @@
         },
         {
           "label": "Elevación y pendiente calculadas",
-          "value": "0 de 5",
-          "provenance": "DATA_UNAVAILABLE"
-        },
-        {
-          "label": "Teselas descargándose",
-          "value": "5 · vuelva a ejecutar en unos minutos",
-          "provenance": "DATA_UNAVAILABLE"
+          "value": "5 de 5",
+          "provenance": "REAL_DATA"
         },
         {
           "label": "Capas pendientes",
-          "value": "Métricas raster NASADEM, ingemmet-geohazards, cultura-archaeology-declared, Eje vial e inventario de activos MTC, Interrupciones, tránsito y pérdidas observadas, Comunidades y conflictos",
+          "value": "ingemmet-geohazards, Eje vial e inventario de activos MTC, Interrupciones, tránsito y pérdidas observadas, Comunidades y conflictos",
           "provenance": "DATA_UNAVAILABLE"
         },
         {
@@ -436,7 +432,7 @@
           "provenance": "MODEL_ESTIMATE"
         }
       ],
-      "duration_ms": 13722.0,
+      "duration_ms": 2227.4,
       "answers": [
         "where",
         "so_what"
@@ -455,27 +451,27 @@
       "evidence": [
         {
           "label": "1.º Tramo 5 de 5",
-          "value": "40.5/100 · cobertura 85%",
+          "value": "47.7/100 · cobertura 100%",
           "provenance": "MODEL_ESTIMATE"
         },
         {
-          "label": "2.º Tramo 4 de 5",
-          "value": "40.4/100 · cobertura 85%",
+          "label": "2.º Tramo 2 de 5",
+          "value": "37.9/100 · cobertura 100%",
           "provenance": "MODEL_ESTIMATE"
         },
         {
-          "label": "3.º Tramo 3 de 5",
-          "value": "40.2/100 · cobertura 85%",
+          "label": "3.º Tramo 4 de 5",
+          "value": "37.8/100 · cobertura 100%",
           "provenance": "MODEL_ESTIMATE"
         },
         {
-          "label": "4.º Tramo 2 de 5",
-          "value": "39.7/100 · cobertura 85%",
+          "label": "4.º Tramo 3 de 5",
+          "value": "37.2/100 · cobertura 100%",
           "provenance": "MODEL_ESTIMATE"
         },
         {
           "label": "5.º Tramo 1 de 5",
-          "value": "38.1/100 · cobertura 85%",
+          "value": "36.3/100 · cobertura 100%",
           "provenance": "MODEL_ESTIMATE"
         },
         {
@@ -551,7 +547,7 @@
           "provenance": "USER_ASSUMPTION"
         }
       ],
-      "duration_ms": 39.7,
+      "duration_ms": 50.8,
       "answers": [
         "so_what"
       ]
@@ -561,8 +557,9 @@
       "key": "results",
       "name": "Resultados",
       "status": "COMPLETADO",
-      "summary": "Respuestas a las preguntas NASA, 0 tendencias significativas y 6 brechas documentadas.",
+      "summary": "Respuestas a las preguntas NASA, 0 tendencias significativas y 4 brechas documentadas.",
       "provenance": [
+        "CACHED_DATA",
         "REAL_DATA",
         "MODEL_ESTIMATE",
         "USER_ASSUMPTION",
@@ -576,7 +573,7 @@
         },
         {
           "label": "Brechas para debida diligencia",
-          "value": "6",
+          "value": "4",
           "provenance": "DATA_UNAVAILABLE"
         }
       ],
@@ -590,6 +587,7 @@
       "status": "LISTO",
       "summary": "Reporte JSON y PDF ejecutivo disponibles; la etapa se marca completada al descargar uno de ellos.",
       "provenance": [
+        "CACHED_DATA",
         "REAL_DATA",
         "MODEL_ESTIMATE",
         "USER_ASSUMPTION",
@@ -689,7 +687,7 @@
       "answer": "La precipitación media no cambia con significancia en los tramos; eso no demuestra estabilidad de los extremos diarios. Con supuestos del usuario, el VAN de mitigación va de USD 1.48 M a USD 2.43 M; 5 de 5 tramos son no negativos. Esto prioriza estudios y no constituye una decisión de inversión.",
       "evidence": [
         "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
-        "6 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
+        "4 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
         "Screening preliminar: no sustituye estudios de recurso, ingeniería, impacto ambiental ni factibilidad."
       ],
       "provenance": [
@@ -706,7 +704,7 @@
   ],
   "trend_findings": [],
   "terrain": {
-    "generated_at": "2026-10-23T19:19:04.623596Z",
+    "generated_at": "2026-10-23T20:11:54.139413Z",
     "dataset": "NASADEM V001",
     "crs": "EPSG:4326; longitude/latitude",
     "spatial_resolution": "1 arc-second (~30 m at the equator)",
@@ -717,12 +715,12 @@
           "longitude": -70.98586677608407,
           "label": "Tramo 1 de 5"
         },
-        "status": "PENDING",
+        "status": "READY",
         "metrics": {
-          "elevation_m": null,
-          "slope_degrees": null,
-          "aspect_degrees": null,
-          "aspect_cardinal": null,
+          "elevation_m": 1154.0,
+          "slope_degrees": 7.02,
+          "aspect_degrees": 241.64,
+          "aspect_cardinal": "SO",
           "vertical_datum": "EGM96 geoid"
         },
         "granules": [
@@ -765,11 +763,10 @@
             "access": "EARTHDATA_LOGIN_REQUIRED"
           }
         ],
-        "provenance": "DATA_UNAVAILABLE",
+        "provenance": "CACHED_DATA",
         "limitations": [
           "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
-          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
-          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
         ]
       },
       {
@@ -778,12 +775,12 @@
           "longitude": -71.0253318049502,
           "label": "Tramo 2 de 5"
         },
-        "status": "PENDING",
+        "status": "READY",
         "metrics": {
-          "elevation_m": null,
-          "slope_degrees": null,
-          "aspect_degrees": null,
-          "aspect_cardinal": null,
+          "elevation_m": 1207.0,
+          "slope_degrees": 5.75,
+          "aspect_degrees": 240.93,
+          "aspect_cardinal": "SO",
           "vertical_datum": "EGM96 geoid"
         },
         "granules": [
@@ -826,11 +823,10 @@
             "access": "EARTHDATA_LOGIN_REQUIRED"
           }
         ],
-        "provenance": "DATA_UNAVAILABLE",
+        "provenance": "CACHED_DATA",
         "limitations": [
           "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
-          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
-          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
         ]
       },
       {
@@ -839,12 +835,12 @@
           "longitude": -71.08006258610773,
           "label": "Tramo 3 de 5"
         },
-        "status": "PENDING",
+        "status": "READY",
         "metrics": {
-          "elevation_m": null,
-          "slope_degrees": null,
-          "aspect_degrees": null,
-          "aspect_cardinal": null,
+          "elevation_m": 996.0,
+          "slope_degrees": 4.23,
+          "aspect_degrees": 100.74,
+          "aspect_cardinal": "E",
           "vertical_datum": "EGM96 geoid"
         },
         "granules": [
@@ -887,11 +883,10 @@
             "access": "EARTHDATA_LOGIN_REQUIRED"
           }
         ],
-        "provenance": "DATA_UNAVAILABLE",
+        "provenance": "CACHED_DATA",
         "limitations": [
           "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
-          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
-          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
         ]
       },
       {
@@ -900,12 +895,12 @@
           "longitude": -71.17932224679916,
           "label": "Tramo 4 de 5"
         },
-        "status": "PENDING",
+        "status": "READY",
         "metrics": {
-          "elevation_m": null,
-          "slope_degrees": null,
-          "aspect_degrees": null,
-          "aspect_cardinal": null,
+          "elevation_m": 600.0,
+          "slope_degrees": 4.83,
+          "aspect_degrees": 293.51,
+          "aspect_cardinal": "NO",
           "vertical_datum": "EGM96 geoid"
         },
         "granules": [
@@ -948,11 +943,10 @@
             "access": "EARTHDATA_LOGIN_REQUIRED"
           }
         ],
-        "provenance": "DATA_UNAVAILABLE",
+        "provenance": "CACHED_DATA",
         "limitations": [
           "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
-          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
-          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
         ]
       },
       {
@@ -961,12 +955,12 @@
           "longitude": -71.29042078069214,
           "label": "Tramo 5 de 5"
         },
-        "status": "PENDING",
+        "status": "READY",
         "metrics": {
-          "elevation_m": null,
-          "slope_degrees": null,
-          "aspect_degrees": null,
-          "aspect_cardinal": null,
+          "elevation_m": 352.0,
+          "slope_degrees": 17.93,
+          "aspect_degrees": 223.69,
+          "aspect_cardinal": "SO",
           "vertical_datum": "EGM96 geoid"
         },
         "granules": [
@@ -1009,33 +1003,20 @@
             "access": "EARTHDATA_LOGIN_REQUIRED"
           }
         ],
-        "provenance": "DATA_UNAVAILABLE",
+        "provenance": "CACHED_DATA",
         "limitations": [
           "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
-          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita.",
-          "La tesela fue localizada y su descarga autenticada continúa en segundo plano; vuelva a ejecutar para leer las métricas cacheadas."
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
         ]
       }
     ],
-    "note": "0 de 5 ubicaciones tienen métricas raster; 5 descargan teselas en segundo plano y 0 permanecen solo con metadatos. Ningún estado pendiente o sin acceso se convierte en datos ficticios."
+    "note": "5 de 5 ubicaciones tienen métricas raster; 0 descargan teselas en segundo plano y 0 permanecen solo con metadatos. Ningún estado pendiente o sin acceso se convierte en datos ficticios."
   },
   "data_gaps": [
-    {
-      "dataset": "Métricas raster NASADEM",
-      "status": "DATA_UNAVAILABLE",
-      "impact": "No hay pendiente/elevación disponible para todos los tramos; el score redistribuye ese peso.",
-      "next_action": "Renovar Earthdata si corresponde y precargar las teselas del corredor."
-    },
     {
       "dataset": "ingemmet-geohazards",
       "status": "DATA_UNAVAILABLE",
       "impact": "La capa territorial no pudo verificarse: El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
-      "next_action": "Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas."
-    },
-    {
-      "dataset": "cultura-archaeology-declared",
-      "status": "DATA_UNAVAILABLE",
-      "impact": "La capa territorial no pudo verificarse: El servicio oficial no respondió con datos utilizables: ",
       "next_action": "Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas."
     },
     {
@@ -1903,15 +1884,15 @@
     "method": "Suma ponderada de puntajes 0–100. Cada criterio se lleva a 0–100 con una escala de referencia declarada (peor valor = 0  mejor valor = 100  con recorte fuera del rango). Sin dato  el criterio sale y su peso se reparte entre los demás. Estabilidad: 2 000 combinaciones de pesos Dirichlet centradas en los pesos elegidos.",
     "criteria": [
       {
-        "key": "recent_rx1day",
-        "label": "Máximo diario espacial reciente",
+        "key": "recent_p99_precip",
+        "label": "Percentil 99 de lluvia espacial reciente",
         "unit": "mm/día",
         "direction": "mayor_es_mejor",
         "weight": 0.2,
         "worst": 0.0,
-        "best": 100.0,
+        "best": 30.0,
         "provenance": "MODEL_ESTIMATE",
-        "basis": "Máximo del agregado K1 del último año; mayor exposición implica mayor prioridad de estudio."
+        "basis": "P99 diario interpolado del agregado K1 del último año. RX1DAY queda visible, pero no puntúa porque un valor aislado de MERRA-2 puede ser atípico y requiere contraste independiente."
       },
       {
         "key": "heavy_rain_days",
@@ -1972,237 +1953,237 @@
     "subjects": [
       {
         "subject": "Tramo 1 de 5",
-        "score": 38.1,
-        "coverage": 0.85,
+        "score": 36.3,
+        "coverage": 1.0,
         "rank": 5,
-        "first_place_share": 0.23,
+        "first_place_share": 0.0005,
         "criteria": [
           {
-            "key": "recent_rx1day",
-            "value": 14.1941,
-            "score": 14.2,
-            "contribution": 3.3
+            "key": "recent_p99_precip",
+            "value": 2.2572,
+            "score": 7.5,
+            "contribution": 1.5
           },
           {
             "key": "heavy_rain_days",
             "value": 0.5,
             "score": 1.7,
-            "contribution": 0.3
+            "contribution": 0.2
           },
           {
             "key": "terrain_slope",
-            "value": null,
-            "score": null,
-            "contribution": null
+            "value": 7.02,
+            "score": 35.1,
+            "contribution": 5.3
           },
           {
             "key": "length",
             "value": 21.6147,
             "score": 72.0,
-            "contribution": 8.5
+            "contribution": 7.2
           },
           {
             "key": "interruption_days",
             "value": 5.0,
             "score": 16.7,
-            "contribution": 2.9
+            "contribution": 2.5
           },
           {
             "key": "npv_ratio",
             "value": 0.5693171468182919,
             "score": 78.5,
-            "contribution": 23.1
+            "contribution": 19.6
           }
         ]
       },
       {
         "subject": "Tramo 2 de 5",
-        "score": 39.7,
-        "coverage": 0.85,
-        "rank": 4,
+        "score": 37.9,
+        "coverage": 1.0,
+        "rank": 2,
         "first_place_share": 0.0,
         "criteria": [
           {
-            "key": "recent_rx1day",
-            "value": 4.99,
-            "score": 5.0,
-            "contribution": 1.2
+            "key": "recent_p99_precip",
+            "value": 1.2792,
+            "score": 4.3,
+            "contribution": 0.9
           },
           {
             "key": "heavy_rain_days",
             "value": 0.5,
             "score": 1.7,
-            "contribution": 0.3
+            "contribution": 0.2
           },
           {
             "key": "terrain_slope",
-            "value": null,
-            "score": null,
-            "contribution": null
+            "value": 5.75,
+            "score": 28.7,
+            "contribution": 4.3
           },
           {
             "key": "length",
             "value": 14.9417,
             "score": 49.8,
-            "contribution": 5.9
+            "contribution": 5.0
           },
           {
             "key": "interruption_days",
             "value": 5.0,
             "score": 16.7,
-            "contribution": 2.9
+            "contribution": 2.5
           },
           {
             "key": "npv_ratio",
             "value": 1.355100395760411,
             "score": 100.0,
-            "contribution": 29.4
+            "contribution": 25.0
           }
         ]
       },
       {
         "subject": "Tramo 3 de 5",
-        "score": 40.2,
-        "coverage": 0.85,
-        "rank": 3,
+        "score": 37.2,
+        "coverage": 1.0,
+        "rank": 4,
         "first_place_share": 0.0,
         "criteria": [
           {
-            "key": "recent_rx1day",
-            "value": 4.99,
-            "score": 5.0,
-            "contribution": 1.2
+            "key": "recent_p99_precip",
+            "value": 1.2792,
+            "score": 4.3,
+            "contribution": 0.9
           },
           {
             "key": "heavy_rain_days",
             "value": 0.5,
             "score": 1.7,
-            "contribution": 0.3
+            "contribution": 0.2
           },
           {
             "key": "terrain_slope",
-            "value": null,
-            "score": null,
-            "contribution": null
+            "value": 4.23,
+            "score": 21.2,
+            "contribution": 3.2
           },
           {
             "key": "length",
             "value": 16.2675,
             "score": 54.2,
-            "contribution": 6.4
+            "contribution": 5.4
           },
           {
             "key": "interruption_days",
             "value": 5.0,
             "score": 16.7,
-            "contribution": 2.9
+            "contribution": 2.5
           },
           {
             "key": "npv_ratio",
             "value": 1.1476625224117618,
             "score": 100.0,
-            "contribution": 29.4
+            "contribution": 25.0
           }
         ]
       },
       {
         "subject": "Tramo 4 de 5",
-        "score": 40.4,
-        "coverage": 0.85,
-        "rank": 2,
+        "score": 37.8,
+        "coverage": 1.0,
+        "rank": 3,
         "first_place_share": 0.0,
         "criteria": [
           {
-            "key": "recent_rx1day",
-            "value": 4.99,
-            "score": 5.0,
-            "contribution": 1.2
+            "key": "recent_p99_precip",
+            "value": 1.2792,
+            "score": 4.3,
+            "contribution": 0.9
           },
           {
             "key": "heavy_rain_days",
             "value": 0.5,
             "score": 1.7,
-            "contribution": 0.3
+            "contribution": 0.2
           },
           {
             "key": "terrain_slope",
-            "value": null,
-            "score": null,
-            "contribution": null
+            "value": 4.83,
+            "score": 24.1,
+            "contribution": 3.6
           },
           {
             "key": "length",
             "value": 16.7299,
             "score": 55.8,
-            "contribution": 6.6
+            "contribution": 5.6
           },
           {
             "key": "interruption_days",
             "value": 5.0,
             "score": 16.7,
-            "contribution": 2.9
+            "contribution": 2.5
           },
           {
             "key": "npv_ratio",
             "value": 1.083047348360321,
             "score": 100.0,
-            "contribution": 29.4
+            "contribution": 25.0
           }
         ]
       },
       {
         "subject": "Tramo 5 de 5",
-        "score": 40.5,
-        "coverage": 0.85,
+        "score": 47.7,
+        "coverage": 1.0,
         "rank": 1,
-        "first_place_share": 0.77,
+        "first_place_share": 0.9995,
         "criteria": [
           {
-            "key": "recent_rx1day",
-            "value": 4.99,
-            "score": 5.0,
-            "contribution": 1.2
+            "key": "recent_p99_precip",
+            "value": 1.2792,
+            "score": 4.3,
+            "contribution": 0.9
           },
           {
             "key": "heavy_rain_days",
             "value": 0.5,
             "score": 1.7,
-            "contribution": 0.3
+            "contribution": 0.2
           },
           {
             "key": "terrain_slope",
-            "value": null,
-            "score": null,
-            "contribution": null
+            "value": 17.93,
+            "score": 89.6,
+            "contribution": 13.4
           },
           {
             "key": "length",
             "value": 16.9646,
             "score": 56.5,
-            "contribution": 6.7
+            "contribution": 5.7
           },
           {
             "key": "interruption_days",
             "value": 5.0,
             "score": 16.7,
-            "contribution": 2.9
+            "contribution": 2.5
           },
           {
             "key": "npv_ratio",
             "value": 1.051598333195792,
             "score": 100.0,
-            "contribution": 29.4
+            "contribution": 25.0
           }
         ]
       }
     ],
     "leader": "Tramo 5 de 5",
-    "margin": 0.1,
-    "tie": true,
+    "margin": 9.8,
+    "tie": false,
     "stability_draws": 2000,
     "weight_sensitivity": [
       {
-        "key": "recent_rx1day",
+        "key": "recent_p99_precip",
         "leader_at_half": "Tramo 5 de 5",
         "leader_at_one_and_half": "Tramo 5 de 5",
         "changes_leader": false
@@ -2233,16 +2214,15 @@
       },
       {
         "key": "npv_ratio",
-        "leader_at_half": "Tramo 1 de 5",
+        "leader_at_half": "Tramo 5 de 5",
         "leader_at_one_and_half": "Tramo 5 de 5",
-        "changes_leader": true
+        "changes_leader": false
       }
     ],
     "notes": [
       "El puntaje ordena prioridad de estudio/mitigación; no declara seguridad vial ni factibilidad.",
       "Más exposición aumenta la prioridad, mientras que un mayor VAN/CAPEX mejora el caso económico preliminar.",
-      "Los criterios sin dato salen del cálculo y su peso se redistribuye; revise la cobertura por tramo.",
-      "Sin pendiente NASADEM para Tramo 1 de 5, Tramo 2 de 5, Tramo 3 de 5, Tramo 4 de 5, Tramo 5 de 5; el criterio se omite para esos tramos."
+      "Los criterios sin dato salen del cálculo y su peso se redistribuye; revise la cobertura por tramo."
     ]
   },
   "disclaimer": "Screening preliminar de resiliencia vial con datos NASA, capas públicas y supuestos del usuario. No sustituye ingeniería vial, hidrología/hidráulica, geotecnia, inventario de activos, tránsito, debida diligencia ambiental/social, presupuesto ni factibilidad financiera.",
@@ -2313,9 +2293,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:51.447604Z",
+            "downloaded_at": "2026-10-23T19:19:03.587109Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2390,9 +2370,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:51.447604Z",
+            "downloaded_at": "2026-10-23T19:19:03.587109Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2434,6 +2414,7 @@
         "spatial_coverage_percent": 100.0,
         "mean_precipitation_mm_day": 0.2018,
         "rx1day_mm": 14.1941,
+        "p99_precipitation_mm_day": 2.2572,
         "cells": [
           {
             "cell_id": "-17.500000,-71.250000",
@@ -2469,16 +2450,17 @@
             "rx1day_mm": 43.2
           }
         ],
-        "provenance": "REAL_DATA",
+        "provenance": "CACHED_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
           "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
           "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
-          "NASA POWER es una grilla y no sustituye medición in situ."
+          "NASA POWER es una grilla y no sustituye medición in situ.",
+          "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario interpolado del agregado espacial para evitar que un solo valor atípico domine el ranking."
         ]
       },
-      "terrain_slope_degrees": null,
+      "terrain_slope_degrees": 7.02,
       "territorial_intersections": {
         "cenepred-flood-risk": 2,
         "cenepred-mass-movement-risk": 2,
@@ -2529,8 +2511,7 @@
       ],
       "cautions": [
         "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
-        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
-        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera."
       ]
     },
     {
@@ -2587,9 +2568,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:51.882921Z",
+            "downloaded_at": "2026-10-23T19:19:02.456160Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2664,9 +2645,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:51.882921Z",
+            "downloaded_at": "2026-10-23T19:19:02.456160Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2708,6 +2689,7 @@
         "spatial_coverage_percent": 100.0,
         "mean_precipitation_mm_day": 0.1159,
         "rx1day_mm": 4.99,
+        "p99_precipitation_mm_day": 1.2792,
         "cells": [
           {
             "cell_id": "-17.500000,-71.250000",
@@ -2721,22 +2703,23 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "REAL_DATA",
+        "provenance": "CACHED_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
           "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
           "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
-          "NASA POWER es una grilla y no sustituye medición in situ."
+          "NASA POWER es una grilla y no sustituye medición in situ.",
+          "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario interpolado del agregado espacial para evitar que un solo valor atípico domine el ranking."
         ]
       },
-      "terrain_slope_degrees": null,
+      "terrain_slope_degrees": 5.75,
       "territorial_intersections": {
         "cenepred-flood-risk": 1,
         "cenepred-mass-movement-risk": 1,
         "sernanp-anp": 0,
         "cultura-archaeology": 0,
-        "cultura-archaeology-declared": null,
+        "cultura-archaeology-declared": 0,
         "ingemmet-geohazards": null
       },
       "finance": {
@@ -2781,8 +2764,7 @@
       ],
       "cautions": [
         "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
-        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
-        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera."
       ]
     },
     {
@@ -2839,9 +2821,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:52.316929Z",
+            "downloaded_at": "2026-10-23T19:19:04.236823Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2916,9 +2898,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:52.316929Z",
+            "downloaded_at": "2026-10-23T19:19:04.236823Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2960,6 +2942,7 @@
         "spatial_coverage_percent": 100.0,
         "mean_precipitation_mm_day": 0.1159,
         "rx1day_mm": 4.99,
+        "p99_precipitation_mm_day": 1.2792,
         "cells": [
           {
             "cell_id": "-17.500000,-71.250000",
@@ -2973,16 +2956,17 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "REAL_DATA",
+        "provenance": "CACHED_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
           "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
           "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
-          "NASA POWER es una grilla y no sustituye medición in situ."
+          "NASA POWER es una grilla y no sustituye medición in situ.",
+          "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario interpolado del agregado espacial para evitar que un solo valor atípico domine el ranking."
         ]
       },
-      "terrain_slope_degrees": null,
+      "terrain_slope_degrees": 4.23,
       "territorial_intersections": {
         "cenepred-flood-risk": 3,
         "cenepred-mass-movement-risk": 3,
@@ -3033,8 +3017,7 @@
       ],
       "cautions": [
         "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
-        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
-        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera."
       ]
     },
     {
@@ -3091,9 +3074,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:52.693951Z",
+            "downloaded_at": "2026-10-23T19:19:03.684824Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3168,9 +3151,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:52.693951Z",
+            "downloaded_at": "2026-10-23T19:19:03.684824Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3212,6 +3195,7 @@
         "spatial_coverage_percent": 100.0,
         "mean_precipitation_mm_day": 0.1159,
         "rx1day_mm": 4.99,
+        "p99_precipitation_mm_day": 1.2792,
         "cells": [
           {
             "cell_id": "-17.500000,-71.250000",
@@ -3225,16 +3209,17 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "REAL_DATA",
+        "provenance": "CACHED_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
           "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
           "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
-          "NASA POWER es una grilla y no sustituye medición in situ."
+          "NASA POWER es una grilla y no sustituye medición in situ.",
+          "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario interpolado del agregado espacial para evitar que un solo valor atípico domine el ranking."
         ]
       },
-      "terrain_slope_degrees": null,
+      "terrain_slope_degrees": 4.83,
       "territorial_intersections": {
         "cenepred-flood-risk": 2,
         "cenepred-mass-movement-risk": 2,
@@ -3285,8 +3270,7 @@
       ],
       "cautions": [
         "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
-        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
-        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera."
       ]
     },
     {
@@ -3343,9 +3327,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:53.077373Z",
+            "downloaded_at": "2026-10-23T19:19:03.658197Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3420,9 +3404,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:18:53.077373Z",
+            "downloaded_at": "2026-10-23T19:19:03.658197Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "REAL_DATA",
+            "provenance": "CACHED_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3464,6 +3448,7 @@
         "spatial_coverage_percent": 100.0,
         "mean_precipitation_mm_day": 0.1159,
         "rx1day_mm": 4.99,
+        "p99_precipitation_mm_day": 1.2792,
         "cells": [
           {
             "cell_id": "-17.500000,-71.250000",
@@ -3477,16 +3462,17 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "REAL_DATA",
+        "provenance": "CACHED_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
           "La documentación regional indica 0.5° × 0.5°, pero se usan los centros realmente devueltos; variables MERRA-2 pueden espaciarse 0.5° lat × 0.625° lon.",
           "Las celdas se aproximan con límites a mitad de camino entre centros; costa y relieve no se fraccionan internamente.",
-          "NASA POWER es una grilla y no sustituye medición in situ."
+          "NASA POWER es una grilla y no sustituye medición in situ.",
+          "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario interpolado del agregado espacial para evitar que un solo valor atípico domine el ranking."
         ]
       },
-      "terrain_slope_degrees": null,
+      "terrain_slope_degrees": 17.93,
       "territorial_intersections": {
         "cenepred-flood-risk": 2,
         "cenepred-mass-movement-risk": 2,
@@ -3537,8 +3523,7 @@
       ],
       "cautions": [
         "La lluvia NASA POWER es una estimación de grilla y no reemplaza estaciones ni estudios hidráulicos.",
-        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera.",
-        "La pendiente NASADEM no estuvo disponible; no se interpreta como terreno plano."
+        "Los días/costos de cierre y el presupuesto son supuestos, no observaciones de la carretera."
       ]
     }
   ],
@@ -3550,7 +3535,7 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:02.104988Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
@@ -3561,7 +3546,7 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:04.638545Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
@@ -3572,7 +3557,7 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:02.440035Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
@@ -3583,7 +3568,7 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:04.648626Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
@@ -3594,7 +3579,7 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:04.648626Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
@@ -3621,7 +3606,7 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 1,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:08.348058Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
@@ -3632,7 +3617,7 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 1,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:08.338338Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
@@ -3643,7 +3628,7 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:08.439518Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
@@ -3654,7 +3639,7 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:08.375993Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
@@ -3663,12 +3648,11 @@
         },
         {
           "source_id": "cultura-archaeology-declared",
-          "status": "DATA_UNAVAILABLE",
-          "intersection_count": null,
-          "provenance": "DATA_UNAVAILABLE",
-          "downloaded_at": null,
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-23T20:11:54.256402Z",
           "limitations": [
-            "El servicio oficial no respondió con datos utilizables: ",
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
           ]
@@ -3693,7 +3677,7 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 3,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:31.420330Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
@@ -3704,7 +3688,7 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 3,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:31.430440Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
@@ -3715,7 +3699,7 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:31.471226Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
@@ -3726,7 +3710,7 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:31.437988Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
@@ -3737,7 +3721,7 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:31.451022Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
@@ -3764,7 +3748,7 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:35.022842Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
@@ -3775,7 +3759,7 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:35.016874Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
@@ -3786,7 +3770,7 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:35.079038Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
@@ -3797,7 +3781,7 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:35.065556Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
@@ -3808,7 +3792,7 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:35.076062Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
@@ -3835,7 +3819,7 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:38.513268Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
@@ -3846,7 +3830,7 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:38.488493Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
@@ -3857,7 +3841,7 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:38.532217Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
@@ -3868,7 +3852,7 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:38.667803Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
@@ -3879,7 +3863,7 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "REAL_DATA",
+          "provenance": "CACHED_DATA",
           "downloaded_at": "2026-10-23T19:19:38.603304Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",

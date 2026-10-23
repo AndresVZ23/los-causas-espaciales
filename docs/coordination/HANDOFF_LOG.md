@@ -395,3 +395,17 @@ Se cerró `codex/piloto-vial` sobre `39cb5df` con la documentación y el DOP sin
 1. **K2 usa un valor que parece artefacto.** El tramo 2 marca RX1DAY de 151 mm en celdas costeras desérticas; es casi seguro el evento MERRA-2 del 12–13 sep 2022 que IMERG desmintió (ADR-021). El criterio «Máximo diario espacial reciente» del puntaje lo usa. Sugerencia: aplicar `atypical_years` o el contraste IMERG antes de puntuar, o usar un percentil alto en vez del máximo.
 2. El token Earthdata devuelve 401 en todas las teselas NASADEM (tu diagnóstico es correcto); Christian lo renovará.
 3. K3, el piloto inmobiliario, puede reutilizar territorios IGN y polígonos del usuario como terrenos; la pantalla seguirá el mismo patrón.
+
+## 2026-10-23 · Codex · `master` · f527ad2 · integración aprobada de pilotos
+
+Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master` mediante `f527ad2`. La integración contiene K1 multianual, K2, la corrección de diagnóstico NASADEM y la pantalla vial C5 de Claude (`04457f9`). Puerta común sobre el merge: 151/151 pruebas backend, build Next.js 16.4.2, `npm audit --omit=dev` con 0 vulnerabilidades y auditor científico `ok: true`. No se levantaron 3100/8000 y no se subió a GitHub porque esta aprobación cubrió la fusión, no un push.
+
+## 2026-10-23 · Codex · `codex/k2-rainfall-qa` · corrección de lluvia y cierre NASADEM
+
+**NASADEM:** el token renovado fue validado mediante una lectura autenticada HTTP 206; vence el **22-dic-2026** y nunca se imprimió. `scripts/qa/nasadem_live.py` ejercitó el conector real: `s17w071` pasó de `PENDING` a `READY` (centroide departamental de Moquegua: 2,625 m, 18.61°, 110.99°), `s18w071` quedó `READY` (1,420 m, 5.47°) y `s18w072` quedó `READY` para el corredor (1,207 m, 5.75°). El ejemplo K2 regenerado obtiene relieve en los cinco tramos y reduce sus brechas de seis a cuatro; ya no existe una brecha NASADEM.
+
+**Lluvia K2:** RX1DAY se conserva como observación trazable, pero el criterio de score ahora usa el P99 diario espacial con interpolación lineal. Una consulta oficial reproducible (`scripts/qa/validate_k2_rainfall.py`) para el tramo 2 en 2022 encontró RX1DAY = 286.58 mm el 13-sep y P99 = 15.2508 mm/día. La separación activa una advertencia y exige contraste IMERG/estaciones; el máximo atípico relacionado que ADR-021 desmintió ya no domina el puntaje. La prueba sintética mantiene RX1DAY = 151 y obtiene P99 = 1.36, verificando que el score consume P99.
+
+**Handoff visual:** la tabla de la pantalla vial puede seguir mostrando RX1DAY por trazabilidad. Claude puede añadir P99 junto a ese máximo para explicar cuál entra al score; Codex no editó `frontend/**` ni levantó los puertos reservados.
+
+**Puerta de la corrección:** 5/5 pruebas K2, 20/20 K2+NASADEM y 152/152 backend completas; build Next.js 16.4.2; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida y `git diff --check` limpio. No se usó Gemini ni se iniciaron 3100/8000.

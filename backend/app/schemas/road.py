@@ -100,6 +100,10 @@ class RoadSpatialExposure(BaseModel):
     spatial_coverage_percent: float
     mean_precipitation_mm_day: float | None
     rx1day_mm: float | None
+    p99_precipitation_mm_day: float | None = Field(
+        default=None,
+        description="Percentil 99 diario interpolado del agregado espacial; métrica robusta usada por el score K2.",
+    )
     cells: list[RoadCellMetric]
     provenance: Provenance
     source_url: str
