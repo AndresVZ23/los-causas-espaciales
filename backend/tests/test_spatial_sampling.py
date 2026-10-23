@@ -84,7 +84,73 @@ async def test_regional_sampling_deduplicates_cells_weights_by_area_and_keeps_ce
     assert first.aggregate[0].dispersion_stddev > 0
     assert first.aggregate[0].contributing_cells == 4
     assert first.aggregate[1].contributing_cells == 3
+    second_values = [
+        (cell.observations[1].value, cell.weight)
+        for cell in first.cells
+        if len(cell.observations) > 1
+    ]
+    expected_second = sum(value * weight for value, weight in second_values) / sum(
+        weight for _, weight in second_values
+    )
+    assert first.aggregate[1].value == pytest.approx(expected_second)
     assert first.source.dataset == "NASA POWER Daily Regional"
+
+
+@pytest.mark.asyncio
+async def test_regional_sampling_splits_multi_year_period_into_calendar_year_requests(tmp_path):
+    requested_periods: list[tuple[date, date]] = []
+
+    def handler(request: httpx.Request):
+        raw_start = request.url.params["start"]
+        raw_end = request.url.params["end"]
+        start = date(int(raw_start[:4]), int(raw_start[4:6]), int(raw_start[6:8]))
+        end = date(int(raw_end[:4]), int(raw_end[4:6]), int(raw_end[6:8]))
+        requested_periods.append((start, end))
+        assert (end - start).days + 1 <= 366
+        stamp = start.strftime("%Y%m%d")
+        features = [
+            {
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [longitude, latitude, 100]},
+                "properties": {"parameter": {"T2M": {stamp: 10 + row + column}}},
+            }
+            for row, latitude in enumerate([-17.5, -17.0])
+            for column, longitude in enumerate([-71.0, -70.5])
+        ]
+        return httpx.Response(200, json=_payload(features))
+
+    request = _polygon_request().model_copy(update={
+        "start_date": date(2023, 7, 1),
+        "end_date": date(2025, 2, 1),
+    })
+    connector = RegionalPowerConnector(
+        settings=Settings(_env_file=None, cache_dir=tmp_path),
+        transport=httpx.MockTransport(handler),
+    )
+
+    first = await connector.sample(request)
+    second = await connector.sample(request)
+
+    assert requested_periods == [
+        (date(2023, 7, 1), date(2023, 12, 31)),
+        (date(2024, 1, 1), date(2024, 12, 31)),
+        (date(2025, 1, 1), date(2025, 2, 1)),
+    ]
+    assert [item.timestamp for item in first.aggregate] == [
+        date(2023, 7, 1),
+        date(2024, 1, 1),
+        date(2025, 1, 1),
+    ]
+    assert all(len(cell.observations) == 3 for cell in first.cells)
+    assert first.source.provenance == Provenance.REAL
+    assert second.source.provenance == Provenance.CACHED
+    assert "3 solicitud(es)" in second.source.quality_notes[-1]
+
+    extended = await connector.sample(request.model_copy(update={"end_date": date(2025, 3, 1)}))
+    assert requested_periods[-1] == (date(2025, 1, 1), date(2025, 3, 1))
+    assert len(requested_periods) == 4
+    assert extended.source.provenance == Provenance.REAL
+    assert "1 nueva(s) y 2 en caché" in extended.source.quality_notes[-1]
 
 
 class _FakePointConnector:

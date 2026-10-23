@@ -23,8 +23,12 @@ export type MapCell = { id: string; bounds: [number, number, number, number]; co
 const STUDY_COLOR = "#b49cff"; // distinto de los sitios (cian y blanco) y de los colores de estado
 const EMPTY: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
 
+// Mapas cuyo evento «load» ya ocurrió y tienen todas las fuentes propias creadas. No se usa isStyleLoaded(): da
+// falso mientras se descargan teselas y, si «load» ya pasó, la actualización quedaba esperando para siempre.
+const READY = new WeakSet<maplibregl.Map>();
+
 function whenReady(map: maplibregl.Map, run: () => void) {
-  if (map.isStyleLoaded()) run();
+  if (READY.has(map)) run();
   else map.once("load", run);
 }
 
@@ -53,10 +57,10 @@ function cellFeatures(cells: MapCell[]): GeoJSON.FeatureCollection {
   };
 }
 
-export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null, territories = [], cells = [] }: {
+export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null, territories = [], cells = [], corridor = [] }: {
   sites: Point[]; onPick: (latitude: number, longitude: number) => void; terrainOverlay: TerrainOverlay | null; showTerrain: boolean;
   geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null; visualLayer?: VisualLayerState | null;
-  territories?: MapTerritory[]; cells?: MapCell[];
+  territories?: MapTerritory[]; cells?: MapCell[]; corridor?: MapTerritory[];
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -115,6 +119,15 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
         if (label) popup.setLngLat(event.lngLat).setText(String(label)).addTo(map);
       });
       map.on("mouseleave", "cells-fill", () => popup.remove());
+      // Tramos del piloto vial: cada tramo es un sujeto del contrato C2.
+      map.addSource("corridor", { type: "geojson", data: EMPTY });
+      map.addLayer({ id: "corridor-casing", type: "line", source: "corridor", paint: { "line-color": "#080c0d", "line-width": 7 }, layout: { "line-cap": "round" } });
+      map.addLayer({ id: "corridor-line", type: "line", source: "corridor", paint: { "line-color": ["case", ["==", ["%", ["get", "index"], 2], 0], "#38d9c3", "#e8eaed"], "line-width": 4 }, layout: { "line-cap": "round" } });
+      map.on("mousemove", "corridor-line", (event) => {
+        const label = event.features?.[0]?.properties?.label;
+        if (label) popup.setLngLat(event.lngLat).setText(String(label)).addTo(map);
+      });
+      map.on("mouseleave", "corridor-line", () => popup.remove());
       map.addSource("study", { type: "geojson", data: EMPTY });
       map.addLayer({ id: "study-fill", type: "fill", source: "study", filter: ["==", ["geometry-type"], "Polygon"],
         paint: { "fill-color": STUDY_COLOR, "fill-opacity": ["case", ["get", "selected"], 0.28, 0.14] } });
@@ -124,6 +137,7 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
       map.addLayer({ id: "draft-line", type: "line", source: "draft", filter: ["==", ["geometry-type"], "LineString"], paint: { "line-color": STUDY_COLOR, "line-width": 2, "line-dasharray": [1.5, 1.5] } });
       map.addLayer({ id: "draft-vertex", type: "circle", source: "draft", filter: ["==", ["geometry-type"], "Point"],
         paint: { "circle-radius": 5, "circle-color": STUDY_COLOR, "circle-stroke-color": "#080c0d", "circle-stroke-width": 2 } });
+      READY.add(map);
     });
     // En modo dibujo el clic agrega vértices; fuera de él, mueve el sitio principal como antes.
     map.on("click", (event) => {
@@ -222,6 +236,24 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     if (!map) return;
     whenReady(map, () => (map.getSource("cells") as maplibregl.GeoJSONSource | undefined)?.setData(cellFeatures(cells)));
   }, [cells]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(map, () => (map.getSource("corridor") as maplibregl.GeoJSONSource | undefined)?.setData({
+      type: "FeatureCollection",
+      // Tramos alternados en cian y blanco para distinguir dónde empieza cada uno.
+      features: corridor.map((item, index) => ({ type: "Feature", properties: { label: item.label, index }, geometry: item.geometry })),
+    }));
+    if (!corridor.length) return;
+    const bounds = new maplibregl.LngLatBounds();
+    const walk = (coordinates: unknown): void => {
+      if (Array.isArray(coordinates) && typeof coordinates[0] === "number") bounds.extend(coordinates as [number, number]);
+      else if (Array.isArray(coordinates)) coordinates.forEach(walk);
+    };
+    corridor.forEach((item) => "coordinates" in item.geometry && walk(item.geometry.coordinates));
+    map.fitBounds(bounds, { padding: 60, maxZoom: 10, duration: 650 });
+  }, [corridor]);
 
   // Capa visual GIBS: sobre el mapa base y bajo todo lo demás. Cambiar solo la opacidad no recarga teselas.
   const visualUrl = visualLayer ? visualLayer.layer.tile_url.replace("{time}", visualLayer.date) : null;

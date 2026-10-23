@@ -6,6 +6,7 @@ from .api.climate import router as climate_router
 from .api.data_sources import router as data_sources_router
 from .api.map_layers import router as map_router
 from .api.reports import router as reports_router
+from .api.road import router as road_router
 from .api.routes import router
 from .api.scoring import router as scoring_router
 from .api.spatial_sampling import router as spatial_sampling_router
@@ -23,6 +24,7 @@ app.add_middleware(
 )
 app.include_router(router)
 app.include_router(reports_router)
+app.include_router(road_router)
 app.include_router(climate_router)
 app.include_router(data_sources_router)
 app.include_router(scoring_router)

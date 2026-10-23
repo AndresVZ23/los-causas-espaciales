@@ -9,6 +9,7 @@ import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import { CellTrendLegend, cellsFor } from "./cell-trends";
+import { DEFAULT_ROAD_ASSUMPTIONS, RoadControls, RoadEvidence, RoadReading } from "./road-panels";
 import type { CellVariable } from "./cell-trends";
 import GeometryPanel from "./geometry-panel";
 import { LayerControl, LayerLegend } from "./layer-control";
@@ -17,8 +18,8 @@ import SensitivityPanel from "./sensitivity-panel";
 import TerritoryPicker from "./territory-picker";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
-import { isClimate } from "./types";
-import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage, TerritoryPick, VisualLayerState } from "./types";
+import { isClimate, isRoad, seriesSubjects } from "./types";
+import type { AnyResult, Assumptions, Module, Point, QuestionKey, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -30,12 +31,12 @@ const modules: Module[] = [
   { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Capas pendientes", ready: false, description: "Requiere integrar y validar capas oficiales de amenazas." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "AppEEARS pendiente", ready: false, description: "Vegetación, agua y cobertura todavía no están conectadas." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Fuentes pendientes", ready: false, description: "No se infiere patrimonio o contexto social desde satélites." },
-  { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Corredores · análisis pendiente", ready: false, description: "Dibuje o cargue corredores y valídelos con medición geodésica; el análisis por tramo llega con el piloto vial." },
+  { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Piloto vial funcional", ready: true, description: "Corredor Moquegua–Ilo o uno propio: lluvia por tramo, capas territoriales, VAN de mitigación y puntaje." },
   { id: "investment", short: "Inversión", name: "Inteligencia de inversión", icon: "investment", status: "Integrado en Solar", ready: false, description: "Escenarios y sensibilidad del VAN dentro del piloto solar; terrenos para el piloto inmobiliario en preparación." },
 ];
 // Módulos que trabajan con corredores o polígonos en lugar de sitios puntuales.
 const GEOMETRY_HINTS: Record<string, string> = {
-  infrastructure: "Corredores del piloto vial. Aquí se validan y miden; el muestreo NASA por tramo (K1) y el análisis vial (K2) llegan en las olas 2 y 3.",
+  infrastructure: "Dibuje o cargue sus corredores; se validan y miden aquí y luego se analizan como tramos del piloto vial.",
   investment: "Terrenos del piloto inmobiliario. Aquí se validan y miden; el análisis por terreno (K3) llega en la ola 3. Use solo coordenadas públicas.",
 };
 
@@ -54,6 +55,11 @@ const solarTabs = [
   { id: "WS10M", short: "Viento" },
   { id: "PRECTOTCORR", short: "Precipitación" },
 ];
+// Los tramos viales traen lluvia y temperatura (contrato K2).
+const roadTabs = [
+  { id: "PRECTOTCORR", short: "Precipitación" },
+  { id: "T2M", short: "Temperatura" },
+];
 const climateTabs = [
   { id: "T2M", short: "Temperatura" },
   { id: "PRECTOTCORR", short: "Precipitación" },
@@ -63,10 +69,10 @@ const climateTabs = [
   { id: "WS10M", short: "Viento" },
 ];
 
-function getVariable(site: SiteResult | ClimateSite, variable: string) { return site.variables.find((item) => item.variable === variable)!; }
+function getVariable(site: SeriesSubject, variable: string) { return site.variables.find((item) => item.variable === variable)!; }
 // Serie anual de una variable NASA o de un índice ETCCDI (solo en clima); los índices heredan la fuente de la precipitación.
-function seriesFor(site: SiteResult | ClimateSite, code: string) {
-  const extreme = "extremes" in site ? site.extremes.find((item) => item.variable === code) : undefined;
+function seriesFor(site: SeriesSubject, code: string) {
+  const extreme = site.extremes?.find((item) => item.variable === code);
   if (extreme) return { annual_series: extreme.annual_series, display_unit: extreme.display_unit, source: getVariable(site, "PRECTOTCORR").source };
   return getVariable(site, code);
 }
@@ -99,6 +105,9 @@ export default function Workspace() {
   const [visualLayer, setVisualLayer] = useState<VisualLayerState | null>(null);
   const [territories, setTerritories] = useState<TerritoryPick[]>([]);
   const [cellVariable, setCellVariable] = useState<CellVariable>("T2M");
+  const [roadSource, setRoadSource] = useState<"pilot" | "mine">("pilot");
+  const [roadAssumptions, setRoadAssumptions] = useState<RoadAssumptions>(DEFAULT_ROAD_ASSUMPTIONS);
+  const [roadAssumptionsOpen, setRoadAssumptionsOpen] = useState(false);
   const geometryHint = GEOMETRY_HINTS[activeModule];
   const mapGeometries = useMemo(() => study.geometries.map((item) => ({ id: item.id, name: item.name, geometry: item.geometry, valid: item.status !== "invalida" })), [study.geometries]);
   const mapDrawing = useMemo(() => (study.draft ? { draft: study.draft, onVertex: study.addVertex, onFinish: study.finishDraft } : null), [study.draft, study.addVertex, study.finishDraft]);
@@ -115,28 +124,36 @@ export default function Workspace() {
       : stage);
   }, [result, exportedAt]);
   const climateResult = isClimate(result) ? result : null;
-  const solarResult = result && !isClimate(result) ? result : null;
+  const roadResult = isRoad(result) ? result : null;
+  const solarResult = result && !isClimate(result) && !isRoad(result) ? result : null;
   const isClimateModule = activeModule === "climate";
   const subjectCount = sites.length + (isClimateModule ? territories.length : 0);
   const mapTerritories = useMemo(() => (isClimateModule
     ? territories.filter((item) => item.geometry).map((item) => ({ id: item.ubigeo, label: item.name, geometry: item.geometry as GeoJSON.Geometry }))
     : []), [territories, isClimateModule]);
   const cellLayer = useMemo(() => cellsFor(climateResult, cellVariable), [climateResult, cellVariable]);
-  const tabs = isClimateModule ? climateTabs : solarTabs;
+  const isRoadModule = activeModule === "infrastructure";
+  const tabs = isClimateModule ? climateTabs : isRoadModule ? roadTabs : solarTabs;
   const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
-  const selectedVariable = result ? seriesFor(result.sites[0], activeVariable) : null;
+  const subjectsList = useMemo(() => seriesSubjects(result), [result]);
+  const selectedVariable = subjectsList[0] ? seriesFor(subjectsList[0], activeVariable) : null;
   const selectedUnit = selectedVariable?.display_unit ?? "Media anual";
   // Cada producto NASA se publica con su propia latencia: se muestra la fecha más antigua entre sitios, por grupo.
   const dataThrough = useMemo(() => {
     if (!result) return null;
-    const latest = (codes: string[]) => result.sites.flatMap((site: SiteResult | ClimateSite) => site.variables.filter((v) => codes.includes(v.variable) && v.last_valid_date).map((v) => v.last_valid_date as string)).sort()[0];
+    const latest = (codes: string[]) => subjectsList.flatMap((site) => site.variables.filter((v) => codes.includes(v.variable) && v.last_valid_date).map((v) => v.last_valid_date as string)).sort()[0];
     const fmt = (iso?: string) => iso ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }) : null;
     const meteo = fmt(latest(["T2M", "PRECTOTCORR", "WS10M"]));
     const solar = fmt(latest(["ALLSKY_SFC_SW_DWN"]));
     return [meteo && `Datos NASA hasta ${meteo}`, solar && solar !== meteo && `radiación hasta ${solar}`].filter(Boolean).join(" · ");
-  }, [result]);
-  const staleAssumptions = solarResult !== null && JSON.stringify(solarResult.assumptions) !== JSON.stringify(assumptions);
-  const selectedSources = useMemo(() => result?.sites.map((site: SiteResult | ClimateSite) => ({ site: site.location.label, ...seriesFor(site, activeVariable).source })) ?? [], [result, activeVariable]);
+  }, [result, subjectsList]);
+  const staleAssumptions = (solarResult !== null && JSON.stringify(solarResult.assumptions) !== JSON.stringify(assumptions))
+    || (roadResult !== null && JSON.stringify(roadResult.assumptions) !== JSON.stringify(roadAssumptions));
+  const myCorridors = study.geometries.filter((item) => item.kind === "segment" && item.status === "valida");
+  const corridorLines = useMemo(() => (roadResult
+    ? (roadResult.subjects ?? []).map((subject) => ({ id: subject.id, label: subject.label, geometry: subject.geometry as unknown as GeoJSON.Geometry }))
+    : []), [roadResult]);
+  const selectedSources = useMemo(() => subjectsList.map((site) => ({ site: site.location.label, ...seriesFor(site, activeVariable).source })), [subjectsList, activeVariable]);
   const terrainOverlay = useMemo(() => {
     const granule = terrain?.sites[0]?.granules.find((item) => item.short_name === "NASADEM_HGT" && item.preview_url);
     return granule?.preview_url
@@ -149,16 +166,16 @@ export default function Workspace() {
   const temporalSeries = useMemo(() => {
     if (!result) return [];
     const years = new Set<number>();
-    result.sites.forEach((site: SiteResult | ClimateSite) => seriesFor(site, activeVariable).annual_series.forEach((item) => years.add(item.year)));
+    subjectsList.forEach((site) => seriesFor(site, activeVariable).annual_series.forEach((item) => years.add(item.year)));
     return [...years].sort().map((year) => {
       const point: { year: number } & Record<string, number> = { year };
-      result.sites.forEach((site: SiteResult | ClimateSite, index: number) => {
+      subjectsList.forEach((site, index) => {
         const value = seriesFor(site, activeVariable).annual_series.find((item) => item.year === year)?.value;
         if (value !== undefined) point[`site${index}`] = value;
       });
       return point;
     });
-  }, [result, activeVariable]);
+  }, [result, subjectsList, activeVariable]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
@@ -183,7 +200,7 @@ export default function Workspace() {
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
   function removeSite(index: number) { setSites((current) => current.filter((_, position) => position !== index)); }
   function selectModule(id: string) {
-    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" ? "PRECTOTCORR" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
     // Solo Clima acepta territorios o un único sitio; el piloto solar compara al menos dos sitios.
     if (id !== "climate" && sites.length < 2) setSites(initialSites);
     setActiveModule(id); setMobileNavOpen(false);
@@ -210,7 +227,11 @@ export default function Workspace() {
     setLoading(true); setError(""); setExportedAt(null); setPdfError("");
     try {
       // Cada módulo funcional tiene su endpoint; clima no usa supuestos financieros.
-      const request = isClimateModule
+      const request = isRoadModule
+        ? { url: "/api/road-screening", body: {
+            segments: roadSource === "mine" ? myCorridors.map((item) => ({ id: item.id, label: item.name, geometry: item.geometry })) : null,
+            start_date: startDate, end_date: endDate, assumptions: roadAssumptions } }
+        : isClimateModule
         ? { url: "/api/climate-screening", body: { sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), start_date: startDate, end_date: endDate } }
         : { url: "/api/solar-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions } };
       const response = await fetch(request.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request.body) });
@@ -287,6 +308,7 @@ export default function Workspace() {
           <div className="mobileVerdict" ref={mobileVerdictRef}>
             {climateResult
               ? <ClimateReading result={climateResult} headingId="lectura-movil" />
+              : roadResult ? <RoadReading result={roadResult} headingId="lectura-movil" />
               : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />}
           </div>
         )}
@@ -308,15 +330,15 @@ export default function Workspace() {
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
           <div className={`mapViewport ${loading ? "isAcquiring" : ""} ${visualLayer ? "hasVisualLayer" : ""}`}>
-            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
+            <GeoMap sites={isRoadModule ? [] : sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
-                    territories={mapTerritories} cells={isClimateModule ? cellLayer.cells : []}
+                    territories={mapTerritories} cells={isClimateModule ? cellLayer.cells : []} corridor={isRoadModule ? corridorLines : []}
                     onPick={(latitude, longitude) => {
                       if (geometryHint) return;
                       setSites((current) => current.length ? [{ ...current[0], latitude, longitude }, ...current.slice(1)] : [{ label: "Punto", latitude, longitude }]);
                     }} />
             {loading && <div className="acquisitionLine" aria-hidden="true" />}
-            {sites[0] && <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>}
+            {sites[0] && !isRoadModule && <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>}
             {isClimateModule && cellLayer.cells.length > 0 && <CellTrendLegend variable={cellVariable} onVariable={setCellVariable} layer={cellLayer} />}
             <div className="mapSource">{visualLayer ? `NASA GIBS · ${visualLayer.layer.label.toUpperCase()} · CAPA VISUAL` : "NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO"}</div>
             <LayerControl value={visualLayer} onChange={setVisualLayer} />
@@ -336,7 +358,18 @@ export default function Workspace() {
                 <p className="mobileProvenance"><span>Procedencia efectiva</span><b>{sourceSummary}</b></p>
               </div>
             </details>
-            {geometryHint ? <GeometryPanel state={study} hint={geometryHint} /> : <>
+            {isRoadModule ? <>
+              <RoadControls source={roadSource} onSource={setRoadSource} myCorridors={myCorridors.length} assumptions={roadAssumptions}
+                            onAssumption={(key, value) => setRoadAssumptions((current) => ({ ...current, [key]: value }))} open={roadAssumptionsOpen} onToggle={setRoadAssumptionsOpen} />
+              <details className="corridorDraw" open={roadSource === "mine"}>
+                <summary>Dibujar o cargar corredores</summary>
+                <GeometryPanel state={study} hint={geometryHint} />
+              </details>
+              <div className="actionRow">
+                <button onClick={() => setRoadAssumptions(DEFAULT_ROAD_ASSUMPTIONS)}>Supuestos por defecto</button>
+                <button className="runAnalysis" onClick={runScreening} disabled={loading || !endDate || (roadSource === "mine" && !myCorridors.length)}>{loading ? "Consultando NASA y capas…" : "Ejecutar análisis"}</button>
+              </div>
+            </> : geometryHint ? <GeometryPanel state={study} hint={geometryHint} /> : <>
             <div className="siteEditor">
               {sites.map((site, index) => (
                 <div className="siteRow" key={index}>
@@ -369,6 +402,7 @@ export default function Workspace() {
             {result ? (
               !isMobile && (climateResult
                 ? <ClimateReading result={climateResult} headingId="lectura-escritorio" />
+                : roadResult ? <RoadReading result={roadResult} headingId="lectura-escritorio" />
                 : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />)
             ) : (
               <div className="emptyReading"><span><i /><i /></span><div><strong>LISTO PARA CONSULTAR</strong><p>{selectedModule.description}</p></div></div>
@@ -425,9 +459,9 @@ export default function Workspace() {
           <div className="trendHeader">
             <span>Serie temporal anual</span>
             <div role="group" aria-label="Variable NASA POWER">{tabs.map((variable) => <button key={variable.id} className={activeVariable === variable.id ? "active" : ""} aria-pressed={activeVariable === variable.id} onClick={() => setActiveVariable(variable.id)}>{variable.short}</button>)}</div>
-            <p className="seriesKey">{(result?.sites ?? []).map((site: SiteResult | ClimateSite, index: number) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
+            <p className="seriesKey">{subjectsList.map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
           </div>
-          <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={(result?.sites ?? []).map((site: SiteResult | ClimateSite, index: number) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
+          <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={subjectsList.map((site, index) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
           <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>Años completos · {["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"} · eje ajustado al rango observado</span></div>
         </section>
 
@@ -444,6 +478,11 @@ export default function Workspace() {
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
           <AssistantPanel result={result} />
           {climateResult && <ClimateEvidence result={climateResult} />}
+          {roadResult && <>
+            {roadResult.scorecard ? <ScorecardPanel initial={roadResult.scorecard} /> : null}
+            {roadResult.financial_sensitivity?.length ? <SensitivityPanel items={roadResult.financial_sensitivity} stale={staleAssumptions} /> : null}
+            <RoadEvidence result={roadResult} />
+          </>}
           {solarResult && <>
           <div className="findingsPanel"><h3>Lectura comparativa</h3>{solarResult.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>
           <div className="resultGrid">

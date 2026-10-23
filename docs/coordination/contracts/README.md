@@ -4,7 +4,9 @@ Todo sector responde con el mismo sobre. La interfaz (pipeline, preguntas NASA),
 
 - Esquema: `screening-envelope-v1.0.schema.json`
 - Ejemplo real (Moquegua–Arequipa, 2001–2024, NASADEM con métricas): `screening-envelope-v1.0.example.json`
+- Ejemplo real K2 (corredor Moquegua–Ilo, 2018–2023): `road-screening-v1.0.example.json`
 - Regenerar ambos: `scripts/export_contract.py` (instrucciones en su encabezado)
+- Regenerar K2 sin levantar la API: `scripts/export_road_contract.py`
 - Código: `backend/app/schemas/screening.py`
 
 ## Campos del sobre

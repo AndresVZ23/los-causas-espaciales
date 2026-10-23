@@ -94,8 +94,36 @@ export type ClimateSite = {
   territory?: TerritoryInfo | null; cell_trends?: CellTrend[];
 };
 export type ClimateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & { sector: "climate"; sites: ClimateSite[]; method_notes: string[] };
-export type AnyResult = ScreeningResult | ClimateResult;
+// Piloto vial (K2 de Codex · sector "road" del contrato C2).
+export type RoadAssumptions = {
+  baseline_interruption_days_per_year: number; residual_interruption_fraction: number; cost_per_interruption_day_usd: number;
+  mitigation_capex_usd_per_km: number; annual_maintenance_usd_per_km: number; discount_rate: number; horizon_years: number;
+  heavy_rain_threshold_mm_day: number; interruption_days_sensitivity: number; cost_per_day_sensitivity: number; capex_sensitivity: number;
+  maintenance_sensitivity: number; residual_fraction_sensitivity: number; discount_rate_sensitivity: number;
+};
+export type RoadSegment = {
+  subject_id: string; label: string; representative_point: Point; length_km: number; variables: VariableSummary[];
+  heavy_rain_days_per_year: number | null; heavy_rain_years: number;
+  spatial_exposure: { cell_count: number; spatial_coverage_percent: number; mean_precipitation_mm_day: number | null; rx1day_mm: number | null; method: string; limitations: string[] } | null;
+  terrain_slope_degrees: number | null; territorial_intersections: Record<string, number | null>;
+  finance: { baseline_interruption_days_per_year: number; avoided_interruption_days_per_year: number; annual_avoided_cost_usd: number; mitigation_capex_usd: number; npv_usd: number; formula: string; limitations: string[] };
+  opportunities: string[]; cautions: string[];
+};
+export type RoadTerritorialSource = { source_id: string; status: string; intersection_count: number | null; provenance: string; limitations: string[] };
+export type RoadResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
+  sector: "road"; corridor_source: { name: string; source: string; source_url: string | null; license: string | null; provenance: string; limitations: string[] };
+  segments: RoadSegment[]; territorial_evidence: { subject: string; sources: RoadTerritorialSource[] }[]; assumptions: RoadAssumptions;
+};
+export type AnyResult = ScreeningResult | ClimateResult | RoadResult;
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
+export const isRoad = (result: AnyResult | null): result is RoadResult => result?.sector === "road";
+/** Sujetos con series NASA, cualquiera sea el sector: sitios (solar, clima) o tramos (vial). */
+export type SeriesSubject = { location: Point; variables: VariableSummary[]; extremes?: ExtremeIndex[] };
+export const seriesSubjects = (result: AnyResult | null): SeriesSubject[] => {
+  if (!result) return [];
+  if (isRoad(result)) return result.segments.map((segment) => ({ location: { ...segment.representative_point, label: segment.label }, variables: segment.variables }));
+  return result.sites;
+};
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };
 export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL" | "PENDING"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[] };
 export type TerrainResult = { generated_at: string; dataset: string; crs: string; spatial_resolution: string; sites: TerrainSite[]; note: string };

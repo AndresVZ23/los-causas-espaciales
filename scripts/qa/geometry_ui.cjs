@@ -36,6 +36,9 @@ async function run(viewport, tag) {
   } else {
     await page.locator(nav, { hasText: "Infraestructura" }).click();
   }
+  // En Infraestructura el panel de geometrías vive dentro de «Dibujar o cargar corredores» (cerrado al inicio).
+  const drawer = page.locator(".corridorDraw summary");
+  if (await drawer.count()) await drawer.click();
   await page.waitForSelector(".geometryPanel");
   const canvas = page.locator(".mapViewport canvas");
   await canvas.scrollIntoViewIfNeeded();

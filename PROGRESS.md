@@ -135,27 +135,47 @@
 - Pruebas K5 aisladas: 5/5 con conteos, acentos, ubigeo, jerarquía, geometría, errores y TestClient, sin levantar 8000.
 - Puerta completa K5: 112/112 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; no se modificó `frontend/**` ni se inició 3100/8000.
 
-## Muestreo espacial K1 (rama `codex/regional-sampling`)
+## Muestreo espacial K1 (ramas `codex/regional-sampling` y `codex/k1-multiyear`)
 
 - Endpoint tipado para puntos, corredores, polígonos y territorios; acepta los GeoJSON exportados por Claude con `properties.kind`, `name` y `origin`.
 - Corredores amortiguados en proyección azimutal equidistante local; polígonos subcelda declarados como punto; áreas mayores consultadas en NASA POWER Regional con un parámetro por pedido.
 - Celdas deduplicadas por centro, series por celda conservadas, promedio y desviación estándar diarios ponderados por área geodésica de intersección, y faltantes nunca convertidos en cero.
 - Ejecución real Moquegua: 9 celdas, cobertura 99.5833%, grilla devuelta 0.5° lat × 0.625° lon, `REAL_DATA`. Ejecución real La Punta: 0.773019 km², modo `POINT`, una celda.
-- Pruebas K1 aisladas: 6/6, incluidos caché, duplicados, valor faltante, corredor, geometría inválida, fallo externo y límite espacial; sin iniciar 8000.
-- Puerta completa K1: 118/118 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; sin cambios en `frontend/**` ni uso de 3100/8000.
+- El límite operativo confirmado del endpoint Regional (máximo 366 días por solicitud) se resuelve dividiendo períodos largos por año calendario. Cada fragmento conserva caché cruda propia; la unión exige las mismas celdas y unidades, rechaza fechas o valores conflictivos y propaga `REAL_DATA` si al menos un fragmento se descargó de la fuente.
+- Ejecución real multianual del 30-dic-2023 al 2-ene-2025: tres solicitudes oficiales, incluida una de 366 días para 2024, 6 celdas y 370 observaciones diarias agregadas continuas (`REAL_DATA`, POWER v2.10.1).
+- Pruebas K1 aisladas: 7/7 en `test_spatial_sampling.py` y 12/12 junto con el análisis territorial; incluyen caché completa/mixta, renormalización diaria, duplicados, valor faltante, corredor, geometría inválida, fallo externo y límite espacial; sin iniciar 8000.
+- Puerta completa de `codex/k1-multiyear`: 146/146 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
+
+## Piloto vial K2 (rama `codex/piloto-vial`)
+
+- Endpoint tipado `POST /api/v1/projects/road-screening`, backend-only, compatible con `ScreeningEnvelope` v1.0 y sus nueve etapas.
+- Corredor público Moquegua–Ilo calculado con OSRM sobre OpenStreetMap, ODbL 1.0, 89.157 km de ruta y cinco tramos contiguos; se declara que no es eje ni inventario oficial del MTC.
+- Por tramo: NASA POWER diario para precipitación y temperatura, exposición espacial K1 del último año, NASADEM cuando está disponible e intersecciones de CENEPRED, SERNANP, Cultura e INGEMMET. Un cero de intersecciones no se presenta como ausencia de riesgo o restricción.
+- Puntaje de prioridad con escalas y pesos explícitos, cobertura por faltantes y estabilidad; VAN de mitigación con días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte etiquetados `USER_ASSUMPTION`.
+- Sensibilidad con escenarios base/adverso/favorable, tornado y puntos de equilibrio mediante el motor común. El VAN fue contrastado con una suma descontada independiente.
+- Ejecución real 2018–2023 conforme a C2: cinco series y exposiciones POWER disponibles; CENEPRED con intersecciones reales, SERNANP/Cultura con ceros neutrales, INGEMMET y NASADEM como brechas visibles. Ejemplo reproducible en `docs/coordination/contracts/road-screening-v1.0.example.json`.
+- Pruebas K2 aisladas: 4/4, incluidas conformidad `envelope_violations == []`, VAN independiente, degradación honesta por faltantes y validación HTTP de geometría.
 
 ## Brechas prioritarias
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).
 
-1. Configurar un `EARTHDATA_TOKEN` y validar contra archivos oficiales las celdas de elevación, pendiente y orientación NASADEM ya conectadas por CMR.
+1. Renovar `EARTHDATA_TOKEN` o reautorizar LP DAAC: el token local declara vigencia hasta el 21-dic-2026, pero el servicio protegido devuelve 401 para teselas nuevas y también para las dos ya validadas. Los archivos previamente descargados siguen disponibles en caché.
 2. ~~Incorporar red eléctrica y subestaciones~~ **Fuente activa:** Osinergmin GISEM; falta calcular distancia y verificar capacidad de conexión.
 3. ~~Añadir áreas protegidas~~ **Fuente activa:** SERNANP; faltan ecosistemas frágiles y el análisis normativo de restricciones.
 4. Incorporar sensibilidad social y comunidades; Cultura SIGDA ya aporta la alerta arqueológica inicial, sin reemplazar CIRA ni debida diligencia.
+
 5. Integrar GPM IMERG V07 y LHASA. AppEEARS MOD13Q1/MOD44W ya está verificado con descarga y QA reales.
 6. Implementar muestreo NASA a lo largo de corredores y polígonos; hoy esas geometrías solo se validan y miden.
-7. Construir los pilotos vial y de desarrollo inmobiliario después de contar con las capas territoriales mínimas.
+7. ~~Construir el backend del piloto vial~~ **K2 listo en `codex/piloto-vial`**; falta la pantalla de Claude y permanece pendiente K3 inmobiliario.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.
+
+## Diagnóstico NASADEM `s17w071` (rama `codex/nasadem-s17w071`)
+
+- CMR confirmó `NASADEM_HGT_s17w071` (`G2816776437-LPCLOUD`) y `NASADEM_SC_s17w071` (`G2816803398-LPCLOUD`) con nombres y rutas LP DAAC correctos; la tesela no está ausente ni mal identificada.
+- Lecturas de un byte devolvieron HTTP 401 en ambos gránulos y también en `s18w071`/`s17w072`, previamente accesibles. La causa observable es la credencial/autorización Earthdata actual, no el contenido de `s17w071`.
+- El conector ahora distingue 401 («renueve el token») de 403 («autorice LP DAAC») y el log ya no atribuye el rechazo a un gránulo específico. El secreto nunca se imprime ni se cachea.
+- Puerta: 15/15 pruebas NASADEM y 146/146 backend; build Next.js aprobado; auditoría npm con 0 vulnerabilidades; auditor científico `ok: true`; sin tocar 3100/8000.
 
 ## Traspaso a Claude Code
 

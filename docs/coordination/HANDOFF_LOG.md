@@ -324,6 +324,20 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 
 **Para Claude:** K1 y K5 quedan `VERIFICADO`; C7 puede consumir `cells[]` para tendencias/mapa y `aggregate[]` para la serie del territorio. `grid_spacing_degrees` y `spatial_coverage_percent` deben quedar visibles para no exagerar resolución. Esta rama incluye K5, pero no `codex/fuentes-amenazas`; al integrarlas conservar el `RawPayloadCache` común y todos los routers. Rama no fusionada ni subida; requiere aprobación de Christian.
 
+## 2026-10-23 · Codex · codex/piloto-vial · 39cb5df · K2 backend vial
+
+**Entrega:** `POST /api/v1/projects/road-screening` implementa el piloto vial backend sobre `ScreeningEnvelope` v1.0. La entrada acepta de uno a doce LineString WGS84 o usa por defecto el corredor público Moquegua–Ilo. La respuesta contiene las nueve etapas, cinco preguntas NASA, tendencias Hamed–Rao + BH, relieve, brechas, resultados tipados por tramo, sensibilidad financiera y scorecard. La prueba obligatoria devuelve `envelope_violations(respuesta) == []`.
+
+**Geometría y licencia:** la ruta pública fue calculada el 23-oct-2026 con OSRM sobre OpenStreetMap entre Moquegua e Ilo. OSRM informó 89.157 km; la instantánea simplificada se preserva en cinco tramos contiguos, con atribución `© OpenStreetMap contributors` y ODbL 1.0. Se declara expresamente que no es eje oficial del MTC, inventario de puentes/drenajes, levantamiento, derecho de vía ni dato de cliente.
+
+**Método:** por tramo se ejecutan en paralelo POWER puntual (`PRECTOTCORR`, `T2M`), exposición espacial K1 del último año, NASADEM y las capas CENEPRED/SERNANP/Cultura/INGEMMET. El score combina RX1DAY reciente, días sobre el umbral de lluvia, pendiente, longitud, interrupción supuesta y VAN/CAPEX con escalas y pesos declarados. Si falta una fuente, se omite el criterio, se informa cobertura y se crea una brecha; un cero de intersecciones nunca se convierte en ausencia de riesgo. El VAN de mitigación reutiliza `finance/sensitivity.py`: días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte son `USER_ASSUMPTION`; hay base/adverso/favorable, tornado y equilibrios. Una implementación independiente de flujo descontado reprodujo el VAN a centavos.
+
+**Ejecución real:** `scripts/export_road_contract.py`, período 2018–2023, generó `docs/coordination/contracts/road-screening-v1.0.example.json` con conformidad C2. Los cinco tramos recuperaron POWER puntual y exposición espacial `REAL_DATA`. En el primer tramo, CENEPRED devolvió dos intersecciones de inundación y dos de movimientos en masa; SERNANP y ambas capas de Cultura devolvieron cero, conservado como resultado neutral. INGEMMET quedó `DATA_UNAVAILABLE`. Earthdata rechazó las teselas NASADEM durante esta ejecución; la pendiente salió del score y quedó una brecha visible. Resultado: etapa territorial `PARCIAL`, seis brechas y ningún faltante convertido en cero.
+
+**Puerta común:** 4/4 pruebas K2 y 149/149 backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; `node --check` del DOP y `git diff --check` se ejecutan antes del cierre. Dos advertencias son deprecaciones ya conocidas de ReportLab/Starlette. No se editó manualmente `frontend/**`, no se usó Gemini y no se levantaron 3100/8000.
+
+**Para Claude:** integrar `codex/piloto-vial` y construir C5 leyendo el sobre común y los campos `segments`, `territorial_evidence`, `financial_sensitivity` y `scorecard`. Mostrar la licencia ODbL, cobertura del score y brechas. El resultado debe llamarse screening/prioridad de estudio, nunca seguridad, factibilidad ni recomendación de inversión. La rama no fue fusionada ni subida; requiere aprobación de Christian.
+
 ## 2026-10-23 · Claude · claude/capas-territorio · selector territorial y tendencias por celda (C7, ADR-025)
 
 **Integré localmente** `master` (0510656), `codex/fuentes-amenazas` y `codex/regional-sampling` en mi rama. Los conflictos fueron de documentación y de `main.py`; los resolví conservando ambos lados. Agregué `openpyxl` y `defusedxml` a mi `.venv`, según `requirements.txt`.
@@ -335,3 +349,49 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 - Grilla de tendencias por celda en el mapa, con leyenda y cambio de variable.
 - Etiqueta de escala por territorio.
 - 145/145 pruebas. QA `scripts/qa/territory_ui.cjs` en 1440/390 sin errores.
+
+## 2026-10-23 · Codex · cierre de QA K2
+
+Se cerró `codex/piloto-vial` sobre `39cb5df` con la documentación y el DOP sincronizados. Puerta final: 149/149 pruebas, build, audit 0, auditor científico `ok`, sintaxis DOP y `git diff --check`. Sigue sin fusionar ni subir; Claude puede integrar la rama cuando Christian lo apruebe. Los arreglos K1 multianual (`codex/k1-multiyear`) y diagnóstico NASADEM (`codex/nasadem-s17w071`) permanecen en ramas separadas para respetar una entrega por rama.
+## 2026-10-23 · Codex · master · bbe600d · K1b, K5/K1 y C6/C7 fusionados
+
+**Fusiones aprobadas por Christian:** `master` integró, en el orden solicitado, `codex/fuentes-amenazas` (`535a886`), `codex/regional-sampling` (`b6406ca`) y `claude/capas-territorio` (`bbe600d`). Los conflictos aditivos de routers, documentación y DOP se resolvieron usando como referencia la integración ya probada en la rama de Claude; se conservaron los conectores K1b, los territorios K5, el muestreo K1 y los estados C6/C7.
+
+**Puerta común sobre master:** 145/145 pruebas backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. No se inició ni modificó el stack 3100/8000, no se usó Gemini y no hubo edición manual de `frontend/**` por Codex.
+
+**Operación:** `master` quedó solo local; no se subió a GitHub porque esta instrucción aprobó las fusiones, no una publicación remota.
+
+## 2026-10-23 · Codex · codex/k1-multiyear · 640641c · POWER Regional multianual corregido
+
+**Corrección K1:** `POST /api/v1/spatial-sampling/power/daily` divide rangos largos por año calendario para respetar el máximo operativo de 366 días del endpoint Regional. Cada fragmento conserva caché cruda propia; la unión exige igual conjunto de centros y unidades, rechaza fechas fuera del tramo, elevaciones o valores conflictivos y devuelve `REAL_DATA` si al menos un fragmento vino de red (`CACHED_DATA` solo cuando todos vienen de caché).
+
+**Revisión de `aggregate_cells()`:** la extracción de Claude conserva la lógica original. Se verificó de forma independiente que, cuando falta una celda en un día, los pesos disponibles se renormalizan antes de calcular media y varianza poblacional ponderadas. El análisis territorial sigue usando descubrimiento Regional de 365 días y luego puntos; el defecto afectaba al endpoint K1 directo.
+
+**Evidencia real NASA POWER, 23-oct-2026:** rango UTC 30-dic-2023 a 2-ene-2025; tres solicitudes (2 + 366 + 2 días), 6 celdas, 370 agregados diarios continuos, API v2.10.1 y procedencia `REAL_DATA`.
+
+**Puerta:** 7/7 pruebas K1; 12/12 junto con territorio; 146/146 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida. Sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
+
+**Para Claude:** integrar `codex/k1-multiyear` cuando Christian lo apruebe; C7 puede solicitar períodos largos sin recibir el 422 del proveedor. La rama no fue fusionada en `master` ni subida.
+## 2026-10-23 · Codex · codex/nasadem-s17w071 · ece205c · diagnóstico de acceso NASADEM
+
+**Resultado:** `NASADEM_HGT_s17w071` y `NASADEM_SC_s17w071` sí existen en CMR (`G2816776437-LPCLOUD` y `G2816803398-LPCLOUD`) y sus rutas ZIP protegidas son correctas. Lecturas autenticadas de un byte devolvieron HTTP 401 en ambos; el mismo token produjo 401 en `s18w071` y `s17w072`, previamente validados. El JWT local declara vigencia hasta el 21-dic-2026, de modo que la evidencia apunta a token rechazado/revocado o autorización Earthdata, no a un gránulo faltante.
+
+**Cambio:** el conector diferencia HTTP 401 («renueve `EARTHDATA_TOKEN`») de HTTP 403 («autorice LP DAAC») y el log ya no dice que una tesela específica «no tiene acceso». La caché validada existente permanece utilizable; nuevas descargas quedan `METADATA_ONLY` tras el rechazo y ningún secreto se registra.
+
+**Puerta:** 15/15 pruebas NASADEM; 146/146 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida. Sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
+
+**Bloqueo externo:** Christian debe renovar el token o reautorizar la aplicación LP DAAC antes de precargar `s17w071`. Tras reemplazar el token, la clave de fallo cambia por huella y el conector vuelve a intentar automáticamente. Rama no fusionada ni subida; requiere aprobación.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · pantalla del piloto vial (C5, ADR-027)
+
+**Integré** `codex/piloto-vial`, `codex/k1-multiyear` y `codex/nasadem-s17w071` en `claude/integracion-pilotos`. Los conflictos fueron solo de documentación y los resolví conservando ambos lados.
+**Entrega:**
+- Módulo Infraestructura funcional sobre K2, con el corredor piloto o los corredores propios.
+- QA `scripts/qa/road_ui.cjs` en 1440/390: análisis real de 23–43 s, 0 errores.
+- Regresión de los QA de clima, territorio, capas, geometrías y puntaje: 0 errores.
+- 151/151 pruebas.
+
+**Para Codex:**
+1. **K2 usa un valor que parece artefacto.** El tramo 2 marca RX1DAY de 151 mm en celdas costeras desérticas; es casi seguro el evento MERRA-2 del 12–13 sep 2022 que IMERG desmintió (ADR-021). El criterio «Máximo diario espacial reciente» del puntaje lo usa. Sugerencia: aplicar `atypical_years` o el contraste IMERG antes de puntuar, o usar un percentil alto en vez del máximo.
+2. El token Earthdata devuelve 401 en todas las teselas NASADEM (tu diagnóstico es correcto); Christian lo renovará.
+3. K3, el piloto inmobiliario, puede reutilizar territorios IGN y polígonos del usuario como terrenos; la pantalla seguirá el mismo patrón.

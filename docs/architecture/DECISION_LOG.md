@@ -153,3 +153,25 @@ Moquegua con 9 celdas tarda unos 25 s la primera vez y luego queda en caché. Si
 El módulo de Clima acepta de 1 a 4 sujetos entre sitios y territorios del IGN. Cada territorio informa nivel, ubigeo, área, celdas, cobertura y grilla. Las **tendencias por celda** (T2M y PRECTOTCORR) aplican Hamed–Rao y Benjamini–Hochberg entre las celdas y se dibujan como grilla con el par divergente validado; las celdas sin evidencia van atenuadas.
 
 Con datos reales, la temperatura sube con significancia en las 9 celdas de Moquegua (hasta +0.42 °C por década) y la lluvia no muestra tendencia en ninguna. Los índices de extremos de un promedio areal son más suaves que los de un punto, y así se declara en el método.
+
+## ADR-026 — El piloto vial prioriza estudios, no declara carreteras seguras ni factibles
+
+K2 usa una geometría pública Moquegua–Ilo calculada con OSRM sobre OpenStreetMap y dividida en cinco tramos. Se conserva la atribución ODbL y se declara que la línea simplificada no es un eje oficial del MTC, inventario de activos ni diseño vial. Los corredores que entregue el usuario deben ser LineString WGS84 válido y tampoco adquieren validez legal por ingresar a la plataforma.
+
+La exposición combina, sin confundir sus significados: series puntuales NASA POWER para tendencia, muestreo K1 ponderado por área para precipitación reciente, NASADEM para relieve y consultas de intersección a capas oficiales peruanas. Una capa ausente o un servicio fallido crea una brecha `DATA_UNAVAILABLE`; una consulta con cero intersecciones sigue siendo neutral y no equivale a riesgo cero. Los criterios sin dato se omiten y el score informa la cobertura del peso restante.
+
+El resultado económico modela una mitigación genérica: `VAN = −CAPEX + Σ[((días base × (1 − fracción residual)) × costo/día) − mantenimiento] / (1+r)^t`. Días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte son `USER_ASSUMPTION`. NASA no observa cierres, tráfico ni pérdidas. El score mayor significa prioridad preliminar de estudio/mitigación, no mejor carretera; el VAN no constituye presupuesto, ingeniería, prefactibilidad ni decisión de inversión. El piloto reutiliza sensibilidad y puntaje comunes para que la interfaz y el PDF puedan leer el contrato sin lógica sectorial nueva.
+
+## ADR-027 — Pantalla del piloto vial sobre K2 y corrección del encolado del mapa
+
+El módulo Infraestructura usa el backend K2 de Codex (`POST /api/v1/projects/road-screening`):
+- **Corredor:** el piloto Moquegua–Ilo (OpenStreetMap, ODbL) o los corredores del usuario, dibujados o cargados en el panel de geometrías.
+- **Supuestos:** viales editables.
+- **Mapa:** tramos alternados en cian y blanco, con el nombre al pasar el mouse.
+- **Lectura:** por tramo.
+- **Tablas:** tramos y capas territoriales, con «No disponible» cuando la capa no respondió; cero no se presenta como ausencia de riesgo.
+- **Reutilizados:** puntaje, escenarios, preguntas NASA, asistente y PDF, que leen el sobre C2 sin código propio del sector.
+
+El gráfico anual, las fechas de datos y la procedencia leen sitios o tramos a través de `seriesSubjects()`.
+
+**Error corregido en el mapa:** `whenReady` usaba `isStyleLoaded()`, que da falso mientras se descargan teselas. Si el evento `load` ya había pasado, la actualización esperaba para siempre, y el corredor no aparecía tras la consulta. Ahora el mapa se marca como listo al terminar su propio `load`.

@@ -1,0 +1,36 @@
+{
+  "type": "FeatureCollection",
+  "name": "Corredor piloto Moquegua–Ilo",
+  "source": "© OpenStreetMap contributors · ruta calculada con OSRM",
+  "source_url": "https://www.openstreetmap.org/copyright",
+  "license": "ODbL 1.0",
+  "retrieved_at": "2026-10-23T19:30:00Z",
+  "route_distance_m": 89157,
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"id": "segmento-1", "name": "Tramo 1 de 5", "kind": "segment", "origin": "OpenStreetMap via OSRM"},
+      "geometry": {"type": "LineString", "coordinates": [[-70.933942, -17.193101], [-70.930707, -17.195367], [-70.941848, -17.202953], [-70.942332, -17.215117], [-70.968501, -17.213152], [-70.985673, -17.240485], [-70.987696, -17.349473]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "segmento-2", "name": "Tramo 2 de 5", "kind": "segment", "origin": "OpenStreetMap via OSRM"},
+      "geometry": {"type": "LineString", "coordinates": [[-70.987696, -17.349473], [-70.995502, -17.356123], [-70.994189, -17.368688], [-71.01018, -17.389211], [-71.029467, -17.404831], [-71.042938, -17.408602], [-71.051878, -17.456874]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "segmento-3", "name": "Tramo 3 de 5", "kind": "segment", "origin": "OpenStreetMap via OSRM"},
+      "geometry": {"type": "LineString", "coordinates": [[-71.051878, -17.456874], [-71.073785, -17.495283], [-71.073528, -17.513393], [-71.079545, -17.519612], [-71.085098, -17.555159], [-71.100298, -17.56093], [-71.11765, -17.579551]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "segmento-4", "name": "Tramo 4 de 5", "kind": "segment", "origin": "OpenStreetMap via OSRM"},
+      "geometry": {"type": "LineString", "coordinates": [[-71.11765, -17.579551], [-71.144985, -17.592679], [-71.164264, -17.616371], [-71.187987, -17.626746], [-71.192476, -17.633315], [-71.202392, -17.633094], [-71.228405, -17.675762]]}
+    },
+    {
+      "type": "Feature",
+      "properties": {"id": "segmento-5", "name": "Tramo 5 de 5", "kind": "segment", "origin": "OpenStreetMap via OSRM"},
+      "geometry": {"type": "LineString", "coordinates": [[-71.228405, -17.675762], [-71.24893, -17.697225], [-71.287481, -17.687497], [-71.295863, -17.662692], [-71.332256, -17.660528], [-71.340216, -17.652565], [-71.336971, -17.639025]]}
+    }
+  ]
+}

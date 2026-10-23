@@ -10,8 +10,13 @@
 | [NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/api/) | MOD13Q1.061 NDVI/EVI + QA; MOD44W.061 water mask + QA | Earthdata Login; asynchronous point/area tasks | 250 m; MOD13Q1 every 16 days, MOD44W yearly | Integrated; live task and checksummed downloads verified 23-Oct-2026 |
 | [NASA LHASA](https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/LHASA_Hazard_Today/ImageServer) | LHASA 2.x near-real-time landslide hazard | Public NASA ArcGIS ImageServer | Global 60°S–60°N; EPSG:4326; 30 arcseconds (~1 km); updated twice daily | Current service route verified 23-Oct-2026; connector and value semantics pending |
 | [Peru COD-AB](https://data.humdata.org/dataset/cod-ab-per) | IGN administrative boundaries v01 via OCHA/HDX | Public GeoJSON; CC BY-IGO | 25 departments, 196 provinces, 1,873 districts; CRS84 | Integrated as pinned, simplified web-reference assets |
+| [OpenStreetMap](https://www.openstreetmap.org/copyright) via [OSRM](https://project-osrm.org/docs/v5.24.0/api/#route-service) | Simplified Moquegua–Ilo road route | Public routing response; © OpenStreetMap contributors, ODbL 1.0 | 89.157 km provider route; five contiguous WGS84 screening segments | Integrated for K2 pilot geometry; not an official MTC axis or asset inventory |
 
 NASA POWER limits a point request to 20 parameters and may return HTTP 429. The MVP requests four supported parameters in one multiparameter request per site and caches responses for 24 hours. NASADEM granules are discovered through NASA CMR; the system does not claim terrain metrics unless the protected HGT and SC archives were downloaded and parsed successfully. IMERG differentiates Early, Late, and Final products; the research workflow will prioritize Final after version, units, authentication, and access are verified.
+
+### NASADEM access incident: `s17w071`
+
+CMR live discovery on 23-Oct-2026 confirmed that both requested granules exist: `NASADEM_HGT_s17w071` (`G2816776437-LPCLOUD`) and `NASADEM_SC_s17w071` (`G2816803398-LPCLOUD`), each with the expected protected LP DAAC HTTPS ZIP path. A one-byte authenticated range request returned HTTP 401 for both. The identical check also returned 401 for the previously validated `s18w071` and `s17w072` granules, while the JWT's embedded expiry remains 21-Dec-2026. Therefore the evidence points to a rejected/revoked credential or Earthdata authorization state, not to a missing or misnamed `s17w071` tile. Existing validated archives remain usable from cache; new downloads stay `METADATA_ONLY` after the background attempt reports 401. Renew `EARTHDATA_TOKEN` and re-authorize LP DAAC before retrying. The connector distinguishes 401 (renew token) from 403 (authorize LP DAAC) and never logs the token.
 
 ## NASA POWER precipitation: temporal convention and QA finding
 
@@ -102,6 +107,8 @@ Each generated asset and the search index has its own SHA-256 in `backend/data/t
 
 Regional responses are deduplicated by returned cell center. Cell footprints are inferred halfway between the centers actually returned, intersected with the subject, and weighted by geodesic overlap area. The contract returns every cell series plus a daily weighted mean, weighted standard deviation, minimum, maximum and contributing-cell count. Missing cell-days are excluded and the available weights are renormalized for that date; no missing value becomes zero. The raw response is cached by request hash and retains `REAL_DATA`/`CACHED_DATA` provenance.
 
+The live Regional endpoint returned HTTP 422 when asked for more than 366 days (`Please do not request a time period greater than 366 days`). K1 therefore partitions an inclusive long range by calendar year; each raw fragment has its own immutable cache key. Merging requires identical returned cell centers and units across fragments, rejects out-of-range dates and conflicting duplicates, and marks the combined source `REAL_DATA` when any fragment came from the provider (`CACHED_DATA` only when every fragment came from cache). A live check on 23-Oct-2026 requested 30-Dec-2023 through 2-Jan-2025 as three fragments (2 + 366 + 2 days) and returned 370 continuous daily aggregates for six intersecting cells using POWER API v2.10.1.
+
 NASA's documentation describes regional output on a 0.5° × 0.5° grid and limits a regional request to one parameter. The live `T2M` response reflects the native MERRA-2 grid: **0.5° latitude × 0.625° longitude**. K1 therefore records the actual center spacing instead of hard-coding 0.5° in both axes.
 
 Live checks on 23-Oct-2026, UTC daily data for 1–3 Jan 2026:
@@ -110,3 +117,11 @@ Live checks on 23-Oct-2026, UTC daily data for 1–3 Jan 2026:
 - La Punta district, Callao (0.773019 km² simplified geometry): `POINT`, one representative point because the district is smaller than one nominal cell; T2M 19.18 / 19.02 / 19.03 °C.
 
 These checks validate transport and aggregation, not local climate suitability. POWER remains a gridded product and does not replace station or site measurements.
+
+## Public road pilot geometry and K2 evidence
+
+The default K2 corridor is a public route calculated on 23-Oct-2026 with the OSRM Route service over OpenStreetMap data, from public points near Moquegua (`-70.934, -17.193`) and Ilo (`-71.337, -17.639`). OSRM reported 89.157 km and returned a simplified GeoJSON line. The repository preserves those vertices as five contiguous segments in `backend/data/pilots/moquegua_ilo_osm.geojson`, with attribution **© OpenStreetMap contributors** and the **ODbL 1.0** license. Geodesic length over the simplified vertices totals approximately 86.5 km; this difference is explicitly a simplification effect, not a change to the provider distance.
+
+This geometry is suitable only for screening and demonstration. It is not an official MTC centerline, survey, bridge/drainage inventory, pavement condition record, right-of-way boundary or client dataset. K2 must replace or validate it against an official MTC asset inventory before prefactibility.
+
+The live K2 example (`docs/coordination/contracts/road-screening-v1.0.example.json`) was generated on 23-Oct-2026 for 2018–2023. All five segment point series and recent K1 spatial-exposure requests returned NASA POWER data; CENEPRED returned two flood and two mass-movement scenario intersections on the first segment, while SERNANP and Cultura returned zero intersections. Those zeros mean only that the queried service returned no intersecting feature. INGEMMET remained `DATA_UNAVAILABLE`. NASADEM protected downloads were rejected by Earthdata during this run, so slope was omitted, score weights were renormalized and a visible gap was emitted. The real run therefore completed with a partial territorial stage and six documented gaps, without converting any unavailable evidence to zero.
