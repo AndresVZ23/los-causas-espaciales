@@ -1,0 +1,58 @@
+{
+  "dataset": "Peru - Subnational Administrative Boundaries (COD-AB) v01",
+  "source_organization": "Instituto Geográfico Nacional del Perú (IGN)",
+  "publisher": "OCHA Field Information Services / HDX",
+  "source_url": "https://data.humdata.org/dataset/54fc7f4d-f4c0-4892-91f6-2fe7c1ecf363/resource/63647792-0951-40d2-a30e-4a0e60f7a176/download/per_admin_boundaries.geojson.zip",
+  "source_sha256": "2f0ec51b7a0899b407546aa644621e1c3255cba59fdda76fcde6975ca6baafb3",
+  "license": "Creative Commons Attribution for Intergovernmental Organisations (CC BY-IGO)",
+  "created_by_source": "2015-07-24",
+  "valid_for_humanitarian_use": "2020-07-14",
+  "reviewed": "2025-10-30",
+  "resource_last_modified": "2026-01-26",
+  "generated_at": "2026-10-23",
+  "crs": "EPSG:4326 (CRS84 longitude/latitude)",
+  "processing_crs": "EPSG:3857; used only for metre-based display simplification",
+  "warning": "Reference boundaries created in 2015; districts created later are absent. Not cadastral.",
+  "index_sha256": "b8878e28360e4cfb0ce87bb239c3bdc16e4c2e44bc9430c5d45267337916976e",
+  "levels": {
+    "1": {
+      "level": "department",
+      "count": 25,
+      "maximum_simplification_tolerance_metres": 1500,
+      "minimum_applied_tolerance_metres": 187.5,
+      "mean_applied_tolerance_metres": 1447.5,
+      "source_vertices": 303817,
+      "web_vertices": 4293,
+      "vertex_reduction_percent": 98.587,
+      "maximum_geodesic_area_change_percent": 0.8461,
+      "bytes": 182217,
+      "sha256": "379b3ceca808ad39cc8483434071e07824cc4d881b4aaece01ed44cc95b64bba"
+    },
+    "2": {
+      "level": "province",
+      "count": 196,
+      "maximum_simplification_tolerance_metres": 750,
+      "minimum_applied_tolerance_metres": 187.5,
+      "mean_applied_tolerance_metres": 745.217,
+      "source_vertices": 691109,
+      "web_vertices": 19254,
+      "vertex_reduction_percent": 97.214,
+      "maximum_geodesic_area_change_percent": 0.9502,
+      "bytes": 849234,
+      "sha256": "c54ef4352117a648af62ca6f82fe8b58a2e26ecf010cb61c0561a6ac44ee738f"
+    },
+    "3": {
+      "level": "district",
+      "count": 1873,
+      "maximum_simplification_tolerance_metres": 250,
+      "minimum_applied_tolerance_metres": 15.625,
+      "mean_applied_tolerance_metres": 233.407,
+      "source_vertices": 1598113,
+      "web_vertices": 117384,
+      "vertex_reduction_percent": 92.655,
+      "maximum_geodesic_area_change_percent": 0.9969,
+      "bytes": 5451565,
+      "sha256": "67ddb4b63fa03d77ef835aba8c614b83cdd283e9b692d18a2402c3d2c8600239"
+    }
+  }
+}

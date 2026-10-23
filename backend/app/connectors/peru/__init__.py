@@ -1,1 +1,1 @@
-"""Official Peruvian territorial data connectors."""
+"""Official Peruvian data connectors."""
