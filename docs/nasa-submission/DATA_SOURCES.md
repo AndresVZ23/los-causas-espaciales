@@ -41,3 +41,18 @@ The exact GeoJSON ZIP downloaded on 23-Oct-2026 is pinned by SHA-256 `2f0ec51b7a
 | District | 1,873 | 92.655% | 0.9969% | 5,451,565 bytes |
 
 Each generated asset and the search index has its own SHA-256 in `backend/data/territory/manifest.json`. The API exposes accent-insensitive name search, exact/partial ubigeo search, department → province → district hierarchy, and one simplified GeoJSON feature per territory. Simplification is for web visualization and subject selection; later analytical sampling must explicitly state whether it uses these display geometries or a higher-fidelity official source.
+
+## NASA POWER regional spatial sampling (K1)
+
+`POST /api/v1/spatial-sampling/power/daily` accepts a GeoJSON geometry or Feature. Features exported by the geometry panel may include `properties.kind`, `name`, and `origin`; those fields are preserved in the response. Line strings are buffered in a local azimuthal-equidistant CRS by the explicit `corridor_buffer_km`. Polygons and COD-AB territories larger than a nominal 0.5° cell use the official `/api/temporal/daily/regional` endpoint with exactly one POWER parameter per request. A polygon smaller than one nominal cell is explicitly returned as `POINT` mode at an interior representative point, rather than implying unsupported internal spatial variation.
+
+Regional responses are deduplicated by returned cell center. Cell footprints are inferred halfway between the centers actually returned, intersected with the subject, and weighted by geodesic overlap area. The contract returns every cell series plus a daily weighted mean, weighted standard deviation, minimum, maximum and contributing-cell count. Missing cell-days are excluded and the available weights are renormalized for that date; no missing value becomes zero. The raw response is cached by request hash and retains `REAL_DATA`/`CACHED_DATA` provenance.
+
+NASA's documentation describes regional output on a 0.5° × 0.5° grid and limits a regional request to one parameter. The live `T2M` response reflects the native MERRA-2 grid: **0.5° latitude × 0.625° longitude**. K1 therefore records the actual center spacing instead of hard-coding 0.5° in both axes.
+
+Live checks on 23-Oct-2026, UTC daily data for 1–3 Jan 2026:
+
+- Moquegua department (COD-AB): `REGIONAL`, 9 intersecting cells, 99.5833% inferred spatial coverage, spacing 0.5° × 0.625°, weighted T2M 13.0592 / 11.9289 / 13.5450 °C, with per-day dispersion and cell series retained.
+- La Punta district, Callao (0.773019 km² simplified geometry): `POINT`, one representative point because the district is smaller than one nominal cell; T2M 19.18 / 19.02 / 19.03 °C.
+
+These checks validate transport and aggregation, not local climate suitability. POWER remains a gridded product and does not replace station or site measurements.
