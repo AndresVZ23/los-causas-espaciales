@@ -8,6 +8,7 @@
 | [NASA LP DAAC](https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001) | NASADEM SC V001 | Public CMR metadata; raster via Earthdata Login | Global land, approximately 30 m / 1 arc-second; slope and aspect in hundredths of degrees | Metadata and public preview integrated; raster values require `EARTHDATA_TOKEN` |
 | [NASA GPM IMERG](https://gpm.nasa.gov/data/imerg) | IMERG V07 | Earthdata/PPS; registration may be required | From 1998; products down to 0.1° and 30 minutes; POWER exposes precipitation as daily UTC and documents 3.5 months of latency for Final | Cataloged; designated countercheck for rainfall extremes |
 | [NASA AppEEARS](https://appeears.earthdatacloud.nasa.gov/api/) | MOD13Q1.061 NDVI/EVI + QA; MOD44W.061 water mask + QA | Earthdata Login; asynchronous point/area tasks | 250 m; MOD13Q1 every 16 days, MOD44W yearly | Integrated; live task and checksummed downloads verified 23-Oct-2026 |
+| [NASA LHASA](https://gis.earthdata.nasa.gov/portal/rest/services/Landslides/LHASA_Hazard_Today/ImageServer) | LHASA 2.x near-real-time landslide hazard | Public NASA ArcGIS ImageServer | Global 60°S–60°N; EPSG:4326; 30 arcseconds (~1 km); updated twice daily | Current service route verified 23-Oct-2026; connector and value semantics pending |
 
 NASA POWER limits a point request to 20 parameters and may return HTTP 429. The MVP requests four supported parameters in one multiparameter request per site and caches responses for 24 hours. NASADEM granules are discovered through NASA CMR; the system does not claim terrain metrics unless the protected HGT and SC archives were downloaded and parsed successfully. IMERG differentiates Early, Late, and Final products; the research workflow will prioritize Final after version, units, authentication, and access are verified.
 
@@ -53,26 +54,27 @@ All application requests use GeoJSON RFC 7946 in WGS84 longitude/latitude. ArcGI
 
 The active Peru services have live response evidence for Moquegua (`-17.193, -70.934`). CENEPRED returned one district feature in each scenario; SERNANP, Osinergmin and both Cultura layers returned zero features at that exact point. On 23-Oct-2026 the same connector was exercised with a Moquegua–Ilo corridor and a small Moquegua polygon: CENEPRED flood risk returned 5 and 3 features respectively, while Osinergmin returned 16 and 3; SERNANP and registered SIGDA returned zero for both geometries. Every source returned `READY` and `REAL_DATA`. All zeros are retained as neutral query results, not as claims of absence. ANA, SENACE, Defensoría and community layers remain pending and are not represented by substitutes.
 
+## NASA LHASA route verification
+
+The current operational route is NASA Earthdata GIS, not the previously tested NCCS address. The public ImageServers are `Landslides/LHASA_Hazard_Yesterday`, `LHASA_Hazard_Today`, and `LHASA_Hazard_Tomorrow`; the `Today` service is the canonical candidate for K1b. NASA declares WGS84 (`EPSG:4326`), 30 arcseconds (approximately 1 km), one raster band, coverage from 60°S to 60°N, and twice-daily updates. It exposes `Get Samples`, `Identify`, and `Export Image` operations. LHASA 2.x is a machine-learning situational-awareness product based on GPM rainfall, SMAP soil moisture and susceptibility factors; it is not a substitute for a local geotechnical study. The route is verified, but the connector stays pending until the numeric value semantics, nodata, timestamps, citation and point/area sampling are tested against the live service.
+
 ## COES generation labels (`in-coes`)
 
-The source is the official [COES Medidores de Generación](https://www.coes.org.pe/Portal/mediciones/medidoresgeneracion) page. Its public interface explicitly offers CSV and Excel export and constrains each export to at most one month. The public [Web API help](https://appserver.coes.org.pe/waMediciones/Help) documents 96 quarter-hour measurements per day. Before downloading, the COES policies and footer were reviewed: COES publishes general, occupational, personal-data and WhatsApp policies, but no specific data-reuse license or website terms were found. Therefore the connector:
+The connector uses the official [COES generation portal](https://www.coes.org.pe/Portal/portalinformacion/generacion) and its public `ExportarGeneracion` endpoint. It requests one closed month at a time with `indicador=1` (medidores), pauses between network requests, stores each original XLSX by SHA-256, and reads only the `PRODUCCIÓN DIARIA` sheet. The provider columns are `FECHA`, `EMPRESA`, `GRUPO/CENTRAL`, `TIPO GENERACIÓN`, and `TOTAL`. The portal labels production as **MWh**, so `TOTAL` is summed directly by exact central name and month; the connector does not integrate a 15-minute MW series.
 
-- uses the portal's own monthly CSV export, with at most three concurrent requests;
-- attributes COES and preserves each original CSV by SHA-256;
-- does not redistribute the original export and records the licensing caveat;
-- requests only `SOLAR` and `Potencia Activa (MW)`;
-- calculates monthly energy as `sum(MW × 0.25 h)` without clipping negative readings;
-- marks a requested plant `DATA_UNAVAILABLE` if its exact official column is absent, rather than substituting another plant.
+Only rows whose exact normalized generation type is `SOLAR` are included. All provider plant names are retained, rather than replacing an absent requested plant with a similar facility. Missing plant-months are emitted with null generation and `PARTIAL` status. Raw files are not redistributed. The COES pages reviewed on 23-Oct-2026 did not publish specific data-reuse terms or an open license; the API therefore cites **COES-SINAC**, records that caveat, and awaits Christian's courtesy email.
 
-All six requested plants were present in the September 2026 export under these exact provider columns:
+Independent live verification of the September 2026 XLSX found 17 solar central names and 30 daily observations for each of the following priority facilities:
 
-| Requested label | Exact COES column(s) | Sep-2026 MWh | Completeness |
-|---|---|---:|---:|
-| Rubí | `ORYGEN PERU S.A.A. -RUBI_CIRCUITO_1-5` + `ORYGEN PERU S.A.A. -RUBI_CIRCUITO_6-10` | 37,891.383250 | 100% |
-| Intipampa | `ENGIE ENERGIA PERU S.A.A. -INTIPAMPA_SOLAR` | 9,650.763435 | 100% |
-| Moquegua FV | `MOQUEGUA FV S.A.C. -MOQUEGUA_SOLAR` | 3,717.629000 | 100% |
-| Majes | `MAJES ARCUS S.A.C. -GTSMAJES` | 3,909.259913 | 100% |
-| Repartición | `REPARTICIÓN ARCUS S.A.C. -GTSREPAR` | 3,871.879248 | 100% |
-| Panamericana | `PANAMERICANA  SOLAR SAC. -PANAM_SOLAR` | 4,685.059750 | 100% |
+| Exact COES central | Sep-2026 MWh | Daily value on 01-Sep where checked |
+|---|---:|---:|
+| `CLEMESI` | 28,053.11 | 981.01 |
+| `EXPANSIÓN INTIPAMPA` | 13,460.82 | — |
+| `INTIPAMPA` | 9,650.78 | 333.28 |
+| `MAJES` | 3,909.25 | — |
+| `MOQUEGUA-SOLAR` | 3,717.63 | — |
+| `PANAMERICANA-SOLAR` | 4,685.06 | — |
+| `REPARTICION` | 3,871.90 | — |
+| `RUBI` | 37,891.41 | — |
 
-Downloaded at `2026-10-23T03:12:18Z` (`2026-10-22` in Peru). These are `REAL_DATA` labels from the provider, not model estimates. Installed capacity, curtailment and outage flags are still needed before converting generation into a neural-network target such as capacity factor.
+Coordinates and installed/effective capacity are requested from the official Osinergmin GISEM `MapaSEIN_Operacion` Solar layer (20), in WGS84. A capacity factor is calculated only when the normalized GISEM name is an exact, unique match and installed capacity is positive: `MWh / (MW × 24 × calendar days)`. The live GISEM query returned an ArcGIS 503 during QA on 23-Oct-2026; consequently the generation remains `REAL_DATA`, while unmatched capacity, coordinates and capacity factor are explicitly `DATA_UNAVAILABLE`. No fuzzy match or substitution is made. Curtailment, outages and maintenance still need a separate verified source before these labels can train the proposed calibrator.

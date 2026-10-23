@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     earthdata_password: str | None = None
     appeears_api_base: str = "https://appeears.earthdatacloud.nasa.gov/api"
     coes_export_url: str = "https://www.coes.org.pe/Portal/portalinformacion/ExportarGeneracion"
+    gisem_solar_url: str = "https://gisem.osinergmin.gob.pe/serverch/rest/services/Electricidad/MapaSEIN_Operacion/MapServer/20/query"
     # Asistente (C4): sin clave responde en modo reglas. El modelo se descubre con ListModels si no se fija aquí.
     gemini_api_key: str | None = None
     gemini_model: str | None = None

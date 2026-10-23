@@ -124,17 +124,32 @@ class COESMonthlyRequest(BaseModel):
 class COESMonthlyObservation(BaseModel):
     month: str
     generation_mwh: float | None
-    intervals_expected: int
-    intervals_observed: int
+    days_expected: int
+    days_observed: int
     completeness_percent: float
+    capacity_factor_percent: float | None = None
     provenance: Provenance
     downloaded_at: datetime
 
 
-class COESPlantSeries(BaseModel):
-    plant: Literal["Rubí", "Intipampa", "Moquegua FV", "Majes", "Repartición", "Panamericana"]
-    provider_columns: list[str]
+class COESCapacityReference(BaseModel):
     status: Literal["READY", "DATA_UNAVAILABLE"]
+    provider_name: str | None = None
+    installed_capacity_mw: float | None = None
+    effective_capacity_mw: float | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+    source_url: str
+    provenance: Provenance
+    limitations: list[str] = Field(default_factory=list)
+
+
+class COESPlantSeries(BaseModel):
+    plant: str
+    companies: list[str]
+    generation_type: str
+    status: Literal["READY", "PARTIAL", "DATA_UNAVAILABLE"]
+    capacity_reference: COESCapacityReference
     observations: list[COESMonthlyObservation]
     limitations: list[str]
 
@@ -142,9 +157,9 @@ class COESPlantSeries(BaseModel):
 class COESMonthlyResponse(BaseModel):
     generated_at: datetime
     source_id: str = "in-coes"
-    dataset: str = "COES · Medidores de Generación · Potencia Activa"
+    dataset: str = "COES-SINAC · Producción diaria por central · Medidores"
     unit: str = "MWh"
-    temporal_resolution: str = "monthly aggregation of 15-minute active-power measurements"
+    temporal_resolution: str = "monthly aggregation of daily metered generation"
     provenance: Provenance = Provenance.REAL
     source_url: str
     downloaded_at: datetime

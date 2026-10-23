@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Última actualización: 2026-10-22
+Última actualización: 2026-10-23
 
 ## Versión operativa verificada
 
@@ -120,8 +120,11 @@
 - AppEEARS opera con tareas asíncronas de punto y área para MOD13Q1.061 (NDVI/EVI y VI Quality) y MOD44W.061 (agua y QA). El token Earthdata solo vive en memoria, se renueva ante vencimiento/403 y se revoca al terminar cada operación.
 - La tarea real `975994a2-f686-4742-9805-714ad035c0c8` llegó a READY. Sus dos CSV se descargaron mediante el conector, coincidieron con los SHA-256 oficiales y expusieron los valores escalados y campos QA esperados para Moquegua.
 - El endpoint territorial consulta puntos, corredores y polígonos en CENEPRED, SERNANP, Osinergmin GISEM y Cultura SIGDA usando intersección en EPSG:4326. Un resultado de cero entidades permanece neutral y nunca se convierte en «no existe riesgo/restricción».
-- El conector COES agrega potencia activa de 15 minutos a MWh mensuales para los seis nombres solicitados, sin sustituciones. Septiembre de 2026 fue contrastado con una segunda implementación; los términos públicos no declaran una licencia abierta explícita, por lo que la reutilización conserva atribución y cautela.
-- INGEMMET permanece `DATA_UNAVAILABLE` porque la cadena TLS oficial no pasa validación estricta; SENAMHI tiene catálogo WFS accesible, pero aún falta seleccionar una capa de amenaza concreta. IMERG, LHASA, ANA, SENACE, Defensoría y comunidades siguen pendientes.
+- El conector COES consume el XLSX oficial `ExportarGeneracion` con `indicador=1`, un mes por pedido, pausa entre solicitudes y caché SHA-256. Suma directamente la producción diaria `TOTAL` en MWh por nombre exacto de central solar; no integra ni sustituye series. La contraprueba real de septiembre de 2026 encontró 17 centrales y reprodujo, entre otros, Clemesí 28,053.11 MWh y Rubí 37,891.41 MWh.
+- El cruce de potencia instalada y coordenadas usa la capa Solar vigente de Osinergmin GISEM y calcula factor de planta solo con coincidencia exacta. GISEM devolvió 503 durante el QA del 23-oct-2026, por lo que esos campos quedan `DATA_UNAVAILABLE` sin ocultar la generación COES.
+- La ruta vigente de NASA LHASA fue confirmada en Earthdata GIS (`LHASA_Hazard_Today`, WGS84, 30 arcsec, dos actualizaciones diarias). El conector permanece pendiente hasta verificar valores, nodata y muestreo.
+- Puerta de la rama: 124/124 pruebas backend, build Next.js aprobado, auditoría npm con 0 vulnerabilidades y auditor científico `ok: true`; no se inició 3100/8000 ni se modificó `frontend/**`.
+- INGEMMET permanece `DATA_UNAVAILABLE` porque la cadena TLS oficial no pasa validación estricta; SENAMHI tiene catálogo WFS accesible, pero aún falta seleccionar una capa de amenaza concreta. ANA, SENACE, Defensoría y comunidades siguen pendientes.
 
 ## Brechas prioritarias
 

@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T16:00:00Z",
+  updatedAt: "2026-10-23T13:13:40Z",
   updatedBy: "Codex",
 
   statuses: {
@@ -121,12 +121,13 @@ window.DOP_DATA = {
       blocker: "Requiere coordenadas verificadas de las centrales y el muestreo por punto.", evidence: [] },
     { id: "labels", code: "03B", name: "Etiquetas reales", phase: 4, row: 2, owner: "Codex", status: "EN_CURSO",
       purpose: "Factor de planta mensual de centrales fotovoltaicas reales del sur del Perú.",
-      inputs: ["Generación publicada por el COES (por verificar)", "Potencia instalada", "Indisponibilidades y recortes"],
+      inputs: ["Generación diaria COES-SINAC en MWh (verificada)", "Potencia instalada GISEM", "Indisponibilidades y recortes"],
       output: "Etiquetas planta-mes con fuente, fecha y marcas de recorte o mantenimiento.",
       acceptance: "Acceso y licencia verificados; definición pre-registrada; tamaño muestral reportado.",
-      blocker: "La generación mensual ya está verificada; faltan potencia instalada, recortes/indisponibilidades y confirmar licencia de reutilización para formar el factor de planta.",
+      blocker: "El conector de generación está verificado; GISEM devolvió 503 durante QA y aún faltan recortes/indisponibilidades y confirmar licencia de reutilización para formar el factor de planta.",
       evidence: [
-        { label: "Seis centrales · Sep-2026 · 100% de intervalos", ref: "DATA_SOURCES.md · backend/tests/test_coes.py" },
+        { label: "17 centrales solares · Sep-2026 · XLSX diario oficial", ref: "DATA_SOURCES.md · backend/tests/test_coes.py" },
+        { label: "Clemesí 28,053.11 MWh · Rubí 37,891.41 MWh", ref: "contraprueba real 23-oct-2026" },
       ] },
     { id: "splits", code: "03C", name: "Partición sin fuga", phase: 4, row: 3, owner: "Claude", status: "BLOQUEADO",
       purpose: "Separar por central (deja una fuera) y por tiempo (último año reservado).",
@@ -202,7 +203,7 @@ window.DOP_DATA = {
       { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; caché real 2 de 2 READY en 470.6 ms.", evidence: ["df128a0", "7a42125", "14 pruebas K0", "contraste ZIP independiente"] },
       { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Claude", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K1b", dopNode: "gpm", detail: "Activo vía NASA POWER (IMERG_PRECTOT, diario UTC, hasta ~5 semanas atrás): contraste satelital de los extremos ETCCDI (ADR-021). Desmintió los 314 mm de MERRA-2 en Moquegua (2022).", evidence: ["175b07e", "107 pruebas", "merge 63e0f36"] },
       { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", dopNode: "appeears", detail: "MOD13Q1.061 NDVI/EVI + QA y MOD44W.061 agua + QA; tarea real READY, descargas verificadas por SHA-256 y campos QA inspeccionados.", evidence: ["AppEEARS task 975994a2-f686-4742-9805-714ad035c0c8", "SHA-256 e6bb8c294237… / c7466b67304c…", "backend/tests/test_appeears.py"] },
-      { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Susceptibilidad y alerta de deslizamientos, según su propósito y límites." },
+      { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "EN_CURSO", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Ruta vigente verificada: NASA Earthdata GIS LHASA_Hazard_Today ImageServer, WGS84, 30 arcsec (~1 km), actualización dos veces al día. Falta validar semántica numérica, nodata y muestreo antes de integrarla.", evidence: ["DATA_SOURCES.md · verificación 23-oct-2026"] },
       { id: "in-gibs", layer: "in", group: "NASA", name: "Capas visuales NASA GIBS", owner: "Claude", status: "PENDIENTE", provenance: "REAL_DATA", planTask: "C6", detail: "Verificadas 23-oct: temperatura del mar y su anomalía (GHRSST MUR), viento sobre el mar (AMSR2), lluvia (IMERG), temperatura de superficie y NDVI (MODIS), humedad del suelo. Solo visualización: no entran en el cálculo." },
       { id: "in-grid", layer: "in", group: "Territorio Perú", name: "Red eléctrica y subestaciones", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", dopNode: "peru", detail: "Osinergmin GISEM: transmisión y subestaciones en operación; no afirma capacidad de conexión.", evidence: ["punto/corredor/polígono reales · 23-oct-2026", "backend/tests/test_territory.py"] },
       { id: "in-protected", layer: "in", group: "Territorio Perú", name: "Áreas protegidas", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", dopNode: "peru", detail: "SERNANP ANP nacionales, regionales y privadas; cero intersecciones no prueba ausencia.", evidence: ["punto/corredor/polígono reales · 23-oct-2026", "DATA_SOURCES.md"] },
@@ -214,7 +215,7 @@ window.DOP_DATA = {
       { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "LISTO_PARA_QA", provenance: "USER_ASSUMPTION", detail: "Puntos, y corredores y polígonos dibujados o cargados (GeoJSON RFC 7946, sin reparaciones ocultas), validados y medidos por /geospatial/inspect y exportables para K1." },
       { id: "in-assumptions", layer: "in", group: "Usuario", name: "Supuestos financieros y técnicos", owner: "Claude", status: "VERIFICADO", provenance: "USER_ASSUMPTION", detail: "CAPEX, OPEX, precio, tasa, horizonte, performance ratio y rangos de sensibilidad (±)." },
       { id: "in-sector", layer: "in", group: "Usuario", name: "Sector y criterios de comparación", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Hoy solo solar; ponderaciones por sector pendientes." },
-      { id: "in-coes", layer: "in", group: "Resultados reales", name: "Generación real por central (COES)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "labels", detail: "Fuente verificada 23-oct: exportación pública ExportarGeneracion (xlsx, producción diaria por central y tipo, medidores). Incluye Intipampa, Moquegua FV, Majes, Repartición, San Martín Solar, Clemesí, Sunny y Matarani. Sin términos de uso publicados: descarga mensual, en caché, con cita a COES-SINAC. Falta el conector (Codex)." },
+      { id: "in-coes", layer: "in", group: "Resultados reales", name: "Generación real por central (COES)", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K1b", dopNode: "labels", detail: "Conector XLSX oficial: indicador=1, descarga mensual secuencial con pausa y caché SHA-256; agrega TOTAL diario en MWh por nombre exacto de central y cita COES-SINAC. Sep-2026: 17 solares; Clemesí 28,053.11 MWh y Rubí 37,891.41 MWh. El factor de planta se abstiene si GISEM no confirma potencia y coordenadas.", evidence: ["backend/tests/test_coes.py", "DATA_SOURCES.md · contraprueba real 23-oct-2026"] },
       { id: "in-events", layer: "in", group: "Resultados reales", name: "Emergencias e interrupciones viales", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", detail: "INDECI y MTC: eventos reales para validar la exposición del corredor." },
 
       // Capa A
@@ -308,7 +309,7 @@ window.DOP_DATA = {
       { id: "in-dem", label: "Teselas NASADEM HGT/SC", provenance: "REAL_DATA", entersAt: "op2" },
       { id: "in-imerg", label: "GPM IMERG (contraste de extremos)", provenance: "REAL_DATA", entersAt: "op5" },
       { id: "in-peru", label: "AppEEARS · capas Perú", provenance: "REAL_DATA", entersAt: "op5" },
-      { id: "in-labels", label: "Generación real COES (etiquetas)", provenance: "DATA_UNAVAILABLE", entersAt: "op7" },
+      { id: "in-labels", label: "Generación real COES (etiquetas)", provenance: "REAL_DATA", entersAt: "op7" },
       { id: "in-user", label: "Supuestos del usuario", provenance: "USER_ASSUMPTION", entersAt: "op10" },
     ],
     steps: [
@@ -336,7 +337,7 @@ window.DOP_DATA = {
     name: "Calibrador de rendimiento fotovoltaico",
     decision: "Corregir el rendimiento esperado (performance ratio) que hoy entra como supuesto fijo al VAN, y cuantificar las pérdidas térmicas que la tendencia de temperatura vuelve materiales.",
     target: "Factor de planta mensual de cada central fotovoltaica (energía generada ÷ energía máxima posible con su potencia instalada).",
-    labels: "Generación mensual publicada por el COES para centrales del sur del Perú en Moquegua, Arequipa y Tacna. Acceso, licencia, recortes e indisponibilidades deben verificarse antes de usarla (tarea de Codex).",
+    labels: "Generación diaria publicada por COES-SINAC, agregada a planta-mes en MWh y verificada para septiembre de 2026. La licencia, potencia instalada exacta, recortes e indisponibilidades deben resolverse antes de usarla para entrenar.",
     features: [
       "NASA POWER en la celda de cada central: irradiancia global, temperatura a 2 m, viento a 10 m y precipitación, agregadas por mes",
       "Relieve NASADEM del emplazamiento: pendiente y orientación",
@@ -369,7 +370,7 @@ window.DOP_DATA = {
     { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "PENDIENTE", ref: "depende de K5 y K1", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
     { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "PENDIENTE", ref: "—", nodes: ["sampling"] },
-    { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS y capas activas verificadas; corregir conector COES XLSX y confirmar LHASA", nodes: ["gpm", "peru", "labels"] },
+    { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS, capas activas y COES XLSX verificados; ruta LHASA confirmada, conector LHASA y fuentes Perú restantes pendientes", nodes: ["gpm", "peru", "labels"] },
     { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "PENDIENTE", ref: "COD-AB Perú, CC BY-IGO", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
     { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
