@@ -335,3 +335,13 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 - Grilla de tendencias por celda en el mapa, con leyenda y cambio de variable.
 - Etiqueta de escala por territorio.
 - 145/145 pruebas. QA `scripts/qa/territory_ui.cjs` en 1440/390 sin errores.
+
+## 2026-10-23 · Codex · codex/nasadem-s17w071 · ece205c · diagnóstico de acceso NASADEM
+
+**Resultado:** `NASADEM_HGT_s17w071` y `NASADEM_SC_s17w071` sí existen en CMR (`G2816776437-LPCLOUD` y `G2816803398-LPCLOUD`) y sus rutas ZIP protegidas son correctas. Lecturas autenticadas de un byte devolvieron HTTP 401 en ambos; el mismo token produjo 401 en `s18w071` y `s17w072`, previamente validados. El JWT local declara vigencia hasta el 21-dic-2026, de modo que la evidencia apunta a token rechazado/revocado o autorización Earthdata, no a un gránulo faltante.
+
+**Cambio:** el conector diferencia HTTP 401 («renueve `EARTHDATA_TOKEN`») de HTTP 403 («autorice LP DAAC») y el log ya no dice que una tesela específica «no tiene acceso». La caché validada existente permanece utilizable; nuevas descargas quedan `METADATA_ONLY` tras el rechazo y ningún secreto se registra.
+
+**Puerta:** 15/15 pruebas NASADEM; 146/146 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida. Sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
+
+**Bloqueo externo:** Christian debe renovar el token o reautorizar la aplicación LP DAAC antes de precargar `s17w071`. Tras reemplazar el token, la clave de fallo cambia por huella y el conector vuelve a intentar automáticamente. Rama no fusionada ni subida; requiere aprobación.
