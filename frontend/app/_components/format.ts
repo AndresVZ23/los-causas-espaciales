@@ -1,7 +1,9 @@
 // Las unidades de presentación llegan del backend (`display_unit`); aquí solo se formatean cifras.
 
-// Mismo orden que los marcadores del mapa: sitio principal en cian, comparador en blanco frío.
-export const SITE_COLORS = ["#38d9c3", "#e8eaed"];
+// Mismo orden que los marcadores del mapa: sitio principal en cian, comparador en blanco frío; 3.º y 4.º sujeto
+// (territorios) en ámbar y lavanda. Separación para daltonismo validada (ΔE ≥ 9.4 entre vecinos); la serie se
+// nombra siempre junto a su color, así que la identidad no depende solo del color.
+export const SITE_COLORS = ["#38d9c3", "#e8eaed", "#e09040", "#9d8cff"];
 export function siteColor(index: number) { return SITE_COLORS[index % SITE_COLORS.length]; }
 
 export function formatMoney(value: number) { return new Intl.NumberFormat("es-PE", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value); }

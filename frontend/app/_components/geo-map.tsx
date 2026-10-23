@@ -3,7 +3,11 @@
 import * as maplibregl from "maplibre-gl";
 import { useEffect, useRef } from "react";
 import type { StudyShape } from "./geojson-import";
+import type { VisualLayerState } from "./types";
 import type { Draft } from "./use-study-geometries";
+
+const VISUAL_SOURCE = "visual-gibs";
+const VISUAL_LAYER = "visual-gibs-layer";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
@@ -12,6 +16,9 @@ export type TerrainOverlay = { url: string; bounds: [number, number, number, num
 // Geometrías de estudio (corredores y polígonos) y el borrador en curso; coordenadas GeoJSON longitud-latitud.
 export type MapGeometry = { id: string; name: string; geometry: StudyShape; valid: boolean };
 export type MapDrawing = { draft: Draft | null; onVertex: (longitude: number, latitude: number) => void; onFinish: () => void };
+// Territorios oficiales elegidos y la grilla de tendencias por celda (color y opacidad ya calculados por la consola).
+export type MapTerritory = { id: string; label: string; geometry: GeoJSON.Geometry };
+export type MapCell = { id: string; bounds: [number, number, number, number]; color: string; opacity: number; significant: boolean; label: string };
 
 const STUDY_COLOR = "#b49cff"; // distinto de los sitios (cian y blanco) y de los colores de estado
 const EMPTY: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -33,9 +40,23 @@ function draftFeatures(draft: Draft | null): GeoJSON.FeatureCollection {
   };
 }
 
-export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null }: {
+function cellFeatures(cells: MapCell[]): GeoJSON.FeatureCollection {
+  return {
+    type: "FeatureCollection",
+    features: cells.map((cell) => {
+      const [west, south, east, north] = cell.bounds;
+      return {
+        type: "Feature", properties: { color: cell.color, opacity: cell.opacity, significant: cell.significant, label: cell.label },
+        geometry: { type: "Polygon", coordinates: [[[west, south], [east, south], [east, north], [west, north], [west, south]]] },
+      };
+    }),
+  };
+}
+
+export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null, territories = [], cells = [] }: {
   sites: Point[]; onPick: (latitude: number, longitude: number) => void; terrainOverlay: TerrainOverlay | null; showTerrain: boolean;
-  geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null;
+  geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null; visualLayer?: VisualLayerState | null;
+  territories?: MapTerritory[]; cells?: MapCell[];
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -81,6 +102,19 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
         },
       });
       map.addLayer({ id: "comparison-axis-line", type: "line", source: "comparison-axis", paint: { "line-color": "#38d9c3", "line-width": 1.5, "line-dasharray": [2, 2] } });
+      map.addSource("cells", { type: "geojson", data: EMPTY });
+      map.addLayer({ id: "cells-fill", type: "fill", source: "cells", paint: { "fill-color": ["get", "color"], "fill-opacity": ["get", "opacity"] } });
+      map.addLayer({ id: "cells-line", type: "line", source: "cells",
+        paint: { "line-color": ["case", ["get", "significant"], ["get", "color"], "#818b94"], "line-width": 1, "line-opacity": 0.8, "line-dasharray": [2, 2] } });
+      map.addSource("territories", { type: "geojson", data: EMPTY });
+      map.addLayer({ id: "territories-fill", type: "fill", source: "territories", paint: { "fill-color": "#e8eaed", "fill-opacity": 0.05 } });
+      map.addLayer({ id: "territories-line", type: "line", source: "territories", paint: { "line-color": "#e8eaed", "line-width": 1.6 } });
+      const popup = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 8 });
+      map.on("mousemove", "cells-fill", (event) => {
+        const label = event.features?.[0]?.properties?.label;
+        if (label) popup.setLngLat(event.lngLat).setText(String(label)).addTo(map);
+      });
+      map.on("mouseleave", "cells-fill", () => popup.remove());
       map.addSource("study", { type: "geojson", data: EMPTY });
       map.addLayer({ id: "study-fill", type: "fill", source: "study", filter: ["==", ["geometry-type"], "Polygon"],
         paint: { "fill-color": STUDY_COLOR, "fill-opacity": ["case", ["get", "selected"], 0.28, 0.14] } });
@@ -162,6 +196,56 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     whenReady(map, () => (map.getSource("draft") as maplibregl.GeoJSONSource | undefined)?.setData(draftFeatures(draft)));
     map.getCanvas().style.cursor = draft ? "crosshair" : "";
   }, [drawing?.draft]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(map, () => {
+      (map.getSource("territories") as maplibregl.GeoJSONSource | undefined)?.setData({
+        type: "FeatureCollection", features: territories.map((item) => ({ type: "Feature", properties: { label: item.label }, geometry: item.geometry })),
+      });
+    });
+    if (!territories.length) return;
+    // Encuadra los territorios y los sitios juntos al cambiar la selección.
+    const bounds = new maplibregl.LngLatBounds();
+    const walk = (coordinates: unknown): void => {
+      if (Array.isArray(coordinates) && typeof coordinates[0] === "number") bounds.extend(coordinates as [number, number]);
+      else if (Array.isArray(coordinates)) coordinates.forEach(walk);
+    };
+    territories.forEach((item) => "coordinates" in item.geometry && walk(item.geometry.coordinates));
+    sitesRef.current.forEach((site) => bounds.extend([site.longitude, site.latitude]));
+    map.fitBounds(bounds, { padding: 60, maxZoom: 9, duration: 650 });
+  }, [territories]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(map, () => (map.getSource("cells") as maplibregl.GeoJSONSource | undefined)?.setData(cellFeatures(cells)));
+  }, [cells]);
+
+  // Capa visual GIBS: sobre el mapa base y bajo todo lo demás. Cambiar solo la opacidad no recarga teselas.
+  const visualUrl = visualLayer ? visualLayer.layer.tile_url.replace("{time}", visualLayer.date) : null;
+  const visualZoom = visualLayer?.layer.max_zoom ?? null;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    whenReady(map, () => {
+      if (map.getLayer(VISUAL_LAYER)) map.removeLayer(VISUAL_LAYER);
+      if (map.getSource(VISUAL_SOURCE)) map.removeSource(VISUAL_SOURCE);
+      if (!visualUrl || visualZoom == null) return;
+      map.addSource(VISUAL_SOURCE, { type: "raster", tiles: [visualUrl], tileSize: 256, maxzoom: visualZoom, attribution: "NASA EOSDIS GIBS" });
+      const above = ["nasadem-preview-layer", "comparison-axis-line"].find((id) => map.getLayer(id));
+      map.addLayer({ id: VISUAL_LAYER, type: "raster", source: VISUAL_SOURCE, paint: { "raster-opacity": visualLayer?.opacity ?? 0.75 } }, above);
+    });
+    // La opacidad se aplica en su propio efecto.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visualUrl, visualZoom]);
+  const visualOpacity = visualLayer?.opacity ?? null;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || visualOpacity == null) return;
+    whenReady(map, () => { if (map.getLayer(VISUAL_LAYER)) map.setPaintProperty(VISUAL_LAYER, "raster-opacity", visualOpacity); });
+  }, [visualOpacity]);
 
   useEffect(() => {
     const map = mapRef.current;

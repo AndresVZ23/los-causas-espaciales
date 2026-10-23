@@ -118,6 +118,30 @@ def _pad_axis(minimum: float, maximum: float, lower_limit: float, upper_limit: f
     return minimum, maximum
 
 
+def aggregate_cells(cells: list[PowerCellSeries]) -> list[SpatialAggregateObservation]:
+    """Promedio diario ponderado por área entre celdas y desviación estándar ponderada; el peso se renormaliza
+    sobre las celdas con dato ese día. Extraída sin cambios para reutilizarla en el análisis territorial (Claude)."""
+    by_date: dict[date, list[tuple[float, float]]] = defaultdict(list)
+    for cell in cells:
+        for observation in cell.observations:
+            by_date[observation.timestamp].append((observation.value, cell.weight))
+    aggregate = []
+    for stamp, values_and_weights in sorted(by_date.items()):
+        available_weight = sum(weight for _, weight in values_and_weights)
+        weighted_mean = sum(value * weight for value, weight in values_and_weights) / available_weight
+        variance = sum(weight * (value - weighted_mean) ** 2 for value, weight in values_and_weights) / available_weight
+        values = [value for value, _ in values_and_weights]
+        aggregate.append(SpatialAggregateObservation(
+            timestamp=stamp,
+            value=weighted_mean,
+            dispersion_stddev=math.sqrt(max(variance, 0)),
+            minimum=min(values),
+            maximum=max(values),
+            contributing_cells=len(values),
+        ))
+    return aggregate
+
+
 def _request_bounds(geometry) -> tuple[float, float, float, float]:
     minimum_x, minimum_y, maximum_x, maximum_y = geometry.bounds
     minimum_x, maximum_x = _pad_axis(minimum_x, maximum_x, -180, 180)
@@ -293,24 +317,7 @@ class RegionalPowerConnector:
             observations=[Observation(timestamp=stamp, value=value) for stamp, value in sorted(series.items())],
         ) for longitude, latitude, cell_bounds, overlap, series, _ in intersecting]
 
-        by_date: dict[date, list[tuple[float, float]]] = defaultdict(list)
-        for cell in cells:
-            for observation in cell.observations:
-                by_date[observation.timestamp].append((observation.value, cell.weight))
-        aggregate = []
-        for stamp, values_and_weights in sorted(by_date.items()):
-            available_weight = sum(weight for _, weight in values_and_weights)
-            weighted_mean = sum(value * weight for value, weight in values_and_weights) / available_weight
-            variance = sum(weight * (value - weighted_mean) ** 2 for value, weight in values_and_weights) / available_weight
-            values = [value for value, _ in values_and_weights]
-            aggregate.append(SpatialAggregateObservation(
-                timestamp=stamp,
-                value=weighted_mean,
-                dispersion_stddev=math.sqrt(max(variance, 0)),
-                minimum=min(values),
-                maximum=max(values),
-                contributing_cells=len(values),
-            ))
+        aggregate = aggregate_cells(cells)
         metadata = payload.get("parameters", {}).get(request.variable, {})
         header = payload.get("header", {})
         source = SourceMetadata(

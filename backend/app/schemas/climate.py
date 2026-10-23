@@ -2,10 +2,12 @@
 
 from datetime import date
 from enum import StrEnum
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
 from .analysis import Point, TrendResult
+from .territory import TerritoryLevel
 from .pipeline import VariableSummary
 from .screening import AnnualObservation, ScreeningEnvelope, Sector
 
@@ -61,20 +63,61 @@ class ExtremeIndexSummary(BaseModel):
     countercheck: ExtremeCountercheck | None = None
 
 
+class CellTrend(BaseModel):
+    """Tendencia de una variable en una celda NASA POWER del territorio (Hamed–Rao + BH entre celdas)."""
+
+    cell_id: str
+    center: Point
+    bounds: tuple[float, float, float, float] = Field(description="Oeste, sur, este, norte de la celda (WGS84).")
+    weight: float = Field(description="Peso por área de intersección con el territorio.")
+    variable: str
+    direction: str
+    slope_per_year: float | None
+    p_value: float | None
+    adjusted_p_value: float | None
+    significant: bool
+    valid_years: int
+
+
+class TerritoryInfo(BaseModel):
+    level: TerritoryLevel
+    ubigeo: str
+    name: str
+    area_km2: float
+    mode: Literal["REGIONAL", "POINT"] = Field(description="POINT: el territorio es menor que una celda y se analiza como punto.")
+    cells: int
+    coverage_percent: float
+    grid_degrees: tuple[float, float] | None
+    geometry: dict[str, Any] = Field(description="Límite simplificado del IGN (referencia web, no catastral).")
+    source: str = "IGN · COD-AB Perú vía OCHA/HDX (CC BY-IGO); trazos de 2015"
+
+
 class ClimateSiteResult(BaseModel):
     location: Point
     variables: list[VariableSummary]
     extremes: list[ExtremeIndexSummary]
     wet_day_p95_mm: float | None = Field(description="Percentil 95 de los días húmedos del período, umbral de R95P.")
+    territory: TerritoryInfo | None = None
+    cell_trends: list[CellTrend] = Field(default_factory=list)
+
+
+class TerritoryRef(BaseModel):
+    level: TerritoryLevel
+    ubigeo: str = Field(pattern=r"^\d{2}(\d{2})?(\d{2})?$")
 
 
 class ClimateScreeningRequest(BaseModel):
-    sites: list[Point] = Field(min_length=1, max_length=4)
+    sites: list[Point] = Field(default_factory=list, max_length=4)
+    territories: list[TerritoryRef] = Field(default_factory=list, max_length=4)
     start_date: date
     end_date: date
 
     @model_validator(mode="after")
     def validate_period(self):
+        if not 1 <= len(self.sites) + len(self.territories) <= 4:
+            raise ValueError("Se analizan entre 1 y 4 sujetos en total, entre sitios y territorios.")
+        if len({(item.level, item.ubigeo) for item in self.territories}) != len(self.territories):
+            raise ValueError("Hay territorios repetidos.")
         if self.end_date <= self.start_date:
             raise ValueError("La fecha final debe ser posterior a la fecha inicial.")
         if (self.end_date - self.start_date).days < 365 * 10:

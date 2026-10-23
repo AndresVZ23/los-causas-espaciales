@@ -123,3 +123,33 @@ Con datos reales, Arequipa (67) y Moquegua (66) quedan en empate práctico: Areq
 Decisión de Christian (2026-10-23): ningún gasto adicional. El asistente (C4, `POST /api/v1/assistant/ask`) responde **por defecto con reglas**: arma la respuesta con los textos y cifras del propio análisis, sin llamadas externas ni límite de uso. Cubre las 5 preguntas NASA, la tendencia y el año en curso por variable, los extremos de lluvia con su contraste IMERG, el puntaje, los escenarios del VAN, el relieve, las brechas y las fuentes, y filtra por el sitio que nombra la pregunta.
 
 Gemini es **opcional y por pregunta**. El botón «Preguntar a Gemini» solo aparece si hay `GEMINI_API_KEY` y avisa que gasta la cuota gratuita. Se usa la API REST con `httpx`, sin SDK nuevo, y el alias estable `gemini-flash-latest` (verificado con ListModels, que no consume cuota). El contexto es solo el análisis, a temperatura 0.2, y la respuesta debe citar sus fuentes. El backend verifica que cada cifra de la respuesta salga del contexto, admitiendo redondeo, %, millones y por década. Si alguna no aparece, si Gemini falla o si se agota la cuota, se responde con reglas y se explica por qué. Las pruebas simulan Gemini sin red y afirman que una pregunta normal nunca lo llama.
+## ADR-024 — Capas visuales NASA GIBS: fechas leídas de NASA y verificadas con una tesela
+
+La consola ofrece ocho capas visuales de NASA GIBS (WMTS, EPSG:3857):
+- color real del día;
+- temperatura del mar y su anomalía (GHRSST MUR);
+- viento sobre el mar (AMSR2);
+- lluvia (IMERG);
+- temperatura de la superficie (MODIS);
+- vegetación (NDVI de 16 días);
+- humedad del suelo (SMAP L4).
+
+La lista curada vive en `backend/app/maplayers/catalog.py`. La fecha más reciente, el nivel máximo de zoom, el formato y la leyenda oficial se leen de las capacidades de GIBS y se guardan 6 h en caché, en `GET /api/v1/map/layers`.
+
+La fecha `Default` de GIBS no siempre tiene teselas: AMSR2 declara el 01-09-2025, que da 404, mientras el 31-08-2025 sí existe. Por eso se pide una tesela z=2 sobre el Perú y se retrocede período a período hasta encontrar una publicada, y se avisa del ajuste. Una serie sin datos hace más de 30 días se marca como detenida. Si GIBS no responde, se sirve la lista sin fechas, con aviso.
+
+Son capas **visuales**: la etiqueta y la leyenda dicen «no entra en el cálculo». Mientras hay una capa activa se quita el filtro de color del lienzo, para que los colores coincidan con la leyenda oficial.
+## ADR-025 — Análisis por territorio: celdas descubiertas por el regional y pedidas como punto
+
+El 2026-10-23 se verificó que el endpoint regional diario de NASA POWER rechaza períodos mayores de 366 días con un 422: «Please do not request a time period greater than 366 days». El conector K1 aceptaba 30 años y fallaba siempre con períodos de tendencia.
+
+Para analizar un territorio, `backend/app/orchestration/territory.py` hace tres cosas:
+1. Usa el regional **una sola vez, con el último año**, para descubrir qué celdas cubren el territorio y su peso por área de intersección (conector de Codex).
+2. Pide cada celda **como punto**, que devuelve exactamente esa celda, con las 5 variables y todo el período en una consulta. Van en tandas de 4 para evitar 429 y cada celda pasa por la verificación de escala de precipitación del ADR-017.
+3. Promedia con `aggregate_cells`, extraída sin cambios del conector de Codex para no duplicar la fórmula.
+
+Moquegua con 9 celdas tarda unos 25 s la primera vez y luego queda en caché. Si un territorio supera 60 celdas, se pide uno menor. Un distrito menor que una celda se analiza como punto y se declara.
+
+El módulo de Clima acepta de 1 a 4 sujetos entre sitios y territorios del IGN. Cada territorio informa nivel, ubigeo, área, celdas, cobertura y grilla. Las **tendencias por celda** (T2M y PRECTOTCORR) aplican Hamed–Rao y Benjamini–Hochberg entre las celdas y se dibujan como grilla con el par divergente validado; las celdas sin evidencia van atenuadas.
+
+Con datos reales, la temperatura sube con significancia en las 9 celdas de Moquegua (hasta +0.42 °C por década) y la lluvia no muestra tendencia en ninguna. Los índices de extremos de un promedio areal son más suaves que los de un punto, y así se declara en el método.

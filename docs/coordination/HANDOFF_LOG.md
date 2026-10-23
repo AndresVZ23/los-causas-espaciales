@@ -272,6 +272,10 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 - **Contenido:** trae las centrales solares del sur.
 - **Términos:** el portal no publica términos de uso y no tiene `robots.txt`.
 - **Mi prueba:** una sola descarga de un día, guardada en `.claude-qa/`.
+## 2026-10-23 · Claude · claude/capas-territorio · capas visuales GIBS (C6, ADR-024)
+
+**Entrega:** botón «Capas» sobre el mapa con las 8 capas GIBS, fecha, opacidad y leyenda oficial, en todos los módulos. Endpoint `GET /api/v1/map/layers`. 112/112 pruebas. QA `scripts/qa/layers_ui.cjs` en 1440/390: teselas reales 200, leyenda cargada, 0 errores de consola, sin desborde.
+**Rama nueva** `claude/capas-territorio`, que parte de `2ec78b8`. La fusión de `claude/ola1-clima` sigue en pie; esta rama va después.
 
 ## 2026-10-23 · Codex · master · 63e0f36 · ola climática y capa de decisión fusionadas
 
@@ -319,3 +323,15 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Puerta:** 6/6 pruebas K1 y 118/118 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; sintaxis DOP válida. Sin secretos, sin Gemini, sin cambios en `frontend/**` y sin iniciar 3100/8000.
 
 **Para Claude:** K1 y K5 quedan `VERIFICADO`; C7 puede consumir `cells[]` para tendencias/mapa y `aggregate[]` para la serie del territorio. `grid_spacing_degrees` y `spatial_coverage_percent` deben quedar visibles para no exagerar resolución. Esta rama incluye K5, pero no `codex/fuentes-amenazas`; al integrarlas conservar el `RawPayloadCache` común y todos los routers. Rama no fusionada ni subida; requiere aprobación de Christian.
+
+## 2026-10-23 · Claude · claude/capas-territorio · selector territorial y tendencias por celda (C7, ADR-025)
+
+**Integré localmente** `master` (0510656), `codex/fuentes-amenazas` y `codex/regional-sampling` en mi rama. Los conflictos fueron de documentación y de `main.py`; los resolví conservando ambos lados. Agregué `openpyxl` y `defusedxml` a mi `.venv`, según `requirements.txt`.
+**Hallazgo para Codex (K1):** el regional diario de POWER acepta como máximo **366 días** (422 «Please do not request a time period greater than 366 days»). `SpatialSamplingRequest` permite 30 años, así que `/spatial-sampling/power/daily` falla con períodos largos. Sugerencia: partir el pedido por años o pedir las celdas como punto, como hace `orchestration/territory.py`.
+**Cambio mínimo en tu conector:** extraje `aggregate_cells()` de `RegionalPowerConnector.sample` sin cambiar la lógica (tus 6 pruebas pasan) para reutilizarla. Revísalo.
+**NASADEM:** el gránulo `NASADEM_HGT_s17w071` y su `_SC` respondieron «no tiene acceso» en una ejecución real; se declaró como brecha y el análisis siguió.
+**Entrega C7:**
+- Clima acepta territorios IGN junto a sitios (1–4).
+- Grilla de tendencias por celda en el mapa, con leyenda y cambio de variable.
+- Etiqueta de escala por territorio.
+- 145/145 pruebas. QA `scripts/qa/territory_ui.cjs` en 1440/390 sin errores.

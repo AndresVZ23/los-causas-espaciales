@@ -74,11 +74,35 @@ export type ExtremeCountercheck = {
   source: string; valid_years: number; direction: string; slope_per_year: number | null; adjusted_p_value: number | null;
   significant_after_bh: boolean; agreement: Agreement; annual_series: { year: number; value: number }[];
 };
-export type ClimateSite = { location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null };
+// Territorios oficiales (IGN · COD-AB vía API de Codex) y su análisis por celdas NASA POWER.
+export type TerritoryLevel = "department" | "province" | "district";
+export type TerritorySummary = {
+  level: TerritoryLevel; name: string; ubigeo: string; pcode: string; parent_ubigeo: string | null;
+  department: string | null; province: string | null; area_sqkm: number; center: { latitude: number; longitude: number };
+};
+export type TerritoryPick = { level: TerritoryLevel; ubigeo: string; name: string; context: string; geometry: GeoJSON.Geometry | null };
+export type CellTrend = {
+  cell_id: string; center: { latitude: number; longitude: number }; bounds: [number, number, number, number]; weight: number;
+  variable: string; direction: string; slope_per_year: number | null; p_value: number | null; adjusted_p_value: number | null; significant: boolean; valid_years: number;
+};
+export type TerritoryInfo = {
+  level: TerritoryLevel; ubigeo: string; name: string; area_km2: number; mode: "REGIONAL" | "POINT"; cells: number;
+  coverage_percent: number; grid_degrees: [number, number] | null; geometry: GeoJSON.Geometry; source: string;
+};
+export type ClimateSite = {
+  location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null;
+  territory?: TerritoryInfo | null; cell_trends?: CellTrend[];
+};
 export type ClimateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & { sector: "climate"; sites: ClimateSite[]; method_notes: string[] };
 export type AnyResult = ScreeningResult | ClimateResult;
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };
 export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL" | "PENDING"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[] };
 export type TerrainResult = { generated_at: string; dataset: string; crs: string; spatial_resolution: string; sites: TerrainSite[]; note: string };
+// Capas visuales NASA GIBS (GET /api/v1/map/layers): solo visualización, nunca entran en el cálculo.
+export type MapLayer = {
+  id: string; label: string; group: string; description: string; gibs_id: string; tile_url: string; max_zoom: number;
+  latest_date: string | null; first_date: string | null; period_days: number | null; legend_url: string | null; source: string; notice: string | null;
+};
+export type VisualLayerState = { layer: MapLayer; date: string; opacity: number };
 export type Module = { id: string; short: string; name: string; icon: IconName; status: string; ready: boolean; description: string };

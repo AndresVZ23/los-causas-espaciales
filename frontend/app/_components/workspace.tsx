@@ -8,13 +8,17 @@ import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
+import { CellTrendLegend, cellsFor } from "./cell-trends";
+import type { CellVariable } from "./cell-trends";
 import GeometryPanel from "./geometry-panel";
+import { LayerControl, LayerLegend } from "./layer-control";
 import ScorecardPanel from "./scorecard-panel";
 import SensitivityPanel from "./sensitivity-panel";
+import TerritoryPicker from "./territory-picker";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
 import { isClimate } from "./types";
-import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage } from "./types";
+import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage, TerritoryPick, VisualLayerState } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -92,6 +96,9 @@ export default function Workspace() {
   const assumptionPanelRef = useRef<HTMLDetailsElement>(null);
   const mobileVerdictRef = useRef<HTMLDivElement>(null);
   const study = useStudyGeometries();
+  const [visualLayer, setVisualLayer] = useState<VisualLayerState | null>(null);
+  const [territories, setTerritories] = useState<TerritoryPick[]>([]);
+  const [cellVariable, setCellVariable] = useState<CellVariable>("T2M");
   const geometryHint = GEOMETRY_HINTS[activeModule];
   const mapGeometries = useMemo(() => study.geometries.map((item) => ({ id: item.id, name: item.name, geometry: item.geometry, valid: item.status !== "invalida" })), [study.geometries]);
   const mapDrawing = useMemo(() => (study.draft ? { draft: study.draft, onVertex: study.addVertex, onFinish: study.finishDraft } : null), [study.draft, study.addVertex, study.finishDraft]);
@@ -110,6 +117,11 @@ export default function Workspace() {
   const climateResult = isClimate(result) ? result : null;
   const solarResult = result && !isClimate(result) ? result : null;
   const isClimateModule = activeModule === "climate";
+  const subjectCount = sites.length + (isClimateModule ? territories.length : 0);
+  const mapTerritories = useMemo(() => (isClimateModule
+    ? territories.filter((item) => item.geometry).map((item) => ({ id: item.ubigeo, label: item.name, geometry: item.geometry as GeoJSON.Geometry }))
+    : []), [territories, isClimateModule]);
+  const cellLayer = useMemo(() => cellsFor(climateResult, cellVariable), [climateResult, cellVariable]);
   const tabs = isClimateModule ? climateTabs : solarTabs;
   const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
   const selectedVariable = result ? seriesFor(result.sites[0], activeVariable) : null;
@@ -169,8 +181,11 @@ export default function Workspace() {
     setSites((current) => current.map((site, position) => position === index ? { ...site, [key]: key === "label" ? value : +value } : site));
   }
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
+  function removeSite(index: number) { setSites((current) => current.filter((_, position) => position !== index)); }
   function selectModule(id: string) {
     if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
+    // Solo Clima acepta territorios o un único sitio; el piloto solar compara al menos dos sitios.
+    if (id !== "climate" && sites.length < 2) setSites(initialSites);
     setActiveModule(id); setMobileNavOpen(false);
     if (id === "investment") setAssumptionsOpen(true);
   }
@@ -196,7 +211,7 @@ export default function Workspace() {
     try {
       // Cada módulo funcional tiene su endpoint; clima no usa supuestos financieros.
       const request = isClimateModule
-        ? { url: "/api/climate-screening", body: { sites, start_date: startDate, end_date: endDate } }
+        ? { url: "/api/climate-screening", body: { sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), start_date: startDate, end_date: endDate } }
         : { url: "/api/solar-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions } };
       const response = await fetch(request.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request.body) });
       const data = await response.json();
@@ -292,13 +307,20 @@ export default function Workspace() {
 
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
-          <div className={`mapViewport ${loading ? "isAcquiring" : ""}`}>
-            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible}
+          <div className={`mapViewport ${loading ? "isAcquiring" : ""} ${visualLayer ? "hasVisualLayer" : ""}`}>
+            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
-                    onPick={(latitude, longitude) => { if (!geometryHint) setSites((current) => [{ ...current[0], latitude, longitude }, ...current.slice(1)]); }} />
+                    territories={mapTerritories} cells={isClimateModule ? cellLayer.cells : []}
+                    onPick={(latitude, longitude) => {
+                      if (geometryHint) return;
+                      setSites((current) => current.length ? [{ ...current[0], latitude, longitude }, ...current.slice(1)] : [{ label: "Punto", latitude, longitude }]);
+                    }} />
             {loading && <div className="acquisitionLine" aria-hidden="true" />}
-            <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>
-            <div className="mapSource">NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO</div>
+            {sites[0] && <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>}
+            {isClimateModule && cellLayer.cells.length > 0 && <CellTrendLegend variable={cellVariable} onVariable={setCellVariable} layer={cellLayer} />}
+            <div className="mapSource">{visualLayer ? `NASA GIBS · ${visualLayer.layer.label.toUpperCase()} · CAPA VISUAL` : "NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO"}</div>
+            <LayerControl value={visualLayer} onChange={setVisualLayer} />
+            {visualLayer && <LayerLegend value={visualLayer} />}
           </div>
         </section>
 
@@ -322,10 +344,26 @@ export default function Workspace() {
                   <label>Ubicación<input value={site.label} onChange={(event) => updateSite(index, "label", event.target.value)} /></label>
                   <label>Latitud<input type="number" step="0.001" value={site.latitude} onChange={(event) => updateSite(index, "latitude", event.target.value)} /></label>
                   <label>Longitud<input type="number" step="0.001" value={site.longitude} onChange={(event) => updateSite(index, "longitude", event.target.value)} /></label>
+                  {isClimateModule && subjectCount > 1 && <button className="siteRemove" onClick={() => removeSite(index)} aria-label={`Quitar ${site.label || `sitio ${index + 1}`}`}>Quitar</button>}
                 </div>
               ))}
             </div>
-            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready || !endDate}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
+            {isClimateModule && (
+              <section className="territorySection" aria-labelledby="territorios-title">
+                <h3 id="territorios-title">Territorios oficiales <span>IGN · COD-AB · trazos de 2015</span></h3>
+                {territories.length > 0 && (
+                  <ul className="territoryChosen">
+                    {territories.map((item) => (
+                      <li key={item.ubigeo}><div><b>{item.name}</b><span>{item.context} · ubigeo {item.ubigeo}</span></div>
+                        <button onClick={() => setTerritories((current) => current.filter((entry) => entry.ubigeo !== item.ubigeo))} aria-label={`Quitar ${item.name}`}>Quitar</button></li>
+                    ))}
+                  </ul>
+                )}
+                <TerritoryPicker onAdd={(pick) => setTerritories((current) => [...current, pick])} disabled={subjectCount >= 4} chosen={territories.map((item) => item.ubigeo)} />
+                <p className="territoryHint">Cada territorio se analiza con las celdas NASA POWER que lo cubren (≈ 55 × 65 km); un distrito menor que una celda se trata como punto. La primera consulta de un territorio puede tardar hasta un minuto.</p>
+              </section>
+            )}
+            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready || !endDate || subjectCount === 0}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
             </>}
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (

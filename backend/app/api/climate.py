@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from ..connectors.nasa.power import PowerConnectorError
+from ..orchestration.territory import TerritoryAnalysisError
 from ..schemas.climate import ClimateScreeningRequest, ClimateScreeningResponse
 from ..sectors.climate import run_climate_screening
 
@@ -12,5 +13,7 @@ async def climate_screening(request: ClimateScreeningRequest) -> ClimateScreenin
     """Módulo 1: tendencias de variables NASA POWER y de extremos de precipitación ETCCDI por sitio."""
     try:
         return await run_climate_screening(request)
+    except TerritoryAnalysisError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     except PowerConnectorError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

@@ -124,7 +124,15 @@ export function ClimateEvidence({ result }: { result: ClimateResult }) {
         {result.sites.map((site) => (
           <article className="siteResult" key={site.location.label}>
             <div className="siteResultHeader">
-              <div><h3>{site.location.label}</h3><p>Extremos de precipitación ETCCDI · {site.extremes[0]?.valid_years ?? 0} años completos{site.extremes[0]?.discarded_years ? ` · ${site.extremes[0].discarded_years} año(s) incompleto(s) fuera` : ""}</p></div>
+              <div>
+                <h3>{site.location.label}</h3>
+                <p>Extremos de precipitación ETCCDI · {site.extremes[0]?.valid_years ?? 0} años completos{site.extremes[0]?.discarded_years ? ` · ${site.extremes[0].discarded_years} año(s) incompleto(s) fuera` : ""}</p>
+                {site.territory && (
+                  <p className="territoryScale">{site.territory.mode === "REGIONAL"
+                    ? `Promedio por área de ${site.territory.cells} celdas NASA POWER (${site.territory.grid_degrees ? `${site.territory.grid_degrees[0]}° × ${site.territory.grid_degrees[1]}°` : "grilla nativa"}) · cobertura ${formatNumber(site.territory.coverage_percent, 1)} % · ${formatNumber(site.territory.area_km2, 0)} km²`
+                    : `Menor que una celda NASA POWER: se analiza como punto representativo · ${formatNumber(site.territory.area_km2, 0)} km²`} · {site.territory.source}</p>
+                )}
+              </div>
               <span>P95 de días húmedos: {site.wet_day_p95_mm == null ? "N/D" : `${formatNumber(site.wet_day_p95_mm, 1)} mm`}</span>
             </div>
             <div className="tableScroll">
