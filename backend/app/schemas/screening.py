@@ -14,6 +14,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 from .analysis import Point, Provenance
+from .scoring import Scorecard
 from .terrain import TerrainResponse
 
 CONTRACT_VERSION = "1.0"
@@ -194,4 +195,5 @@ class ScreeningEnvelope(BaseModel):
     financial_sensitivity: list[SubjectSensitivity] = Field(
         default_factory=list, description="Escenarios, tornado y equilibrios por sujeto; vacío si el sector no evalúa finanzas."
     )
+    scorecard: Scorecard | None = Field(default=None, description="Puntaje multicriterio con escalas, pesos, cobertura y estabilidad; None si el sector no lo usa.")
     disclaimer: str

@@ -10,7 +10,7 @@ Las olas salen de la vista «Orquestación» del DOP (`docs/interno/dop-neuronal
 |---|---|---|---|---|
 | 22–23 oct | 0 | Arrancar ola 1 | Fusionar y subir las ramas de Claude (X0); cerrar K0 | Base estable en `master` y GitHub |
 | 23–28 oct | 1 | Extremos hidrometeorológicos; pantalla del módulo Clima; escenarios y sensibilidad financiera; dibujo y carga de corredores y polígonos | Peligros geológicos e inundación, áreas protegidas, patrimonio, comunidades, red vial; armonización espacial; catálogo de fuentes | Módulo 1 · Clima |
-| 29 oct–1 nov | 2 | Puntajes multicriterio; asistente (C4) | Muestreo de corredores y polígonos (K1); exposición a amenazas; restricciones territoriales | Módulo 7 · Inversión |
+| 29 oct–1 nov | 2 | Puntajes multicriterio y asistente (C4, adelantados y listos el 23-oct); capas GIBS (C6); selector territorial y tendencias por celda (C7) | Límites IGN (K5); muestreo de corredores, polígonos y territorios por celdas POWER (K1); conector COES; exposición a amenazas; restricciones territoriales | Módulo 7 · Inversión; territorio y capas en la consola |
 | 2–4 nov | 3 | Integración progresiva de los pilotos | Backend del piloto vial (K2) y del inmobiliario (K3), con el contrato C2 | — |
 | 4–6 nov | 4 | Pantallas de los pilotos (C5) | QA cruzado, Docker y rendimiento | Módulo 6 · Vial y piloto inmobiliario |
 | 6–7 nov | Cierre | `PITCH.md`, `DEMO_SCENARIOS.md` y ensayo del demo | `DATA_SOURCES.md`, `TECHNICAL_ARCHITECTURE.md`, congelamiento y etiqueta de versión | Entrega |
@@ -52,6 +52,9 @@ Regla general de datos y decisión: **Codex entrega datos verificados** (conecto
 | C4 | Asistente analítico: reglas deterministas con citas al resultado + proveedor IA opcional por variables de entorno | **Claude** | C2 | `claude/asistente` |
 | K3 | Piloto inmobiliario (backend): polígonos de terreno, relieve, precipitación, restricciones y comparación entre terrenos; responde con el sobre C2 | **Codex** | C2, K1 | `codex/piloto-inmobiliario` |
 | C5 | Pantallas de los pilotos en la consola: selector, capas de línea y polígono en el mapa, lecturas, pipeline, preguntas y PDF | **Claude** | K2, K3 | `claude/integracion-pilotos` |
+| K5 | Límites oficiales IGN (COD-AB Perú, CC BY-IGO): departamentos, provincias y distritos simplificados por nivel; búsqueda por nombre y ubigeo; geometría por territorio vía API. Declarar que los trazos son de 2015 | **Codex** | — | `codex/territorio` |
+| C6 | Capas visuales NASA GIBS en el mapa: temperatura del mar y anomalía, viento sobre el mar, lluvia IMERG, temperatura de superficie, NDVI y humedad del suelo, con fecha, leyenda y etiqueta «visual, no entra en el cálculo» | **Claude** | — | `claude/capas-territorio` |
+| C7 | Selector territorial (departamento → provincia → distrito, zona propia o clic; 2–4 territorios) y mapa de tendencias por celda | **Claude** | K5, K1 | `claude/capas-territorio` |
 | O1 | Operación continua: revisar y fusionar ramas aprobadas, subir a GitHub con aprobación, mantener dependencias y Docker, y vigilar el vencimiento del token Earthdata (21-dic-2026) | **Codex** | — | — |
 | Q1 | QA cruzado y materiales del jurado: Claude redacta `PITCH.md` y `DEMO_SCENARIOS.md`; Codex `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` | Ambos | todo lo anterior | — |
 

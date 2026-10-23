@@ -97,6 +97,11 @@
 - En 2026, Moquegua va como el 3.er año más cálido y el de menos viento del registro, y Arequipa lleva 39 % más lluvia que el promedio del mismo período.
 - Escenarios y sensibilidad del VAN (ADR-020): campo aditivo `financial_sensitivity` en el sobre C2 y motor genérico `finance/sensitivity.py`. En el piloto solar: escenarios base, adverso y favorable; tornado con seis factores, donde el recurso usa los percentiles 10–90 observados; equilibrios de precio, CAPEX e irradiancia. Rangos editables en «Supuestos financieros», panel en pantalla y sección en el PDF. Con los supuestos por defecto, el VAN es negativo en ambos sitios (−USD 3.0 M) y positivo solo en el escenario favorable. Para VAN positivo hace falta un precio de unos 64 USD/MWh o un CAPEX de unos USD 15 M; ningún año observado alcanza la irradiancia de equilibrio. QA `scripts/qa/sensitivity_ui.cjs`: 1440 y 390 px sin desborde ni errores.
 - Backend: 77/77 pruebas, con contraste del VAN contra `verify_cashflow.py` y del precio de equilibrio contra la fórmula cerrada.
+- Corredores y polígonos: dibujo y carga de GeoJSON en Infraestructura e Inversión, con validación y medición geodésica y exportación para K1. La longitud coincide con un Vincenty independiente (0.00003 %).
+- GPM IMERG activo como contraste de los extremos (ADR-021): desmiente el atípico de 314 mm de Moquegua 2022 (IMERG: 0 mm) y no respalda la tendencia de RX5DAY en Arequipa. Ninguna tendencia de extremos de lluvia es robusta todavía. Backend: 85/85.
+- Puntaje multicriterio (ADR-022, ola 2): escalas declaradas, pesos editables, estabilidad con 2 000 combinaciones de pesos y empate práctico. Arequipa 67 frente a Moquegua 66: empate, honesto. Backend: 92/92.
+- Asistente C4 (ADR-023): reglas sin costo por defecto; Gemini solo a pedido y con verificación de cifras. Backend: 107/107.
+- Pendientes de K1b (Codex): AppEEARS (falta usuario y contraseña de Earthdata en `.env`), capas Perú (CENEPRED, SERNANP y Osinergmin responden; INGEMMET, Cultura y SENAMHI por ubicar) y generación COES.
 
 ## Contrato común entre sectores (C2)
 

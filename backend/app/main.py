@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from .api.assistant import router as assistant_router
 from .api.climate import router as climate_router
 from .api.reports import router as reports_router
 from .api.routes import router
+from .api.scoring import router as scoring_router
 from .core.config import get_settings
 
 settings = get_settings()
@@ -18,6 +20,8 @@ app.add_middleware(
 app.include_router(router)
 app.include_router(reports_router)
 app.include_router(climate_router)
+app.include_router(scoring_router)
+app.include_router(assistant_router)
 
 
 @app.get("/")

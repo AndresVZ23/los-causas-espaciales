@@ -13,6 +13,18 @@ export type SensitivityBar = {
 };
 export type FinanceScenario = { key: "base" | "adverso" | "favorable"; label: string; npv: number; changes: string[] };
 export type BreakEven = { key: string; label: string; unit: string; assumed_value: number; break_even_value: number | null; note: string };
+// Contrato C2 · puntaje multicriterio (escala de referencia declarada, pesos, cobertura y estabilidad).
+export type Criterion = {
+  key: string; label: string; unit: string; direction: "mayor_es_mejor" | "menor_es_mejor"; weight: number;
+  worst: number; best: number; provenance: string; basis: string;
+};
+export type CriterionScore = { key: string; value: number | null; score: number | null; contribution: number | null };
+export type SubjectScore = { subject: string; score: number | null; coverage: number; rank: number | null; first_place_share: number; criteria: CriterionScore[] };
+export type WeightSensitivity = { key: string; leader_at_half: string | null; leader_at_one_and_half: string | null; changes_leader: boolean };
+export type Scorecard = {
+  method: string; criteria: Criterion[]; subjects: SubjectScore[]; leader: string | null; margin: number | null; tie: boolean;
+  stability_draws: number; weight_sensitivity: WeightSensitivity[]; notes: string[];
+};
 export type SubjectSensitivity = { subject: string; metric: string; currency: string; base_npv: number; scenarios: FinanceScenario[]; tornado: SensitivityBar[]; break_evens: BreakEven[] };
 export type Trend = {
   direction: string; slope_per_year: number | null; p_value: number | null; p_value_modified?: number | null; variance_correction?: number | null;
@@ -44,7 +56,7 @@ export type StudySubject = { id: string; label: string; kind: "point" | "segment
 export type AssumptionItem = { key: string; label: string; value: number; unit: string; provenance: string };
 export type ScreeningResult = {
   contract_version?: string; analysis_id: string; generated_at: string; title: string; sector: string; sector_label?: string; period: string;
-  subjects?: StudySubject[]; assumption_items?: AssumptionItem[]; financial_sensitivity?: SubjectSensitivity[];
+  subjects?: StudySubject[]; assumption_items?: AssumptionItem[]; financial_sensitivity?: SubjectSensitivity[]; scorecard?: Scorecard | null;
   pipeline: Stage[]; nasa_questions: NasaQuestion[]; trend_findings: TrendFinding[];
   sites: SiteResult[]; terrain: TerrainResult | null;
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; disclaimer: string;
@@ -54,7 +66,13 @@ export type ExtremeIndex = {
   variable: string; label: string; description: string; unit: string; display_unit: string;
   mean: number; minimum: number; maximum: number; valid_years: number; discarded_years: number;
   trend: Trend; adjusted_p_value: number | null; significant_after_bh: boolean; annual_series: { year: number; value: number }[];
-  atypical_years?: { year: number; value: number; robust_z: number }[];
+  atypical_years?: { year: number; value: number; robust_z: number; countercheck_value?: number | null }[];
+  countercheck?: ExtremeCountercheck | null;
+};
+export type Agreement = "coincide" | "contradice" | "sin_respaldo" | "solo_contraste" | "sin_tendencia";
+export type ExtremeCountercheck = {
+  source: string; valid_years: number; direction: string; slope_per_year: number | null; adjusted_p_value: number | null;
+  significant_after_bh: boolean; agreement: Agreement; annual_series: { year: number; value: number }[];
 };
 export type ClimateSite = { location: Point; variables: VariableSummary[]; extremes: ExtremeIndex[]; wet_day_p95_mm: number | null };
 export type ClimateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & { sector: "climate"; sites: ClimateSite[]; method_notes: string[] };

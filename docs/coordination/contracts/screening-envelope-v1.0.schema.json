@@ -97,6 +97,113 @@
       "title": "BreakEven",
       "type": "object"
     },
+    "Criterion": {
+      "description": "Un criterio con su escala de referencia declarada: `worst` puntúa 0 y `best` puntúa 100, con recorte fuera del rango.",
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "unit": {
+          "title": "Unit",
+          "type": "string"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "weight": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Weight",
+          "type": "number"
+        },
+        "worst": {
+          "title": "Worst",
+          "type": "number"
+        },
+        "best": {
+          "title": "Best",
+          "type": "number"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance",
+          "description": "Procedencia del valor medido o estimado del criterio."
+        },
+        "basis": {
+          "description": "De dónde sale el valor y por qué esa escala de referencia.",
+          "title": "Basis",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "label",
+        "unit",
+        "direction",
+        "weight",
+        "worst",
+        "best",
+        "provenance",
+        "basis"
+      ],
+      "title": "Criterion",
+      "type": "object"
+    },
+    "CriterionScore": {
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "0–100 en la escala de referencia; None si falta el dato.",
+          "title": "Score"
+        },
+        "contribution": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Aporte al puntaje total, en puntos, con los pesos renormalizados por cobertura.",
+          "title": "Contribution"
+        }
+      },
+      "required": [
+        "key",
+        "value",
+        "score",
+        "contribution"
+      ],
+      "title": "CriterionScore",
+      "type": "object"
+    },
     "DataGap": {
       "properties": {
         "dataset": {
@@ -123,6 +230,14 @@
       ],
       "title": "DataGap",
       "type": "object"
+    },
+    "Direction": {
+      "enum": [
+        "mayor_es_mejor",
+        "menor_es_mejor"
+      ],
+      "title": "Direction",
+      "type": "string"
     },
     "FinanceScenario": {
       "properties": {
@@ -366,6 +481,87 @@
       "title": "QuestionStatus",
       "type": "string"
     },
+    "Scorecard": {
+      "properties": {
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "criteria": {
+          "items": {
+            "$ref": "#/$defs/Criterion"
+          },
+          "title": "Criteria",
+          "type": "array"
+        },
+        "subjects": {
+          "items": {
+            "$ref": "#/$defs/SubjectScore"
+          },
+          "title": "Subjects",
+          "type": "array"
+        },
+        "leader": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Leader"
+        },
+        "margin": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Puntos entre el primero y el segundo; None con un solo sujeto con puntaje.",
+          "title": "Margin"
+        },
+        "tie": {
+          "description": "Empate práctico: margen < 5 puntos o líder primero en menos del 75 % de las combinaciones de pesos.",
+          "title": "Tie",
+          "type": "boolean"
+        },
+        "stability_draws": {
+          "title": "Stability Draws",
+          "type": "integer"
+        },
+        "weight_sensitivity": {
+          "items": {
+            "$ref": "#/$defs/WeightSensitivity"
+          },
+          "title": "Weight Sensitivity",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "method",
+        "criteria",
+        "subjects",
+        "leader",
+        "margin",
+        "tie",
+        "stability_draws",
+        "weight_sensitivity",
+        "notes"
+      ],
+      "title": "Scorecard",
+      "type": "object"
+    },
     "Sector": {
       "enum": [
         "climate",
@@ -513,6 +709,64 @@
       ],
       "title": "SubjectKind",
       "type": "string"
+    },
+    "SubjectScore": {
+      "properties": {
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "0–100; None si ningún criterio tiene dato.",
+          "title": "Score"
+        },
+        "coverage": {
+          "description": "Fracción del peso con dato disponible (0–1).",
+          "title": "Coverage",
+          "type": "number"
+        },
+        "rank": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Rank"
+        },
+        "first_place_share": {
+          "description": "Fracción de combinaciones de pesos aleatorias en que el sujeto queda primero.",
+          "title": "First Place Share",
+          "type": "number"
+        },
+        "criteria": {
+          "items": {
+            "$ref": "#/$defs/CriterionScore"
+          },
+          "title": "Criteria",
+          "type": "array"
+        }
+      },
+      "required": [
+        "subject",
+        "score",
+        "coverage",
+        "rank",
+        "first_place_share",
+        "criteria"
+      ],
+      "title": "SubjectScore",
+      "type": "object"
     },
     "SubjectSensitivity": {
       "properties": {
@@ -962,6 +1216,49 @@
       ],
       "title": "TrendFinding",
       "type": "object"
+    },
+    "WeightSensitivity": {
+      "description": "Qué pasa con el primer lugar al bajar y subir a la mitad y al 150 % el peso de un criterio (el resto se renormaliza).",
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "leader_at_half": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Leader At Half"
+        },
+        "leader_at_one_and_half": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Leader At One And Half"
+        },
+        "changes_leader": {
+          "title": "Changes Leader",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "key",
+        "leader_at_half",
+        "leader_at_one_and_half",
+        "changes_leader"
+      ],
+      "title": "WeightSensitivity",
+      "type": "object"
     }
   },
   "properties": {
@@ -1056,6 +1353,18 @@
       },
       "title": "Financial Sensitivity",
       "type": "array"
+    },
+    "scorecard": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Scorecard"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Puntaje multicriterio con escalas, pesos, cobertura y estabilidad; None si el sector no lo usa."
     },
     "disclaimer": {
       "title": "Disclaimer",

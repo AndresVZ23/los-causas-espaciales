@@ -6,7 +6,8 @@ import json
 from datetime import datetime, timezone
 from time import perf_counter
 
-from ..orchestration.analysis import analyze_extremes, analyze_subjects
+from ..connectors.nasa.power import PowerConnectorError
+from ..orchestration.analysis import analyze_extremes, analyze_subjects, attach_countercheck
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings
 from ..orchestration.stages import (
@@ -23,13 +24,21 @@ from ..orchestration.stages import (
     unique,
 )
 from ..schemas.analysis import Provenance
-from ..schemas.climate import ClimateScreeningRequest, ClimateScreeningResponse, ClimateSiteResult
+from ..schemas.climate import Agreement, ClimateScreeningRequest, ClimateScreeningResponse, ClimateSiteResult
 from ..schemas.pipeline import DataGap
 from ..schemas.screening import PipelineStatus, StageEvidence, StudySubject, SubjectKind
 from ..schemas.terrain import TerrainResponse
 from ..statistics.extremes import METHOD_NOTES
 
 CLIMATE_VARIABLES = ["T2M", "PRECTOTCORR", "WS10M", "ALLSKY_SFC_SW_DWN"]
+# Contraste satelital independiente de los extremos: GPM IMERG servido por la misma API de NASA POWER.
+COUNTERCHECK = "IMERG_PRECTOT"
+COUNTERCHECK_SOURCE = "GPM IMERG (NASA POWER · IMERG_PRECTOT)"
+REQUEST_VARIABLES = [*CLIMATE_VARIABLES, COUNTERCHECK]
+COUNTERCHECK_NOTE = (
+    "Contraste: los mismos índices se calculan con GPM IMERG (precipitación satelital, 0.1°), independiente del reanálisis MERRA-2 "
+    "de PRECTOTCORR. Una tendencia de extremos es robusta cuando ambas fuentes coinciden en significancia y dirección."
+)
 SECTOR_LABEL = "Inteligencia climática"
 
 # Lectura territorial de cada cambio: explica la consecuencia para activos, sin cuantificarla.
@@ -71,14 +80,37 @@ def _subjects(request: ClimateScreeningRequest) -> list[StudySubject]:
     ]
 
 
-def _data_gaps(terrain: TerrainResponse | None) -> list[DataGap]:
-    gaps = [
-        DataGap(dataset="GPM IMERG V07", impact="Los extremos usan la precipitación de NASA POWER, una grilla gruesa que suaviza tormentas locales.", next_action="Integrar IMERG y contrastar los índices ETCCDI con ambas fuentes."),
-        DataGap(dataset="Estaciones SENAMHI", impact="No hay contraste con mediciones en sitio.", next_action="Verificar acceso a series diarias de estaciones cercanas."),
-    ]
+def _data_gaps(terrain: TerrainResponse | None, countercheck_error: str | None) -> list[DataGap]:
+    gaps = [DataGap(dataset="Estaciones SENAMHI", impact="El contraste es satélite contra reanálisis; no hay mediciones en sitio.", next_action="Verificar acceso a series diarias de estaciones cercanas.")]
+    if countercheck_error:
+        gaps.insert(0, DataGap(dataset="GPM IMERG", impact=f"Sin contraste satelital de los extremos: {countercheck_error}", next_action="Reintentar la consulta IMERG_PRECTOT en NASA POWER."))
     if terrain is None or any(site.status != "READY" for site in terrain.sites):
         gaps.append(DataGap(dataset="Métricas raster NASADEM", impact="El relieve no está disponible para todos los sitios.", next_action="Completar la descarga de NASADEM para los sitios nuevos."))
     return gaps
+
+
+def _countercheck_summary(sites: list[ClimateSiteResult]) -> str:
+    """Frase para la pregunta de significancia: cuántas tendencias de extremos repite IMERG y qué valores atípicos desmiente."""
+    significant = [(site, item) for site in sites for item in site.extremes if item.significant_after_bh and item.countercheck]
+    refuted = [
+        f"{item.variable} {site.location.label} {year.year} ({year.value:.0f} mm en MERRA-2, {year.countercheck_value:.0f} mm en IMERG)"
+        for site in sites for item in site.extremes if item.unit == "mm" for year in item.atypical_years
+        if year.countercheck_value is not None and year.countercheck_value < year.value / 5
+    ]
+    parts = []
+    if significant:
+        backed = [f"{item.label.lower()} en {site.location.label}" for site, item in significant if item.countercheck.agreement == Agreement.COINCIDE]
+        if not backed:
+            subject = "la única tendencia significativa de extremos de lluvia no se repite" if len(significant) == 1 \
+                else f"ninguna de las {len(significant)} tendencias significativas de extremos de lluvia se repite"
+            parts.append(f"Contraste con GPM IMERG: {subject} con el satélite; sin respaldo independiente, "
+                         + ("se lee como indicio y no como hallazgo." if len(significant) == 1 else "se leen como indicio y no como hallazgo."))
+        else:
+            parts.append(f"Contraste con GPM IMERG: {len(backed)} de {len(significant)} tendencias de extremos se repiten con el satélite ({', '.join(backed)})"
+                         + ("; las demás no tienen respaldo independiente." if len(backed) < len(significant) else "."))
+    if refuted:
+        parts.append(f"IMERG no respalda {len(refuted)} valor(es) atípico(s) del reanálisis: {'; '.join(refuted)}.")
+    return " ".join(parts)
 
 
 async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScreeningResponse:
@@ -86,13 +118,19 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     subjects = _subjects(request)
     points = [subject.representative_point for subject in subjects]
     (datasets, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms) = await asyncio.gather(
-        extract_power(points, CLIMATE_VARIABLES, request.start_date, request.end_date), extract_terrain(points)
+        extract_power(points, REQUEST_VARIABLES, request.start_date, request.end_date), extract_terrain(points)
     )
     expected_days = (request.end_date - request.start_date).days + 1
 
     analysis_start = perf_counter()
     variables_by_site = analyze_subjects(datasets, CLIMATE_VARIABLES, expected_days)
     extremes_by_site, thresholds = analyze_extremes(datasets)
+    countercheck_error = None
+    try:
+        countercheck_by_site, _ = analyze_extremes(datasets, COUNTERCHECK)
+        attach_countercheck(extremes_by_site, countercheck_by_site, COUNTERCHECK_SOURCE)
+    except PowerConnectorError as exc:
+        countercheck_error = str(exc)
     timings.analysis_ms = elapsed_ms(analysis_start)
 
     sites = [
@@ -105,13 +143,24 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     ]
     variables_only = [SubjectSummaries(label=subject.label, summaries=variables) for subject, variables in zip(subjects, variables_by_site, strict=True)]
     trend_findings = collect_trend_findings(labelled)
-    gaps = _data_gaps(terrain)
+    gaps = _data_gaps(terrain, countercheck_error)
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
     nasa_questions = answer_nasa_questions(
         labelled, trend_findings,
         {subject.label: (subject.representative_point.latitude, subject.representative_point.longitude) for subject in subjects},
         pending, SectorLens(readings=CLIMATE_READINGS, stable_notes=CLIMATE_STABLE_NOTES, economics=ECONOMICS_NOTE),
     )
+    contrast = _countercheck_summary(sites)
+    if contrast:
+        significant = next(question for question in nasa_questions if question.key == "significant")
+        significant.answer = f"{significant.answer} {contrast}"
+        significant.evidence.append(COUNTERCHECK_NOTE)
+    # La lectura de inversión no debe afirmar un cambio de extremos que el satélite no confirma.
+    unbacked = [f"{item.label.lower()} en {site.location.label}" for site in sites for item in site.extremes
+                if item.significant_after_bh and item.countercheck and item.countercheck.agreement != Agreement.COINCIDE]
+    if unbacked:
+        so_what = next(question for question in nasa_questions if question.key == "so_what")
+        so_what.answer = f"{so_what.answer} Salvedad: {', '.join(unbacked)} no se confirma con GPM IMERG; tómese como indicio a verificar."
 
     source_provenance = unique([item.source.provenance for variables in variables_by_site for item in variables])
     all_provenance = unique(source_provenance + [Provenance.MODEL] + ([Provenance.UNAVAILABLE] if pending else []))
@@ -124,6 +173,15 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
             value=f"RX1DAY {by_code['RX1DAY'].mean:.1f} mm · CDD {by_code['CDD'].mean:.0f} días · P95 {site.wet_day_p95_mm or 0:.1f} mm",
         ))
     evaluation_evidence.append(StageEvidence(label="Índices", value="ETCCDI: RX1DAY, RX5DAY, R95P, PRCPTOT, R10MM, CDD"))
+    if countercheck_error is None:
+        imerg_last = max((dataset[COUNTERCHECK][0][-1].timestamp for dataset in datasets if dataset[COUNTERCHECK][0]), default=None)
+        counts = {value: sum(1 for site in sites for item in site.extremes if item.countercheck and item.countercheck.agreement == value) for value in Agreement}
+        evaluation_evidence.append(StageEvidence(
+            label="Contraste GPM IMERG",
+            value=f"coinciden {counts[Agreement.COINCIDE]} · sin respaldo {counts[Agreement.SIN_RESPALDO]} · solo IMERG {counts[Agreement.SOLO_CONTRASTE]} · "
+                  f"contradicen {counts[Agreement.CONTRADICE]}" + (f" · IMERG hasta {imerg_last:%d-%m-%Y}" if imerg_last else ""),
+            provenance=Provenance.MODEL,
+        ))
     evaluation = stage("evaluation", PipelineStatus.COMPLETED, "Extremos de precipitación comparados entre sitios con índices ETCCDI y la misma prueba de tendencia.",
                        source_provenance + [Provenance.MODEL], evaluation_evidence, answers=["so_what"])
     finance = stage("finance", PipelineStatus.UNAVAILABLE, "No aplica: el módulo climático no usa supuestos financieros.",
@@ -154,5 +212,5 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         assumption_items=[],
         disclaimer="Análisis de tendencias con estimaciones en grilla de NASA POWER. No sustituye estaciones meteorológicas, estudios hidrológicos ni evaluaciones de riesgo de desastres.",
         sites=sites,
-        method_notes=list(METHOD_NOTES),
+        method_notes=[*METHOD_NOTES, COUNTERCHECK_NOTE] if countercheck_error is None else list(METHOD_NOTES),
     )

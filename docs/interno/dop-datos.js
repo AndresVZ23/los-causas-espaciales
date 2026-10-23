@@ -8,8 +8,8 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T02:19:00Z",
-  updatedBy: "Codex",
+  updatedAt: "2026-10-23T15:00:00Z",
+  updatedBy: "Claude",
 
   statuses: {
     VERIFICADO: "Verificado con evidencia en el repositorio",
@@ -188,19 +188,21 @@ window.DOP_DATA = {
       // Entradas
       { id: "in-power", layer: "in", group: "NASA", name: "NASA POWER diario", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", detail: "Irradiancia, temperatura, viento y precipitación desde 1981, con caché y procedencia." },
       { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; caché real 2 de 2 READY en 470.6 ms.", evidence: ["df128a0", "7a42125", "14 pruebas K0", "contraste ZIP independiente"] },
-      { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "gpm", detail: "Precipitación satelital de alta frecuencia para extremos y huaicos." },
+      { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Claude", status: "LISTO_PARA_QA", provenance: "REAL_DATA", planTask: "K1b", dopNode: "gpm", detail: "Activo vía NASA POWER (IMERG_PRECTOT, diario UTC, hasta ~5 semanas atrás): contraste satelital de los extremos ETCCDI (ADR-021). Desmintió los 314 mm de MERRA-2 en Moquegua (2022)." },
       { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "appeears", detail: "Índices de vegetación, cobertura y agua superficial para el módulo ambiental." },
       { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Susceptibilidad y alerta de deslizamientos, según su propósito y límites." },
+      { id: "in-gibs", layer: "in", group: "NASA", name: "Capas visuales NASA GIBS", owner: "Claude", status: "PENDIENTE", provenance: "REAL_DATA", planTask: "C6", detail: "Verificadas 23-oct: temperatura del mar y su anomalía (GHRSST MUR), viento sobre el mar (AMSR2), lluvia (IMERG), temperatura de superficie y NDVI (MODIS), humedad del suelo. Solo visualización: no entran en el cálculo." },
       { id: "in-grid", layer: "in", group: "Territorio Perú", name: "Red eléctrica y subestaciones", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "MINEM y COES: distancia y capacidad de conexión." },
       { id: "in-protected", layer: "in", group: "Territorio Perú", name: "Áreas protegidas", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "SERNANP y ecosistemas frágiles." },
       { id: "in-heritage", layer: "in", group: "Territorio Perú", name: "Patrimonio arqueológico", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Ministerio de Cultura; la ausencia de registro no prueba ausencia de patrimonio." },
       { id: "in-hazards-pe", layer: "in", group: "Territorio Perú", name: "Peligros geológicos e inundación", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "peru", detail: "INGEMMET, CENEPRED y ANA." },
       { id: "in-social", layer: "in", group: "Territorio Perú", name: "Comunidades y conflictos", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", dopNode: "peru", detail: "Defensoría del Pueblo y SENACE; solo alertas de debida diligencia." },
       { id: "in-roads", layer: "in", group: "Territorio Perú", name: "Red vial", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K2", detail: "MTC u OpenStreetMap (ODbL) para la geometría del corredor piloto." },
-      { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Puntos operativos; dibujo y carga de corredores y polígonos pendientes." },
+      { id: "in-admin", layer: "in", group: "Territorio Perú", name: "Límites oficiales IGN (COD-AB)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K5", detail: "25 departamentos, 196 provincias y 1,873 distritos del IGN vía OCHA (CC BY-IGO, citar). Trazos de 2015: los distritos creados después no figuran." },
+      { id: "in-geom", layer: "in", group: "Usuario", name: "Puntos, corredores y polígonos", owner: "Claude", status: "LISTO_PARA_QA", provenance: "USER_ASSUMPTION", detail: "Puntos, y corredores y polígonos dibujados o cargados (GeoJSON RFC 7946, sin reparaciones ocultas), validados y medidos por /geospatial/inspect y exportables para K1." },
       { id: "in-assumptions", layer: "in", group: "Usuario", name: "Supuestos financieros y técnicos", owner: "Claude", status: "VERIFICADO", provenance: "USER_ASSUMPTION", detail: "CAPEX, OPEX, precio, tasa, horizonte, performance ratio y rangos de sensibilidad (±)." },
       { id: "in-sector", layer: "in", group: "Usuario", name: "Sector y criterios de comparación", owner: "Claude", status: "EN_CURSO", provenance: "USER_ASSUMPTION", detail: "Hoy solo solar; ponderaciones por sector pendientes." },
-      { id: "in-coes", layer: "in", group: "Resultados reales", name: "Generación real por central (COES)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "labels", detail: "Etiquetas para el calibrador neuronal; acceso y licencia por verificar." },
+      { id: "in-coes", layer: "in", group: "Resultados reales", name: "Generación real por central (COES)", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", planTask: "K1b", dopNode: "labels", detail: "Fuente verificada 23-oct: exportación pública ExportarGeneracion (xlsx, producción diaria por central y tipo, medidores). Incluye Intipampa, Moquegua FV, Majes, Repartición, San Martín Solar, Clemesí, Sunny y Matarani. Sin términos de uso publicados: descarga mensual, en caché, con cita a COES-SINAC. Falta el conector (Codex)." },
       { id: "in-events", layer: "in", group: "Resultados reales", name: "Emergencias e interrupciones viales", owner: "Codex", status: "PENDIENTE", provenance: "DATA_UNAVAILABLE", detail: "INDECI y MTC: eventos reales para validar la exposición del corredor." },
 
       // Capa A
@@ -208,7 +210,8 @@ window.DOP_DATA = {
       { id: "a-async", layer: "A", name: "Descarga asíncrona y precarga", owner: "Codex", status: "VERIFICADO", planTask: "K0", dopNode: "dem", detail: "Reanudable por Range, atómica, deduplicada por tesela, con PENDING y prefetch; 14 pruebas aprobadas.", evidence: ["df128a0", "merge 7a42125", "pytest backend/tests/test_nasadem.py"] },
       { id: "a-catalog", layer: "A", name: "Catálogo de fuentes y licencias", owner: "Codex", status: "EN_CURSO", planTask: "K1b", detail: "Existencia, acceso, licencia, resolución, cobertura y fecha de cada fuente." },
       { id: "a-harmonize", layer: "A", name: "Armonización espacial", owner: "Codex", status: "PENDIENTE", dopNode: "harmonize", detail: "CRS, resolución, nodata y temporalidad sin degradación silenciosa." },
-      { id: "a-sampling", layer: "A", name: "Muestreo de corredores y polígonos", owner: "Codex", status: "PENDIENTE", planTask: "K1", dopNode: "sampling", detail: "Convierte geometrías en sujetos de estudio del contrato C2." },
+      { id: "a-sampling", layer: "A", name: "Muestreo de corredores, polígonos y territorios", owner: "Codex", status: "PENDIENTE", planTask: "K1", dopNode: "sampling", detail: "Convierte geometrías y territorios en sujetos C2: celdas NASA POWER dentro del área (pedido regional, una variable por pedido), deduplicadas, con promedio ponderado por área y dispersión. Un distrito menor que una celda se declara como punto." },
+      { id: "a-admin", layer: "A", name: "Índice territorial", owner: "Codex", status: "PENDIENTE", planTask: "K5", dopNode: "sampling", detail: "Límites IGN simplificados por nivel, búsqueda por nombre y ubigeo, y geometría por territorio vía API." },
       { id: "a-store", layer: "A", name: "Persistencia y trabajos", owner: "Codex", status: "PENDIENTE", dopNode: "platform", detail: "PostGIS, cola de trabajos y ejecuciones versionadas." },
 
       // Capa B
@@ -218,6 +221,7 @@ window.DOP_DATA = {
       { id: "b-hazard", layer: "B", name: "Exposición a amenazas", owner: "Codex", status: "PENDIENTE", detail: "Superposición con capas oficiales; susceptibilidad, amenaza, exposición y riesgo son distintos." },
       { id: "b-constraints", layer: "B", name: "Restricciones territoriales", owner: "Codex", status: "PENDIENTE", detail: "Áreas protegidas, patrimonio y comunidades como alertas, no conclusiones legales." },
       { id: "b-environment", layer: "B", name: "Cambio de cobertura y vegetación", owner: "Codex", status: "PENDIENTE", detail: "Tendencias en índices de vegetación y agua." },
+      { id: "b-celltrends", layer: "B", name: "Tendencias por celda", owner: "Claude", status: "PENDIENTE", planTask: "C7", detail: "Mann–Kendall con Hamed–Rao y BH en cada celda del territorio: mapa de dónde cambia y cuánto, con celdas no significativas atenuadas. Responde visualmente «¿dónde está cambiando?»." },
       { id: "b-pvnn", layer: "B", name: "Calibrador FV (red neuronal)", owner: "Claude", status: "BLOQUEADO", dopNode: "candidates", detail: "Propuesta: factor de planta mensual contra el baseline físico. Ver la pestaña «Calibrador neuronal»." },
 
       // Capa C
@@ -227,8 +231,8 @@ window.DOP_DATA = {
       { id: "c-realestate", layer: "C", name: "Lente inmobiliario", owner: "Codex", status: "PENDIENTE", planTask: "K3", detail: "Terreno, amenazas, restricciones y mitigación por polígono." },
       { id: "c-windhydro", layer: "C", name: "Lentes eólico e hidroeléctrico", owner: "Claude", status: "PENDIENTE", detail: "Viento a 10 m no sustituye medición a altura de buje; lluvia no es caudal." },
       { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "VERIFICADO", detail: "VAN con escenarios base, adverso y favorable, tornado y equilibrios (precio, CAPEX, recurso); motor genérico finance/sensitivity.py para los tres pilotos (ADR-020). Contraste independiente del tornado y precio de equilibrio aprobado.", evidence: ["4b1ac82", "merge 735a127", "77 pruebas", "VAN y tornado recalculados sin importar el backend", "QA 1280/390 sin errores"] },
-      { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "PENDIENTE", detail: "Ponderaciones explícitas por sector, cobertura y sensibilidad; nunca un 90/100 sin método." },
-      { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
+      { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "LISTO_PARA_QA", detail: "Escalas declaradas, pesos editables, cobertura, estabilidad Dirichlet y empate práctico (ADR-022); solar operativo, vial e inmobiliario con K2/K3." },
+      { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al análisis, sin costo; Gemini solo a pedido con verificación de cifras (ADR-023)." },
 
       // Resultados
       { id: "o-climate", layer: "out", group: "Módulos", name: "1 · Inteligencia climática", owner: "Claude", status: "VERIFICADO", detail: "Pantalla y endpoint climate-screening: año en curso, tendencias, 6 índices ETCCDI con años atípicos marcados, PDF y JSON. QA visual 1440/390 de Claude y puerta común de Codex aprobadas; Hamed–Rao contrastado de forma independiente.", evidence: ["13c1398", "70 pruebas", "build Next.js", "audit 0 vulnerabilidades", "HANDOFF_LOG 2026-10-22"] },
@@ -237,12 +241,14 @@ window.DOP_DATA = {
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },
       { id: "o-social", layer: "out", group: "Módulos", name: "5 · Social y arqueológico", owner: "Claude", status: "PENDIENTE", detail: "Alertas de debida diligencia con fuentes oficiales." },
       { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Corredor con tramos expuestos y escenario de interrupción." },
-      { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios y sensibilidad en pantalla y PDF; falta la comparación multicriterio (ola 2)." },
+      { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios, sensibilidad y puntaje multicriterio en pantalla y PDF." },
       { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Comparación de terrenos con relieve, amenazas y restricciones." },
       { id: "o-nasa", layer: "out", group: "Entregables", name: "Respuestas al reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Las cinco preguntas, con evidencia y etapas que las sostienen." },
       { id: "o-reports", layer: "out", group: "Entregables", name: "Reportes PDF y JSON", owner: "Claude", status: "VERIFICADO", detail: "PDF ejecutivo con huella SHA-256 y JSON reproducible." },
       { id: "o-api", layer: "out", group: "Entregables", name: "API para terceros", owner: "Codex", status: "EN_CURSO", detail: "OpenAPI operativa; falta versionado público y límites de uso." },
       { id: "o-monitor", layer: "out", group: "Entregables", name: "Monitoreo recurrente de activos", owner: "Codex", status: "PENDIENTE", detail: "Línea comercial futura: re-ejecutar y alertar cambios." },
+      { id: "o-territory", layer: "out", group: "Consola", name: "Selector territorial", owner: "Claude", status: "PENDIENTE", planTask: "C7", detail: "Departamento → provincia → distrito, zona propia (dibujo o GeoJSON) o clic; compara de 2 a 4 territorios de cualquier tipo, con la escala de la grilla a la vista." },
+      { id: "o-layers", layer: "out", group: "Consola", name: "Capas visuales del mapa", owner: "Claude", status: "PENDIENTE", planTask: "C6", detail: "Selector de capas GIBS con fecha, leyenda y etiqueta «visual, no entra en el cálculo»; viento sobre tierra con flechas de NASA POWER (opcional)." },
     ],
     // [origen, destino, tipo]: sin tipo = requerida (sin ella el destino no funciona); "E" = enriquece, amplía pero no bloquea.
     // La cobertura y las olas solo cuentan las requeridas.
@@ -270,10 +276,16 @@ window.DOP_DATA = {
       ["c-finance", "o-invest"], ["c-finance", "o-reports", "E"], ["c-finance", "o-api", "E"],
       ["c-scoring", "o-invest", "E"], ["c-scoring", "o-infra", "E"], ["c-scoring", "o-realestate", "E"],
       ["c-assistant", "o-reports", "E"], ["b-trends", "c-assistant"], ["b-terrain", "c-assistant", "E"], ["b-trends", "o-monitor"],
+      // Territorio y capas visuales (propuesta del 23-oct).
+      ["in-admin", "a-admin"], ["a-admin", "a-sampling", "E"], ["a-admin", "o-territory"], ["in-geom", "o-territory", "E"],
+      ["in-power", "a-sampling", "E"], ["a-sampling", "b-celltrends"], ["b-trends", "b-celltrends"],
+      ["b-celltrends", "o-climate", "E"], ["b-celltrends", "o-nasa", "E"], ["b-celltrends", "c-assistant", "E"],
+      ["in-gibs", "o-layers"], ["in-imerg", "o-layers", "E"],
     ],
     // Resultados que el demo del jurado debe completar (preselección en la vista de orquestación).
     // Energía no figura: el piloto solar ya la demuestra; eólica e hidro son extensión, no requisito del demo.
-    juryTargets: ["o-nasa", "o-climate", "o-infra", "o-realestate", "o-invest", "o-reports"],
+    // Selector territorial y capas visuales se suman al demo (decisión de Christian, 23-oct).
+    juryTargets: ["o-nasa", "o-climate", "o-territory", "o-layers", "o-infra", "o-realestate", "o-invest", "o-reports"],
   },
 
   // Diagrama de operaciones del proceso (ASME): la línea principal va de datos NASA crudos a la decisión.
@@ -282,7 +294,8 @@ window.DOP_DATA = {
     inputs: [
       { id: "in-power", label: "Series diarias NASA POWER", provenance: "REAL_DATA", entersAt: "op1" },
       { id: "in-dem", label: "Teselas NASADEM HGT/SC", provenance: "REAL_DATA", entersAt: "op2" },
-      { id: "in-imerg", label: "GPM IMERG · AppEEARS · capas Perú", provenance: "DATA_UNAVAILABLE", entersAt: "op5" },
+      { id: "in-imerg", label: "GPM IMERG (contraste de extremos)", provenance: "REAL_DATA", entersAt: "op5" },
+      { id: "in-peru", label: "AppEEARS · capas Perú", provenance: "DATA_UNAVAILABLE", entersAt: "op5" },
       { id: "in-labels", label: "Generación real COES (etiquetas)", provenance: "DATA_UNAVAILABLE", entersAt: "op7" },
       { id: "in-user", label: "Supuestos del usuario", provenance: "USER_ASSUMPTION", entersAt: "op10" },
     ],
@@ -338,11 +351,14 @@ window.DOP_DATA = {
     { id: "C1", owner: "Claude", title: "Mann–Kendall con Hamed–Rao", status: "VERIFICADO", ref: "5d307f9", nodes: ["qa-core"] },
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
-    { id: "C4", owner: "Claude", title: "Asistente analítico", status: "EN_CURSO", ref: "claude/contrato-sectores", nodes: ["delivery"] },
+    { id: "C4", owner: "Claude", title: "Asistente analítico (reglas sin costo; Gemini a pedido)", status: "LISTO_PARA_QA", ref: "f3074cb · ADR-023", nodes: ["delivery"] },
     { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "PENDIENTE", ref: "depende de K2 y K3", nodes: ["pilots"] },
+    { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "PENDIENTE", ref: "propuesta 23-oct", nodes: ["delivery"] },
+    { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "PENDIENTE", ref: "depende de K5 y K1", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
-    { id: "K1", owner: "Codex", title: "Muestreo de corredores y polígonos", status: "PENDIENTE", ref: "—", nodes: ["sampling"] },
-    { id: "K1b", owner: "Codex", title: "Fuentes IMERG, LHASA y capas Perú; verificar datos COES", status: "PENDIENTE", ref: "—", nodes: ["gpm", "peru", "labels"] },
+    { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "PENDIENTE", ref: "—", nodes: ["sampling"] },
+    { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS verificado; COES ExportarGeneracion verificado 23-oct", nodes: ["gpm", "peru", "labels"] },
+    { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "PENDIENTE", ref: "COD-AB Perú, CC BY-IGO", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
     { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
     { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 21-dic-2026)", status: "EN_CURSO", ref: "continuo", nodes: [] },

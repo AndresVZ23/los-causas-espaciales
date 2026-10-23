@@ -9,7 +9,10 @@ from backend.app.orchestration import extraction
 from backend.app.orchestration.conformance import envelope_violations
 from backend.app.reports.executive_pdf import render_executive_pdf
 from backend.app.schemas.analysis import Point
-from backend.app.schemas.climate import ClimateScreeningRequest
+from backend.app.orchestration.analysis import agreement, attach_countercheck
+from backend.app.schemas.analysis import TrendResult
+from backend.app.schemas.climate import Agreement, AtypicalYear, ClimateScreeningRequest, ExtremeIndexSummary
+from backend.app.schemas.screening import AnnualObservation
 from backend.app.schemas.screening import PipelineStatus, ScreeningEnvelope, Sector
 from backend.app.sectors import climate
 from backend.tests.test_solar import FakePowerConnector, FlatPowerConnector, MetadataOnlyNasadem
@@ -56,6 +59,65 @@ def test_how_much_reports_every_significant_variable(response):
     for variable in {item.variable for item in response.trend_findings}:
         label = next(item.label for item in response.trend_findings if item.variable == variable)
         assert label.lower() in how_much.answer.lower()
+
+
+def test_every_extreme_carries_imerg_countercheck(response):
+    for site in response.sites:
+        for item in site.extremes:
+            assert item.countercheck is not None and item.countercheck.source.startswith("GPM IMERG")
+            # Con la misma serie sintética en ambas fuentes, toda tendencia significativa se repite.
+            if item.significant_after_bh:
+                assert item.countercheck.agreement == Agreement.COINCIDE
+    significant = next(question for question in response.nasa_questions if question.key == "significant")
+    assert "Contraste con GPM IMERG" in significant.answer
+    assert not any(gap.dataset == "GPM IMERG" for gap in response.data_gaps)
+
+
+class NoImergConnector(FakePowerConnector):
+    """IMERG sin años completos (solo pruebas): el contraste falla y debe declararse, sin tumbar el análisis."""
+
+    async def daily_point_multi(self, latitude, longitude, variables, start_date, end_date):
+        output = await super().daily_point_multi(latitude, longitude, variables, start_date, end_date)
+        if "IMERG_PRECTOT" in output:
+            output["IMERG_PRECTOT"] = ([], output["IMERG_PRECTOT"][1])
+        return output
+
+
+def test_missing_imerg_becomes_a_declared_gap(monkeypatch):
+    monkeypatch.setattr(extraction, "PowerConnector", NoImergConnector)
+    monkeypatch.setattr(extraction, "NasademConnector", MetadataOnlyNasadem)
+    result = asyncio.run(climate.run_climate_screening(_request()))
+    assert envelope_violations(result) == []
+    assert any(gap.dataset == "GPM IMERG" for gap in result.data_gaps)
+    assert all(item.countercheck is None for site in result.sites for item in site.extremes)
+
+
+def _summary(direction: str, significant: bool, series=None, atypical=None):
+    trend = TrendResult.model_construct(direction=direction, slope_per_year=1.0 if direction == "increasing" else -1.0)
+    return ExtremeIndexSummary.model_construct(
+        variable="RX1DAY", unit="mm", trend=trend, significant_after_bh=significant, adjusted_p_value=0.01 if significant else 0.4,
+        valid_years=3, annual_series=series or [], atypical_years=atypical or [], countercheck=None,
+    )
+
+
+@pytest.mark.parametrize(("a", "b", "expected"), [
+    (("increasing", True), ("increasing", True), Agreement.COINCIDE),
+    (("increasing", True), ("decreasing", True), Agreement.CONTRADICE),
+    (("increasing", True), ("no_trend", False), Agreement.SIN_RESPALDO),
+    (("no_trend", False), ("increasing", True), Agreement.SOLO_CONTRASTE),
+    (("no_trend", False), ("no_trend", False), Agreement.SIN_TENDENCIA),
+])
+def test_agreement_cases(a, b, expected):
+    assert agreement(_summary(*a), _summary(*b)) == expected
+
+
+def test_atypical_year_gets_countercheck_value():
+    # El caso real que motivó el contraste: 300 mm en el reanálisis y 0 mm en IMERG el mismo año.
+    primary = _summary("no_trend", False, atypical=[AtypicalYear(year=2022, value=300.2, robust_z=89.0)])
+    other = _summary("no_trend", False, series=[AnnualObservation(year=2021, value=4.0), AnnualObservation(year=2022, value=0.0)])
+    attach_countercheck([[primary]], [[other]], "GPM IMERG (prueba)")
+    assert primary.atypical_years[0].countercheck_value == 0.0
+    assert primary.countercheck.agreement == Agreement.SIN_TENDENCIA
 
 
 def test_finance_stage_is_declared_not_applicable(response):

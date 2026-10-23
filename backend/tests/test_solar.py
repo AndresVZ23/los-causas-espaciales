@@ -45,6 +45,7 @@ def _source(variable: str) -> SourceMetadata:
         "T2M": "C",
         "WS10M": "m/s",
         "PRECTOTCORR": "mm/day",
+        "IMERG_PRECTOT": "mm/day",
     }
     return SourceMetadata(
         source_id=f"power-{variable}",

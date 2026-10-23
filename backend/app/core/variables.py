@@ -9,6 +9,7 @@ POWER_VARIABLE_LABELS: dict[str, str] = {
     "T2M": "Temperatura del aire a 2 m",
     "WS10M": "Velocidad del viento a 10 m",
     "PRECTOTCORR": "Precipitación corregida",
+    "IMERG_PRECTOT": "Precipitación satelital GPM IMERG",
 }
 
 

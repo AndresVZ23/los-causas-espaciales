@@ -21,6 +21,7 @@ Todo sector responde con el mismo sobre. La interfaz (pipeline, preguntas NASA),
 | `data_gaps` | Brechas; una `DATA_UNAVAILABLE` impide que la etapa territorial sea `COMPLETADO` |
 | `assumption_items` | Supuestos del usuario con etiqueta, valor, unidad y `USER_ASSUMPTION` |
 | `financial_sensitivity` | Por sujeto: VAN base, escenarios `base`/`adverso`/`favorable`, tornado (un factor a la vez, con procedencia y origen del rango) y puntos de equilibrio. Vacío si el sector no evalúa finanzas (ADR-020) |
+| `scorecard` | Puntaje multicriterio: criterios con escala y fundamento, pesos, puntaje y cobertura por sujeto, estabilidad, sensibilidad de pesos y empate práctico. `null` si el sector no lo usa (ADR-022) |
 | `disclaimer` | Alcance y límites |
 
 Los campos propios del sector se agregan **heredando** el sobre (por ejemplo, `SolarScreeningResponse(ScreeningEnvelope)` agrega `sites`, `comparative_findings` y `assumptions`). Así no se rompe ningún consumidor existente. Los cambios al sobre son solo aditivos; uno incompatible exige un ADR y subir `contract_version`.

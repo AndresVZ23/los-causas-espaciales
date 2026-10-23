@@ -233,6 +233,40 @@ def _sensitivity_section(envelope: ScreeningEnvelope, styles: dict[str, Paragrap
     return out
 
 
+def _scorecard_section(envelope: ScreeningEnvelope, styles: dict[str, ParagraphStyle], usable: float) -> list:
+    card = envelope.scorecard
+    out: list = [
+        Paragraph("Puntaje multicriterio", styles["h2"]),
+        Paragraph(_text(card.method), styles["lede"]),
+    ]
+    summary = "; ".join(
+        f"{item.subject}: {item.score:.0f}/100 (primero en {item.first_place_share:.0%} de {card.stability_draws} combinaciones de pesos, cobertura {item.coverage:.0%})"
+        if item.score is not None else f"{item.subject}: sin datos suficientes"
+        for item in card.subjects
+    )
+    out.append(Paragraph(f"<b>{_text(summary)}.</b>", styles["body"]))
+    if card.tie:
+        out.append(Paragraph(_text(f"Empate práctico ({card.margin:.1f} punto(s) de diferencia): el puntaje no separa los sujetos; la decisión debe leerse criterio por criterio."), styles["body"]))
+    out.append(Spacer(1, 2 * mm))
+    head = [Paragraph(h, styles["cellHead"]) for h in ("Criterio", "Peso", "Escala (0 a 100)")] + [Paragraph(_text(item.subject), styles["cellHead"]) for item in card.subjects]
+    rows = [head]
+    for position, criterion in enumerate(card.criteria):
+        cells = [Paragraph(_text(criterion.label), styles["cell"]), Paragraph(f"{criterion.weight * 100:.0f} %", styles["mono"]),
+                 Paragraph(_text(f"{_factor_value(criterion.worst, criterion.unit)} a {_factor_value(criterion.best, criterion.unit)}"), styles["mono"])]
+        for subject in card.subjects:
+            item = subject.criteria[position]
+            cells.append(Paragraph(_text("sin dato" if item.score is None else f"{item.score:.0f} pts"), styles["mono"]))
+        rows.append(cells)
+    fixed = 44 * mm + 16 * mm + 50 * mm
+    out.append(_table(rows, [44 * mm, 16 * mm, 50 * mm] + [(usable - fixed) / len(card.subjects)] * len(card.subjects)))
+    fragile = [criterion.label.lower() for criterion, item in zip(card.criteria, card.weight_sensitivity, strict=True) if item.changes_leader]
+    out.append(Paragraph(_text(
+        f"El primer lugar cambia al llevar a la mitad o al 150 % el peso de: {', '.join(fragile)}." if fragile
+        else "El primer lugar no cambia al llevar cualquier peso a la mitad o al 150 %."), styles["cellMuted"]))
+    out += [Paragraph(_text(note), styles["cellMuted"]) for note in card.notes]
+    return out
+
+
 def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
     _register_fonts()
     styles = _styles()
@@ -343,6 +377,9 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
             assumption_rows.append([Paragraph(_text(item.label), styles["cell"]), Paragraph(value, styles["mono"]),
                                     Paragraph(_text("" if item.unit == "fracción" else item.unit), styles["cellMuted"])])
         story.append(_table(assumption_rows, [70 * mm, 40 * mm, usable - 110 * mm]))
+
+    if envelope.scorecard is not None:
+        story += _scorecard_section(envelope, styles, usable)
 
     if envelope.financial_sensitivity:
         story += _sensitivity_section(envelope, styles, usable)

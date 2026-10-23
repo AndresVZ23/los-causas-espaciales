@@ -89,3 +89,37 @@ La pregunta «¿Cuánto está cambiando?» elegía el mayor cambio comparando ma
 El sobre C2 agrega `financial_sensitivity` (aditivo; el contrato sigue en v1.0). Por cada sujeto incluye el VAN base, los escenarios base, adverso y favorable, el tornado y los puntos de equilibrio. El motor `backend/app/finance/sensitivity.py` es genérico: recibe la función de VAN del sector, así la fórmula vive en un solo lugar. El tornado mueve un factor a la vez y ordena por efecto. Los equilibrios se resuelven por bisección; el del precio se contrastó con la fórmula cerrada y el VAN con `verify_cashflow.py` de la skill de inversión. El verificador de conformidad exige escenario base y adverso, y un VAN base igual al de su escenario.
 
 En el piloto solar, el rango del recurso no es un supuesto: sale de los percentiles 10 y 90 de las medias anuales observadas por NASA POWER (`MODEL_ESTIMATE`). Los rangos de precio, CAPEX, OPEX (±20 %), performance ratio (±0.05) y tasa (±2 puntos) son supuestos editables y quedan en `assumption_items`. Los escenarios combinados mueven recurso, precio, CAPEX y OPEX; el performance ratio y la tasa solo entran en el tornado. Con los supuestos por defecto, el recurso es el factor que menos mueve el VAN, y la irradiancia de equilibrio (7.7 kWh/m²/día) supera el mejor año observado. Para que el VAN sea positivo hace falta un precio cerca de 64 USD/MWh o un CAPEX cerca de USD 15 M, no más sol. Para K2 y K3: cada sector define sus `Driver` y su modelo, y el resto (tornado, escenarios, PDF y pantalla) se reutiliza.
+## ADR-021 — GPM IMERG como contraste independiente de los extremos de lluvia
+
+NASA POWER publica `IMERG_PRECTOT` (GPM IMERG, mm/día, UTC) en la misma API diaria; se verificó el 2026-10-23. El módulo climático lo pide junto con las demás variables y calcula los mismos seis índices ETCCDI con IMERG. La prueba de tendencia es la misma (Hamed–Rao + BH por índice entre sitios). Cada índice informa su `countercheck` con un acuerdo:
+- **coincide:** ambas fuentes son significativas y van en la misma dirección.
+- **contradice:** ambas son significativas, en direcciones opuestas.
+- **sin respaldo:** solo MERRA-2 es significativa.
+- **solo IMERG:** solo IMERG es significativa.
+- **sin tendencia:** ninguna lo es.
+
+Una tendencia de extremos se considera robusta solo si coincide. La pregunta de significancia lo dice y la de inversión agrega una salvedad cuando no hay respaldo. Si IMERG falla, el contraste se declara como brecha y el análisis sigue.
+
+Resultado con datos reales (2001–2025):
+- La única tendencia significativa de extremos, la lluvia máxima de 5 días en Arequipa (moderada), no se repite con IMERG (p BH 0.87): queda como indicio.
+- IMERG no respalda los valores atípicos de MERRA-2 en Moquegua. El 12 y el 13 de septiembre de 2022 IMERG marca 0.0 mm frente a 314.5 mm del reanálisis, y el máximo diario de 2022 es de 12 mm en IMERG frente a 300 mm. IMERG sí registra lluvia en temporada húmeda (Arequipa, enero a marzo de 2023: 111.5 mm), así que el cero no es un relleno.
+- El último dato válido de IMERG en POWER es del 2026-09-14.
+- IMERG no mostró el defecto × 24, y ese día tampoco PRECTOTCORR al pedir hasta hoy; la guardia del ADR-017 se mantiene.
+## ADR-022 — Puntaje multicriterio transparente, con estabilidad y empate práctico
+
+El sobre C2 agrega `scorecard`, un campo aditivo. El motor `backend/app/scoring/multicriteria.py` es genérico: una suma ponderada de puntajes de 0 a 100.
+- **Escalas:** cada criterio se normaliza con una escala de referencia declarada (peor valor = 0, mejor = 100, con recorte), no con mín–máx entre sujetos, que con dos sitios da siempre 0 y 100.
+- **Datos faltantes:** el criterio sale del cálculo de ese sujeto, su peso se reparte entre los demás y se informa la cobertura.
+- **Estabilidad:** 2 000 combinaciones de pesos Dirichlet centradas en los pesos elegidos (semilla fija); se informa en qué fracción queda primero cada sujeto.
+- **Sensibilidad:** se lleva cada peso a la mitad y al 150 %, y se registra si cambia el primer lugar.
+- **Empate práctico:** margen menor que 5 puntos o un líder que gana en menos del 75 % de las combinaciones. En ese caso la pantalla, el PDF y el pipeline dicen que el puntaje no separa los sitios.
+- **Recálculo:** `POST /api/v1/scoring/scorecard` recalcula con otros pesos sin volver a consultar NASA, y la pantalla no duplica la fórmula.
+
+Solar usa seis criterios: recurso, estabilidad interanual, deriva significativa, temperatura, pendiente NASADEM y VAN/CAPEX. Sus pesos por defecto son 30/10/10/10/15/25 y las escalas están declaradas en `SOLAR_CRITERIA`.
+
+Con datos reales, Arequipa (67) y Moquegua (66) quedan en empate práctico: Arequipa es primera solo en el 59 % de las combinaciones, y el primer lugar cambia con el peso de la temperatura o de la pendiente. Es el resultado honesto, no un ganador fabricado.
+## ADR-023 — Asistente en modo reglas, con Gemini solo a pedido y cifras verificadas
+
+Decisión de Christian (2026-10-23): ningún gasto adicional. El asistente (C4, `POST /api/v1/assistant/ask`) responde **por defecto con reglas**: arma la respuesta con los textos y cifras del propio análisis, sin llamadas externas ni límite de uso. Cubre las 5 preguntas NASA, la tendencia y el año en curso por variable, los extremos de lluvia con su contraste IMERG, el puntaje, los escenarios del VAN, el relieve, las brechas y las fuentes, y filtra por el sitio que nombra la pregunta.
+
+Gemini es **opcional y por pregunta**. El botón «Preguntar a Gemini» solo aparece si hay `GEMINI_API_KEY` y avisa que gasta la cuota gratuita. Se usa la API REST con `httpx`, sin SDK nuevo, y el alias estable `gemini-flash-latest` (verificado con ListModels, que no consume cuota). El contexto es solo el análisis, a temperatura 0.2, y la respuesta debe citar sus fuentes. El backend verifica que cada cifra de la respuesta salga del contexto, admitiendo redondeo, %, millones y por década. Si alguna no aparece, si Gemini falla o si se agota la cuota, se responde con reglas y se explica por qué. Las pruebas simulan Gemini sin red y afirman que una pregunta normal nunca lo llama.
