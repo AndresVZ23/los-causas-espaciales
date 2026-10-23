@@ -34,7 +34,7 @@ def test_pdf_contains_questions_trends_and_traceability(monkeypatch):
     assert len(reader.pages) >= 2
     assert reader.metadata.author == "Los Causas Espaciales"
     for expected in ("Las preguntas del reto NASA", "¿Qué está cambiando?", "Tendencias significativas", "Pipeline de análisis",
-                     "Supuestos del usuario", "Escenarios y sensibilidad del VAN", "Precio mínimo para VAN", "Adverso",
+                     "Supuestos del usuario", "Escenarios y sensibilidad del VAN", "Precio mínimo para VAN", "Adverso", "Puntaje multicriterio",
                      "Brechas antes de invertir", response.analysis_id, fingerprint(response)):
         assert expected in text.replace("\n", " ") or expected in text, expected
     # Sin glifo en las fuentes: se escribe en texto, nunca como un cuadro vacío.

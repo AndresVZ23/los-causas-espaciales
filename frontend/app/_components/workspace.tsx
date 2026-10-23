@@ -2,12 +2,16 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
+import AssistantPanel from "./assistant-panel";
 import { ClimateEvidence, ClimateReading } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
+import GeometryPanel from "./geometry-panel";
+import ScorecardPanel from "./scorecard-panel";
 import SensitivityPanel from "./sensitivity-panel";
+import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
 import { isClimate } from "./types";
 import type { AnyResult, Assumptions, ClimateSite, Module, Point, QuestionKey, SiteResult, Stage } from "./types";
@@ -22,9 +26,14 @@ const modules: Module[] = [
   { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Capas pendientes", ready: false, description: "Requiere integrar y validar capas oficiales de amenazas." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "AppEEARS pendiente", ready: false, description: "Vegetación, agua y cobertura todavía no están conectadas." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Fuentes pendientes", ready: false, description: "No se infiere patrimonio o contexto social desde satélites." },
-  { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Red pendiente", ready: false, description: "Corredores, red y capas territoriales aún deben validarse." },
-  { id: "investment", short: "Inversión", name: "Inteligencia de inversión", icon: "investment", status: "Integrado en Solar", ready: false, description: "El VAN se calcula únicamente dentro del piloto solar y con supuestos explícitos." },
+  { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Corredores · análisis pendiente", ready: false, description: "Dibuje o cargue corredores y valídelos con medición geodésica; el análisis por tramo llega con el piloto vial." },
+  { id: "investment", short: "Inversión", name: "Inteligencia de inversión", icon: "investment", status: "Integrado en Solar", ready: false, description: "Escenarios y sensibilidad del VAN dentro del piloto solar; terrenos para el piloto inmobiliario en preparación." },
 ];
+// Módulos que trabajan con corredores o polígonos en lugar de sitios puntuales.
+const GEOMETRY_HINTS: Record<string, string> = {
+  infrastructure: "Corredores del piloto vial. Aquí se validan y miden; el muestreo NASA por tramo (K1) y el análisis vial (K2) llegan en las olas 2 y 3.",
+  investment: "Terrenos del piloto inmobiliario. Aquí se validan y miden; el análisis por terreno (K3) llega en la ola 3. Use solo coordenadas públicas.",
+};
 
 const initialSites: Point[] = [
   { label: "Moquegua", latitude: -17.193, longitude: -70.934 },
@@ -82,6 +91,10 @@ export default function Workspace() {
   const [pdfError, setPdfError] = useState("");
   const assumptionPanelRef = useRef<HTMLDetailsElement>(null);
   const mobileVerdictRef = useRef<HTMLDivElement>(null);
+  const study = useStudyGeometries();
+  const geometryHint = GEOMETRY_HINTS[activeModule];
+  const mapGeometries = useMemo(() => study.geometries.map((item) => ({ id: item.id, name: item.name, geometry: item.geometry, valid: item.status !== "invalida" })), [study.geometries]);
+  const mapDrawing = useMemo(() => (study.draft ? { draft: study.draft, onVertex: study.addVertex, onFinish: study.finishDraft } : null), [study.draft, study.addVertex, study.finishDraft]);
 
   const selectedModule = modules.find((module) => module.id === activeModule)!;
   // El relieve llega dentro del mismo resultado: una sola ejecución, una sola procedencia.
@@ -157,7 +170,7 @@ export default function Workspace() {
   }
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
   function selectModule(id: string) {
-    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : "ALLSKY_SFC_SW_DWN"); }
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
     setActiveModule(id); setMobileNavOpen(false);
     if (id === "investment") setAssumptionsOpen(true);
   }
@@ -273,14 +286,16 @@ export default function Workspace() {
           </nav>
           <div className="mapKey">
             <span>LEYENDA DE MAPA</span>
-            <p><i className="keyLine" />Eje entre ubicaciones</p><p><i className="keyPrimary" />Sitio principal</p><p><i className="keySecondary" />Comparador</p><p><i className="keyImagery" />NASA Blue Marble</p>
+            <p><i className="keyLine" />Eje entre ubicaciones</p><p><i className="keyPrimary" />Sitio principal</p><p><i className="keySecondary" />Comparador</p><p><i className="keyImagery" />NASA Blue Marble</p>{study.geometries.length > 0 && <p><i className="keyStudy" />Geometría de estudio</p>}
             <div className="scaleBar"><i /><span>0</span><span>100 km</span></div>
           </div>        </aside>
 
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
           <div className={`mapViewport ${loading ? "isAcquiring" : ""}`}>
-            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} onPick={(latitude, longitude) => setSites((current) => [{ ...current[0], latitude, longitude }, ...current.slice(1)])} />
+            <GeoMap sites={sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible}
+                    geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
+                    onPick={(latitude, longitude) => { if (!geometryHint) setSites((current) => [{ ...current[0], latitude, longitude }, ...current.slice(1)]); }} />
             {loading && <div className="acquisitionLine" aria-hidden="true" />}
             <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>
             <div className="mapSource">NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO</div>
@@ -299,6 +314,7 @@ export default function Workspace() {
                 <p className="mobileProvenance"><span>Procedencia efectiva</span><b>{sourceSummary}</b></p>
               </div>
             </details>
+            {geometryHint ? <GeometryPanel state={study} hint={geometryHint} /> : <>
             <div className="siteEditor">
               {sites.map((site, index) => (
                 <div className="siteRow" key={index}>
@@ -310,6 +326,7 @@ export default function Workspace() {
               ))}
             </div>
             <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready || !endDate}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
+            </>}
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (
               !isMobile && (climateResult
@@ -387,6 +404,7 @@ export default function Workspace() {
         {pdfError && <p className="errorMessage" role="alert">{pdfError}</p>}
         {!result ? <div className="emptyEvidence"><div><h3>El flujo está preparado</h3><p>NASA POWER, Mann–Kendall, pendiente de Sen, ajuste BH y VAN condicionado se ejecutan únicamente al solicitar el análisis.</p></div><ul><li>Comparación Moquegua–Arequipa</li><li>Cobertura y limitaciones por variable</li><li>Supuestos financieros explícitos</li><li>Brechas para debida diligencia</li></ul></div> : <>
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
+          <AssistantPanel result={result} />
           {climateResult && <ClimateEvidence result={climateResult} />}
           {solarResult && <>
           <div className="findingsPanel"><h3>Lectura comparativa</h3>{solarResult.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>
@@ -394,6 +412,7 @@ export default function Workspace() {
             <article className="chartPanel"><div className="panelHeader"><div><h3>Irradiancia histórica media</h3><p>Comparación relativa con observaciones NASA POWER</p></div><span>kWh/m²/día</span></div><ComparisonChart data={comparisonData} /></article>
             <article className="decisionPanel"><h3>Escenario económico</h3>{solarResult.sites.map((site) => <div className="decisionRow" key={site.location.label}><div><b>{site.location.label}</b><span>{formatNumber(site.finance.annual_energy_mwh, 0)} MWh/año</span></div><strong className={site.finance.npv_usd >= 0 ? "positive" : "negative"}>{formatMoney(site.finance.npv_usd)}</strong></div>)}<p>MODEL_ESTIMATE · condicionado a USER_ASSUMPTION</p></article>
           </div>
+          {solarResult.scorecard ? <ScorecardPanel initial={solarResult.scorecard} /> : null}
           {solarResult.financial_sensitivity?.length ? <SensitivityPanel items={solarResult.financial_sensitivity} stale={staleAssumptions} /> : null}
           <div className="siteResults">
             {solarResult.sites.map((site) => (

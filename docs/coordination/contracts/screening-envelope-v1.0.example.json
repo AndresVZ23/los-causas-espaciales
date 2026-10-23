@@ -1,7 +1,7 @@
 {
   "contract_version": "1.0",
   "analysis_id": "bba22be1de6faa5d",
-  "generated_at": "2026-10-23T01:56:13.881933Z",
+  "generated_at": "2026-10-23T03:10:23.847111Z",
   "sector": "solar",
   "sector_label": "Energía solar fotovoltaica",
   "title": "Screening solar comparativo — sur del Perú",
@@ -149,7 +149,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 1129.9,
+      "duration_ms": 3450.4,
       "answers": [
         "what"
       ]
@@ -190,7 +190,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 374.5,
+      "duration_ms": 723.5,
       "answers": [
         "what",
         "how_much",
@@ -225,7 +225,7 @@
           "provenance": "DATA_UNAVAILABLE"
         }
       ],
-      "duration_ms": 1198.7,
+      "duration_ms": 3450.5,
       "answers": [
         "where",
         "so_what"
@@ -256,6 +256,11 @@
           "label": "Criterio",
           "value": "Irradiancia histórica media; sin score compuesto",
           "provenance": null
+        },
+        {
+          "label": "Puntaje multicriterio",
+          "value": "Empate práctico: Arequipa 67/100 por 0.3 punto(s), primero en 59% de las combinaciones de pesos",
+          "provenance": "MODEL_ESTIMATE"
         }
       ],
       "duration_ms": null,
@@ -310,7 +315,7 @@
           "provenance": "USER_ASSUMPTION"
         }
       ],
-      "duration_ms": 10.4,
+      "duration_ms": 51.0,
       "answers": [
         "so_what"
       ]
@@ -830,7 +835,7 @@
     }
   ],
   "terrain": {
-    "generated_at": "2026-10-23T01:56:13.495904Z",
+    "generated_at": "2026-10-23T03:10:23.060594Z",
     "dataset": "NASADEM V001",
     "crs": "EPSG:4326; longitude/latitude",
     "spatial_resolution": "1 arc-second (~30 m at the equator)",
@@ -1367,5 +1372,214 @@
       ]
     }
   ],
+  "scorecard": {
+    "method": "Suma ponderada de puntajes 0–100. Cada criterio se lleva a 0–100 con una escala de referencia declarada (peor valor = 0  mejor valor = 100  con recorte fuera del rango). Sin dato  el criterio sale y su peso se reparte entre los demás. Estabilidad: 2 000 combinaciones de pesos Dirichlet centradas en los pesos elegidos.",
+    "criteria": [
+      {
+        "key": "irradiance",
+        "label": "Recurso solar",
+        "unit": "kWh/m²/día",
+        "direction": "mayor_es_mejor",
+        "weight": 0.3,
+        "worst": 4.0,
+        "best": 7.0,
+        "provenance": "CACHED_DATA",
+        "basis": "Irradiancia media diaria NASA POWER. Escala: 4 (recurso modesto) a 7 (recurso excepcional)."
+      },
+      {
+        "key": "variability",
+        "label": "Estabilidad del recurso",
+        "unit": "%",
+        "direction": "menor_es_mejor",
+        "weight": 0.1,
+        "worst": 8.0,
+        "best": 1.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Variabilidad interanual de la irradiancia: menos variación, flujo más predecible. Escala 8 % a 1 %."
+      },
+      {
+        "key": "resource_drift",
+        "label": "Deriva del recurso",
+        "unit": "kWh/m²/día por década",
+        "direction": "mayor_es_mejor",
+        "weight": 0.1,
+        "worst": -0.2,
+        "best": 0.2,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Pendiente de Sen × 10 solo si es significativa tras BH; sin evidencia de cambio cuenta como 0."
+      },
+      {
+        "key": "temperature",
+        "label": "Temperatura media",
+        "unit": "°C",
+        "direction": "menor_es_mejor",
+        "weight": 0.1,
+        "worst": 30.0,
+        "best": 5.0,
+        "provenance": "CACHED_DATA",
+        "basis": "Pérdidas térmicas de los módulos crecen con la temperatura. Escala 30 °C a 5 °C."
+      },
+      {
+        "key": "terrain_slope",
+        "label": "Pendiente del terreno",
+        "unit": "°",
+        "direction": "menor_es_mejor",
+        "weight": 0.15,
+        "worst": 15.0,
+        "best": 0.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "NASADEM en el punto. Escala 15° (montaje costoso) a 0° (terreno plano)."
+      },
+      {
+        "key": "npv_ratio",
+        "label": "VAN / CAPEX",
+        "unit": "fracción",
+        "direction": "mayor_es_mejor",
+        "weight": 0.25,
+        "worst": -0.5,
+        "best": 0.5,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "VAN base sobre CAPEX inicial con los supuestos del usuario. Escala −50 % a +50 %."
+      }
+    ],
+    "subjects": [
+      {
+        "subject": "Moquegua",
+        "score": 66.6,
+        "coverage": 1.0,
+        "rank": 2,
+        "first_place_share": 0.407,
+        "criteria": [
+          {
+            "key": "irradiance",
+            "value": 6.601521321013005,
+            "score": 86.7,
+            "contribution": 26.0
+          },
+          {
+            "key": "variability",
+            "value": 1.929,
+            "score": 86.7,
+            "contribution": 8.7
+          },
+          {
+            "key": "resource_drift",
+            "value": 0.0,
+            "score": 50.0,
+            "contribution": 5.0
+          },
+          {
+            "key": "temperature",
+            "value": 7.3961054072553045,
+            "score": 90.4,
+            "contribution": 9.0
+          },
+          {
+            "key": "terrain_slope",
+            "value": 5.47,
+            "score": 63.5,
+            "contribution": 9.5
+          },
+          {
+            "key": "npv_ratio",
+            "value": -0.16736937777777777,
+            "score": 33.3,
+            "contribution": 8.3
+          }
+        ]
+      },
+      {
+        "subject": "Arequipa",
+        "score": 66.9,
+        "coverage": 1.0,
+        "rank": 1,
+        "first_place_share": 0.593,
+        "criteria": [
+          {
+            "key": "irradiance",
+            "value": 6.615992265571527,
+            "score": 87.2,
+            "contribution": 26.2
+          },
+          {
+            "key": "variability",
+            "value": 2.093,
+            "score": 84.4,
+            "contribution": 8.4
+          },
+          {
+            "key": "resource_drift",
+            "value": 0.0,
+            "score": 50.0,
+            "contribution": 5.0
+          },
+          {
+            "key": "temperature",
+            "value": 11.112434405658226,
+            "score": 75.6,
+            "contribution": 7.6
+          },
+          {
+            "key": "terrain_slope",
+            "value": 3.67,
+            "score": 75.5,
+            "contribution": 11.3
+          },
+          {
+            "key": "npv_ratio",
+            "value": -0.16517095444444446,
+            "score": 33.5,
+            "contribution": 8.4
+          }
+        ]
+      }
+    ],
+    "leader": "Arequipa",
+    "margin": 0.3,
+    "tie": true,
+    "stability_draws": 2000,
+    "weight_sensitivity": [
+      {
+        "key": "irradiance",
+        "leader_at_half": "Arequipa",
+        "leader_at_one_and_half": "Arequipa",
+        "changes_leader": false
+      },
+      {
+        "key": "variability",
+        "leader_at_half": "Arequipa",
+        "leader_at_one_and_half": "Arequipa",
+        "changes_leader": false
+      },
+      {
+        "key": "resource_drift",
+        "leader_at_half": "Arequipa",
+        "leader_at_one_and_half": "Arequipa",
+        "changes_leader": false
+      },
+      {
+        "key": "temperature",
+        "leader_at_half": "Arequipa",
+        "leader_at_one_and_half": "Moquegua",
+        "changes_leader": true
+      },
+      {
+        "key": "terrain_slope",
+        "leader_at_half": "Moquegua",
+        "leader_at_one_and_half": "Arequipa",
+        "changes_leader": true
+      },
+      {
+        "key": "npv_ratio",
+        "leader_at_half": "Arequipa",
+        "leader_at_one_and_half": "Arequipa",
+        "changes_leader": false
+      }
+    ],
+    "notes": [
+      "Ordena prioridades de estudio entre sitios; no es una recomendación de inversión ni un índice de factibilidad.",
+      "Escalas de referencia y pesos son supuestos editables; el resultado debe leerse junto con su estabilidad."
+    ]
+  },
   "disclaimer": "Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera."
 }

@@ -208,3 +208,77 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 **Puerta común:** 92/92 pruebas backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; Compose válido; siete de siete rutas OpenAPI presentes; `git diff --check` limpio. Dos advertencias deprecadas de dependencias (ReportLab/Starlette), sin fallos.
 
 **Operación y traspaso:** no se inició, detuvo ni utilizó 3100/8000 y no se escribió en `los-causas-claude`. Claude puede integrar `codex/fuentes-amenazas` y construir las pantallas. K1b permanece `EN_CURSO`: faltan IMERG, LHASA, ANA, SENACE, Defensoría, comunidades, red vial y resolver/seleccionar INGEMMET/SENAMHI. Rama sin fusionar ni subir; requiere revisión y aprobación de Christian.
+## 2026-10-23 · Claude · claude/ola1-clima · dibujo y carga de corredores y polígonos
+
+**Entrega:** módulos Infraestructura (corredores) e Inversión (terrenos) con panel «Geometrías de estudio».
+- **Dibujo:** clic por vértice; termina con doble clic, Enter o «Terminar»; Escape cancela.
+- **Carga de GeoJSON:** RFC 7946; rechaza `crs` no WGS84, coordenadas proyectadas, ejes latitud-longitud y anillos abiertos, sin reparar nada en silencio; separa las geometrías multiparte y lo declara.
+- **Validación y medición:** `POST /api/v1/geospatial/inspect`, el endpoint de Codex, sin cambios en su backend.
+- **Exportación:** FeatureCollection para K1.
+
+**Verificación:** `scripts/qa/geometry_ui.cjs` en 1440/390 con 7 archivos límite. El GeoJSON exportado pasa `validate_geojson.py`. La longitud geodésica coincide con un Vincenty propio en 0.00003 %. El único error de consola es el 422 esperado del polígono autointersecado.
+**Para Codex (K1):** el muestreo puede tomar el GeoJSON exportado (`properties.kind` = `segment`/`polygon`, `name`, `origin`, `length_km`, `area_km2`).
+## 2026-10-23 · Claude · claude/ola1-clima · GPM IMERG activo y sondeo de las demás fuentes
+
+**Activado (ADR-021):** GPM IMERG vía NASA POWER (`IMERG_PRECTOT`) como contraste de los extremos ETCCDI, con columna «Contraste GPM IMERG» en pantalla y valor IMERG junto a cada año atípico. IMERG desmiente el atípico de Moquegua 2022 y no respalda la única tendencia significativa de extremos (RX5DAY Arequipa). 85/85 pruebas.
+**Sondeo de acceso del 2026-10-23, desde la máquina de Christian y solo lectura:**
+
+| Fuente | Resultado |
+|---|---|
+| GES DISC (archivo IMERG diario V07) | 206 con el token: hay acceso directo, si se quiere 0.1° sin pasar por POWER |
+| AppEEARS | Catálogo 200 (192 productos); `/api/task` con el token EDL da 403, porque exige `POST /api/login` con usuario y contraseña de Earthdata |
+| CENEPRED SIGRID ArcGIS | 200 (carpetas sigrid, FEN, INDECI, VIVIENDA…) |
+| SERNANP ArcGIS | 200 (gestion_de_anp, servicios_ogc) |
+| Osinergmin GISEM | 200 (carpeta Electricidad) |
+| COES portal | 200 |
+| INGEMMET GEOCATMIN | Sin conexión |
+| SENAMHI IDESEP | Timeout |
+| Ministerio de Cultura (ruta probada) | 404 |
+| NASA LHASA en NCCS | Sin conexión |
+
+**Para Codex (K1b, con prioridad, pedido de Christian):**
+1. AppEEARS: conector con `POST /api/login` (usuario y contraseña en `.env`, que Christian debe agregar) y tareas asíncronas de punto y área para NDVI/EVI (MOD13Q1.061) y agua superficial. Estado `PENDING` como NASADEM.
+2. Capas Perú:
+   - Primero las que responden: peligros de CENEPRED SIGRID, ANP de SERNANP y red eléctrica y subestaciones de Osinergmin GISEM, con consulta por punto, corredor y polígono.
+   - Después, buscar los endpoints vigentes de INGEMMET (peligros geológicos), Ministerio de Cultura (SIGDA) y SENAMHI.
+   - Registrar en `DATA_SOURCES.md` la licencia, la fecha, la escala y la cobertura de cada una.
+3. COES: ubicar la descarga de generación por central (las centrales FV del sur), revisar los términos de uso y dejar series mensuales de etiquetas (`in-coes`) con su procedencia.
+4. LHASA: confirmar la ruta vigente del servicio.
+## 2026-10-23 · Claude · claude/ola1-clima · puntaje multicriterio (ADR-022, ola 2)
+
+**Entrega:** `scorecard` en el sobre C2 (aditivo, con esquema y ejemplo regenerados y conformidad OK). Motor genérico `scoring/multicriteria.py` y endpoint `POST /api/v1/scoring/scorecard`. Panel con pesos editables, recálculo y aviso de empate práctico. Sección en el PDF. 92/92 pruebas. QA `scripts/qa/scorecard_ui.cjs` en 1440/390 sin errores.
+**Para Codex (K2 y K3):** cada piloto define sus criterios (clave, dirección, peso, escala y fundamento) y llama a `build_scorecard`; la pantalla y el PDF ya lo leen. Vial: días de interrupción esperados, RX1DAY por tramo, pendiente, longitud expuesta. Inmobiliario: pendiente, extremos de lluvia, restricciones territoriales (sin dato no equivale a cero) y VAN.
+## 2026-10-23 · Claude · claude/ola1-clima · asistente C4 (ADR-023, ola 2)
+
+**Entrega:** panel «Pregunte al análisis» en Energía y Clima. Modo reglas sin costo por defecto; Gemini a pedido, con la clave de Christian solo en el `.env` de `los-causas-claude`. Endpoints `POST /api/v1/assistant/ask` y `GET /api/v1/assistant/status`. 107/107 pruebas. QA `scripts/qa/assistant_ui.cjs` en 1440/390 sin errores; nunca pulsa Gemini.
+**Para Codex:** no hace falta `GEMINI_API_KEY` en tu carpeta. Si agregas preguntas tipo para K2 y K3, amplía `RULES` en `backend/app/assistant/context.py`. Cuando la puerta común corra el QA, que no use `use_gemini=true`.
+## 2026-10-23 · Claude · claude/ola1-clima · DOP: territorio, capas visuales y COES verificado
+
+**Decisión de Christian:** la consola deja de limitarse a Moquegua y Arequipa. Habrá un selector de departamento, provincia, distrito o zona propia, y capas visuales (temperatura del mar, viento, etc.). Ambas cosas entran al demo del jurado.
+**DOP actualizado:**
+- **Entradas:** `in-admin` (límites IGN) y `in-gibs` (capas GIBS).
+- **Unidades:** `a-admin` (índice territorial), `b-celltrends` (tendencias por celda), `o-territory` (selector territorial) y `o-layers` (capas visuales).
+- **Muestreo:** `a-sampling` ampliado a territorios.
+- **Plan:** tareas K5, C6 y C7, también en `PLAN_CLAUDE_CODEX.md`.
+
+**Verificado hoy:**
+- **GIBS:** publica 1 353 capas. Para el Perú sirven `GHRSST_L4_MUR_Sea_Surface_Temperature` y `…_Anomalies`, `AMSRU2_Wind_Speed*`, `IMERG_Precipitation_Rate`, `MODIS_*_Land_Surface_Temp_*` y `MODIS_Terra_L3_NDVI_16Day`.
+- **COD-AB Perú (IGN vía OCHA):** 25 departamentos, 196 provincias y 1 873 distritos, licencia CC BY-IGO, trazos de 2015 revisados en 2025. geoBoundaries no trae distritos.
+- **POWER regional:** `/api/temporal/daily/regional` acepta un parámetro por pedido y devuelve grilla de 0.5°.
+
+**COES (para K1b):**
+- **Exportación pública:** `https://www.coes.org.pe/Portal/portalinformacion/ExportarGeneracion?fechaInicial=dd/mm/aaaa&fechaFinal=dd/mm/aaaa&indicador=1`. Con `indicador=1` usa medidores; con `0`, SCADA.
+- **Formato:** devuelve un xlsx con la hoja «PRODUCCIÓN DIARIA» (FECHA, EMPRESA, GRUPO/CENTRAL, TIPO GENERACIÓN, TOTAL). El TOTAL es plausible en MWh/día: Clemesí 981, Intipampa 333; hay que confirmarlo.
+- **Contenido:** trae las centrales solares del sur.
+- **Términos:** el portal no publica términos de uso y no tiene `robots.txt`.
+- **Mi prueba:** una sola descarga de un día, guardada en `.claude-qa/`.
+
+## 2026-10-23 · Codex · master · 63e0f36 · ola climática y capa de decisión fusionadas
+
+**Fusión aprobada:** `master` integró `claude/ola1-clima` en `63e0f36`, cuyo extremo revisado es `2ec78b8`. Incluye ADR-020 (escenarios y sensibilidad), geometrías de corredores/polígonos, ADR-021 (contraste IMERG), ADR-022 (puntaje multicriterio), ADR-023 (asistente por reglas) y el DOP territorial. El único conflicto fue `docs/interno/dop-datos.js`; se conservaron el motor financiero previamente verificado y los nuevos estados de Claude.
+
+**Puerta común sobre master:** 107/107 pruebas backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. Las dos advertencias de pytest pertenecen a deprecaciones de ReportLab y Starlette.
+
+**Gemini y operación:** `GEMINI_API_KEY` está ausente en esta carpeta. Los dos casos `use_gemini=true` sustituyen `generate` por una función local y una clave ficticia; no hubo llamada externa ni consumo de cuota. No se iniciaron ni modificaron los servicios 3100/8000 y Codex no editó manualmente `frontend/**`.
+
+**Veredicto:** incremento aprobado para `master` y para publicación. IMERG vía POWER, scorecard y C4 pasan a `VERIFICADO`; el acceso IMERG directo de 0.1° y el resto de K1b continúan como trabajo separado. Siguiente entrega Codex: reintegrar `codex/fuentes-amenazas` sobre este master, corregir COES al contrato XLSX `ExportarGeneracion` y confirmar LHASA antes de K5.

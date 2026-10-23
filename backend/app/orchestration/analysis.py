@@ -13,7 +13,7 @@ from ..connectors.nasa.power import PowerConnectorError
 from ..core.units import display_unit, is_ratio_scale
 from ..core.variables import variable_label
 from ..schemas.analysis import Observation, SourceMetadata
-from ..schemas.climate import AtypicalYear, ExtremeIndexSummary
+from ..schemas.climate import Agreement, AtypicalYear, ExtremeCountercheck, ExtremeIndexSummary
 from ..schemas.pipeline import AnnualObservation, CurrentPeriod, VariableSummary
 from ..statistics.extremes import INDEX_DEFINITIONS, annual_indices, atypical_years
 from ..statistics.multiple_testing import benjamini_hochberg
@@ -101,15 +101,16 @@ def analyze_subjects(datasets: Sequence[PowerDataset], variables: Sequence[str],
     return by_subject
 
 
-def analyze_extremes(datasets: Sequence[PowerDataset]) -> tuple[list[list[ExtremeIndexSummary]], list[float | None]]:
+def analyze_extremes(datasets: Sequence[PowerDataset], variable: str = PRECIPITATION) -> tuple[list[list[ExtremeIndexSummary]], list[float | None]]:
     """Índices ETCCDI de precipitación por sujeto, con Mann–Kendall corregido y BH por índice entre sujetos.
 
+    `variable` elige la serie diaria (PRECTOTCORR por defecto; IMERG_PRECTOT para el contraste satelital).
     Devuelve los resúmenes por sujeto (en el orden de INDEX_DEFINITIONS) y el umbral P95 de cada sujeto.
     """
     by_subject: list[list[ExtremeIndexSummary]] = []
     thresholds: list[float | None] = []
     for dataset in datasets:
-        observations, _source = dataset[PRECIPITATION]
+        observations, _source = dataset[variable]
         series, threshold, discarded = annual_indices(observations)
         thresholds.append(threshold)
         summaries = []
@@ -135,3 +136,29 @@ def analyze_extremes(datasets: Sequence[PowerDataset]) -> tuple[list[list[Extrem
         by_subject.append(summaries)
     _adjust_by_column(by_subject, len(INDEX_DEFINITIONS))
     return by_subject, thresholds
+
+
+def agreement(primary: ExtremeIndexSummary, other: ExtremeIndexSummary) -> Agreement:
+    """Acuerdo entre dos fuentes para el mismo índice y sujeto, ya ajustadas por BH en su propia familia."""
+    a, b = primary.significant_after_bh, other.significant_after_bh
+    if a and b:
+        return Agreement.COINCIDE if primary.trend.direction == other.trend.direction else Agreement.CONTRADICE
+    if a:
+        return Agreement.SIN_RESPALDO
+    return Agreement.SOLO_CONTRASTE if b else Agreement.SIN_TENDENCIA
+
+
+def attach_countercheck(primary: list[list[ExtremeIndexSummary]], other: list[list[ExtremeIndexSummary]], source: str) -> None:
+    """Anota en cada índice principal su contraste con la otra fuente y el valor de contraste de sus años atípicos."""
+    for primary_site, other_site in zip(primary, other, strict=True):
+        other_by_code = {item.variable: item for item in other_site}
+        for item in primary_site:
+            twin = other_by_code[item.variable]
+            twin_by_year = {point.year: point.value for point in twin.annual_series}
+            item.countercheck = ExtremeCountercheck(
+                source=source, valid_years=twin.valid_years, direction=twin.trend.direction, slope_per_year=twin.trend.slope_per_year,
+                adjusted_p_value=twin.adjusted_p_value, significant_after_bh=twin.significant_after_bh,
+                agreement=agreement(item, twin), annual_series=twin.annual_series,
+            )
+            for atypical in item.atypical_years:
+                atypical.countercheck_value = twin_by_year.get(atypical.year)

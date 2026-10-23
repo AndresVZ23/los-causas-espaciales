@@ -1,5 +1,5 @@
 import { formatNumber, siteColor } from "./format";
-import type { ClimateResult, ExtremeIndex, VariableSummary } from "./types";
+import type { Agreement, ClimateResult, ExtremeIndex, VariableSummary } from "./types";
 
 const READING_ROWS = [
   { code: "T2M", label: "Temperatura" },
@@ -29,7 +29,10 @@ export function ClimateReading({ result, headingId }: { result: ClimateResult; h
   const anyPeriod = sites.flatMap((site) => site.variables).find((item) => item.current_period)?.current_period;
   const extremeCodes = new Set(sites[0]?.extremes.map((item) => item.variable));
   const extremeFindings = result.trend_findings.filter((item) => extremeCodes.has(item.variable));
-  const atypical = sites.flatMap((site) => site.extremes.flatMap((item) => (item.atypical_years ?? []).map((year) => `${item.variable} ${site.location.label} ${year.year}: ${formatNumber(year.value, 1)} ${item.display_unit}`)));
+  const atypical = sites.flatMap((site) => site.extremes.flatMap((item) => (item.atypical_years ?? []).map((year) =>
+    `${item.variable} ${site.location.label} ${year.year}: ${formatNumber(year.value, 1)} ${item.display_unit}`
+    + (year.countercheck_value != null ? ` (IMERG ${formatNumber(year.countercheck_value, 1)})` : ""))));
+  const imergChecked = atypical.some((text) => text.includes("IMERG"));
   return (
     <section className="verdict" aria-labelledby={headingId}>
       <div className="verdictHead">
@@ -63,10 +66,30 @@ export function ClimateReading({ result, headingId }: { result: ClimateResult; h
       </div>
       {atypical.length > 0 && (
         <div className="verdictAssumptions climateExtremes">
-          <p><span>Valores atípicos de NASA POWER</span><b>{atypical.join(" · ")}. Sin contraste con estaciones; no cambian la prueba de Mann–Kendall, que usa rangos.</b></p>
+          <p><span>Valores atípicos de NASA POWER</span><b>{atypical.join(" · ")}. {imergChecked ? "El satélite GPM IMERG sirve de contraste; falta el de estaciones." : "Sin contraste con estaciones."} No cambian la prueba de Mann–Kendall, que usa rangos.</b></p>
         </div>
       )}
     </section>
+  );
+}
+
+const AGREEMENT_TEXT: Record<Agreement, string> = {
+  coincide: "Coincide",
+  contradice: "Contradice",
+  sin_respaldo: "Sin respaldo",
+  solo_contraste: "Solo IMERG",
+  sin_tendencia: "Sin tendencia",
+};
+
+function CountercheckCell({ item }: { item: ExtremeIndex }) {
+  const check = item.countercheck;
+  if (!check) return <td>N/D</td>;
+  const slope = check.slope_per_year == null ? "N/D" : `${signed(check.slope_per_year, 3)} ${item.display_unit}/año`;
+  return (
+    <td className={`agreement ${check.agreement}`}>
+      {AGREEMENT_TEXT[check.agreement]}
+      <small>{slope} · p BH {check.adjusted_p_value == null ? "N/D" : formatNumber(check.adjusted_p_value, 3)}</small>
+    </td>
   );
 }
 
@@ -78,7 +101,10 @@ function ExtremeRow({ item }: { item: ExtremeIndex }) {
       <th>
         {item.label}<small>{item.variable} · {item.description}</small>
         {item.atypical_years?.map((atypical) => (
-          <small className="atypical" key={atypical.year}>Año atípico {atypical.year}: {formatNumber(atypical.value, 1)} {item.display_unit} (z robusto {formatNumber(atypical.robust_z, 0)}) · contrastar con estaciones</small>
+          <small className="atypical" key={atypical.year}>
+            Año atípico {atypical.year}: {formatNumber(atypical.value, 1)} {item.display_unit} (z robusto {formatNumber(atypical.robust_z, 0)})
+            {atypical.countercheck_value != null ? ` · IMERG: ${formatNumber(atypical.countercheck_value, 1)} ${item.display_unit}` : " · contrastar con estaciones"}
+          </small>
         ))}
       </th>
       <td>{formatNumber(item.mean, 1)} {item.display_unit}</td>
@@ -86,6 +112,7 @@ function ExtremeRow({ item }: { item: ExtremeIndex }) {
       <td>{trend.slope_per_year == null ? "N/D" : `${signed(trend.slope_per_year * years, 1)} ${item.display_unit}`}</td>
       <td>{item.adjusted_p_value == null ? "N/D" : formatNumber(item.adjusted_p_value, 3)}</td>
       <td>{evidenceLabel(item)}</td>
+      <CountercheckCell item={item} />
     </tr>
   );
 }
@@ -102,7 +129,7 @@ export function ClimateEvidence({ result }: { result: ClimateResult }) {
             </div>
             <div className="tableScroll">
               <table>
-                <thead><tr><th>Índice</th><th>Media anual</th><th>Pendiente Sen</th><th>Cambio en el período</th><th>p BH</th><th>Evidencia</th></tr></thead>
+                <thead><tr><th>Índice</th><th>Media anual</th><th>Pendiente Sen</th><th>Cambio en el período</th><th>p BH</th><th>Evidencia</th><th>Contraste GPM IMERG</th></tr></thead>
                 <tbody>{site.extremes.map((item) => <ExtremeRow key={item.variable} item={item} />)}</tbody>
               </table>
             </div>

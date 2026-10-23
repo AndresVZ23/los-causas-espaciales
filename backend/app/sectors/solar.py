@@ -11,6 +11,8 @@ import numpy as np
 
 from ..finance.engine import calculate_npv
 from ..finance.sensitivity import Driver, break_even_item, tornado
+from ..schemas.scoring import Criterion, Direction, Scorecard, ScorecardRequest, SubjectValues
+from ..scoring.multicriteria import build_scorecard
 from ..orchestration.analysis import analyze_subjects
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
@@ -254,6 +256,54 @@ def _site_result(site, summaries, position: int, total: int, assumptions: SolarA
     )
 
 
+# Criterios del puntaje solar: (clave, etiqueta, unidad, dirección, peso, peor, mejor, fundamento de la escala).
+# Escalas y pesos son supuestos declarados y editables en la consola; el valor de cada criterio sale del pipeline.
+SOLAR_CRITERIA = [
+    ("irradiance", "Recurso solar", "kWh/m²/día", Direction.HIGHER_IS_BETTER, 0.30, 4.0, 7.0,
+     "Irradiancia media diaria NASA POWER. Escala: 4 (recurso modesto) a 7 (recurso excepcional)."),
+    ("variability", "Estabilidad del recurso", "%", Direction.LOWER_IS_BETTER, 0.10, 8.0, 1.0,
+     "Variabilidad interanual de la irradiancia: menos variación, flujo más predecible. Escala 8 % a 1 %."),
+    ("resource_drift", "Deriva del recurso", "kWh/m²/día por década", Direction.HIGHER_IS_BETTER, 0.10, -0.2, 0.2,
+     "Pendiente de Sen × 10 solo si es significativa tras BH; sin evidencia de cambio cuenta como 0."),
+    ("temperature", "Temperatura media", "°C", Direction.LOWER_IS_BETTER, 0.10, 30.0, 5.0,
+     "Pérdidas térmicas de los módulos crecen con la temperatura. Escala 30 °C a 5 °C."),
+    ("terrain_slope", "Pendiente del terreno", "°", Direction.LOWER_IS_BETTER, 0.15, 15.0, 0.0,
+     "NASADEM en el punto. Escala 15° (montaje costoso) a 0° (terreno plano)."),
+    ("npv_ratio", "VAN / CAPEX", "fracción", Direction.HIGHER_IS_BETTER, 0.25, -0.5, 0.5,
+     "VAN base sobre CAPEX inicial con los supuestos del usuario. Escala −50 % a +50 %."),
+]
+SCORE_NOTES = [
+    "Ordena prioridades de estudio entre sitios; no es una recomendación de inversión ni un índice de factibilidad.",
+    "Escalas de referencia y pesos son supuestos editables; el resultado debe leerse junto con su estabilidad.",
+]
+
+
+def solar_scorecard(subjects: list[StudySubject], results: list[SolarSiteResult], terrain: TerrainResponse | None,
+                    assumptions: SolarAssumptions) -> Scorecard:
+    terrain_by_label = {site.location.label: site for site in (terrain.sites if terrain else [])}
+    rows = []
+    for subject, result in zip(subjects, results, strict=True):
+        by_code = {item.variable: item for item in result.variables}
+        solar, temperature = by_code[IRRADIANCE], by_code["T2M"]
+        drift = solar.trend.slope_per_year * 10 if solar.significant_after_bh and solar.trend.slope_per_year is not None else 0.0
+        site = terrain_by_label.get(subject.label)
+        slope = site.metrics.slope_degrees if site and site.status == "READY" else None
+        rows.append(SubjectValues(subject=subject.label, values={
+            "irradiance": solar.mean, "variability": solar.annual_variability_percent, "resource_drift": drift,
+            "temperature": temperature.mean, "terrain_slope": slope, "npv_ratio": result.finance.npv_usd / assumptions.initial_capex_usd,
+        }))
+    source = results[0].variables[0].source.provenance
+    provenance = {"irradiance": source, "temperature": source}
+    criteria = [Criterion(key=key, label=label, unit=unit, direction=direction, weight=weight, worst=worst, best=best,
+                          provenance=provenance.get(key, Provenance.MODEL), basis=basis)
+                for key, label, unit, direction, weight, worst, best, basis in SOLAR_CRITERIA]
+    notes = list(SCORE_NOTES)
+    missing = [row.subject for row in rows if row.values["terrain_slope"] is None]
+    if missing:
+        notes.append(f"Sin pendiente NASADEM para {', '.join(missing)}: ese criterio queda fuera y su peso se reparte (ver cobertura).")
+    return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+
+
 def _lower_first(text: str) -> str:
     """Minúscula inicial para usar una etiqueta dentro de una frase, salvo siglas (CAPEX, OPEX)."""
     return text if text[:2].isupper() else text[:1].lower() + text[1:]
@@ -350,7 +400,16 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
     all_provenance = unique(source_provenance + [Provenance.MODEL, Provenance.ASSUMPTION] + ([Provenance.UNAVAILABLE] if pending else []))
     years = max(len(item.annual_series) for summaries in summaries_by_site for item in summaries)
     a = request.assumptions
+    scorecard = solar_scorecard(subjects, site_results, terrain, request.assumptions)
     evaluation, finance = _evaluation_and_finance_stages(site_results, sensitivities, source_provenance, timings.finance_ms)
+    leader = next((item for item in scorecard.subjects if item.subject == scorecard.leader), None)
+    if leader:
+        evaluation.evidence.append(StageEvidence(
+            label="Puntaje multicriterio", provenance=Provenance.MODEL,
+            value=(f"Empate práctico: {leader.subject} {leader.score:.0f}/100 por {scorecard.margin:.1f} punto(s), primero en {leader.first_place_share:.0%} de las combinaciones de pesos"
+                   if scorecard.tie else
+                   f"{leader.subject} {leader.score:.0f}/100 · primero en {leader.first_place_share:.0%} de {scorecard.stability_draws} combinaciones de pesos"),
+        ))
     pipeline = assemble_pipeline([
         selection_stage(subjects, max_separation_km(points)),
         configuration_stage(SECTOR_LABEL, SOLAR_VARIABLES, request.start_date, request.end_date, years,
@@ -380,5 +439,6 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
         assumptions=request.assumptions,
         assumption_items=_assumption_items(request.assumptions),
         financial_sensitivity=sensitivities,
+        scorecard=scorecard,
         disclaimer="Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera.",
     )
