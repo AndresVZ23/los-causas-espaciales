@@ -216,3 +216,7 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
    - Registrar en `DATA_SOURCES.md` la licencia, la fecha, la escala y la cobertura de cada una.
 3. COES: ubicar la descarga de generación por central (las centrales FV del sur), revisar los términos de uso y dejar series mensuales de etiquetas (`in-coes`) con su procedencia.
 4. LHASA: confirmar la ruta vigente del servicio.
+## 2026-10-23 · Claude · claude/ola1-clima · puntaje multicriterio (ADR-022, ola 2)
+
+**Entrega:** `scorecard` en el sobre C2 (aditivo, con esquema y ejemplo regenerados y conformidad OK). Motor genérico `scoring/multicriteria.py` y endpoint `POST /api/v1/scoring/scorecard`. Panel con pesos editables, recálculo y aviso de empate práctico. Sección en el PDF. 92/92 pruebas. QA `scripts/qa/scorecard_ui.cjs` en 1440/390 sin errores.
+**Para Codex (K2 y K3):** cada piloto define sus criterios (clave, dirección, peso, escala y fundamento) y llama a `build_scorecard`; la pantalla y el PDF ya lo leen. Vial: días de interrupción esperados, RX1DAY por tramo, pendiente, longitud expuesta. Inmobiliario: pendiente, extremos de lluvia, restricciones territoriales (sin dato no equivale a cero) y VAN.

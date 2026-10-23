@@ -105,3 +105,16 @@ Resultado con datos reales (2001–2025):
 - IMERG no respalda los valores atípicos de MERRA-2 en Moquegua. El 12 y el 13 de septiembre de 2022 IMERG marca 0.0 mm frente a 314.5 mm del reanálisis, y el máximo diario de 2022 es de 12 mm en IMERG frente a 300 mm. IMERG sí registra lluvia en temporada húmeda (Arequipa, enero a marzo de 2023: 111.5 mm), así que el cero no es un relleno.
 - El último dato válido de IMERG en POWER es del 2026-09-14.
 - IMERG no mostró el defecto × 24, y ese día tampoco PRECTOTCORR al pedir hasta hoy; la guardia del ADR-017 se mantiene.
+## ADR-022 — Puntaje multicriterio transparente, con estabilidad y empate práctico
+
+El sobre C2 agrega `scorecard`, un campo aditivo. El motor `backend/app/scoring/multicriteria.py` es genérico: una suma ponderada de puntajes de 0 a 100.
+- **Escalas:** cada criterio se normaliza con una escala de referencia declarada (peor valor = 0, mejor = 100, con recorte), no con mín–máx entre sujetos, que con dos sitios da siempre 0 y 100.
+- **Datos faltantes:** el criterio sale del cálculo de ese sujeto, su peso se reparte entre los demás y se informa la cobertura.
+- **Estabilidad:** 2 000 combinaciones de pesos Dirichlet centradas en los pesos elegidos (semilla fija); se informa en qué fracción queda primero cada sujeto.
+- **Sensibilidad:** se lleva cada peso a la mitad y al 150 %, y se registra si cambia el primer lugar.
+- **Empate práctico:** margen menor que 5 puntos o un líder que gana en menos del 75 % de las combinaciones. En ese caso la pantalla, el PDF y el pipeline dicen que el puntaje no separa los sitios.
+- **Recálculo:** `POST /api/v1/scoring/scorecard` recalcula con otros pesos sin volver a consultar NASA, y la pantalla no duplica la fórmula.
+
+Solar usa seis criterios: recurso, estabilidad interanual, deriva significativa, temperatura, pendiente NASADEM y VAN/CAPEX. Sus pesos por defecto son 30/10/10/10/15/25 y las escalas están declaradas en `SOLAR_CRITERIA`.
+
+Con datos reales, Arequipa (67) y Moquegua (66) quedan en empate práctico: Arequipa es primera solo en el 59 % de las combinaciones, y el primer lugar cambia con el peso de la temperatura o de la pendiente. Es el resultado honesto, no un ganador fabricado.

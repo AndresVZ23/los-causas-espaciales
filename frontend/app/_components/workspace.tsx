@@ -8,6 +8,7 @@ import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import GeometryPanel from "./geometry-panel";
+import ScorecardPanel from "./scorecard-panel";
 import SensitivityPanel from "./sensitivity-panel";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
@@ -409,6 +410,7 @@ export default function Workspace() {
             <article className="chartPanel"><div className="panelHeader"><div><h3>Irradiancia histórica media</h3><p>Comparación relativa con observaciones NASA POWER</p></div><span>kWh/m²/día</span></div><ComparisonChart data={comparisonData} /></article>
             <article className="decisionPanel"><h3>Escenario económico</h3>{solarResult.sites.map((site) => <div className="decisionRow" key={site.location.label}><div><b>{site.location.label}</b><span>{formatNumber(site.finance.annual_energy_mwh, 0)} MWh/año</span></div><strong className={site.finance.npv_usd >= 0 ? "positive" : "negative"}>{formatMoney(site.finance.npv_usd)}</strong></div>)}<p>MODEL_ESTIMATE · condicionado a USER_ASSUMPTION</p></article>
           </div>
+          {solarResult.scorecard ? <ScorecardPanel initial={solarResult.scorecard} /> : null}
           {solarResult.financial_sensitivity?.length ? <SensitivityPanel items={solarResult.financial_sensitivity} stale={staleAssumptions} /> : null}
           <div className="siteResults">
             {solarResult.sites.map((site) => (

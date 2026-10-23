@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T04:30:00Z",
+  updatedAt: "2026-10-23T06:00:00Z",
   updatedBy: "Claude",
 
   statuses: {
@@ -227,7 +227,7 @@ window.DOP_DATA = {
       { id: "c-realestate", layer: "C", name: "Lente inmobiliario", owner: "Codex", status: "PENDIENTE", planTask: "K3", detail: "Terreno, amenazas, restricciones y mitigación por polígono." },
       { id: "c-windhydro", layer: "C", name: "Lentes eólico e hidroeléctrico", owner: "Claude", status: "PENDIENTE", detail: "Viento a 10 m no sustituye medición a altura de buje; lluvia no es caudal." },
       { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "LISTO_PARA_QA", detail: "VAN con escenarios base, adverso y favorable, tornado y equilibrios (precio, CAPEX, recurso); motor genérico finance/sensitivity.py para los tres pilotos (ADR-020)." },
-      { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "PENDIENTE", detail: "Ponderaciones explícitas por sector, cobertura y sensibilidad; nunca un 90/100 sin método." },
+      { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "LISTO_PARA_QA", detail: "Escalas declaradas, pesos editables, cobertura, estabilidad Dirichlet y empate práctico (ADR-022); solar operativo, vial e inmobiliario con K2/K3." },
       { id: "c-assistant", layer: "C", name: "Asistente analítico", owner: "Claude", status: "EN_CURSO", planTask: "C4", dopNode: "delivery", detail: "Reglas deterministas con citas al resultado; IA opcional." },
 
       // Resultados
@@ -237,7 +237,7 @@ window.DOP_DATA = {
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },
       { id: "o-social", layer: "out", group: "Módulos", name: "5 · Social y arqueológico", owner: "Claude", status: "PENDIENTE", detail: "Alertas de debida diligencia con fuentes oficiales." },
       { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Corredor con tramos expuestos y escenario de interrupción." },
-      { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios y sensibilidad en pantalla y PDF; falta la comparación multicriterio (ola 2)." },
+      { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios, sensibilidad y puntaje multicriterio en pantalla y PDF." },
       { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Comparación de terrenos con relieve, amenazas y restricciones." },
       { id: "o-nasa", layer: "out", group: "Entregables", name: "Respuestas al reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Las cinco preguntas, con evidencia y etapas que las sostienen." },
       { id: "o-reports", layer: "out", group: "Entregables", name: "Reportes PDF y JSON", owner: "Claude", status: "VERIFICADO", detail: "PDF ejecutivo con huella SHA-256 y JSON reproducible." },

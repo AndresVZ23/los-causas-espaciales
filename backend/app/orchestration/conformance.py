@@ -82,6 +82,21 @@ def envelope_violations(envelope: ScreeningEnvelope) -> list[str]:
         if not sensitivity.tornado:
             problems.append(f"La sensibilidad de {sensitivity.subject} no informa factores.")
 
+    if envelope.scorecard is not None:
+        card = envelope.scorecard
+        total = sum(criterion.weight for criterion in card.criteria)
+        if abs(total - 1) > 1e-3:
+            problems.append(f"Los pesos del puntaje suman {total:.3f}; deben sumar 1.")
+        for subject in card.subjects:
+            if subject.subject not in labels:
+                problems.append(f"El puntaje cita un sujeto inexistente: {subject.subject}.")
+            if subject.score is not None and not 0 <= subject.score <= 100:
+                problems.append(f"El puntaje de {subject.subject} está fuera de 0–100.")
+            if not 0 <= subject.coverage <= 1 + 1e-9:
+                problems.append(f"La cobertura del puntaje de {subject.subject} está fuera de 0–1.")
+        if any(not criterion.basis.strip() for criterion in card.criteria):
+            problems.append("Cada criterio del puntaje debe declarar el fundamento de su escala.")
+
     for item in envelope.assumption_items:
         if item.provenance != Provenance.ASSUMPTION:
             problems.append(f"El supuesto {item.key} debe tener procedencia USER_ASSUMPTION.")

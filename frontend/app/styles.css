@@ -325,6 +325,32 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .tornadoTip { position: absolute; right: 0; bottom: calc(100% - 4px); z-index: 5; width: min(320px, 100%); padding: 9px 11px; display: none; flex-direction: column; gap: 4px; background: var(--raised); border: 1px solid var(--border); box-shadow: 0 6px 18px rgb(0 0 0 / .4); font-size: 11px; color: var(--text); }
 .tornadoTip small { color: var(--muted); line-height: 1.4; }
 .tornadoRow:hover .tornadoTip, .tornadoRow:focus-visible .tornadoTip { display: flex; }
+/* Puntaje multicriterio (contrato C2 · scorecard). */
+.scorecardPanel { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
+.scoreVerdict { margin: 14px 0 0; padding: 9px 11px; border-left: 2px solid var(--accent); background: var(--ground); font-size: 12px; line-height: 1.5; }
+.scoreVerdict.tie { border-left-color: var(--warning); }
+.scoreSummary { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.scoreSummary article { padding: 12px 14px; border: 1px solid var(--border); background: var(--ground); display: grid; gap: 4px; }
+.scoreSummary article.leader { border-color: var(--accent); }
+.scoreSummary p { margin: 0; display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; }
+.scoreSummary p i { width: 10px; height: 2px; }.scoreSummary p span { margin-left: auto; color: var(--accent); font: 500 11px var(--font-data-mono), monospace; }
+.scoreSummary strong { font: 600 30px/1 var(--font-data-mono), monospace; }.scoreSummary strong small { color: var(--muted); font-size: 12px; margin-left: 3px; }
+.scoreSummary > article > small { color: var(--muted); font-size: 11px; line-height: 1.4; }
+.scoreTable { min-width: 720px; }.scoreTable th, .scoreTable td { height: auto; padding-block: 10px; vertical-align: top; }
+.scoreTable tbody th small { margin-top: 3px; line-height: 1.4; }.scoreTable tbody th small + small { max-width: 360px; white-space: normal; }
+.weightCell { white-space: nowrap; }.weightCell input { width: 58px; min-height: 30px; border: 1px solid var(--border); background: var(--control); color: var(--text); text-align: right; padding: 0 6px; font: 12px var(--font-data-mono), monospace; }
+.weightCell span { margin-left: 4px; color: var(--muted); }
+.scoreCell { min-width: 150px; }.scoreCell span { display: block; font: 12px var(--font-data-mono), monospace; }
+.scoreBar { display: block; height: 6px; margin: 6px 0 4px auto; width: 100%; max-width: 160px; background: var(--rule); border-radius: 2px; overflow: hidden; }
+.scoreBar b { display: block; height: 100%; background: var(--accent); border-radius: 0 2px 2px 0; }
+.scoreCell small { color: var(--subtle); font: 10px var(--font-data-mono), monospace; }
+.weightBar { margin-top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.weightBar p { margin: 0; color: var(--muted); font: 11px var(--font-data-mono), monospace; }.weightBar p.unbalanced { color: var(--warning); }
+.weightBar > div { display: flex; gap: 7px; flex-wrap: wrap; }
+.weightBar button { min-height: 32px; padding: 0 12px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--text); font-size: 11px; }
+.weightBar button.primary { border-color: var(--accent); }.weightBar button:disabled { color: var(--subtle); border-color: var(--border); }
+.scoreNotes { margin-top: 12px; border-top: 1px solid var(--rule); padding-top: 8px; }
+.scoreNotes p { margin: 6px 0 0; color: var(--muted); font-size: 11px; line-height: 1.45; }.scoreNotes p:first-child { color: var(--text); }
 /* Geometrías de estudio: corredores y polígonos (violeta en el mapa, distinto de sitios y estados). */
 .geometryPanel { padding: 4px 0 12px; border-bottom: 1px solid var(--rule); }
 .geometryHead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
