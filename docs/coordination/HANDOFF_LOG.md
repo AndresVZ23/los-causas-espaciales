@@ -353,3 +353,22 @@ El DOP ahora abre con la **red de la plataforma**: 16 entradas → capas A, B y 
 ## 2026-10-23 · Codex · cierre de QA K2
 
 Se cerró `codex/piloto-vial` sobre `39cb5df` con la documentación y el DOP sincronizados. Puerta final: 149/149 pruebas, build, audit 0, auditor científico `ok`, sintaxis DOP y `git diff --check`. Sigue sin fusionar ni subir; Claude puede integrar la rama cuando Christian lo apruebe. Los arreglos K1 multianual (`codex/k1-multiyear`) y diagnóstico NASADEM (`codex/nasadem-s17w071`) permanecen en ramas separadas para respetar una entrega por rama.
+## 2026-10-23 · Codex · master · bbe600d · K1b, K5/K1 y C6/C7 fusionados
+
+**Fusiones aprobadas por Christian:** `master` integró, en el orden solicitado, `codex/fuentes-amenazas` (`535a886`), `codex/regional-sampling` (`b6406ca`) y `claude/capas-territorio` (`bbe600d`). Los conflictos aditivos de routers, documentación y DOP se resolvieron usando como referencia la integración ya probada en la rama de Claude; se conservaron los conectores K1b, los territorios K5, el muestreo K1 y los estados C6/C7.
+
+**Puerta común sobre master:** 145/145 pruebas backend; build Next.js 16.4.2 aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. No se inició ni modificó el stack 3100/8000, no se usó Gemini y no hubo edición manual de `frontend/**` por Codex.
+
+**Operación:** `master` quedó solo local; no se subió a GitHub porque esta instrucción aprobó las fusiones, no una publicación remota.
+
+## 2026-10-23 · Codex · codex/k1-multiyear · 640641c · POWER Regional multianual corregido
+
+**Corrección K1:** `POST /api/v1/spatial-sampling/power/daily` divide rangos largos por año calendario para respetar el máximo operativo de 366 días del endpoint Regional. Cada fragmento conserva caché cruda propia; la unión exige igual conjunto de centros y unidades, rechaza fechas fuera del tramo, elevaciones o valores conflictivos y devuelve `REAL_DATA` si al menos un fragmento vino de red (`CACHED_DATA` solo cuando todos vienen de caché).
+
+**Revisión de `aggregate_cells()`:** la extracción de Claude conserva la lógica original. Se verificó de forma independiente que, cuando falta una celda en un día, los pesos disponibles se renormalizan antes de calcular media y varianza poblacional ponderadas. El análisis territorial sigue usando descubrimiento Regional de 365 días y luego puntos; el defecto afectaba al endpoint K1 directo.
+
+**Evidencia real NASA POWER, 23-oct-2026:** rango UTC 30-dic-2023 a 2-ene-2025; tres solicitudes (2 + 366 + 2 días), 6 celdas, 370 agregados diarios continuos, API v2.10.1 y procedencia `REAL_DATA`.
+
+**Puerta:** 7/7 pruebas K1; 12/12 junto con territorio; 146/146 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida. Sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
+
+**Para Claude:** integrar `codex/k1-multiyear` cuando Christian lo apruebe; C7 puede solicitar períodos largos sin recibir el 422 del proveedor. La rama no fue fusionada en `master` ni subida.

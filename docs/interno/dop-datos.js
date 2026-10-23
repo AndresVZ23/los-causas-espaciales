@@ -108,7 +108,8 @@ window.DOP_DATA = {
       blocker: "Ninguno para NASA POWER; las capas de amenazas armonizadas lo enriquecen después.", evidence: [
         { label: "Moquegua · 9 celdas · cobertura 99.5833%", ref: "ejecución real 23-oct-2026" },
         { label: "La Punta subcelda · modo POINT", ref: "ejecución real 23-oct-2026" },
-        { label: "6 pruebas K1", ref: "backend/tests/test_spatial_sampling.py" },
+        { label: "7 pruebas K1; períodos multianuales y caché mixta", ref: "backend/tests/test_spatial_sampling.py" },
+        { label: "POWER real 2023-12-30 → 2025-01-02", ref: "3 fragmentos · 6 celdas · 370 días · v2.10.1" },
       ] },
     { id: "platform", code: "02C", name: "PostGIS y trabajos", phase: 3, row: 4, owner: "Codex", status: "PENDIENTE",
       purpose: "Persistir análisis y ejecutar extracciones asíncronas auditables.",
@@ -227,7 +228,7 @@ window.DOP_DATA = {
       { id: "a-async", layer: "A", name: "Descarga asíncrona y precarga", owner: "Codex", status: "VERIFICADO", planTask: "K0", dopNode: "dem", detail: "Reanudable por Range, atómica, deduplicada por tesela, con PENDING y prefetch; 14 pruebas aprobadas.", evidence: ["df128a0", "merge 7a42125", "pytest backend/tests/test_nasadem.py"] },
       { id: "a-catalog", layer: "A", name: "Catálogo de fuentes y licencias", owner: "Codex", status: "EN_CURSO", planTask: "K1b", detail: "Existencia, acceso, licencia, resolución, cobertura y fecha de cada fuente." },
       { id: "a-harmonize", layer: "A", name: "Armonización espacial", owner: "Codex", status: "PENDIENTE", dopNode: "harmonize", detail: "CRS, resolución, nodata y temporalidad sin degradación silenciosa." },
-      { id: "a-sampling", layer: "A", name: "Muestreo de corredores, polígonos y territorios", owner: "Codex", status: "VERIFICADO", planTask: "K1", dopNode: "sampling", detail: "GeoJSON de Claude y territorios K5 → POWER Regional (una variable), celdas deduplicadas, serie por celda, promedio y dispersión ponderados por área. Polígonos subcelda se declaran POINT. La grilla real MERRA-2 fue 0.5° lat × 0.625° lon.", evidence: ["Moquegua 9 celdas · REAL_DATA", "La Punta POINT", "6 pruebas K1"] },
+      { id: "a-sampling", layer: "A", name: "Muestreo de corredores, polígonos y territorios", owner: "Codex", status: "VERIFICADO", planTask: "K1", dopNode: "sampling", detail: "GeoJSON de Claude y territorios K5 → POWER Regional (una variable), celdas deduplicadas, serie por celda, promedio y dispersión ponderados por área. Períodos largos se dividen por año (≤366 días) con caché por fragmento. Polígonos subcelda se declaran POINT. La grilla real MERRA-2 fue 0.5° lat × 0.625° lon.", evidence: ["Moquegua 9 celdas · REAL_DATA", "La Punta POINT", "POWER multianual 370 días", "7 pruebas K1"] },
       { id: "a-admin", layer: "A", name: "Índice territorial", owner: "Codex", status: "VERIFICADO", planTask: "K5", dopNode: "sampling", detail: "API tipada de búsqueda por nombre/ubigeo, jerarquía y geometría. Simplificación métrica adaptativa: 92.655–98.587% menos vértices, geometrías válidas y cambio de área geodésica ≤1%; hashes verificados al cargar.", evidence: ["5 pruebas K5", "scripts/data/build_peru_territory.py", "TECHNICAL_ARCHITECTURE.md"] },
       { id: "a-store", layer: "A", name: "Persistencia y trabajos", owner: "Codex", status: "PENDIENTE", dopNode: "platform", detail: "PostGIS, cola de trabajos y ejecuciones versionadas." },
 
@@ -373,7 +374,7 @@ window.DOP_DATA = {
     { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-024", nodes: ["delivery"] },
     { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-025", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
-    { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "VERIFICADO", ref: "Moquegua 9 celdas · La Punta POINT · 6 pruebas", nodes: ["sampling"] },
+    { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "VERIFICADO", ref: "Moquegua 9 celdas · La Punta POINT · multianual 370 días · 7 pruebas", nodes: ["sampling"] },
     { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS, capas activas y COES XLSX verificados; ruta LHASA confirmada, conector LHASA y fuentes Perú restantes pendientes", nodes: ["gpm", "peru", "labels"] },
     { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "VERIFICADO", ref: "COD-AB Perú · CC BY-IGO · 25/196/1,873 · 5 pruebas", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "VERIFICADO", ref: "39cb5df · C2 conforme · ejemplo real · 149 pruebas · build · audit 0", nodes: ["pilots"] },
