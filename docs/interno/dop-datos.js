@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-23T23:50:00Z",
+  updatedAt: "2026-10-24T02:00:00Z",
   updatedBy: "Codex",
 
   statuses: {
@@ -259,7 +259,7 @@ window.DOP_DATA = {
       { id: "o-hazards", layer: "out", group: "Módulos", name: "3 · Amenazas naturales", owner: "Claude", status: "PENDIENTE", detail: "Requiere capas de amenaza y extremos de lluvia." },
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },
       { id: "o-social", layer: "out", group: "Módulos", name: "5 · Social y arqueológico", owner: "Claude", status: "PENDIENTE", detail: "Alertas de debida diligencia con fuentes oficiales." },
-      { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Backend K2 listo en 39cb5df; falta que Claude integre el contrato y construya/verifique la pantalla del corredor." },
+      { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C5", detail: "Backend K2 listo en 39cb5df; falta que Claude integre el contrato y construya/verifique la pantalla del corredor." },
       { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios, sensibilidad y puntaje multicriterio en pantalla y PDF." },
       { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Comparación de terrenos con relieve, amenazas y restricciones." },
       { id: "o-nasa", layer: "out", group: "Entregables", name: "Respuestas al reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Las cinco preguntas, con evidencia y etapas que las sostienen." },
@@ -371,7 +371,7 @@ window.DOP_DATA = {
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
     { id: "C4", owner: "Claude", title: "Asistente analítico (reglas sin costo; Gemini a pedido)", status: "VERIFICADO", ref: "f3074cb · merge 63e0f36 · puerta común aprobada sin clave Gemini", nodes: ["delivery"] },
-    { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "PENDIENTE", ref: "depende de K2 y K3", nodes: ["pilots"] },
+    { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "EN_CURSO", ref: "vial listo para QA (claude/integracion-pilotos); inmobiliario espera K3", nodes: ["pilots"] },
     { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-024", nodes: ["delivery"] },
     { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-025", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },

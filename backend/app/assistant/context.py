@@ -62,6 +62,15 @@ def build_context(envelope: dict[str, Any]) -> dict[str, Any]:
         sites.append(entry)
     if sites:
         context["sitios"] = sites
+    segments = envelope.get("segments") or []
+    if segments:
+        context["tramos"] = [{
+            **_pick(s, "label", "length_km", "heavy_rain_days_per_year", "terrain_slope_degrees"),
+            "lluvia_max_diaria_celdas_mm": (s.get("spatial_exposure") or {}).get("rx1day_mm"),
+            "van_usd": (s.get("finance") or {}).get("npv_usd"),
+            "alertas_territoriales": {key: value for key, value in (s.get("territorial_intersections") or {}).items() if value},
+        } for s in segments]
+        context["corredor"] = _pick(envelope.get("corridor_source") or {}, "name", "source", "license")
     terrain = envelope.get("terrain")
     if terrain:
         context["relieve"] = [{"sujeto": (s.get("location") or {}).get("label"), "estado": s.get("status"), **(s.get("metrics") or {})} for s in terrain.get("sites", [])]
@@ -79,8 +88,9 @@ def _plain(text: str) -> str:
 
 # Reglas: palabras clave → sección del contexto. El orden importa: lo más específico primero.
 RULES: list[tuple[tuple[str, ...], str]] = [
-    (("empate", "puntaje", "ranking", "score", "mejor sitio", "cual conviene", "multicriterio", "peso"), "puntaje"),
+    (("empate", "puntaje", "ranking", "score", "mejor sitio", "cual conviene", "priorizar", "multicriterio", "peso"), "puntaje"),
     (("van", "escenario", "sensibil", "precio", "capex", "opex", "equilibrio", "rentab", "tornado"), "sensibilidad_van"),
+    (("tramo", "corredor", "carretera", "via ", "vial", "interrup"), "tramos"),
     (("imerg", "atipic", "artefacto", "contraste", "satelit"), "contraste"),
     (("extrem", "lluvia max", "lluvias max", "huaico", "rx1day", "rx5day", "racha seca", "sequia"), "extremos"),
     (("brecha", "falta", "pendiente", "no se sabe", "limitacion"), "brechas"),
@@ -100,6 +110,12 @@ def _question(context: dict[str, Any], key: str) -> str | None:
 # Variable por palabra clave → fragmento de su etiqueta en el análisis.
 VARIABLES = {"temperatura": "temperatura", "calor": "temperatura", "lluvia": "precipitaci", "precipit": "precipitaci",
              "viento": "viento", "radiacion": "irradiancia", "irradiancia": "irradiancia", "sol": "irradiancia"}
+# Nombres legibles de las capas territoriales de Codex (claves de `territorial_intersections`).
+LAYER_NAMES = {
+    "cenepred-flood-risk": "riesgo de inundación (CENEPRED)", "cenepred-mass-movement-risk": "movimientos en masa (CENEPRED)",
+    "sernanp-anp": "áreas protegidas (SERNANP)", "cultura-archaeology": "patrimonio arqueológico (SIGDA)",
+    "cultura-archaeology-declared": "patrimonio declarado (SIGDA)", "ingemmet-geohazards": "peligros geológicos (INGEMMET)",
+}
 CURRENT_YEAR_WORDS = ("este ano", "ano en curso", "en lo que va", "actual", "hoy", "2026")
 RELIEF_WORDS = ("relieve", "elevacion", "altitud", "pendiente del terreno", "orientacion", "nasadem")
 
@@ -187,6 +203,15 @@ def answer_by_rules(question: str, context: dict[str, Any]) -> tuple[str, list[s
         if text:
             return text, [f"nasa_questions.{section}"]
     sites = _sites_named(plain, context)
+    if section == "tramos" and context.get("tramos"):
+        named = [t for t in context["tramos"] if _plain(t["label"]) in plain] or context["tramos"]
+        lines = [
+            f"{t['label']}: {_fmt(t.get('length_km'), 1)} km, {_fmt(t.get('heavy_rain_days_per_year'))} días/año de lluvia fuerte, "
+            f"VAN de mitigación {_musd(t['van_usd']) if t.get('van_usd') is not None else 'N/D'}"
+            + (f", alertas: {', '.join(f'{LAYER_NAMES.get(k, k)} {v}' for k, v in t['alertas_territoriales'].items())}" if t.get("alertas_territoriales") else ", sin alertas territoriales devueltas")
+            for t in named
+        ]
+        return f"{context.get('corredor', {}).get('name', 'Corredor')}. " + "; ".join(lines) + ".", ["segments", "territorial_evidence"]
     if section == "puntaje" and "puntaje" in context:
         card = context["puntaje"]
         parts = [f"{s['subject']}: {s.get('score', 'N/D')}/100, primero en {round(s.get('first_place_share', 0) * 100)} % de las combinaciones de pesos" for s in card["sujetos"]]

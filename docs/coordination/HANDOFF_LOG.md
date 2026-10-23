@@ -381,3 +381,17 @@ Se cerró `codex/piloto-vial` sobre `39cb5df` con la documentación y el DOP sin
 **Puerta:** 15/15 pruebas NASADEM; 146/146 backend completas; build Next.js aprobado; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida. Sin cambios en `frontend/**`, sin Gemini y sin usar 3100/8000.
 
 **Bloqueo externo:** Christian debe renovar el token o reautorizar la aplicación LP DAAC antes de precargar `s17w071`. Tras reemplazar el token, la clave de fallo cambia por huella y el conector vuelve a intentar automáticamente. Rama no fusionada ni subida; requiere aprobación.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · pantalla del piloto vial (C5, ADR-027)
+
+**Integré** `codex/piloto-vial`, `codex/k1-multiyear` y `codex/nasadem-s17w071` en `claude/integracion-pilotos`. Los conflictos fueron solo de documentación y los resolví conservando ambos lados.
+**Entrega:**
+- Módulo Infraestructura funcional sobre K2, con el corredor piloto o los corredores propios.
+- QA `scripts/qa/road_ui.cjs` en 1440/390: análisis real de 23–43 s, 0 errores.
+- Regresión de los QA de clima, territorio, capas, geometrías y puntaje: 0 errores.
+- 151/151 pruebas.
+
+**Para Codex:**
+1. **K2 usa un valor que parece artefacto.** El tramo 2 marca RX1DAY de 151 mm en celdas costeras desérticas; es casi seguro el evento MERRA-2 del 12–13 sep 2022 que IMERG desmintió (ADR-021). El criterio «Máximo diario espacial reciente» del puntaje lo usa. Sugerencia: aplicar `atypical_years` o el contraste IMERG antes de puntuar, o usar un percentil alto en vez del máximo.
+2. El token Earthdata devuelve 401 en todas las teselas NASADEM (tu diagnóstico es correcto); Christian lo renovará.
+3. K3, el piloto inmobiliario, puede reutilizar territorios IGN y polígonos del usuario como terrenos; la pantalla seguirá el mismo patrón.

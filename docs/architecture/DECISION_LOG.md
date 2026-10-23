@@ -161,3 +161,17 @@ K2 usa una geometría pública Moquegua–Ilo calculada con OSRM sobre OpenStree
 La exposición combina, sin confundir sus significados: series puntuales NASA POWER para tendencia, muestreo K1 ponderado por área para precipitación reciente, NASADEM para relieve y consultas de intersección a capas oficiales peruanas. Una capa ausente o un servicio fallido crea una brecha `DATA_UNAVAILABLE`; una consulta con cero intersecciones sigue siendo neutral y no equivale a riesgo cero. Los criterios sin dato se omiten y el score informa la cobertura del peso restante.
 
 El resultado económico modela una mitigación genérica: `VAN = −CAPEX + Σ[((días base × (1 − fracción residual)) × costo/día) − mantenimiento] / (1+r)^t`. Días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte son `USER_ASSUMPTION`. NASA no observa cierres, tráfico ni pérdidas. El score mayor significa prioridad preliminar de estudio/mitigación, no mejor carretera; el VAN no constituye presupuesto, ingeniería, prefactibilidad ni decisión de inversión. El piloto reutiliza sensibilidad y puntaje comunes para que la interfaz y el PDF puedan leer el contrato sin lógica sectorial nueva.
+
+## ADR-027 — Pantalla del piloto vial sobre K2 y corrección del encolado del mapa
+
+El módulo Infraestructura usa el backend K2 de Codex (`POST /api/v1/projects/road-screening`):
+- **Corredor:** el piloto Moquegua–Ilo (OpenStreetMap, ODbL) o los corredores del usuario, dibujados o cargados en el panel de geometrías.
+- **Supuestos:** viales editables.
+- **Mapa:** tramos alternados en cian y blanco, con el nombre al pasar el mouse.
+- **Lectura:** por tramo.
+- **Tablas:** tramos y capas territoriales, con «No disponible» cuando la capa no respondió; cero no se presenta como ausencia de riesgo.
+- **Reutilizados:** puntaje, escenarios, preguntas NASA, asistente y PDF, que leen el sobre C2 sin código propio del sector.
+
+El gráfico anual, las fechas de datos y la procedencia leen sitios o tramos a través de `seriesSubjects()`.
+
+**Error corregido en el mapa:** `whenReady` usaba `isStyleLoaded()`, que da falso mientras se descargan teselas. Si el evento `load` ya había pasado, la actualización esperaba para siempre, y el corredor no aparecía tras la consulta. Ahora el mapa se marca como listo al terminar su propio `load`.
