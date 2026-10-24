@@ -468,3 +468,18 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 ## 2026-10-24 · Codex · `master` · a3ac298 · publicación aprobada en GitHub
 
 Después de la puerta común y del congelamiento documental, `origin/master` avanzó de `0510656` a `a3ac298` con aprobación de Christian. Antes del push, `git fetch origin` confirmó divergencia `0/41`; no se sobrescribió historia remota. La etiqueta `v0.1.0` no fue creada ni publicada: queda reservada para el commit final aprobado del 7-nov según `RELEASE_2026-11-07.md`.
+## 2026-10-24 · Claude · claude/integracion-pilotos · DOP al día
+
+**Estados con evidencia:**
+- **Verificados:** C6/C7 y sus unidades (`in-gibs`, `o-layers`, `b-celltrends`, `o-territory`), `in-geom` y `b-hydro`, por la fusión de Codex en `bbe600d`, el QA cruzado 49/49 y los QA de Claude en 1440/390.
+- **Ruta del modelo:** IMERG y pilotos quedan verificados.
+
+**Red:** amenazas y restricciones pasan a enlaces que enriquecen a los pilotos vial e inmobiliario (`E`). Los pilotos funcionan con las capas disponibles; antes la red los mostraba verificados con su cadena requerida incompleta.
+
+**HTML:**
+- Un resultado verificado ya no suma olas.
+- La «siguiente acción» ignora los resultados del demo ya listos.
+- Nueva métrica de días para la entrega (`deliveryDate` 2026-11-07).
+- Cuando el demo está completo, la cabecera dice «8 / 8 resultados del demo del jurado listos».
+
+**Plan:** Q1 (Claude: pitch, escenarios y ensayo) y Q2 (Codex: congelamiento, puerta final y etiqueta).
