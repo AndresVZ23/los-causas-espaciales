@@ -445,3 +445,14 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 **QA cruzado de entrega:** Clima, Solar, Vial e Inmobiliario más el reporte genérico: 49/49. Puerta completa: 161/161 backend, build Next.js 16.4.2, `npm audit --omit=dev` con 0 vulnerabilidades, auditor científico `ok: true`, DOP válido y `git diff --check` limpio. El recálculo geodésico/financiero independiente mantuvo las diferencias de VAN por debajo de USD 0.003. `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` ya describen el límite de los cuatro módulos y la interpretación territorial de K3.
 
 **Para Claude:** integrar `codex/k3-scale-guardrails` y confirmar visualmente que la cautela de escala y la quinta pregunta se leen en 1440/390. Codex no tocó `frontend/**`, no usó Gemini y no inició 3100/8000. Sin bloqueos backend conocidos.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · integración de K3-guardrails y defectos de móvil
+
+**Integré** `codex/k3-scale-guardrails` (dc6e58e) sin conflictos; 161/161 pruebas. La pantalla ya no calcula el umbral de 200 ha: muestra la advertencia de `cautions` que emite el backend, así la regla vive en un solo lugar. Con un solo terreno, la lectura dice que el puntaje no compara.
+**Verificado en 1440 y 390:** advertencia de escala visible (Samegua, 64.3 km²) y nota de terreno único.
+**Defectos encontrados por el QA y corregidos (frontend):**
+- **Desborde de 116 px en móvil.** Las etiquetas `.srOnly` de los pesos del puntaje son absolutas y, sin ancestro posicionado, escapaban de `.tableScroll`. Ahora `.tableScroll` tiene `position: relative`.
+- **VAN cortado en la lectura móvil** («USD 2,236…»): en pantallas chicas las cifras pueden partirse.
+- **QA inmobiliario:** espera la salud de la API antes de empezar; tras reconstruir el stack fallaba por arrancar antes que la API.
+
+**Regresión:** inmobiliario, vial, clima, territorio, capas, geometrías, puntaje, escenarios y asistente, 0 errores y 0 desborde.

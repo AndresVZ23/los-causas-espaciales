@@ -50,6 +50,7 @@ async function run(viewport, tag, withTerritory) {
     await page.locator(".territoryChosen li").first().waitFor();
     out.secondsTerritory = await runAnalysis(page);
     out.territoryReading = await page.locator(".verdict").first().innerText();
+    await page.locator(".verdict").first().screenshot({ path: path.join(OUT, `lectura-territorio-${tag}.png`) });
     await page.waitForTimeout(1000);
     await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `mapa-territorio-${tag}.png`) });
   }
@@ -59,7 +60,17 @@ async function run(viewport, tag, withTerritory) {
   return out;
 }
 
+// Tras reconstruir el stack, la API tarda unos segundos en aceptar consultas: se espera su salud antes de empezar.
+async function waitForApi() {
+  for (let attempt = 0; attempt < 60; attempt++) {
+    try { if ((await fetch("http://localhost:8000/api/v1/health")).ok) return; } catch { /* aún arrancando */ }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  throw new Error("La API no respondió en 2 minutos.");
+}
+
 (async () => {
-  const results = [await run({ width: 1440, height: 900 }, "1440", true), await run({ width: 390, height: 844 }, "390", false)];
+  await waitForApi();
+  const results = [await run({ width: 1440, height: 900 }, "1440", true), await run({ width: 390, height: 844 }, "390", true)];
   console.log(JSON.stringify(results, null, 1));
 })();

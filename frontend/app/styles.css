@@ -385,7 +385,11 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .cellLegend p { margin: 2px 0; color: var(--muted); font: 10px/1.35 var(--font-data-mono), monospace; }.cellLegend b { color: var(--text); }
 .cellScale { display: flex; flex-wrap: wrap; gap: 8px; }.cellScale i { display: inline-block; width: 10px; height: 10px; margin-right: 4px; vertical-align: -1px; border-radius: 2px; }
 .cellScale i.cellNone { border: 1px dashed #818b94; }
-@media (max-width: 560px) { .territoryLevels { grid-template-columns: 1fr; }.cellLegend { bottom: 48px; } }
+@media (max-width: 560px) {
+  .territoryLevels { grid-template-columns: 1fr; }.cellLegend { bottom: 48px; }
+  /* Lecturas de pilotos: cifras largas como «USD 2,236.35 M» pueden partirse en vez de quedar cortadas. */
+  .climateTable td.figure { white-space: normal; overflow-wrap: anywhere; }
+}
 /* Asistente C4: preguntas sobre el análisis (modo reglas por defecto). */
 .assistantPanel { margin: 0 0 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
 .assistantPanel .panelHeader > span { color: var(--positive); font: 10px var(--font-data-mono), monospace; }
@@ -407,6 +411,13 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .assistantMeta { margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 12px; color: var(--subtle); font: 10px var(--font-data-mono), monospace; }
 .assistantNotice { margin: 6px 0 0; color: var(--warning); font-size: 11px; }
 /* Puntaje multicriterio (contrato C2 · scorecard). */
+/* Los paneles de evidencia son hijos de una grilla: sin min-width 0 crecen con su tabla y empujan la página en móvil
+   en vez de dejar que .tableScroll haga scroll (visto con un solo terreno en el piloto inmobiliario). */
+.scorecardPanel, .sensitivityPanel, .assistantPanel, .siteResult, .findingsPanel { min-width: 0; }
+/* Las etiquetas .srOnly son absolutas: sin un ancestro posicionado se ubican respecto de la página y, dentro de una
+   tabla con scroll, la desbordan en móvil (116 px con un solo terreno). */
+.tableScroll { position: relative; }
+.scoreTable tbody th small { overflow-wrap: anywhere; }
 .scorecardPanel { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
 .scoreVerdict { margin: 14px 0 0; padding: 9px 11px; border-left: 2px solid var(--accent); background: var(--ground); font-size: 12px; line-height: 1.5; }
 .scoreVerdict.tie { border-left-color: var(--warning); }
