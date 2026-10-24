@@ -410,7 +410,7 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 
 **Puerta de la corrección:** 5/5 pruebas K2, 20/20 K2+NASADEM y 152/152 backend completas; build Next.js 16.4.2; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida y `git diff --check` limpio. No se usó Gemini ni se iniciaron 3100/8000.
 
-## 2026-10-23 · Codex · `codex/piloto-inmobiliario` · K3 backend inmobiliario
+## 2026-10-23 · Codex · `codex/piloto-inmobiliario` · 4810d93 · K3 backend inmobiliario
 
 **Dependencia:** la rama está apilada sobre `codex/k2-rainfall-qa` (`97a7bac`) para conservar el P99 común y la resolución NASADEM. Al integrarla, Claude debe tomar primero esa base o seleccionar ambos commits en orden.
 

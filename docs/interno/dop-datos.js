@@ -379,7 +379,7 @@ window.DOP_DATA = {
     { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS, capas activas y COES XLSX verificados; ruta LHASA confirmada, conector LHASA y fuentes Perú restantes pendientes", nodes: ["gpm", "peru", "labels"] },
     { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "VERIFICADO", ref: "COD-AB Perú · CC BY-IGO · 25/196/1,873 · 5 pruebas", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "VERIFICADO", ref: "f527ad2 · C2 conforme · P99 robusto · NASADEM READY · ejemplo real · 152 pruebas · build · audit 0", nodes: ["pilots"] },
-    { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "VERIFICADO", ref: "C2 conforme · ejemplo real a9ae20e290ce6f69 · 7 pruebas · MultiPolygon · área/VAN independientes · 160 backend", nodes: ["pilots"] },
+    { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "VERIFICADO", ref: "4810d93 · C2 conforme · ejemplo real a9ae20e290ce6f69 · 7 pruebas · MultiPolygon · área/VAN independientes · 160 backend", nodes: ["pilots"] },
     { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "HTTP 206 verificado · continuo", nodes: [] },
   ],
 };
