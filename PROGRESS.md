@@ -186,7 +186,9 @@
 - VAN condicionado con fracción desarrollable, edificabilidad, precio, obra, suelo, mitigación, costo comercial, absorción, tasa y horizonte etiquetados `USER_ASSUMPTION`. Incluye base/adverso/favorable, tornado y equilibrios mediante el motor común.
 - Scorecard de seis criterios con cobertura: P99, pendiente, alertas de amenaza, alertas de restricción, VAN/inversión inicial y fracción desarrollable. Las fuentes incompletas eliminan el criterio relacionado en vez de imputar cero.
 - Ejecución real 2018–2023 para tres áreas de análisis no catastrales cerca de Moquegua, Samegua y Cerro Colorado: POWER/K1 disponibles, tres NASADEM `READY`, CENEPRED/SERNANP/Cultura consultados e INGEMMET visible como brecha. Contrato reproducible en `docs/coordination/contracts/real-estate-screening-v1.0.example.json`.
-- Recalculo independiente de área WGS84 y flujos descontados: diferencia de VAN menor a USD 0.003 en los tres terrenos. Pruebas K3: 7/7; suite backend: 160/160.
+- Recalculo independiente de área WGS84 y flujos descontados: diferencia de VAN menor a USD 0.003 en los tres terrenos.
+- Salvaguarda de escala: sobre 2 km² (200 ha), el terreno se declara área de análisis y el VAN no se presenta como VAN de proyecto; la cautela aparece en el sujeto y en la quinta pregunta NASA. Un solo sujeto devuelve `margin=None`, `tie=False` y una nota de no comparación.
+- Pruebas K3: 8/8; matriz cruzada Clima/Solar/Vial/Inmobiliario + PDF: 49/49; suite backend completa: 161/161. Build Next.js 16.4.2, auditoría npm (0 vulnerabilidades), auditor científico (`ok: true`), DOP y diff aprobados.
 
 ## Traspaso a Claude Code
 

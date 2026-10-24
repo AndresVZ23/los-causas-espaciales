@@ -188,7 +188,7 @@ K3 acepta Polygon/MultiPolygon WGS84 del usuario o un territorio IGN identificad
 
 El VAN carga suelo y mitigación en t=0 y reconoce ingreso, costo de construcción y costo comercial a medida que la absorción anual supuesta vende área. Fracción desarrollable, edificabilidad, precio, costos, absorción, tasa y horizonte son siempre `USER_ASSUMPTION`; no se infieren de NASA, IGN ni de las intersecciones. El modelo omite impuestos, financiamiento, permisos, cronograma de obra, inflación y valor residual, y lo declara. El score combina P99, pendiente, alertas devueltas, VAN/inversión y fracción desarrollable. Si falta una fuente necesaria el criterio queda sin dato y baja la cobertura; cero intersecciones no equivale a cero riesgo. Un recálculo separado de área y flujo descontado debe coincidir a USD 0.01 antes de aceptar la entrega.
 
-## ADR-028 — Pantalla del piloto inmobiliario sobre K3
+## ADR-030 — Pantalla del piloto inmobiliario sobre K3 (registrada originalmente como ADR-028)
 
 El módulo Inversión usa el backend K3 de Codex (`POST /api/v1/projects/real-estate-screening`) con tres fuentes de terrenos:
 - **Áreas de ejemplo del contrato:** 3 cuadrados de unos 330 m, rotulados como ilustrativos («no son lotes reales»).
@@ -200,3 +200,9 @@ Incluye supuestos editables (precio, costos, fracción urbanizable, coeficiente 
 Dos salvaguardas de interpretación, encontradas en el QA:
 - **Escala:** un distrito usado como terreno daba un VAN de USD 2 236 M (Samegua, 64 km²), porque el modelo urbaniza una fracción fija de toda el área. Sobre 200 ha la lectura advierte que el VAN no describe un proyecto.
 - **Un solo sujeto:** el puntaje dice que no compara, en vez de «lidera por 0 puntos». Aplica también al piloto vial.
+
+## ADR-031 — K3 separa áreas territoriales de VAN de proyecto
+
+K3 conserva los territorios IGN como entradas útiles para exposición climática, relieve y alertas territoriales, pero una geometría mayor de 2 km² (200 ha) deja de interpretarse como escala de proyecto. El backend no elimina el VAN ilustrativo ni cambia el contrato ya consumido por la consola: añade una cautela inequívoca en el resultado del sujeto y en la quinta pregunta NASA. La cautela explica que la fracción desarrollable y los demás supuestos se aplican a toda la geometría y exige un polígono predial para evaluar un proyecto.
+
+Para una sola geometría, el scorecard conserva los puntajes de criterios pero declara `margin=None` y `tie=False`; una nota explica que esos valores no implican liderazgo frente a una alternativa. Una prueba controlada con el distrito IGN de Samegua reproduce la escala superior a 200 ha, verifica ambas cautelas y exige conformidad C2 sin convertir la ausencia de comparación en empate.
