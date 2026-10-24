@@ -204,3 +204,9 @@
 - Mann–Kendall sin modificación puede verse afectado por correlación serial; cada resultado expone el diagnóstico lag-1 y la limitación.
 - El orden relativo actual considera irradiancia histórica, no permisos, conexión, propiedad, CAPEX local ni impactos sociales.
 - Ningún valor faltante se convierte en cero y ninguna capa pendiente se presenta como disponible.
+
+## Congelamiento de entrega · 7 de noviembre de 2026
+
+- `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` quedaron fijados el 24-oct-2026 como baseline de fuentes y arquitectura para `v0.1.0`.
+- El manifiesto `docs/coordination/RELEASE_2026-11-07.md` define la evidencia, las brechas aceptadas, la puerta final y los comandos exactos de etiquetado.
+- La etiqueta anotada `v0.1.0` se crea únicamente el 7-nov sobre el commit final aprobado; no se adelanta durante el período de estabilización.

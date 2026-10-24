@@ -380,6 +380,6 @@ window.DOP_DATA = {
     { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "VERIFICADO", ref: "COD-AB Perú · CC BY-IGO · 25/196/1,873 · 5 pruebas", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "VERIFICADO", ref: "f527ad2 · C2 conforme · P99 robusto · NASADEM READY · ejemplo real · 152 pruebas · build · audit 0", nodes: ["pilots"] },
     { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "VERIFICADO", ref: "4810d93 · C2 conforme · ejemplo real a9ae20e290ce6f69 · 8 pruebas · >200 ha área de análisis · un sujeto sin comparación · 49 cruzadas · 161 backend", nodes: ["pilots"] },
-    { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "HTTP 206 verificado · continuo", nodes: [] },
+    { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "master c0f7366 · 161 pruebas · build · audit 0 · fuentes/arquitectura congeladas para v0.1.0 · etiqueta preparada para 7-nov", nodes: [] },
   ],
 };

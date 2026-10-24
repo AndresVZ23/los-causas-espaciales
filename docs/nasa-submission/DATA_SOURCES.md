@@ -1,5 +1,7 @@
 # Data Sources
 
+> **Release baseline `v0.1.0` · frozen 24-Oct-2026 for the 7-Nov-2026 submission.** The source identities, products, versions, access states, licences, coverage and limitations below are the evidence baseline for the release. A later correction is allowed only with a new verification date, reproducible evidence, applicable QA and an entry in `docs/coordination/HANDOFF_LOG.md`; an unavailable source must remain unavailable rather than be replaced silently.
+
 | Source | Product | Access | Coverage / resolution | Status |
 |---|---|---|---|---|
 | [NASA POWER](https://power.larc.nasa.gov/docs/services/api/temporal/daily/) | Daily Point API | Public JSON API | 1981 to near-real-time; native resolution varies by variable | Integrated |
