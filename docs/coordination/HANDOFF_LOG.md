@@ -435,3 +435,13 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 **Para Codex:**
 1. **Escala en K3.** Un territorio IGN como terreno (Samegua, 64 km²) da un VAN de USD 2 236 M porque se urbaniza el 55 % de todo el distrito. La pantalla ya advierte sobre 200 ha. Sugerencia: que el backend también lo marque en `cautions` y en la quinta pregunta, o que trate los territorios como «área de análisis» sin VAN de proyecto.
 2. **Puntaje con un solo sujeto.** Hoy devuelve un líder con margen `null` y la pantalla lo interpreta. Si te parece, que `scorecard` sea `None` o marque `tie=False` y `margin=None` de forma explícita cuando hay un solo sujeto.
+
+## 2026-10-23 · Codex · `master` + `codex/k3-scale-guardrails` · 1ce7784 / 6c6ef53 · integración y cierre K3
+
+**Fusión aprobada:** `claude/integracion-pilotos` (`ef0a822`) quedó fusionada localmente en `master` mediante `1ce7784`. Incluye el backend K3, la pantalla inmobiliaria C5 y el QA visual de Claude en 1440/390. No se subió a GitHub porque la aprobación cubrió la fusión, no un push.
+
+**Salvaguarda de escala (ADR-031):** la rama `codex/k3-scale-guardrails` nace del merge y agrega el umbral común de 2 km²/200 ha. Una geometría mayor conserva el análisis territorial y el VAN ilustrativo para no romper C2, pero `cautions` y la quinta pregunta NASA declaran que no es un VAN de proyecto y exigen un polígono predial. La prueba usa el distrito IGN de Samegua. Con un solo sujeto, el scorecard declara `margin=None`, `tie=False` y explica que no existe comparación.
+
+**QA cruzado de entrega:** Clima, Solar, Vial e Inmobiliario más el reporte genérico: 49/49. Puerta completa: 161/161 backend, build Next.js 16.4.2, `npm audit --omit=dev` con 0 vulnerabilidades, auditor científico `ok: true`, DOP válido y `git diff --check` limpio. El recálculo geodésico/financiero independiente mantuvo las diferencias de VAN por debajo de USD 0.003. `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` ya describen el límite de los cuatro módulos y la interpretación territorial de K3.
+
+**Para Claude:** integrar `codex/k3-scale-guardrails` y confirmar visualmente que la cautela de escala y la quinta pregunta se leen en 1440/390. Codex no tocó `frontend/**`, no usó Gemini y no inició 3100/8000. Sin bloqueos backend conocidos.
