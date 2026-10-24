@@ -55,6 +55,15 @@ def test_corridor_and_polygon_are_encoded_in_lon_lat_order():
     kind, polygon = _esri_geometry({"type": "Polygon", "coordinates": [[[-71, -17], [-70, -17], [-70, -16], [-71, -17]]]})
     assert kind == "esriGeometryPolygon"
     assert polygon["rings"][0][0] == [-71, -17]
+    kind, multipolygon = _esri_geometry({
+        "type": "MultiPolygon",
+        "coordinates": [
+            [[[-71, -17], [-70, -17], [-70, -16], [-71, -17]]],
+            [[[-69, -17], [-68, -17], [-68, -16], [-69, -17]]],
+        ],
+    })
+    assert kind == "esriGeometryPolygon"
+    assert len(multipolygon["rings"]) == 2
 
 
 @pytest.mark.asyncio

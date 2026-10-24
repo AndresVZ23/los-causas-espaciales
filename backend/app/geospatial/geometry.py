@@ -7,7 +7,7 @@ from shapely.validation import explain_validity
 from ..schemas.analysis import GeometryResponse, Point
 
 GEOD = Geod(ellps="WGS84")
-SUPPORTED_TYPES = {"Point", "LineString", "Polygon"}
+SUPPORTED_TYPES = {"Point", "LineString", "Polygon", "MultiPolygon"}
 
 
 class GeometryValidationError(ValueError):
@@ -25,7 +25,7 @@ def _count_vertices(coordinates: Any) -> int:
 def inspect_geometry(geojson: dict[str, Any]) -> GeometryResponse:
     geometry_type = geojson.get("type")
     if geometry_type not in SUPPORTED_TYPES:
-        raise GeometryValidationError("Solo se admiten geometrías Point, LineString y Polygon.")
+        raise GeometryValidationError("Solo se admiten geometrías Point, LineString, Polygon y MultiPolygon.")
     try:
         geometry = shape(geojson)
     except Exception as exc:
@@ -43,7 +43,7 @@ def inspect_geometry(geojson: dict[str, Any]) -> GeometryResponse:
     area_km2 = None
     if geometry_type == "LineString":
         length_km = abs(GEOD.geometry_length(geometry)) / 1000
-    elif geometry_type == "Polygon":
+    elif geometry_type in {"Polygon", "MultiPolygon"}:
         area_m2, perimeter_m = GEOD.geometry_area_perimeter(geometry)
         area_km2 = abs(area_m2) / 1_000_000
         length_km = abs(perimeter_m) / 1000

@@ -66,6 +66,7 @@ from ..schemas.screening import (
 from ..schemas.spatial_sampling import SpatialSamplingRequest
 from ..schemas.terrain import TerrainResponse
 from ..scoring.multicriteria import build_scorecard
+from ..statistics.extremes import linear_percentile
 
 ROAD_VARIABLES = ["PRECTOTCORR", "T2M"]
 PRECIPITATION = "PRECTOTCORR"
@@ -183,18 +184,6 @@ def _heavy_rain_days(dataset: PowerDataset, threshold: float) -> tuple[float | N
     return (round(fmean(counts), 3), len(counts)) if counts else (None, 0)
 
 
-def _percentile(values: list[float], probability: float) -> float | None:
-    """Linear percentile on finite provider values, independent of NumPy defaults."""
-    if not values:
-        return None
-    ordered = sorted(values)
-    position = (len(ordered) - 1) * probability
-    lower = int(position)
-    upper = min(lower + 1, len(ordered) - 1)
-    fraction = position - lower
-    return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
-
-
 async def _spatial_exposure(subject: StudySubject, request: RoadScreeningRequest) -> tuple[RoadSpatialExposure | None, str | None]:
     end = request.end_date
     start = max(request.start_date, end - timedelta(days=EXPOSURE_DAYS - 1))
@@ -214,7 +203,7 @@ async def _spatial_exposure(subject: StudySubject, request: RoadScreeningRequest
         return None, str(exc)
     aggregate_values = [item.value for item in sampled.aggregate]
     aggregate_rx1day = max(aggregate_values) if aggregate_values else None
-    aggregate_p99 = _percentile(aggregate_values, 0.99)
+    aggregate_p99 = linear_percentile(aggregate_values, 0.99)
     limitations = [
         *sampled.limitations,
         "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario "

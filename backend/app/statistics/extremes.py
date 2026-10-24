@@ -47,6 +47,20 @@ INDEX_DEFINITIONS: dict[str, IndexDefinition] = {
 }
 
 
+def linear_percentile(values: list[float], probability: float) -> float | None:
+    """Percentil lineal determinista sobre valores finitos ya validados, sin depender del default de NumPy."""
+    if not values:
+        return None
+    if not 0 <= probability <= 1:
+        raise ValueError("probability must be between 0 and 1")
+    ordered = sorted(values)
+    position = (len(ordered) - 1) * probability
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    fraction = position - lower
+    return ordered[lower] + (ordered[upper] - ordered[lower]) * fraction
+
+
 def _days_in_year(year: int) -> int:
     return 366 if (year % 4 == 0 and year % 100 != 0) or year % 400 == 0 else 365
 

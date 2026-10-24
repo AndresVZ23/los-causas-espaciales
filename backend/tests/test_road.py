@@ -18,6 +18,7 @@ from backend.app.schemas.road import (
 )
 from backend.app.schemas.terrain import TerrainMetrics, TerrainResponse, TerrainSiteResult
 from backend.app.sectors import road
+from backend.app.statistics.extremes import linear_percentile
 
 
 def _source(variable: str) -> SourceMetadata:
@@ -171,7 +172,7 @@ def test_road_npv_matches_independent_discounted_cash_flow():
 
 def test_p99_prevents_one_provider_artifact_from_dominating_the_score():
     values = [1.0] * 361 + [2.0, 3.0, 4.0, 151.0]
-    p99 = road._percentile(values, 0.99)
+    p99 = linear_percentile(values, 0.99)
     assert max(values) == 151
     assert p99 == pytest.approx(1.36)
     assert p99 < 0.02 * max(values)

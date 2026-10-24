@@ -1,0 +1,2592 @@
+{
+  "contract_version": "1.0",
+  "analysis_id": "a9ae20e290ce6f69",
+  "generated_at": "2026-10-24T00:20:26.330703Z",
+  "sector": "real_estate",
+  "sector_label": "Desarrollo inmobiliario",
+  "title": "Screening inmobiliario preliminar — comparación de terrenos",
+  "period": "2018-01-01/2023-12-31",
+  "subjects": [
+    {
+      "id": "moquegua-area",
+      "label": "Área de análisis Moquegua",
+      "kind": "polygon",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -70.92,
+              -17.21
+            ],
+            [
+              -70.917,
+              -17.21
+            ],
+            [
+              -70.917,
+              -17.207
+            ],
+            [
+              -70.92,
+              -17.207
+            ],
+            [
+              -70.92,
+              -17.21
+            ]
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.2085,
+        "longitude": -70.9185,
+        "label": "Área de análisis Moquegua"
+      }
+    },
+    {
+      "id": "samegua-area",
+      "label": "Área de análisis Samegua",
+      "kind": "polygon",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -70.885,
+              -17.19
+            ],
+            [
+              -70.882,
+              -17.19
+            ],
+            [
+              -70.882,
+              -17.187
+            ],
+            [
+              -70.885,
+              -17.187
+            ],
+            [
+              -70.885,
+              -17.19
+            ]
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -17.1885,
+        "longitude": -70.8835,
+        "label": "Área de análisis Samegua"
+      }
+    },
+    {
+      "id": "cerro-colorado-area",
+      "label": "Área de análisis Cerro Colorado",
+      "kind": "polygon",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -71.585,
+              -16.365
+            ],
+            [
+              -71.582,
+              -16.365
+            ],
+            [
+              -71.582,
+              -16.362
+            ],
+            [
+              -71.585,
+              -16.362
+            ],
+            [
+              -71.585,
+              -16.365
+            ]
+          ]
+        ]
+      },
+      "representative_point": {
+        "latitude": -16.3635,
+        "longitude": -71.58349999999999,
+        "label": "Área de análisis Cerro Colorado"
+      }
+    }
+  ],
+  "pipeline": [
+    {
+      "step": 1,
+      "key": "selection",
+      "name": "Selección",
+      "status": "COMPLETADO",
+      "summary": "3 polígonos WGS84 validados.",
+      "provenance": [
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Área de análisis Moquegua",
+          "value": "-17.209, -70.918",
+          "provenance": null
+        },
+        {
+          "label": "Área de análisis Samegua",
+          "value": "-17.189, -70.883",
+          "provenance": null
+        },
+        {
+          "label": "Área de análisis Cerro Colorado",
+          "value": "-16.363, -71.583",
+          "provenance": null
+        },
+        {
+          "label": "Separación geodésica máxima",
+          "value": "117.9 km (WGS84)",
+          "provenance": null
+        },
+        {
+          "label": "Origen geométrico",
+          "value": "Área de análisis Moquegua: user_geometry · Área de análisis Samegua: user_geometry · Área de análisis Cerro Colorado: user_geometry",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": [
+        "where"
+      ]
+    },
+    {
+      "step": 2,
+      "key": "configuration",
+      "name": "Configuración",
+      "status": "COMPLETADO",
+      "summary": "Desarrollo inmobiliario, 2 variables NASA, 6 años y supuestos explícitos.",
+      "provenance": [
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Sector",
+          "value": "Desarrollo inmobiliario",
+          "provenance": null
+        },
+        {
+          "label": "Variables NASA POWER",
+          "value": "PRECTOTCORR, T2M",
+          "provenance": null
+        },
+        {
+          "label": "Período",
+          "value": "2018-01-01 a 2023-12-31 · 6 años",
+          "provenance": null
+        },
+        {
+          "label": "Significancia",
+          "value": "α = 0.05 · Hamed–Rao · BH por variable entre sujetos",
+          "provenance": null
+        },
+        {
+          "label": "Supuestos",
+          "value": "precio USD 850/m² · absorción 25%/año · tasa 12%",
+          "provenance": "USER_ASSUMPTION"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    },
+    {
+      "step": 3,
+      "key": "extraction",
+      "name": "Extracción",
+      "status": "COMPLETADO",
+      "summary": "NASA POWER entregó 13,146 observaciones diarias para 2 variables en 3 sujetos.",
+      "provenance": [
+        "CACHED_DATA"
+      ],
+      "evidence": [
+        {
+          "label": "Observaciones diarias válidas",
+          "value": "13,146",
+          "provenance": null
+        },
+        {
+          "label": "Cobertura mínima",
+          "value": "100.0 %",
+          "provenance": null
+        },
+        {
+          "label": "Series desde caché",
+          "value": "6 de 6",
+          "provenance": "CACHED_DATA"
+        },
+        {
+          "label": "Descarga NASA (UTC)",
+          "value": "2026-10-23 a 2026-10-23",
+          "provenance": null
+        },
+        {
+          "label": "Último dato publicado",
+          "value": "PRECTOTCORR, T2M: 2023-12-31",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 358.4,
+      "answers": [
+        "what"
+      ]
+    },
+    {
+      "step": 4,
+      "key": "analysis",
+      "name": "Análisis",
+      "status": "COMPLETADO",
+      "summary": "Mann–Kendall corregido (Hamed–Rao) y Sen sobre medias anuales; ninguna tendencia conserva significancia tras BH.",
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "evidence": [
+        {
+          "label": "Pruebas Mann–Kendall (Hamed–Rao)",
+          "value": "6 (2 variables × 3 sujetos)",
+          "provenance": null
+        },
+        {
+          "label": "Significativas antes de BH",
+          "value": "0 de 6",
+          "provenance": null
+        },
+        {
+          "label": "Significativas tras BH",
+          "value": "0 de 6",
+          "provenance": null
+        },
+        {
+          "label": "Varianza corregida por autocorrelación",
+          "value": "0 de 6 series",
+          "provenance": null
+        },
+        {
+          "label": "Lag-1 máx. de rangos sin tendencia",
+          "value": "0.85",
+          "provenance": null
+        }
+      ],
+      "duration_ms": 74.6,
+      "answers": [
+        "what",
+        "how_much",
+        "significant"
+      ]
+    },
+    {
+      "step": 5,
+      "key": "territorial",
+      "name": "Inteligencia territorial",
+      "status": "PARCIAL",
+      "summary": "NASADEM localizó 3 de 3 sujetos y calculó métricas en 3. 6 brechas de debida diligencia siguen pendientes y no se interpretan como riesgo cero.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "CACHED_DATA",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Gránulos NASADEM localizados",
+          "value": "3 de 3 · s18w071, s17w072",
+          "provenance": "REAL_DATA"
+        },
+        {
+          "label": "Elevación y pendiente calculadas",
+          "value": "3 de 3",
+          "provenance": "REAL_DATA"
+        },
+        {
+          "label": "Brechas pendientes",
+          "value": "ingemmet-geohazards, Catastro, titularidad y parámetros urbanísticos, Capacidad de servicios urbanos, Mercado y absorción observados, Geotecnia, topografía e hidráulica predial, Comunidades, ocupación y conflictos",
+          "provenance": "DATA_UNAVAILABLE"
+        },
+        {
+          "label": "Intersecciones devueltas por capas oficiales",
+          "value": "8; cero no demuestra ausencia de amenaza o restricción",
+          "provenance": "MODEL_ESTIMATE"
+        }
+      ],
+      "duration_ms": 608.5,
+      "answers": [
+        "where",
+        "so_what"
+      ]
+    },
+    {
+      "step": 6,
+      "key": "evaluation",
+      "name": "Evaluación",
+      "status": "COMPLETADO",
+      "summary": "Comparación multicriterio calculada para 3 terrenos; líder condicionado Área de análisis Cerro Colorado.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "1.º Área de análisis Cerro Colorado",
+          "value": "77.9/100 · cobertura 100%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "2.º Área de análisis Moquegua",
+          "value": "73.2/100 · cobertura 100%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "3.º Área de análisis Samegua",
+          "value": "58.4/100 · cobertura 100%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Lectura del score",
+          "value": "Mayor puntaje = mejor combinación condicionada a evidencia y supuestos; no acredita edificabilidad ni inversión.",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": [
+        "so_what"
+      ]
+    },
+    {
+      "step": 7,
+      "key": "finance",
+      "name": "Impacto económico",
+      "status": "COMPLETADO",
+      "summary": "VAN positivo en 3 de 3 terrenos en el caso base y en 0 de 3 en el adverso.",
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION"
+      ],
+      "evidence": [
+        {
+          "label": "Área de análisis Moquegua",
+          "value": "VAN USD 3,684,360 · absorción 100%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Área de análisis Samegua",
+          "value": "VAN USD 3,684,748 · absorción 100%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Área de análisis Cerro Colorado",
+          "value": "VAN USD 3,700,383 · absorción 100%",
+          "provenance": "MODEL_ESTIMATE"
+        },
+        {
+          "label": "Factor dominante · Área de análisis Moquegua",
+          "value": "Precio de venta",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Área de análisis Samegua",
+          "value": "Precio de venta",
+          "provenance": "USER_ASSUMPTION"
+        },
+        {
+          "label": "Factor dominante · Área de análisis Cerro Colorado",
+          "value": "Precio de venta",
+          "provenance": "USER_ASSUMPTION"
+        }
+      ],
+      "duration_ms": 9.3,
+      "answers": [
+        "so_what"
+      ]
+    },
+    {
+      "step": 8,
+      "key": "results",
+      "name": "Resultados",
+      "status": "COMPLETADO",
+      "summary": "Respuestas a las preguntas NASA, 0 tendencias significativas y 6 brechas documentadas.",
+      "provenance": [
+        "CACHED_DATA",
+        "USER_ASSUMPTION",
+        "MODEL_ESTIMATE",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Tendencias significativas",
+          "value": "0",
+          "provenance": null
+        },
+        {
+          "label": "Brechas para debida diligencia",
+          "value": "6",
+          "provenance": "DATA_UNAVAILABLE"
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    },
+    {
+      "step": 9,
+      "key": "export",
+      "name": "Exportación",
+      "status": "LISTO",
+      "summary": "Reporte JSON y PDF ejecutivo disponibles; la etapa se marca completada al descargar uno de ellos.",
+      "provenance": [
+        "CACHED_DATA",
+        "USER_ASSUMPTION",
+        "MODEL_ESTIMATE",
+        "DATA_UNAVAILABLE"
+      ],
+      "evidence": [
+        {
+          "label": "Formato",
+          "value": "JSON con identificador, período, supuestos, procedencia y métodos",
+          "provenance": null
+        },
+        {
+          "label": "PDF ejecutivo",
+          "value": "Preguntas NASA, tendencias, relieve, pipeline, supuestos, brechas y huella SHA-256",
+          "provenance": null
+        }
+      ],
+      "duration_ms": null,
+      "answers": []
+    }
+  ],
+  "nasa_questions": [
+    {
+      "key": "what",
+      "question": "What is changing?",
+      "question_es": "¿Qué está cambiando?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa. Ninguna de las 6 pruebas conserva significancia tras Benjamini–Hochberg.",
+      "evidence": [
+        "Variables analizadas: Precipitación corregida y Temperatura del aire a 2 m."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        3,
+        4
+      ]
+    },
+    {
+      "key": "where",
+      "question": "Where is it changing?",
+      "question_es": "¿Dónde está cambiando?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa. No se identifica un lugar con cambio significativo entre Área de análisis Moquegua, Área de análisis Samegua y Área de análisis Cerro Colorado.",
+      "evidence": [
+        "Área de análisis Moquegua: -17.209, -70.918 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Área de análisis Samegua: -17.189, -70.883 (WGS84) · celda de grilla NASA POWER, no medición en sitio",
+        "Área de análisis Cerro Colorado: -16.363, -71.583 (WGS84) · celda de grilla NASA POWER, no medición en sitio"
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        1,
+        5
+      ]
+    },
+    {
+      "key": "how_much",
+      "question": "How much is it changing?",
+      "question_es": "¿Cuánto está cambiando?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa. No se informa magnitud sin una tendencia significativa.",
+      "evidence": [],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        4
+      ]
+    },
+    {
+      "key": "significant",
+      "question": "Is the change statistically significant?",
+      "question_es": "¿El cambio es estadísticamente significativo?",
+      "status": "EVIDENCIA_INSUFICIENTE",
+      "answer": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+      "evidence": [
+        "Mann–Kendall con varianza corregida por autocorrelación (Hamed y Rao, 1998) y pendiente de Sen sobre 6 medias anuales; familia Benjamini–Hochberg = cada variable entre 3 sitios; α = 0.05.",
+        "Significativas antes del ajuste BH: 0 de 6; después: 0 de 6."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE"
+      ],
+      "stage_steps": [
+        4
+      ]
+    },
+    {
+      "key": "so_what",
+      "question": "What do these changes mean for investment decisions?",
+      "question_es": "¿Qué significan estos cambios para invertir?",
+      "status": "PARCIAL",
+      "answer": "La precipitación media no cambia con significancia; esto no demuestra estabilidad de extremos ni ausencia de inundación. Con supuestos del usuario, el VAN condicionado va de USD 3.68 M a USD 3.70 M; 3 de 3 terrenos son no negativos. No acredita zonificación, titularidad, mercado ni factibilidad.",
+      "evidence": [
+        "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
+        "6 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
+        "Screening preliminar: no sustituye estudios de recurso, ingeniería, impacto ambiental ni factibilidad."
+      ],
+      "provenance": [
+        "MODEL_ESTIMATE",
+        "USER_ASSUMPTION",
+        "DATA_UNAVAILABLE"
+      ],
+      "stage_steps": [
+        5,
+        6,
+        7
+      ]
+    }
+  ],
+  "trend_findings": [],
+  "terrain": {
+    "generated_at": "2026-10-24T00:20:26.239897Z",
+    "dataset": "NASADEM V001",
+    "crs": "EPSG:4326; longitude/latitude",
+    "spatial_resolution": "1 arc-second (~30 m at the equator)",
+    "sites": [
+      {
+        "location": {
+          "latitude": -17.2085,
+          "longitude": -70.9185,
+          "label": "Área de análisis Moquegua"
+        },
+        "status": "READY",
+        "metrics": {
+          "elevation_m": 1505.0,
+          "slope_degrees": 8.2,
+          "aspect_degrees": 260.2,
+          "aspect_cardinal": "O",
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777918-LPCLOUD",
+            "title": "NASADEM_HGT_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.916000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816797784-LPCLOUD",
+            "title": "NASADEM_SC_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:26.378000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -17.1885,
+          "longitude": -70.8835,
+          "label": "Área de análisis Samegua"
+        },
+        "status": "READY",
+        "metrics": {
+          "elevation_m": 1833.0,
+          "slope_degrees": 20.8,
+          "aspect_degrees": 289.9,
+          "aspect_cardinal": "O",
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816777918-LPCLOUD",
+            "title": "NASADEM_HGT_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T13:29:24.916000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s18w071/NASADEM_HGT_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816797784-LPCLOUD",
+            "title": "NASADEM_SC_s18w071",
+            "tile_id": "s18w071",
+            "bounding_box": [
+              -71.0001389,
+              -18.0001389,
+              -69.9998611,
+              -16.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:26.378000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s18w071/NASADEM_SC_s18w071.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
+        ]
+      },
+      {
+        "location": {
+          "latitude": -16.3635,
+          "longitude": -71.58349999999999,
+          "label": "Área de análisis Cerro Colorado"
+        },
+        "status": "READY",
+        "metrics": {
+          "elevation_m": 2425.0,
+          "slope_degrees": 2.07,
+          "aspect_degrees": 184.86,
+          "aspect_cardinal": "S",
+          "vertical_datum": "EGM96 geoid"
+        },
+        "granules": [
+          {
+            "short_name": "NASADEM_HGT",
+            "version": "001",
+            "granule_id": "G2816776376-LPCLOUD",
+            "title": "NASADEM_HGT_s17w072",
+            "tile_id": "s17w072",
+            "bounding_box": [
+              -72.0001389,
+              -17.0001389,
+              -70.9998611,
+              -15.9998611
+            ],
+            "updated_at": "2018-09-12T13:28:54.199000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_HGT.001/NASADEM_HGT_s17w072/NASADEM_HGT_s17w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_HGT.001/NASADEM_HGT_s17w072/NASADEM_HGT_s17w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_HGT.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264762-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          },
+          {
+            "short_name": "NASADEM_SC",
+            "version": "001",
+            "granule_id": "G2816809703-LPCLOUD",
+            "title": "NASADEM_SC_s17w072",
+            "tile_id": "s17w072",
+            "bounding_box": [
+              -72.0001389,
+              -17.0001389,
+              -70.9998611,
+              -15.9998611
+            ],
+            "updated_at": "2018-09-12T15:02:23.040000Z",
+            "data_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-protected/NASADEM_SC.001/NASADEM_SC_s17w072/NASADEM_SC_s17w072.zip",
+            "preview_url": "https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/NASADEM_SC.001/NASADEM_SC_s17w072/NASADEM_SC_s17w072.1.jpg",
+            "doi_url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001",
+            "catalogue_url": "https://search.earthdata.nasa.gov/search/granules?p=C2763264770-LPCLOUD",
+            "access": "EARTHDATA_LOGIN_REQUIRED"
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "limitations": [
+          "NASADEM representa la superficie del terreno en una grilla de aproximadamente 30 m y no sustituye un levantamiento topográfico de ingeniería.",
+          "La altura HGT es ortométrica respecto al geoide EGM96; no debe mezclarse con altura elipsoidal sin transformación explícita."
+        ]
+      }
+    ],
+    "note": "3 de 3 ubicaciones tienen métricas raster; 0 descargan teselas en segundo plano y 0 permanecen solo con metadatos. Ningún estado pendiente o sin acceso se convierte en datos ficticios."
+  },
+  "data_gaps": [
+    {
+      "dataset": "ingemmet-geohazards",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La capa no pudo verificarse: El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+      "next_action": "Restablecer el servicio oficial o usar una fuente vigente con licencia, fecha, escala y cobertura documentadas."
+    },
+    {
+      "dataset": "Catastro, titularidad y parámetros urbanísticos",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La geometría no acredita propiedad, zonificación, habilitación urbana, edificabilidad ni cargas legales.",
+      "next_action": "Solicitar partida, catastro municipal, zonificación, parámetros urbanísticos y certificado de inexistencia de restos cuando corresponda."
+    },
+    {
+      "dataset": "Capacidad de servicios urbanos",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No se verifican factibilidad ni capacidad de agua, saneamiento, energía, movilidad y telecomunicaciones.",
+      "next_action": "Obtener factibilidades y costos de conexión de cada prestador competente."
+    },
+    {
+      "dataset": "Mercado y absorción observados",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "Precio y absorción son supuestos; no hay comparables, inventario, velocidad de ventas ni segmentación de demanda.",
+      "next_action": "Calibrar con estudio de mercado trazable y transacciones/comparables verificables."
+    },
+    {
+      "dataset": "Geotecnia, topografía e hidráulica predial",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "NASA y las capas regionales no resuelven capacidad portante, rellenos, nivel freático ni drenaje de diseño.",
+      "next_action": "Ejecutar levantamiento topográfico, mecánica de suelos e hidrología/hidráulica de detalle."
+    },
+    {
+      "dataset": "Comunidades, ocupación y conflictos",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "No se descartan posesión, comunidades, consulta previa, servidumbres ni conflictos sociales.",
+      "next_action": "Revisar catastro, SUNARP, Defensoría, SENACE y trabajo de campo con especialistas."
+    }
+  ],
+  "assumption_items": [
+    {
+      "key": "developable_fraction",
+      "label": "Fracción desarrollable",
+      "value": 0.55,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "floor_area_ratio",
+      "label": "Índice de edificabilidad supuesto",
+      "value": 1.0,
+      "unit": "m² vendible/m² desarrollable",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "sale_price_usd_m2",
+      "label": "Precio de venta",
+      "value": 850.0,
+      "unit": "USD/m²",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "construction_cost_usd_m2",
+      "label": "Costo de construcción",
+      "value": 480.0,
+      "unit": "USD/m²",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "land_cost_usd_m2",
+      "label": "Costo del suelo",
+      "value": 90.0,
+      "unit": "USD/m² de terreno",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "mitigation_cost_usd_m2_land",
+      "label": "Mitigación inicial",
+      "value": 12.0,
+      "unit": "USD/m² de terreno",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "selling_cost_fraction",
+      "label": "Costo comercial sobre ventas",
+      "value": 0.05,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "annual_absorption_fraction",
+      "label": "Absorción anual",
+      "value": 0.25,
+      "unit": "fracción del área vendible/año",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "discount_rate",
+      "label": "Tasa de descuento",
+      "value": 0.12,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "horizon_years",
+      "label": "Horizonte",
+      "value": 8.0,
+      "unit": "años",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "sale_price_sensitivity",
+      "label": "Rango del precio (±)",
+      "value": 0.2,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "construction_cost_sensitivity",
+      "label": "Rango del costo de obra (±)",
+      "value": 0.2,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "land_cost_sensitivity",
+      "label": "Rango del costo del suelo (±)",
+      "value": 0.25,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "mitigation_cost_sensitivity",
+      "label": "Rango de mitigación (±)",
+      "value": 0.3,
+      "unit": "fracción",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "absorption_sensitivity",
+      "label": "Rango de absorción (±)",
+      "value": 0.1,
+      "unit": "puntos",
+      "provenance": "USER_ASSUMPTION"
+    },
+    {
+      "key": "discount_rate_sensitivity",
+      "label": "Rango de la tasa (±)",
+      "value": 0.02,
+      "unit": "puntos",
+      "provenance": "USER_ASSUMPTION"
+    }
+  ],
+  "financial_sensitivity": [
+    {
+      "subject": "Área de análisis Moquegua",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 3684359.58,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 3684359.58,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -11029498.01,
+          "changes": [
+            "Precio y absorción en su rango bajo; costos y tasa en su rango alto."
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 20348505.59,
+          "changes": [
+            "Precio y absorción en su rango alto; costos y tasa en su rango bajo."
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "sale_price",
+          "label": "Precio de venta",
+          "unit": "USD/m²",
+          "base_value": 850.0,
+          "low_value": 680.0,
+          "high_value": 1020.0,
+          "npv_at_low": -3461539.47,
+          "npv_at_high": 10830258.62,
+          "swing": 14291798.09,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "construction_cost",
+          "label": "Costo de construcción",
+          "unit": "USD/m²",
+          "base_value": 480.0,
+          "low_value": 384.0,
+          "high_value": 576.0,
+          "npv_at_low": 7932076.66,
+          "npv_at_high": -563357.5,
+          "swing": 8495434.16,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "land_cost",
+          "label": "Costo del suelo",
+          "unit": "USD/m²",
+          "base_value": 90.0,
+          "low_value": 67.5,
+          "high_value": 112.5,
+          "npv_at_low": 6068157.43,
+          "npv_at_high": 1300561.73,
+          "swing": 4767595.7,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "annual_absorption",
+          "label": "Absorción anual",
+          "unit": "fracción/año",
+          "base_value": 0.25,
+          "low_value": 0.15,
+          "high_value": 0.35,
+          "npv_at_low": 1825780.11,
+          "npv_at_high": 4556759.81,
+          "swing": 2730979.7,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.10."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.12,
+          "low_value": 0.09999999999999999,
+          "high_value": 0.13999999999999999,
+          "npv_at_low": 4316581.5,
+          "npv_at_high": 3094498.81,
+          "swing": 1222082.69,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "mitigation_cost",
+          "label": "Mitigación inicial",
+          "unit": "USD/m² de terreno",
+          "base_value": 12.0,
+          "low_value": 8.399999999999999,
+          "high_value": 15.600000000000001,
+          "npv_at_low": 4065767.23,
+          "npv_at_high": 3302951.92,
+          "swing": 762815.31,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "sale_price",
+          "label": "Precio de venta de equilibrio",
+          "unit": "USD/m²",
+          "assumed_value": 850.0,
+          "break_even_value": 762.3496,
+          "note": "El VAN llega a cero con USD 762.35/m²."
+        },
+        {
+          "key": "land_cost",
+          "label": "Costo máximo del suelo",
+          "unit": "USD/m²",
+          "assumed_value": 90.0,
+          "break_even_value": 124.7756,
+          "note": "El VAN llega a cero con suelo a USD 124.78/m²."
+        },
+        {
+          "key": "developable_fraction",
+          "label": "Fracción desarrollable de equilibrio",
+          "unit": "fracción",
+          "assumed_value": 0.55,
+          "break_even_value": 0.4102,
+          "note": "El VAN llega a cero con 41.0% desarrollable."
+        }
+      ]
+    },
+    {
+      "subject": "Área de análisis Samegua",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 3684747.94,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 3684747.94,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -11030660.6,
+          "changes": [
+            "Precio y absorción en su rango bajo; costos y tasa en su rango alto."
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 20350650.48,
+          "changes": [
+            "Precio y absorción en su rango alto; costos y tasa en su rango bajo."
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "sale_price",
+          "label": "Precio de venta",
+          "unit": "USD/m²",
+          "base_value": 850.0,
+          "low_value": 680.0,
+          "high_value": 1020.0,
+          "npv_at_low": -3461904.34,
+          "npv_at_high": 10831400.22,
+          "swing": 14293304.56,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "construction_cost",
+          "label": "Costo de construcción",
+          "unit": "USD/m²",
+          "base_value": 480.0,
+          "low_value": 384.0,
+          "high_value": 576.0,
+          "npv_at_low": 7932912.76,
+          "npv_at_high": -563416.88,
+          "swing": 8496329.64,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "land_cost",
+          "label": "Costo del suelo",
+          "unit": "USD/m²",
+          "base_value": 90.0,
+          "low_value": 67.5,
+          "high_value": 112.5,
+          "npv_at_low": 6068797.06,
+          "npv_at_high": 1300698.82,
+          "swing": 4768098.24,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "annual_absorption",
+          "label": "Absorción anual",
+          "unit": "fracción/año",
+          "base_value": 0.25,
+          "low_value": 0.15,
+          "high_value": 0.35,
+          "npv_at_low": 1825972.56,
+          "npv_at_high": 4557240.13,
+          "swing": 2731267.57,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.10."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.12,
+          "low_value": 0.09999999999999999,
+          "high_value": 0.13999999999999999,
+          "npv_at_low": 4317036.5,
+          "npv_at_high": 3094824.99,
+          "swing": 1222211.51,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "mitigation_cost",
+          "label": "Mitigación inicial",
+          "unit": "USD/m² de terreno",
+          "base_value": 12.0,
+          "low_value": 8.399999999999999,
+          "high_value": 15.600000000000001,
+          "npv_at_low": 4066195.8,
+          "npv_at_high": 3303300.08,
+          "swing": 762895.72,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "sale_price",
+          "label": "Precio de venta de equilibrio",
+          "unit": "USD/m²",
+          "assumed_value": 850.0,
+          "break_even_value": 762.3496,
+          "note": "El VAN llega a cero con USD 762.35/m²."
+        },
+        {
+          "key": "land_cost",
+          "label": "Costo máximo del suelo",
+          "unit": "USD/m²",
+          "assumed_value": 90.0,
+          "break_even_value": 124.7756,
+          "note": "El VAN llega a cero con suelo a USD 124.78/m²."
+        },
+        {
+          "key": "developable_fraction",
+          "label": "Fracción desarrollable de equilibrio",
+          "unit": "fracción",
+          "assumed_value": 0.55,
+          "break_even_value": 0.4102,
+          "note": "El VAN llega a cero con 41.0% desarrollable."
+        }
+      ]
+    },
+    {
+      "subject": "Área de análisis Cerro Colorado",
+      "metric": "VAN",
+      "currency": "USD",
+      "base_npv": 3700382.97,
+      "scenarios": [
+        {
+          "key": "base",
+          "label": "Base",
+          "npv": 3700382.97,
+          "changes": [
+            "Todos los supuestos en su valor declarado."
+          ]
+        },
+        {
+          "key": "adverso",
+          "label": "Adverso",
+          "npv": -11077465.64,
+          "changes": [
+            "Precio y absorción en su rango bajo; costos y tasa en su rango alto."
+          ]
+        },
+        {
+          "key": "favorable",
+          "label": "Favorable",
+          "npv": 20437001.88,
+          "changes": [
+            "Precio y absorción en su rango alto; costos y tasa en su rango bajo."
+          ]
+        }
+      ],
+      "tornado": [
+        {
+          "key": "sale_price",
+          "label": "Precio de venta",
+          "unit": "USD/m²",
+          "base_value": 850.0,
+          "low_value": 680.0,
+          "high_value": 1020.0,
+          "npv_at_low": -3476593.81,
+          "npv_at_high": 10877359.75,
+          "swing": 14353953.56,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "construction_cost",
+          "label": "Costo de construcción",
+          "unit": "USD/m²",
+          "base_value": 480.0,
+          "low_value": 384.0,
+          "high_value": 576.0,
+          "npv_at_low": 7966573.51,
+          "npv_at_high": -565807.56,
+          "swing": 8532381.07,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±20%."
+        },
+        {
+          "key": "land_cost",
+          "label": "Costo del suelo",
+          "unit": "USD/m²",
+          "base_value": 90.0,
+          "low_value": 67.5,
+          "high_value": 112.5,
+          "npv_at_low": 6094548.03,
+          "npv_at_high": 1306217.91,
+          "swing": 4788330.12,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±25%."
+        },
+        {
+          "key": "annual_absorption",
+          "label": "Absorción anual",
+          "unit": "fracción/año",
+          "base_value": 0.25,
+          "low_value": 0.15,
+          "high_value": 0.35,
+          "npv_at_low": 1833720.48,
+          "npv_at_high": 4576577.3,
+          "swing": 2742856.82,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±0.10."
+        },
+        {
+          "key": "discount_rate",
+          "label": "Tasa de descuento",
+          "unit": "fracción",
+          "base_value": 0.12,
+          "low_value": 0.09999999999999999,
+          "high_value": 0.13999999999999999,
+          "npv_at_low": 4335354.45,
+          "npv_at_high": 3107956.88,
+          "swing": 1227397.57,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±2.0 puntos."
+        },
+        {
+          "key": "mitigation_cost",
+          "label": "Mitigación inicial",
+          "unit": "USD/m² de terreno",
+          "base_value": 12.0,
+          "low_value": 8.399999999999999,
+          "high_value": 15.600000000000001,
+          "npv_at_low": 4083449.38,
+          "npv_at_high": 3317316.56,
+          "swing": 766132.82,
+          "provenance": "USER_ASSUMPTION",
+          "basis": "Supuesto del usuario: ±30%."
+        }
+      ],
+      "break_evens": [
+        {
+          "key": "sale_price",
+          "label": "Precio de venta de equilibrio",
+          "unit": "USD/m²",
+          "assumed_value": 850.0,
+          "break_even_value": 762.3496,
+          "note": "El VAN llega a cero con USD 762.35/m²."
+        },
+        {
+          "key": "land_cost",
+          "label": "Costo máximo del suelo",
+          "unit": "USD/m²",
+          "assumed_value": 90.0,
+          "break_even_value": 124.7756,
+          "note": "El VAN llega a cero con suelo a USD 124.78/m²."
+        },
+        {
+          "key": "developable_fraction",
+          "label": "Fracción desarrollable de equilibrio",
+          "unit": "fracción",
+          "assumed_value": 0.55,
+          "break_even_value": 0.4102,
+          "note": "El VAN llega a cero con 41.0% desarrollable."
+        }
+      ]
+    }
+  ],
+  "scorecard": {
+    "method": "Suma ponderada de puntajes 0–100. Cada criterio se lleva a 0–100 con una escala de referencia declarada (peor valor = 0  mejor valor = 100  con recorte fuera del rango). Sin dato  el criterio sale y su peso se reparte entre los demás. Estabilidad: 2 000 combinaciones de pesos Dirichlet centradas en los pesos elegidos.",
+    "criteria": [
+      {
+        "key": "recent_p99_precip",
+        "label": "P99 de lluvia espacial reciente",
+        "unit": "mm/día",
+        "direction": "menor_es_mejor",
+        "weight": 0.15,
+        "worst": 30.0,
+        "best": 0.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "P99 diario del agregado K1; no es lluvia de diseño ni prueba ausencia de inundación."
+      },
+      {
+        "key": "terrain_slope",
+        "label": "Pendiente NASADEM",
+        "unit": "°",
+        "direction": "menor_es_mejor",
+        "weight": 0.15,
+        "worst": 20.0,
+        "best": 0.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Pendiente en un punto interior representativo; no sustituye topografía ni geotecnia predial."
+      },
+      {
+        "key": "hazard_alerts",
+        "label": "Intersecciones CENEPRED devueltas",
+        "unit": "conteo",
+        "direction": "menor_es_mejor",
+        "weight": 0.15,
+        "worst": 5.0,
+        "best": 0.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Conteo de inundación y movimientos en masa CENEPRED; cero intersecciones no significa riesgo cero e INGEMMET sigue como brecha separada."
+      },
+      {
+        "key": "restriction_alerts",
+        "label": "Intersecciones de restricción devueltas",
+        "unit": "conteo",
+        "direction": "menor_es_mejor",
+        "weight": 0.2,
+        "worst": 5.0,
+        "best": 0.0,
+        "provenance": "MODEL_ESTIMATE",
+        "basis": "Alertas SERNANP/Cultura; no constituyen opinión legal ni reemplazan CIRA."
+      },
+      {
+        "key": "npv_ratio",
+        "label": "VAN / inversión inicial",
+        "unit": "fracción",
+        "direction": "mayor_es_mejor",
+        "weight": 0.25,
+        "worst": -1.0,
+        "best": 1.0,
+        "provenance": "USER_ASSUMPTION",
+        "basis": "VAN sobre suelo más mitigación; depende exclusivamente de supuestos comerciales."
+      },
+      {
+        "key": "developable_fraction",
+        "label": "Fracción desarrollable supuesta",
+        "unit": "fracción",
+        "direction": "mayor_es_mejor",
+        "weight": 0.1,
+        "worst": 0.0,
+        "best": 1.0,
+        "provenance": "USER_ASSUMPTION",
+        "basis": "Supuesto del usuario pendiente de zonificación, catastro y diseño."
+      }
+    ],
+    "subjects": [
+      {
+        "subject": "Área de análisis Moquegua",
+        "score": 73.2,
+        "coverage": 1.0,
+        "rank": 2,
+        "first_place_share": 0.0,
+        "criteria": [
+          {
+            "key": "recent_p99_precip",
+            "value": 3.7564,
+            "score": 87.5,
+            "contribution": 13.1
+          },
+          {
+            "key": "terrain_slope",
+            "value": 8.2,
+            "score": 59.0,
+            "contribution": 8.9
+          },
+          {
+            "key": "hazard_alerts",
+            "value": 2.0,
+            "score": 60.0,
+            "contribution": 9.0
+          },
+          {
+            "key": "restriction_alerts",
+            "value": 0.0,
+            "score": 100.0,
+            "contribution": 20.0
+          },
+          {
+            "key": "npv_ratio",
+            "value": 0.3409376253073917,
+            "score": 67.0,
+            "contribution": 16.8
+          },
+          {
+            "key": "developable_fraction",
+            "value": 0.55,
+            "score": 55.0,
+            "contribution": 5.5
+          }
+        ]
+      },
+      {
+        "subject": "Área de análisis Samegua",
+        "score": 58.4,
+        "coverage": 1.0,
+        "rank": 3,
+        "first_place_share": 0.0,
+        "criteria": [
+          {
+            "key": "recent_p99_precip",
+            "value": 3.7564,
+            "score": 87.5,
+            "contribution": 13.1
+          },
+          {
+            "key": "terrain_slope",
+            "value": 20.8,
+            "score": 0.0,
+            "contribution": 0.0
+          },
+          {
+            "key": "hazard_alerts",
+            "value": 4.0,
+            "score": 20.0,
+            "contribution": 3.0
+          },
+          {
+            "key": "restriction_alerts",
+            "value": 0.0,
+            "score": 100.0,
+            "contribution": 20.0
+          },
+          {
+            "key": "npv_ratio",
+            "value": 0.340937625433264,
+            "score": 67.0,
+            "contribution": 16.8
+          },
+          {
+            "key": "developable_fraction",
+            "value": 0.55,
+            "score": 55.0,
+            "contribution": 5.5
+          }
+        ]
+      },
+      {
+        "subject": "Área de análisis Cerro Colorado",
+        "score": 77.9,
+        "coverage": 1.0,
+        "rank": 1,
+        "first_place_share": 1.0,
+        "criteria": [
+          {
+            "key": "recent_p99_precip",
+            "value": 3.6916,
+            "score": 87.7,
+            "contribution": 13.2
+          },
+          {
+            "key": "terrain_slope",
+            "value": 2.07,
+            "score": 89.6,
+            "contribution": 13.4
+          },
+          {
+            "key": "hazard_alerts",
+            "value": 2.0,
+            "score": 60.0,
+            "contribution": 9.0
+          },
+          {
+            "key": "restriction_alerts",
+            "value": 0.0,
+            "score": 100.0,
+            "contribution": 20.0
+          },
+          {
+            "key": "npv_ratio",
+            "value": 0.3409376250003079,
+            "score": 67.0,
+            "contribution": 16.8
+          },
+          {
+            "key": "developable_fraction",
+            "value": 0.55,
+            "score": 55.0,
+            "contribution": 5.5
+          }
+        ]
+      }
+    ],
+    "leader": "Área de análisis Cerro Colorado",
+    "margin": 4.7,
+    "tie": true,
+    "stability_draws": 2000,
+    "weight_sensitivity": [
+      {
+        "key": "recent_p99_precip",
+        "leader_at_half": "Área de análisis Cerro Colorado",
+        "leader_at_one_and_half": "Área de análisis Cerro Colorado",
+        "changes_leader": false
+      },
+      {
+        "key": "terrain_slope",
+        "leader_at_half": "Área de análisis Cerro Colorado",
+        "leader_at_one_and_half": "Área de análisis Cerro Colorado",
+        "changes_leader": false
+      },
+      {
+        "key": "hazard_alerts",
+        "leader_at_half": "Área de análisis Cerro Colorado",
+        "leader_at_one_and_half": "Área de análisis Cerro Colorado",
+        "changes_leader": false
+      },
+      {
+        "key": "restriction_alerts",
+        "leader_at_half": "Área de análisis Cerro Colorado",
+        "leader_at_one_and_half": "Área de análisis Cerro Colorado",
+        "changes_leader": false
+      },
+      {
+        "key": "npv_ratio",
+        "leader_at_half": "Área de análisis Cerro Colorado",
+        "leader_at_one_and_half": "Área de análisis Cerro Colorado",
+        "changes_leader": false
+      },
+      {
+        "key": "developable_fraction",
+        "leader_at_half": "Área de análisis Cerro Colorado",
+        "leader_at_one_and_half": "Área de análisis Cerro Colorado",
+        "changes_leader": false
+      }
+    ],
+    "notes": [
+      "El puntaje compara prioridad preliminar de debida diligencia y atractivo condicionado; no declara edificabilidad ni factibilidad.",
+      "Cero intersecciones significa solo que el servicio consultado no devolvió cruces; nunca equivale a cero riesgo o restricción.",
+      "Una fuente incompleta elimina el criterio relacionado y reduce la cobertura, en vez de convertir el faltante en cero."
+    ]
+  },
+  "disclaimer": "Screening preliminar con datos NASA, límites IGN/capas públicas y supuestos del usuario. No acredita propiedad, catastro, zonificación, parámetros urbanísticos, ausencia de riesgo o patrimonio, factibilidad de servicios, estudio de mercado, topografía, geotecnia, hidrología, presupuesto ni decisión de inversión.",
+  "site_sources": [
+    {
+      "subject": "Área de análisis Moquegua",
+      "origin": "user_geometry",
+      "dataset": "GeoJSON proporcionado por el usuario",
+      "source_url": null,
+      "license": null,
+      "source_created": null,
+      "provenance": "USER_ASSUMPTION",
+      "limitations": [
+        "La plataforma valida geometría, CRS y área; no verifica titularidad, catastro, zonificación ni origen legal.",
+        "La geometría se interpreta como WGS84 longitud/latitud (GeoJSON RFC 7946)."
+      ]
+    },
+    {
+      "subject": "Área de análisis Samegua",
+      "origin": "user_geometry",
+      "dataset": "GeoJSON proporcionado por el usuario",
+      "source_url": null,
+      "license": null,
+      "source_created": null,
+      "provenance": "USER_ASSUMPTION",
+      "limitations": [
+        "La plataforma valida geometría, CRS y área; no verifica titularidad, catastro, zonificación ni origen legal.",
+        "La geometría se interpreta como WGS84 longitud/latitud (GeoJSON RFC 7946)."
+      ]
+    },
+    {
+      "subject": "Área de análisis Cerro Colorado",
+      "origin": "user_geometry",
+      "dataset": "GeoJSON proporcionado por el usuario",
+      "source_url": null,
+      "license": null,
+      "source_created": null,
+      "provenance": "USER_ASSUMPTION",
+      "limitations": [
+        "La plataforma valida geometría, CRS y área; no verifica titularidad, catastro, zonificación ni origen legal.",
+        "La geometría se interpreta como WGS84 longitud/latitud (GeoJSON RFC 7946)."
+      ]
+    }
+  ],
+  "sites": [
+    {
+      "subject_id": "moquegua-area",
+      "label": "Área de análisis Moquegua",
+      "representative_point": {
+        "latitude": -17.2085,
+        "longitude": -70.9185,
+        "label": "Área de análisis Moquegua"
+      },
+      "area_km2": 0.105947,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.46826563213144684,
+          "minimum": 0.0,
+          "maximum": 300.21,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 58.384,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.028479452054794532,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.2693063852084737,
+              0.27803173890261257
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.4039520799450731,
+            "autocorrelation_lag1_detrended": -0.8529411764705881,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.147); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T20:25:57.420150Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "CACHED_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.365945
+            },
+            {
+              "year": 2019,
+              "value": 0.281699
+            },
+            {
+              "year": 2020,
+              "value": 0.493169
+            },
+            {
+              "year": 2021,
+              "value": 0.223863
+            },
+            {
+              "year": 2022,
+              "value": 1.049233
+            },
+            {
+              "year": 2023,
+              "value": 0.395616
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 7.6416430853491555,
+          "minimum": 2.26,
+          "maximum": 13.22,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 5.933,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.04418264840182662,
+            "p_value": 1.0,
+            "p_value_modified": 1.0,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.3660509394415752,
+              0.7219178082191791
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.46806885015830857,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 1.0,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T20:25:57.420150Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "CACHED_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 7.293479
+            },
+            {
+              "year": 2019,
+              "value": 8.015397
+            },
+            {
+              "year": 2020,
+              "value": 7.742814
+            },
+            {
+              "year": 2021,
+              "value": 7.426027
+            },
+            {
+              "year": 2022,
+              "value": 7.010712
+            },
+            {
+              "year": 2023,
+              "value": 8.361151
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "mode": "POINT",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.3956,
+        "rx1day_mm": 43.2,
+        "p99_precipitation_mm_day": 3.7564,
+        "cells": [
+          {
+            "cell_id": "point:-17.208500,-70.918500",
+            "center": {
+              "latitude": -17.2085,
+              "longitude": -70.9185,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.3956,
+            "rx1day_mm": 43.2
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+        "method": "El área es menor que una celda nominal de 0.5°; se declaró y consultó como punto representativo.",
+        "limitations": [
+          "El punto representativo no describe variación interna del territorio.",
+          "NASA POWER es una grilla; no sustituye medición in situ.",
+          "P99 describe exposición climática de screening; no es una lluvia de diseño ni prueba suficiencia del drenaje.",
+          "RX1DAY se conserva para trazabilidad y requiere contraste IMERG/estaciones si se separa materialmente de P99."
+        ]
+      },
+      "terrain_slope_degrees": 8.2,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 1,
+        "cenepred-mass-movement-risk": 1,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "land_area_m2": 105946.57,
+        "developable_area_m2": 58270.61,
+        "saleable_floor_area_m2": 58270.61,
+        "land_acquisition_usd": 9535191.4,
+        "initial_mitigation_usd": 1271358.85,
+        "projected_revenue_usd": 49530021.98,
+        "projected_construction_cost_usd": 27969894.76,
+        "projected_selling_cost_usd": 2476501.1,
+        "sold_fraction_within_horizon": 1.0,
+        "npv_usd": 3684359.58,
+        "cash_flows_usd": [
+          -10806550.25,
+          4770906.53,
+          4770906.53,
+          4770906.53,
+          4770906.53,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN = −(área de suelo × costo suelo + área de suelo × mitigación) + Σ[área vendida_t × (precio − costo obra) − costo comercial_t] / (1+r)^t",
+        "limitations": [
+          "Precio, costos, edificabilidad, fracción desarrollable, absorción, tasa y horizonte son supuestos del usuario.",
+          "El modelo no incluye impuestos, financiamiento, licencias, cronograma de obra, inflación ni valor residual.",
+          "La construcción se imputa en el mismo año de la venta y el área no absorbida al horizonte no recibe valor residual.",
+          "Un territorio IGN es una unidad administrativa, no un predio; su VAN solo ilustra sensibilidad a los supuestos."
+        ]
+      },
+      "opportunities": [
+        "Polígono WGS84 de 0.1059 km² medido geodésicamente.",
+        "VAN condicionado de USD 3.68 M bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "POWER y NASADEM son productos de grilla; no sustituyen topografía, geotecnia, hidrología ni diseño predial.",
+        "Precio, costos, edificabilidad y absorción son supuestos del usuario, no observaciones de mercado.",
+        "Cero intersecciones en una capa no demuestra ausencia de amenaza, patrimonio o restricción."
+      ]
+    },
+    {
+      "subject_id": "samegua-area",
+      "label": "Área de análisis Samegua",
+      "representative_point": {
+        "latitude": -17.1885,
+        "longitude": -70.8835,
+        "label": "Área de análisis Samegua"
+      },
+      "area_km2": 0.105958,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.46826563213144684,
+          "minimum": 0.0,
+          "maximum": 300.21,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 58.384,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.028479452054794532,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.2693063852084737,
+              0.27803173890261257
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.4039520799450731,
+            "autocorrelation_lag1_detrended": -0.8529411764705881,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie sin tendencia muestra autocorrelación negativa (factor n/n* = 0.147); se conserva la varianza clásica de Mann-Kendall para no exagerar la significancia.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T20:25:57.301805Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "CACHED_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.365945
+            },
+            {
+              "year": 2019,
+              "value": 0.281699
+            },
+            {
+              "year": 2020,
+              "value": 0.493169
+            },
+            {
+              "year": 2021,
+              "value": 0.223863
+            },
+            {
+              "year": 2022,
+              "value": 1.049233
+            },
+            {
+              "year": 2023,
+              "value": 0.395616
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 7.6416430853491555,
+          "minimum": 2.26,
+          "maximum": 13.22,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 5.933,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.04418264840182662,
+            "p_value": 1.0,
+            "p_value_modified": 1.0,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.3660509394415752,
+              0.7219178082191791
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.46806885015830857,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 1.0,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T20:25:57.301805Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "CACHED_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 7.293479
+            },
+            {
+              "year": 2019,
+              "value": 8.015397
+            },
+            {
+              "year": 2020,
+              "value": 7.742814
+            },
+            {
+              "year": 2021,
+              "value": 7.426027
+            },
+            {
+              "year": 2022,
+              "value": 7.010712
+            },
+            {
+              "year": 2023,
+              "value": 8.361151
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "mode": "POINT",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.3956,
+        "rx1day_mm": 43.2,
+        "p99_precipitation_mm_day": 3.7564,
+        "cells": [
+          {
+            "cell_id": "point:-17.188500,-70.883500",
+            "center": {
+              "latitude": -17.1885,
+              "longitude": -70.8835,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.3956,
+            "rx1day_mm": 43.2
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+        "method": "El área es menor que una celda nominal de 0.5°; se declaró y consultó como punto representativo.",
+        "limitations": [
+          "El punto representativo no describe variación interna del territorio.",
+          "NASA POWER es una grilla; no sustituye medición in situ.",
+          "P99 describe exposición climática de screening; no es una lluvia de diseño ni prueba suficiencia del drenaje.",
+          "RX1DAY se conserva para trazabilidad y requiere contraste IMERG/estaciones si se separa materialmente de P99."
+        ]
+      },
+      "terrain_slope_degrees": 20.8,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 2,
+        "cenepred-mass-movement-risk": 2,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "land_area_m2": 105957.74,
+        "developable_area_m2": 58276.76,
+        "saleable_floor_area_m2": 58276.76,
+        "land_acquisition_usd": 9536196.48,
+        "initial_mitigation_usd": 1271492.86,
+        "projected_revenue_usd": 49535242.83,
+        "projected_construction_cost_usd": 27972843.01,
+        "projected_selling_cost_usd": 2476762.14,
+        "sold_fraction_within_horizon": 1.0,
+        "npv_usd": 3684747.94,
+        "cash_flows_usd": [
+          -10807689.34,
+          4771409.42,
+          4771409.42,
+          4771409.42,
+          4771409.42,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN = −(área de suelo × costo suelo + área de suelo × mitigación) + Σ[área vendida_t × (precio − costo obra) − costo comercial_t] / (1+r)^t",
+        "limitations": [
+          "Precio, costos, edificabilidad, fracción desarrollable, absorción, tasa y horizonte son supuestos del usuario.",
+          "El modelo no incluye impuestos, financiamiento, licencias, cronograma de obra, inflación ni valor residual.",
+          "La construcción se imputa en el mismo año de la venta y el área no absorbida al horizonte no recibe valor residual.",
+          "Un territorio IGN es una unidad administrativa, no un predio; su VAN solo ilustra sensibilidad a los supuestos."
+        ]
+      },
+      "opportunities": [
+        "Polígono WGS84 de 0.1060 km² medido geodésicamente.",
+        "VAN condicionado de USD 3.68 M bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "POWER y NASADEM son productos de grilla; no sustituyen topografía, geotecnia, hidrología ni diseño predial.",
+        "Precio, costos, edificabilidad y absorción son supuestos del usuario, no observaciones de mercado.",
+        "Cero intersecciones en una capa no demuestra ausencia de amenaza, patrimonio o restricción."
+      ]
+    },
+    {
+      "subject_id": "cerro-colorado-area",
+      "label": "Área de análisis Cerro Colorado",
+      "representative_point": {
+        "latitude": -16.3635,
+        "longitude": -71.58349999999999,
+        "label": "Área de análisis Cerro Colorado"
+      },
+      "area_km2": 0.106407,
+      "variables": [
+        {
+          "variable": "PRECTOTCORR",
+          "label": "Precipitación corregida",
+          "mean": 0.20941579187585577,
+          "minimum": 0.0,
+          "maximum": 12.16,
+          "unit": "mm/day",
+          "display_unit": "mm/día",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 53.696,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": 0.005678082191780821,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.14363728572497944,
+              0.15102084736881505
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.3215130021492467,
+            "autocorrelation_lag1_detrended": -0.1176470588235294,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 0.7071142312899612,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "PRECTOTCORR",
+            "unit": "mm/day",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T20:25:57.340846Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "CACHED_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 0.14274
+            },
+            {
+              "year": 2019,
+              "value": 0.196329
+            },
+            {
+              "year": 2020,
+              "value": 0.444781
+            },
+            {
+              "year": 2021,
+              "value": 0.095452
+            },
+            {
+              "year": 2022,
+              "value": 0.157507
+            },
+            {
+              "year": 2023,
+              "value": 0.219041
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        },
+        {
+          "variable": "T2M",
+          "label": "Temperatura del aire a 2 m",
+          "mean": 16.411378366042904,
+          "minimum": 10.2,
+          "maximum": 20.41,
+          "unit": "C",
+          "display_unit": "°C",
+          "valid_observations": 2191,
+          "completeness_percent": 100.0,
+          "annual_variability_percent": 2.555,
+          "trend": {
+            "method": "Mann-Kendall modificado (Hamed y Rao, 1998) y pendiente de Sen sobre medias anuales",
+            "direction": "no_trend",
+            "slope_per_year": -0.041050228310502014,
+            "p_value": 0.7194444444444444,
+            "p_value_modified": 0.7071142312899612,
+            "variance_correction": 1.0,
+            "confidence_interval": [
+              -0.3916543154427714,
+              0.4445890410958899
+            ],
+            "significant": false,
+            "alpha": 0.05,
+            "valid_observations": 6,
+            "autocorrelation_lag1": -0.4847650508874453,
+            "autocorrelation_lag1_detrended": -0.29411764705882354,
+            "interpretation": "Evidencia insuficiente para establecer una tendencia estadísticamente significativa.",
+            "limitations": [
+              "Las estimaciones de grilla para un punto no sustituyen mediciones in situ.",
+              "La serie tiene 6 medias anuales; la potencia de la prueba es baja."
+            ]
+          },
+          "adjusted_p_value": 1.0,
+          "significant_after_bh": false,
+          "source": {
+            "source_id": "nasa-power",
+            "dataset": "NASA POWER Daily Point",
+            "version": "v2.10.1",
+            "variable": "T2M",
+            "unit": "C",
+            "temporal_resolution": "diaria; análisis agregado a escala anual",
+            "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
+            "downloaded_at": "2026-10-23T20:25:57.340846Z",
+            "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+            "provenance": "CACHED_DATA",
+            "quality_notes": []
+          },
+          "annual_series": [
+            {
+              "year": 2018,
+              "value": 16.336411
+            },
+            {
+              "year": 2019,
+              "value": 16.725479
+            },
+            {
+              "year": 2020,
+              "value": 16.333825
+            },
+            {
+              "year": 2021,
+              "value": 16.21326
+            },
+            {
+              "year": 2022,
+              "value": 15.757068
+            },
+            {
+              "year": 2023,
+              "value": 17.102438
+            }
+          ],
+          "last_valid_date": "2023-12-31",
+          "current_period": null
+        }
+      ],
+      "spatial_exposure": {
+        "period": "2023-01-01/2023-12-31",
+        "unit": "mm/day",
+        "mode": "POINT",
+        "cell_count": 1,
+        "spatial_coverage_percent": 100.0,
+        "mean_precipitation_mm_day": 0.219,
+        "rx1day_mm": 8.84,
+        "p99_precipitation_mm_day": 3.6916,
+        "cells": [
+          {
+            "cell_id": "point:-16.363500,-71.583500",
+            "center": {
+              "latitude": -16.3635,
+              "longitude": -71.58349999999999,
+              "label": null
+            },
+            "weight": 1.0,
+            "mean_precipitation_mm_day": 0.219,
+            "rx1day_mm": 8.84
+          }
+        ],
+        "provenance": "CACHED_DATA",
+        "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
+        "method": "El área es menor que una celda nominal de 0.5°; se declaró y consultó como punto representativo.",
+        "limitations": [
+          "El punto representativo no describe variación interna del territorio.",
+          "NASA POWER es una grilla; no sustituye medición in situ.",
+          "P99 describe exposición climática de screening; no es una lluvia de diseño ni prueba suficiencia del drenaje.",
+          "RX1DAY se conserva para trazabilidad y requiere contraste IMERG/estaciones si se separa materialmente de P99."
+        ]
+      },
+      "terrain_slope_degrees": 2.07,
+      "territorial_intersections": {
+        "cenepred-flood-risk": 1,
+        "cenepred-mass-movement-risk": 1,
+        "sernanp-anp": 0,
+        "cultura-archaeology": 0,
+        "cultura-archaeology-declared": 0,
+        "ingemmet-geohazards": null
+      },
+      "finance": {
+        "land_area_m2": 106407.34,
+        "developable_area_m2": 58524.03,
+        "saleable_floor_area_m2": 58524.03,
+        "land_acquisition_usd": 9576660.24,
+        "initial_mitigation_usd": 1276888.03,
+        "projected_revenue_usd": 49745429.59,
+        "projected_construction_cost_usd": 28091536.71,
+        "projected_selling_cost_usd": 2487271.48,
+        "sold_fraction_within_horizon": 1.0,
+        "npv_usd": 3700382.97,
+        "cash_flows_usd": [
+          -10853548.27,
+          4791655.35,
+          4791655.35,
+          4791655.35,
+          4791655.35,
+          0.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "model_provenance": "MODEL_ESTIMATE",
+        "assumption_provenance": "USER_ASSUMPTION",
+        "formula": "VAN = −(área de suelo × costo suelo + área de suelo × mitigación) + Σ[área vendida_t × (precio − costo obra) − costo comercial_t] / (1+r)^t",
+        "limitations": [
+          "Precio, costos, edificabilidad, fracción desarrollable, absorción, tasa y horizonte son supuestos del usuario.",
+          "El modelo no incluye impuestos, financiamiento, licencias, cronograma de obra, inflación ni valor residual.",
+          "La construcción se imputa en el mismo año de la venta y el área no absorbida al horizonte no recibe valor residual.",
+          "Un territorio IGN es una unidad administrativa, no un predio; su VAN solo ilustra sensibilidad a los supuestos."
+        ]
+      },
+      "opportunities": [
+        "Polígono WGS84 de 0.1064 km² medido geodésicamente.",
+        "VAN condicionado de USD 3.70 M bajo los supuestos declarados."
+      ],
+      "cautions": [
+        "POWER y NASADEM son productos de grilla; no sustituyen topografía, geotecnia, hidrología ni diseño predial.",
+        "Precio, costos, edificabilidad y absorción son supuestos del usuario, no observaciones de mercado.",
+        "Cero intersecciones en una capa no demuestra ausencia de amenaza, patrimonio o restricción."
+      ]
+    }
+  ],
+  "territorial_evidence": [
+    {
+      "subject": "Área de análisis Moquegua",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 1,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:51.881075Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 1,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:51.900856Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:51.976798Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:51.927144Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:51.944497Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "Área de análisis Samegua",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:58.157120Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 2,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:58.145713Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:58.165121Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:25:58.347774Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:27:41.466752Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    },
+    {
+      "subject": "Área de análisis Cerro Colorado",
+      "sources": [
+        {
+          "source_id": "cenepred-flood-risk",
+          "status": "READY",
+          "intersection_count": 1,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:26:21.791098Z",
+          "limitations": [
+            "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cenepred-mass-movement-risk",
+          "status": "READY",
+          "intersection_count": 1,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:26:21.809366Z",
+          "limitations": [
+            "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "sernanp-anp",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:26:21.831433Z",
+          "limitations": [
+            "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:26:21.971333Z",
+          "limitations": [
+            "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "cultura-archaeology-declared",
+          "status": "READY",
+          "intersection_count": 0,
+          "provenance": "CACHED_DATA",
+          "downloaded_at": "2026-10-23T20:26:21.965304Z",
+          "limitations": [
+            "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        },
+        {
+          "source_id": "ingemmet-geohazards",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
+          "limitations": [
+            "El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+            "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
+          ]
+        }
+      ]
+    }
+  ],
+  "assumptions": {
+    "developable_fraction": 0.55,
+    "floor_area_ratio": 1.0,
+    "sale_price_usd_m2": 850.0,
+    "construction_cost_usd_m2": 480.0,
+    "land_cost_usd_m2": 90.0,
+    "mitigation_cost_usd_m2_land": 12.0,
+    "selling_cost_fraction": 0.05,
+    "annual_absorption_fraction": 0.25,
+    "discount_rate": 0.12,
+    "horizon_years": 8,
+    "sale_price_sensitivity": 0.2,
+    "construction_cost_sensitivity": 0.2,
+    "land_cost_sensitivity": 0.25,
+    "mitigation_cost_sensitivity": 0.3,
+    "absorption_sensitivity": 0.1,
+    "discount_rate_sensitivity": 0.02
+  }
+}

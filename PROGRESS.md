@@ -168,7 +168,7 @@
 
 5. Integrar GPM IMERG V07 y LHASA. AppEEARS MOD13Q1/MOD44W ya está verificado con descarga y QA reales.
 6. ~~Implementar muestreo NASA a lo largo de corredores y polígonos~~ **K1 listo:** celdas regionales ponderadas por área, división multianual y series por celda.
-7. ~~Construir el backend y la pantalla del piloto vial~~ **K2/C5 listos e integrados** en `f527ad2`; permanece pendiente K3 inmobiliario.
+7. ~~Construir los backends vial e inmobiliario~~ **K2 integrado y K3 listo** en `codex/piloto-inmobiliario`; la pantalla inmobiliaria corresponde a Claude/C5.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.
 
 ## Diagnóstico NASADEM `s17w071` (rama `codex/nasadem-s17w071`)
@@ -178,6 +178,15 @@
 - El conector ahora distingue 401 («renueve el token») de 403 («autorice LP DAAC») y el log ya no atribuye el rechazo a un gránulo específico. El secreto nunca se imprime ni se cachea.
 - La credencial renovada vence el 22-dic-2026. La validación autenticada devolvió HTTP 206 y descargó `s17w071`, `s18w071` y `s18w072`; Moquegua departamental quedó `READY` con 2,625 m, 18.61° y 110.99°. El piloto vial ya obtiene relieve `READY` en sus cinco tramos.
 - Puerta del diagnóstico: 15/15 pruebas NASADEM y 146/146 backend; la nueva validación real usa `scripts/qa/nasadem_live.py`, sin levantar 3100/8000.
+
+## Piloto inmobiliario K3 (rama `codex/piloto-inmobiliario`)
+
+- Endpoint tipado `POST /api/v1/projects/real-estate-screening`, backend-only y conforme a `ScreeningEnvelope` v1.0. Acepta de uno a doce Polygon/MultiPolygon WGS84 del usuario o referencias oficiales IGN por nivel/ubigeo; cada entrada resuelve un punto interior, área geodésica sin redondeo y procedencia. Los 12 territorios MultiPolygon del catálogo están cubiertos.
+- Por terreno: NASA POWER diario (`PRECTOTCORR`, `T2M`), P99 espacial K1 del último año, NASADEM, CENEPRED, SERNANP, Cultura e INGEMMET. Los faltantes quedan `DATA_UNAVAILABLE`; cero intersecciones no se traduce a cero riesgo.
+- VAN condicionado con fracción desarrollable, edificabilidad, precio, obra, suelo, mitigación, costo comercial, absorción, tasa y horizonte etiquetados `USER_ASSUMPTION`. Incluye base/adverso/favorable, tornado y equilibrios mediante el motor común.
+- Scorecard de seis criterios con cobertura: P99, pendiente, alertas de amenaza, alertas de restricción, VAN/inversión inicial y fracción desarrollable. Las fuentes incompletas eliminan el criterio relacionado en vez de imputar cero.
+- Ejecución real 2018–2023 para tres áreas de análisis no catastrales cerca de Moquegua, Samegua y Cerro Colorado: POWER/K1 disponibles, tres NASADEM `READY`, CENEPRED/SERNANP/Cultura consultados e INGEMMET visible como brecha. Contrato reproducible en `docs/coordination/contracts/real-estate-screening-v1.0.example.json`.
+- Recalculo independiente de área WGS84 y flujos descontados: diferencia de VAN menor a USD 0.003 en los tres terrenos. Pruebas K3: 7/7; suite backend: 160/160.
 
 ## Traspaso a Claude Code
 
