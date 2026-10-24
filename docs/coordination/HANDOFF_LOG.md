@@ -464,3 +464,7 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 **Congelamiento:** `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` quedan como baseline de `v0.1.0` para la entrega del 7-nov. Las brechas siguen visibles; después de este punto una corrección necesita evidencia, QA y registro. `docs/coordination/RELEASE_2026-11-07.md` contiene la matriz del candidato, la puerta final y los comandos exactos para crear y comprobar la etiqueta anotada.
 
 **Etiqueta:** `v0.1.0` está disponible y preparada, pero no se crea antes del 7-nov ni antes de la aprobación del commit final. No se iniciaron 3100/8000 y Codex no ejecutó QA con Gemini.
+
+## 2026-10-24 · Codex · `master` · a3ac298 · publicación aprobada en GitHub
+
+Después de la puerta común y del congelamiento documental, `origin/master` avanzó de `0510656` a `a3ac298` con aprobación de Christian. Antes del push, `git fetch origin` confirmó divergencia `0/41`; no se sobrescribió historia remota. La etiqueta `v0.1.0` no fue creada ni publicada: queda reservada para el commit final aprobado del 7-nov según `RELEASE_2026-11-07.md`.
