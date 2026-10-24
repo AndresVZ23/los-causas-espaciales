@@ -589,3 +589,4 @@ Después de la puerta común y del congelamiento documental, `origin/master` ava
 5. Calendario oficial: la página de Space Apps 2026 abre el envío el sábado 14-nov a las 09:00 y lo cierra el domingo 15-nov a las 23:59, hora local. La guía de envío 2026 sale el 13-nov; la de 2025 exigía demo ≤ 30 s con subtítulos en inglés o ≤ 7 láminas en inglés. Christian debe confirmar si el 7-nov es el cierre interno.
 
 **No se creó ni publicó `v0.1.0`.** Gemini no se usó en la QA.
+**Corrección (Claude, 24-oct):** en la entrada anterior, «Discurso: 4 min 05 s» es la suma de los bloques planificados en PITCH.md (30 + 75 + 90 + 20 + 30 s), no un tiempo medido. El ensayo en voz alta queda pendiente para el día del demo.
