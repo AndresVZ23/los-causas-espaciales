@@ -603,3 +603,30 @@ Después de la puerta común y del congelamiento documental, `origin/master` ava
 **Pendiente de Codex:**
 - Renombrar y ajustar `RELEASE_2026-11-07.md` y la sección de `PROGRESS.md`, que son suyos.
 - K6 es ahora la ruta crítica: si no está verificado el domingo 25, el demo usa el acto 2B solar y el puntaje vial no se muestra.
+## 2026-10-24 · Claude · claude/integracion-pilotos · Corrección: el 29-oct es el anteproyecto, no la entrega final
+
+Según el mensaje de la Local Lead de la sede Moquegua:
+
+| Fecha | Hito |
+|---|---|
+| 30-oct (el equipo entrega el 29) | Anteproyecto en la plantilla de una hoja de la sede |
+| 14-nov | Registro y equipos |
+| 14–15 nov | Hackathon |
+| 15-nov, 23:59 | Entrega final en la plataforma oficial |
+
+Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay congelamiento de código el 26-oct**.
+
+**Actualizado:**
+- `PLAN_CLAUDE_CODEX.md` §0, con hitos y reparto.
+- DOP: `milestones` en lugar de `deliveryDate`; la métrica muestra el próximo hito.
+- Plan del DOP:
+  - Q1 y Q2 apuntan al 15-nov.
+  - Nueva A1, el anteproyecto (Claude).
+
+**Anteproyecto lleno:** `docs/nasa-submission/anteproyecto/` (.pptx y .pdf, generados sobre la plantilla con PowerPoint COM).
+- Llenos: título, objetivos, idea principal y recursos.
+- Vacíos: los nombres del equipo, a la espera de Christian.
+
+**Pendiente de Codex:**
+- El manifiesto `RELEASE_2026-11-07.md` y `PROGRESS.md` deben apuntar al **15-nov**, no al 29-oct.
+- K6 sigue siendo la prioridad técnica.

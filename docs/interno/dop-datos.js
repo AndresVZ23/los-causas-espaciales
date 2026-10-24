@@ -10,8 +10,12 @@ window.DOP_DATA = {
   version: 2,
   updatedAt: "2026-10-24T09:00:00Z",
   updatedBy: "Claude",
-  // Entrega al NASA Space Apps Challenge: jueves 29 de octubre de 2026 (confirmada por Christian el 24-oct; antes 7-nov).
-  deliveryDate: "2026-10-29",
+  // Hitos de la sede Moquegua (mensaje de la Local Lead, 24-oct): anteproyecto con plantilla de la sede (límite 30-oct;
+  // el equipo lo entrega el 29), hackathon 14–15 nov y entrega final en la plataforma oficial el 15-nov a las 23:59.
+  milestones: [
+    { date: "2026-10-29", label: "el anteproyecto" },
+    { date: "2026-11-15", label: "la entrega final" },
+  ],
 
   statuses: {
     VERIFICADO: "Verificado con evidencia en el repositorio",
@@ -382,9 +386,10 @@ window.DOP_DATA = {
     { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "VERIFICADO", ref: "COD-AB Perú · CC BY-IGO · 25/196/1,873 · 5 pruebas", nodes: ["sampling"] },
     { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "VERIFICADO", ref: "f527ad2 · C2 conforme · P99 robusto · NASADEM READY · ejemplo real · 152 pruebas · build · audit 0", nodes: ["pilots"] },
     { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "VERIFICADO", ref: "4810d93 · C2 conforme · ejemplo real a9ae20e290ce6f69 · 8 pruebas · >200 ha área de análisis · un sujeto sin comparación · 49 cruzadas · 161 backend", nodes: ["pilots"] },
+    { id: "A1", owner: "Claude", title: "Anteproyecto con la plantilla de la sede Moquegua (una hoja: equipo, objetivos, idea principal, recursos)", status: "EN_CURSO", ref: "límite de la sede 30-oct · el equipo lo entrega el 29", nodes: ["delivery"] },
     { id: "K6", owner: "Codex", title: "Escala ×24 de la lluvia en el muestreo regional (K1) que usan los pilotos vial e inmobiliario", status: "PENDIENTE", ref: "reproducido 24-oct: celda de Ilo 1,587.4 vs 70.1 mm/año; P99 tramos 2–4 = 24 × tramo 5 · bloquea el acto 2A del demo", nodes: ["sampling", "pilots"] },
-    { id: "Q1", owner: "Claude", title: "Entrega del 29-oct: PITCH.md, DEMO_SCENARIOS.md, material del demo, ensayo y regresión 1440/768/390", status: "EN_CURSO", ref: "2f38914 · pitch y escenarios escritos · regresión 10 flujos × 3 anchos sin errores · falta el ensayo del día", nodes: ["delivery"] },
-    { id: "Q2", owner: "Codex", title: "Entrega del 29-oct: DATA_SOURCES y TECHNICAL_ARCHITECTURE congelados, puerta final y etiqueta de versión", status: "EN_CURSO", ref: "congelado en a3ac298 · etiqueta v0.1.0 el 28-oct con aprobación", nodes: ["delivery"] },
+    { id: "Q1", owner: "Claude", title: "Entrega final del 15-nov: PITCH.md, DEMO_SCENARIOS.md, material del demo, ensayo y regresión 1440/768/390", status: "EN_CURSO", ref: "2f38914 · pitch y escenarios escritos · regresión 10 flujos × 3 anchos sin errores · falta el ensayo del día", nodes: ["delivery"] },
+    { id: "Q2", owner: "Codex", title: "Entrega final del 15-nov: DATA_SOURCES y TECHNICAL_ARCHITECTURE congelados, puerta final y etiqueta de versión", status: "EN_CURSO", ref: "congelado en a3ac298 · etiqueta v0.1.0 al cierre aprobado", nodes: ["delivery"] },
     { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "master c0f7366 · 161 pruebas · build · audit 0 · fuentes/arquitectura congeladas para v0.1.0 · etiqueta preparada para 7-nov", nodes: [] },
   ],
 };

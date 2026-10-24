@@ -370,10 +370,13 @@
     const juryDone = P.juryTargets.filter((t) => isDone(uById.get(t))).length;
     $("m-waves").textContent = juryWaves ? juryWaves : `${juryDone} / ${P.juryTargets.length}`;
     $("m-waves-label").textContent = juryWaves ? `olas hasta el demo del jurado · ${juryDone} de ${P.juryTargets.length} resultados listos` : "resultados del demo del jurado listos";
-    if (D.deliveryDate) {
-      const days = Math.ceil((new Date(`${D.deliveryDate}T00:00:00-05:00`) - new Date()) / 86400000);
-      $("m-delivery").textContent = Math.max(0, days);
-      $("m-delivery-label").textContent = `días para la entrega · ${new Date(`${D.deliveryDate}T12:00:00`).toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}`;
+    // Próximo hito pendiente (hora de Lima): el mismo día del hito marca 0; pasado el último, queda en 0.
+    const milestones = D.milestones ?? (D.deliveryDate ? [{ date: D.deliveryDate, label: "entrega" }] : []);
+    const untilEnd = (m) => Math.ceil((new Date(`${m.date}T00:00:00-05:00`) - new Date()) / 86400000);
+    const next = milestones.find((m) => untilEnd(m) >= 0) ?? milestones[milestones.length - 1];
+    if (next) {
+      $("m-delivery").textContent = Math.max(0, untilEnd(next));
+      $("m-delivery-label").textContent = `días para ${next.label} · ${new Date(`${next.date}T12:00:00`).toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}`;
     }
     // Solo cuentan los resultados del demo que aún no están listos: mejorar algo ya entregado no es lo más urgente.
     const juryReach = (id) => P.juryTargets.filter((t) => !isDone(uById.get(t)) && (t === id || walk(id, uReqSuccs).has(t)));
