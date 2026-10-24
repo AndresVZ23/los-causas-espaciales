@@ -2,7 +2,22 @@
 
 Fecha: 2026-10-22 · Dueño del producto: Christian · Documento vivo; cada agente actualiza solo su fila de estado.
 
-## 0. Calendario hacia la entrega: sábado 7 de noviembre de 2026
+## 0. Calendario hacia la entrega: jueves 29 de octubre de 2026
+
+El 24-oct Christian confirmó que la entrega es el **29 de octubre**, no el 7 de noviembre. Las olas 0–4 ya están cumplidas; el cierre se comprime así:
+
+| Día | Claude | Codex | Puerta |
+|---|---|---|---|
+| sáb 24 | Replanificación; material del demo para el jurado | K6: escala ×24 en el muestreo regional, con prueba | — |
+| dom 25 | Material del demo con capturas reales; textos del formulario de envío | QA de K6 en vial e inmobiliario; manifiesto al 29-oct | K6 verificado: el acto 2A vuelve al demo |
+| lun 26 | Pantalla con K6 integrado; regresión 10 flujos × 1440/768/390; ensayo en voz alta | Fusión en `master` | **Congelamiento de código**: después, solo defectos |
+| mar 27 | Ajustes del ensayo | Puerta final completa | Candidato final |
+| mié 28 | Ensayo final y precalentamiento de caché | Push y etiqueta `v0.1.0`, ambos con aprobación de Christian | Etiqueta |
+| jue 29 | Envío y respaldo | Respaldo | **Entrega** |
+
+Reglas: no entran funcionalidades nuevas. Lo que no esté verificado el lunes 26 se presenta como hoja de ruta. Si K6 no está verificado el domingo 25, el demo usa el acto 2B (solar) y el puntaje vial no se muestra.
+
+### Calendario original (reemplazado el 24-oct)
 
 Las olas salen de la vista «Orquestación» del DOP (`docs/interno/dop-neuronal.html`): cada una agrupa lo que puede avanzar en paralelo.
 

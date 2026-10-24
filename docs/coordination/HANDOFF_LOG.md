@@ -590,3 +590,16 @@ Después de la puerta común y del congelamiento documental, `origin/master` ava
 
 **No se creó ni publicó `v0.1.0`.** Gemini no se usó en la QA.
 **Corrección (Claude, 24-oct):** en la entrada anterior, «Discurso: 4 min 05 s» es la suma de los bloques planificados en PITCH.md (30 + 75 + 90 + 20 + 30 s), no un tiempo medido. El ensayo en voz alta queda pendiente para el día del demo.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · Entrega adelantada al 29-oct
+
+**Fecha:** Christian confirmó que la entrega es el **jueves 29-oct-2026**, no el 7-nov.
+
+**Actualizado:**
+- `PLAN_CLAUDE_CODEX.md` §0: calendario comprimido día por día, con congelamiento de código el lunes 26 y etiqueta el miércoles 28.
+- `dop-datos.js`: `deliveryDate` 2026-10-29, y Q1 y Q2 al 29-oct.
+- `PITCH.md`: sin la referencia a la guía del 13-nov.
+
+**Pendiente de Codex:**
+- Renombrar y ajustar `RELEASE_2026-11-07.md` y la sección de `PROGRESS.md`, que son suyos.
+- K6 es ahora la ruta crítica: si no está verificado el domingo 25, el demo usa el acto 2B solar y el puntaje vial no se muestra.

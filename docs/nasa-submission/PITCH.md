@@ -66,4 +66,4 @@ Target ≤ 30 s with English subtitles; the interface is in Spanish, so the subt
 6. Trust: six provenance classes, visible gaps, reproducible PDF.
 7. Impact and next steps.
 
-The demo format above follows the 2025 Project Submission Guide (video ≤ 30 s or ≤ 7 slides, in English, hosted publicly). The 2026 guide is scheduled for 13 November 2026; check both limits against it before uploading.
+The demo format above follows the published Project Submission Guide (video ≤ 30 s or ≤ 7 slides, in English, hosted publicly). Check both limits against the guide in force before uploading.
