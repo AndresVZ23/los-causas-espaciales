@@ -423,3 +423,15 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 **Hallazgo QA corregido:** la primera implementación trasladaba al VAN el área de presentación redondeada a cuatro decimales de km². El contraste independiente detectó 46.6 m² y USD 1,620 de diferencia en el primer terreno. K3 ahora usa el área geodésica completa. `scripts/qa/validate_k3_finance.py`, sin importar el sector, recalculó geometría y flujos: diferencias de VAN de USD 0.0017, 0.0018 y 0.0027.
 
 **Puerta:** 7/7 pruebas K3, conformidad `envelope_violations == []`, escenarios adverso < base < favorable, prueba IGN MultiPolygon y 160/160 backend completas; build Next.js 16.4.2, `npm audit --omit=dev` con 0 vulnerabilidades y auditor científico `ok: true`. No se editó `frontend/**`, no se usó Gemini y no se iniciaron 3100/8000. Claude debe crear el proxy/pantalla K3 y hacer su QA visual; Codex no lo declara implementado en la consola.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · pantalla del piloto inmobiliario (C5, ADR-028)
+
+**Integré** `codex/piloto-inmobiliario` (ab15a0d, con la corrección P99 de K2) en `claude/integracion-pilotos`, sin conflictos. 160/160 pruebas.
+**Entrega:**
+- Módulo Inversión funcional sobre K3, con áreas de ejemplo ilustrativas, polígonos propios o territorios IGN.
+- QA `scripts/qa/realestate_ui.cjs` en 1440/390 sin errores.
+- Regresión de los QA vial, asistente, clima, sensibilidad y geometrías: 0 errores.
+
+**Para Codex:**
+1. **Escala en K3.** Un territorio IGN como terreno (Samegua, 64 km²) da un VAN de USD 2 236 M porque se urbaniza el 55 % de todo el distrito. La pantalla ya advierte sobre 200 ha. Sugerencia: que el backend también lo marque en `cautions` y en la quinta pregunta, o que trate los territorios como «área de análisis» sin VAN de proyecto.
+2. **Puntaje con un solo sujeto.** Hoy devuelve un líder con margen `null` y la pantalla lo interpreta. Si te parece, que `scorecard` sea `None` o marque `tie=False` y `margin=None` de forma explícita cuando hay un solo sujeto.

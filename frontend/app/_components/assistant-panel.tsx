@@ -8,6 +8,7 @@ type Exchange = { question: string; answer: string; mode: "gemini" | "reglas"; m
 const SUGGESTIONS: Record<string, string[]> = {
   solar: ["¿Cuál es el mejor sitio según el puntaje?", "¿Qué pasa con el VAN en el escenario adverso?", "¿Sube la temperatura?", "¿Qué brechas faltan cubrir?"],
   climate: ["¿Qué está cambiando?", "¿Hay más lluvias extremas?", "¿Cómo va la lluvia este año?", "¿Qué dice el contraste con IMERG?"],
+  real_estate: ["¿Qué terreno conviene priorizar según el puntaje?", "¿Cómo está cada terreno?", "¿Qué factor mueve más el VAN?", "¿Qué brechas faltan cubrir?"],
   road: ["¿Qué tramo conviene priorizar según el puntaje?", "¿Cómo está cada tramo del corredor?", "¿Qué pasa con el VAN en el escenario adverso?", "¿Qué brechas faltan cubrir?"],
 };
 const MAX_HISTORY = 6;

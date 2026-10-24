@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-24T06:30:00Z",
+  updatedAt: "2026-10-24T05:00:00Z",
   updatedBy: "Codex",
 
   statuses: {
@@ -261,7 +261,7 @@ window.DOP_DATA = {
       { id: "o-social", layer: "out", group: "Módulos", name: "5 · Social y arqueológico", owner: "Claude", status: "PENDIENTE", detail: "Alertas de debida diligencia con fuentes oficiales." },
       { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "VERIFICADO", planTask: "C5", detail: "Pantalla vial integrada en 04457f9 y fusionada en f527ad2; QA Claude 1440/390 sin errores y puerta común aprobada." },
       { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios, sensibilidad y puntaje multicriterio en pantalla y PDF." },
-      { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Backend K3 verificado y ejemplo real listos para integración; Claude debe construir y validar la pantalla de comparación." },
+      { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C5", detail: "Backend K3 verificado y ejemplo real listos para integración; Claude debe construir y validar la pantalla de comparación." },
       { id: "o-nasa", layer: "out", group: "Entregables", name: "Respuestas al reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Las cinco preguntas, con evidencia y etapas que las sostienen." },
       { id: "o-reports", layer: "out", group: "Entregables", name: "Reportes PDF y JSON", owner: "Claude", status: "VERIFICADO", detail: "PDF ejecutivo con huella SHA-256 y JSON reproducible." },
       { id: "o-api", layer: "out", group: "Entregables", name: "API para terceros", owner: "Codex", status: "EN_CURSO", detail: "OpenAPI operativa; falta versionado público y límites de uso." },
@@ -371,7 +371,7 @@ window.DOP_DATA = {
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
     { id: "C4", owner: "Claude", title: "Asistente analítico (reglas sin costo; Gemini a pedido)", status: "VERIFICADO", ref: "f3074cb · merge 63e0f36 · puerta común aprobada sin clave Gemini", nodes: ["delivery"] },
-    { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "EN_CURSO", ref: "vial verificado en 04457f9/f527ad2; backend K3 y ejemplo real listos para la pantalla inmobiliaria", nodes: ["pilots"] },
+    { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "LISTO_PARA_QA", ref: "vial 04457f9 · inmobiliario claude/integracion-pilotos · ADR-027/028", nodes: ["pilots"] },
     { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-024", nodes: ["delivery"] },
     { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-025", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },

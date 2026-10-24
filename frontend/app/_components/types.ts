@@ -114,14 +114,36 @@ export type RoadResult = Omit<ScreeningResult, "sites" | "comparative_findings" 
   sector: "road"; corridor_source: { name: string; source: string; source_url: string | null; license: string | null; provenance: string; limitations: string[] };
   segments: RoadSegment[]; territorial_evidence: { subject: string; sources: RoadTerritorialSource[] }[]; assumptions: RoadAssumptions;
 };
-export type AnyResult = ScreeningResult | ClimateResult | RoadResult;
+// Piloto inmobiliario (K3 de Codex · sector "real_estate" del contrato C2).
+export type RealEstateAssumptions = {
+  developable_fraction: number; floor_area_ratio: number; sale_price_usd_m2: number; construction_cost_usd_m2: number; land_cost_usd_m2: number;
+  mitigation_cost_usd_m2_land: number; selling_cost_fraction: number; annual_absorption_fraction: number; discount_rate: number; horizon_years: number;
+  sale_price_sensitivity: number; construction_cost_sensitivity: number; land_cost_sensitivity: number; mitigation_cost_sensitivity: number;
+  absorption_sensitivity: number; discount_rate_sensitivity: number;
+};
+export type RealEstateSite = {
+  subject_id: string; label: string; representative_point: Point; area_km2: number; variables: VariableSummary[];
+  spatial_exposure: { mode: string; cell_count: number; spatial_coverage_percent: number; mean_precipitation_mm_day: number | null; rx1day_mm: number | null; p99_precipitation_mm_day: number | null; method: string } | null;
+  terrain_slope_degrees: number | null; territorial_intersections: Record<string, number | null>;
+  finance: { land_area_m2: number; saleable_floor_area_m2: number; land_acquisition_usd: number; initial_mitigation_usd: number; projected_revenue_usd: number;
+    projected_construction_cost_usd: number; sold_fraction_within_horizon: number; npv_usd: number; formula: string; limitations: string[] };
+  opportunities: string[]; cautions: string[];
+};
+export type TerritorialEvidence = { subject: string; sources: RoadTerritorialSource[] };
+export type RealEstateResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
+  sector: "real_estate"; site_sources: { subject: string; origin: string; dataset: string; license: string | null; provenance: string; limitations: string[] }[];
+  sites: RealEstateSite[]; territorial_evidence: TerritorialEvidence[]; assumptions: RealEstateAssumptions;
+};
+export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult;
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export const isRoad = (result: AnyResult | null): result is RoadResult => result?.sector === "road";
+export const isRealEstate = (result: AnyResult | null): result is RealEstateResult => result?.sector === "real_estate";
 /** Sujetos con series NASA, cualquiera sea el sector: sitios (solar, clima) o tramos (vial). */
 export type SeriesSubject = { location: Point; variables: VariableSummary[]; extremes?: ExtremeIndex[] };
 export const seriesSubjects = (result: AnyResult | null): SeriesSubject[] => {
   if (!result) return [];
   if (isRoad(result)) return result.segments.map((segment) => ({ location: { ...segment.representative_point, label: segment.label }, variables: segment.variables }));
+  if (isRealEstate(result)) return result.sites.map((site) => ({ location: { ...site.representative_point, label: site.label }, variables: site.variables }));
   return result.sites;
 };
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };

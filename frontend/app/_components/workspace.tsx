@@ -9,6 +9,8 @@ import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import { CellTrendLegend, cellsFor } from "./cell-trends";
+import { DEFAULT_REAL_ESTATE_ASSUMPTIONS, EXAMPLE_PARCELS, RealEstateControls, RealEstateEvidence, RealEstateReading } from "./realestate-panels";
+import type { ParcelSource } from "./realestate-panels";
 import { DEFAULT_ROAD_ASSUMPTIONS, RoadControls, RoadEvidence, RoadReading } from "./road-panels";
 import type { CellVariable } from "./cell-trends";
 import GeometryPanel from "./geometry-panel";
@@ -18,8 +20,8 @@ import SensitivityPanel from "./sensitivity-panel";
 import TerritoryPicker from "./territory-picker";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
-import { isClimate, isRoad, seriesSubjects } from "./types";
-import type { AnyResult, Assumptions, Module, Point, QuestionKey, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState } from "./types";
+import { isClimate, isRealEstate, isRoad, seriesSubjects } from "./types";
+import type { AnyResult, Assumptions, Module, Point, QuestionKey, RealEstateAssumptions, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -32,12 +34,12 @@ const modules: Module[] = [
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "AppEEARS pendiente", ready: false, description: "Vegetación, agua y cobertura todavía no están conectadas." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Fuentes pendientes", ready: false, description: "No se infiere patrimonio o contexto social desde satélites." },
   { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Piloto vial funcional", ready: true, description: "Corredor Moquegua–Ilo o uno propio: lluvia por tramo, capas territoriales, VAN de mitigación y puntaje." },
-  { id: "investment", short: "Inversión", name: "Inteligencia de inversión", icon: "investment", status: "Integrado en Solar", ready: false, description: "Escenarios y sensibilidad del VAN dentro del piloto solar; terrenos para el piloto inmobiliario en preparación." },
+  { id: "investment", short: "Inversión", name: "Inteligencia de inversión", icon: "investment", status: "Piloto inmobiliario funcional", ready: true, description: "Compara terrenos (polígonos propios o territorios IGN): lluvia, relieve, capas territoriales, VAN y puntaje." },
 ];
 // Módulos que trabajan con corredores o polígonos en lugar de sitios puntuales.
 const GEOMETRY_HINTS: Record<string, string> = {
   infrastructure: "Dibuje o cargue sus corredores; se validan y miden aquí y luego se analizan como tramos del piloto vial.",
-  investment: "Terrenos del piloto inmobiliario. Aquí se validan y miden; el análisis por terreno (K3) llega en la ola 3. Use solo coordenadas públicas.",
+  investment: "Dibuje o cargue polígonos de terreno; se validan y miden aquí y luego se comparan en el piloto inmobiliario. Use solo coordenadas públicas.",
 };
 
 const initialSites: Point[] = [
@@ -108,6 +110,10 @@ export default function Workspace() {
   const [roadSource, setRoadSource] = useState<"pilot" | "mine">("pilot");
   const [roadAssumptions, setRoadAssumptions] = useState<RoadAssumptions>(DEFAULT_ROAD_ASSUMPTIONS);
   const [roadAssumptionsOpen, setRoadAssumptionsOpen] = useState(false);
+  const [parcelSource, setParcelSource] = useState<ParcelSource>("ejemplo");
+  const [parcelTerritories, setParcelTerritories] = useState<TerritoryPick[]>([]);
+  const [realEstateAssumptions, setRealEstateAssumptions] = useState<RealEstateAssumptions>(DEFAULT_REAL_ESTATE_ASSUMPTIONS);
+  const [realEstateOpen, setRealEstateOpen] = useState(false);
   const geometryHint = GEOMETRY_HINTS[activeModule];
   const mapGeometries = useMemo(() => study.geometries.map((item) => ({ id: item.id, name: item.name, geometry: item.geometry, valid: item.status !== "invalida" })), [study.geometries]);
   const mapDrawing = useMemo(() => (study.draft ? { draft: study.draft, onVertex: study.addVertex, onFinish: study.finishDraft } : null), [study.draft, study.addVertex, study.finishDraft]);
@@ -125,7 +131,8 @@ export default function Workspace() {
   }, [result, exportedAt]);
   const climateResult = isClimate(result) ? result : null;
   const roadResult = isRoad(result) ? result : null;
-  const solarResult = result && !isClimate(result) && !isRoad(result) ? result : null;
+  const realEstateResult = isRealEstate(result) ? result : null;
+  const solarResult = result && !isClimate(result) && !isRoad(result) && !isRealEstate(result) ? result : null;
   const isClimateModule = activeModule === "climate";
   const subjectCount = sites.length + (isClimateModule ? territories.length : 0);
   const mapTerritories = useMemo(() => (isClimateModule
@@ -133,7 +140,8 @@ export default function Workspace() {
     : []), [territories, isClimateModule]);
   const cellLayer = useMemo(() => cellsFor(climateResult, cellVariable), [climateResult, cellVariable]);
   const isRoadModule = activeModule === "infrastructure";
-  const tabs = isClimateModule ? climateTabs : isRoadModule ? roadTabs : solarTabs;
+  const isRealEstateModule = activeModule === "investment";
+  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : solarTabs;
   const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
   const subjectsList = useMemo(() => seriesSubjects(result), [result]);
   const selectedVariable = subjectsList[0] ? seriesFor(subjectsList[0], activeVariable) : null;
@@ -148,8 +156,18 @@ export default function Workspace() {
     return [meteo && `Datos NASA hasta ${meteo}`, solar && solar !== meteo && `radiación hasta ${solar}`].filter(Boolean).join(" · ");
   }, [result, subjectsList]);
   const staleAssumptions = (solarResult !== null && JSON.stringify(solarResult.assumptions) !== JSON.stringify(assumptions))
-    || (roadResult !== null && JSON.stringify(roadResult.assumptions) !== JSON.stringify(roadAssumptions));
+    || (roadResult !== null && JSON.stringify(roadResult.assumptions) !== JSON.stringify(roadAssumptions))
+    || (realEstateResult !== null && JSON.stringify(realEstateResult.assumptions) !== JSON.stringify(realEstateAssumptions));
   const myCorridors = study.geometries.filter((item) => item.kind === "segment" && item.status === "valida");
+  const myParcels = study.geometries.filter((item) => item.kind === "polygon" && item.status === "valida");
+  // Terrenos en el mapa: los del resultado; antes de ejecutar, los territorios IGN o las áreas de ejemplo elegidas.
+  const parcelShapes = useMemo(() => {
+    if (!isRealEstateModule) return [];
+    if (realEstateResult) return (realEstateResult.subjects ?? []).map((subject) => ({ id: subject.id, label: subject.label, geometry: subject.geometry as unknown as GeoJSON.Geometry }));
+    if (parcelSource === "ejemplo") return EXAMPLE_PARCELS.map((item) => ({ id: item.id, label: item.label, geometry: item.geometry as GeoJSON.Geometry }));
+    if (parcelSource === "territorios") return parcelTerritories.filter((item) => item.geometry).map((item) => ({ id: item.ubigeo, label: item.name, geometry: item.geometry as GeoJSON.Geometry }));
+    return [];
+  }, [isRealEstateModule, realEstateResult, parcelSource, parcelTerritories]);
   const corridorLines = useMemo(() => (roadResult
     ? (roadResult.subjects ?? []).map((subject) => ({ id: subject.id, label: subject.label, geometry: subject.geometry as unknown as GeoJSON.Geometry }))
     : []), [roadResult]);
@@ -200,11 +218,11 @@ export default function Workspace() {
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
   function removeSite(index: number) { setSites((current) => current.filter((_, position) => position !== index)); }
   function selectModule(id: string) {
-    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" ? "PRECTOTCORR" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
     // Solo Clima acepta territorios o un único sitio; el piloto solar compara al menos dos sitios.
     if (id !== "climate" && sites.length < 2) setSites(initialSites);
     setActiveModule(id); setMobileNavOpen(false);
-    if (id === "investment") setAssumptionsOpen(true);
+    if (id === "investment") setRealEstateOpen(true);
   }
   function goToStage(step: number) {
     setSelectedStep(step);
@@ -227,7 +245,13 @@ export default function Workspace() {
     setLoading(true); setError(""); setExportedAt(null); setPdfError("");
     try {
       // Cada módulo funcional tiene su endpoint; clima no usa supuestos financieros.
-      const request = isRoadModule
+      const request = isRealEstateModule
+        ? { url: "/api/real-estate-screening", body: {
+            sites: parcelSource === "ejemplo" ? EXAMPLE_PARCELS
+              : parcelSource === "mios" ? myParcels.map((item) => ({ id: item.id, label: item.name, geometry: item.geometry }))
+              : parcelTerritories.map((item) => ({ id: `ubigeo-${item.ubigeo}`, label: `${item.name} (${item.ubigeo})`, territory: { level: item.level, ubigeo: item.ubigeo } })),
+            start_date: startDate, end_date: endDate, assumptions: realEstateAssumptions } }
+        : isRoadModule
         ? { url: "/api/road-screening", body: {
             segments: roadSource === "mine" ? myCorridors.map((item) => ({ id: item.id, label: item.name, geometry: item.geometry })) : null,
             start_date: startDate, end_date: endDate, assumptions: roadAssumptions } }
@@ -309,6 +333,7 @@ export default function Workspace() {
             {climateResult
               ? <ClimateReading result={climateResult} headingId="lectura-movil" />
               : roadResult ? <RoadReading result={roadResult} headingId="lectura-movil" />
+              : realEstateResult ? <RealEstateReading result={realEstateResult} headingId="lectura-movil" />
               : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />}
           </div>
         )}
@@ -330,15 +355,15 @@ export default function Workspace() {
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
           <div className={`mapViewport ${loading ? "isAcquiring" : ""} ${visualLayer ? "hasVisualLayer" : ""}`}>
-            <GeoMap sites={isRoadModule ? [] : sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
+            <GeoMap sites={isRoadModule || isRealEstateModule ? [] : sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
-                    territories={mapTerritories} cells={isClimateModule ? cellLayer.cells : []} corridor={isRoadModule ? corridorLines : []}
+                    territories={isRealEstateModule ? parcelShapes : mapTerritories} cells={isClimateModule ? cellLayer.cells : []} corridor={isRoadModule ? corridorLines : []}
                     onPick={(latitude, longitude) => {
                       if (geometryHint) return;
                       setSites((current) => current.length ? [{ ...current[0], latitude, longitude }, ...current.slice(1)] : [{ label: "Punto", latitude, longitude }]);
                     }} />
             {loading && <div className="acquisitionLine" aria-hidden="true" />}
-            {sites[0] && !isRoadModule && <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>}
+            {sites[0] && !isRoadModule && !isRealEstateModule && <div className="mapCoordinates"><b>{sites[0].latitude.toFixed(4)}°</b><b>{sites[0].longitude.toFixed(4)}°</b><span>WGS84</span></div>}
             {isClimateModule && cellLayer.cells.length > 0 && <CellTrendLegend variable={cellVariable} onVariable={setCellVariable} layer={cellLayer} />}
             <div className="mapSource">{visualLayer ? `NASA GIBS · ${visualLayer.layer.label.toUpperCase()} · CAPA VISUAL` : "NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO"}</div>
             <LayerControl value={visualLayer} onChange={setVisualLayer} />
@@ -368,6 +393,23 @@ export default function Workspace() {
               <div className="actionRow">
                 <button onClick={() => setRoadAssumptions(DEFAULT_ROAD_ASSUMPTIONS)}>Supuestos por defecto</button>
                 <button className="runAnalysis" onClick={runScreening} disabled={loading || !endDate || (roadSource === "mine" && !myCorridors.length)}>{loading ? "Consultando NASA y capas…" : "Ejecutar análisis"}</button>
+              </div>
+            </> : isRealEstateModule ? <>
+              <RealEstateControls source={parcelSource} onSource={setParcelSource} myParcels={myParcels.length}
+                                  territories={parcelTerritories} onAddTerritory={(pick) => setParcelTerritories((current) => [...current, pick])}
+                                  onRemoveTerritory={(ubigeo) => setParcelTerritories((current) => current.filter((item) => item.ubigeo !== ubigeo))}
+                                  assumptions={realEstateAssumptions} onAssumption={(key, value) => setRealEstateAssumptions((current) => ({ ...current, [key]: value }))}
+                                  open={realEstateOpen} onToggle={setRealEstateOpen} />
+              <details className="corridorDraw" open={parcelSource === "mios"}>
+                <summary>Dibujar o cargar terrenos</summary>
+                <GeometryPanel state={study} hint={geometryHint} />
+              </details>
+              <div className="actionRow">
+                <button onClick={() => setRealEstateAssumptions(DEFAULT_REAL_ESTATE_ASSUMPTIONS)}>Supuestos por defecto</button>
+                <button className="runAnalysis" onClick={runScreening}
+                        disabled={loading || !endDate || (parcelSource === "mios" && !myParcels.length) || (parcelSource === "territorios" && !parcelTerritories.length)}>
+                  {loading ? "Consultando NASA y capas…" : "Ejecutar análisis"}
+                </button>
               </div>
             </> : geometryHint ? <GeometryPanel state={study} hint={geometryHint} /> : <>
             <div className="siteEditor">
@@ -403,6 +445,7 @@ export default function Workspace() {
               !isMobile && (climateResult
                 ? <ClimateReading result={climateResult} headingId="lectura-escritorio" />
                 : roadResult ? <RoadReading result={roadResult} headingId="lectura-escritorio" />
+                : realEstateResult ? <RealEstateReading result={realEstateResult} headingId="lectura-escritorio" />
                 : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />)
             ) : (
               <div className="emptyReading"><span><i /><i /></span><div><strong>LISTO PARA CONSULTAR</strong><p>{selectedModule.description}</p></div></div>
@@ -433,7 +476,7 @@ export default function Workspace() {
               </div>}
               {!loading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis; no se muestran métricas sin una respuesta oficial.</p>}
             </section>
-            {!isClimateModule && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
+            {activeModule === "solar" && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
               <summary>Supuestos financieros <span>USER_ASSUMPTION</span></summary>
               <div className="assumptionFields">
                 <label>Capacidad MW<input type="number" value={assumptions.capacity_mw} onChange={(event) => updateAssumption("capacity_mw", event.target.value)} /></label>
@@ -478,6 +521,11 @@ export default function Workspace() {
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
           <AssistantPanel result={result} />
           {climateResult && <ClimateEvidence result={climateResult} />}
+          {realEstateResult && <>
+            {realEstateResult.scorecard ? <ScorecardPanel initial={realEstateResult.scorecard} /> : null}
+            {realEstateResult.financial_sensitivity?.length ? <SensitivityPanel items={realEstateResult.financial_sensitivity} stale={staleAssumptions} /> : null}
+            <RealEstateEvidence result={realEstateResult} />
+          </>}
           {roadResult && <>
             {roadResult.scorecard ? <ScorecardPanel initial={roadResult.scorecard} /> : null}
             {roadResult.financial_sensitivity?.length ? <SensitivityPanel items={roadResult.financial_sensitivity} stale={staleAssumptions} /> : null}
