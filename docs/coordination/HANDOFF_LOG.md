@@ -483,3 +483,109 @@ Después de la puerta común y del congelamiento documental, `origin/master` ava
 - Cuando el demo está completo, la cabecera dice «8 / 8 resultados del demo del jurado listos».
 
 **Plan:** Q1 (Claude: pitch, escenarios y ensayo) y Q2 (Codex: congelamiento, puerta final y etiqueta).
+## 2026-10-24 · Claude · claude/integracion-pilotos · Cierre visible para el jurado (Q1)
+
+**Base:**
+- `master` en `dfc5c2b`.
+- Rama rebasada encima con dos commits:
+  - `548257a`: DOP.
+  - `2f38914`: pitch, escenarios, interfaz, API y QA.
+- `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` no se tocaron.
+
+**Entregables:**
+- `docs/nasa-submission/PITCH.md`:
+  - Narrativa de 3–5 min por actos.
+  - Corte de 30 s.
+  - Esquema de 7 láminas.
+- `docs/nasa-submission/DEMO_SCENARIOS.md`:
+  - Preparación el mismo día.
+  - Ruta cronometrada con actos 2A (vial) y 2B (solar).
+  - Rutas alternativas por fuente.
+  - Clave de las seis procedencias.
+  - Brechas visibles y defecto conocido.
+
+**Flujos probados (1440/768/390):**
+- Clima, sensibilidad, puntaje, capas GIBS, territorio, geometrías, asistente (sin Gemini), vial e inmobiliario.
+- Más la puerta nueva `release_ui.cjs`: recortes de texto, 45 pasos de Tab, carga y error simulados (503) en los 7 módulos.
+
+**Resultado:**
+- 0 errores de consola.
+- 0 desbordamientos.
+- 0 recortes.
+- Foco visible y nunca en elementos ocultos.
+- `aria-busy` durante la consulta.
+- Estado «Última consulta con error» con el mensaje del proveedor.
+- El único 422 de la consola es el rechazo intencional del corbatín en `geometry_ui`, que ahora se cuenta aparte.
+
+**Defectos corregidos por esta QA:**
+- «Quitar» medía 20 px con texto de 40 px en los tres anchos (recortado).
+- La línea de estado decía «NASA POWER operativo» fijo, aunque fallara o usara caché.
+- El ícono del calendario tenía un foco nativo casi invisible.
+- La caída de POWER en el descubrimiento territorial respondía 422; ahora responde 502, con prueba.
+
+**Pruebas:**
+- Backend: 162/162.
+- Build del contenedor web: aprobado.
+- `npm audit --omit=dev`: 0.
+- `design-taste-frontend`:
+  - Lint: 0 FAIL.
+  - Inspector:
+    - `micro-label` y `tiny-text` son el estilo de consola de 10 px pendiente de decisión de Christian; no se refactorizó, como pediste.
+    - `covered-text` es el título bajo la barra inferior fija durante el desplazamiento; no es defecto.
+
+**Duración del demo (`scripts/qa/demo_ensayo.cjs`, 1440 px, caché caliente):**
+- Espera de pantalla:
+  - Apertura: 1.2 s.
+  - Clima del departamento de Moquegua: 9.1 s.
+  - Vial: 3.5 s.
+  - Solar: 2.2 s.
+  - PDF: 0.4 s.
+  - Total: 16.4 s.
+- Discurso: 4 min 05 s.
+- En frío, un departamento de 11 celdas tarda 17 s en la API (6 s con caché).
+
+**Caída simulada de NASA POWER** (host bloqueado dentro del contenedor api y luego restaurado):
+- Con la caché del día, el demo completo corre en 14.4 s, todo `CACHED_DATA`, con PDF.
+- Sin caché, el usuario ve HTTP 502 y un mensaje claro.
+
+**Capturas:**
+- `.claude-qa/demo/ensayo-1`, `ensayo-2` y `caida-power`.
+- `.claude-qa/cierre/error-*.png`.
+- `.claude-qa/inmobiliario/lectura-territorio-390.png`: VAN, advertencia de más de 200 ha y «Un solo terreno» visibles.
+- `.claude-qa/taste/`.
+
+**DEFECTO PARA CODEX (K6 en el DOP; bloquea el acto 2A):**
+- El muestreo regional (`connectors/nasa/power_regional.py`, también en modo POINT) no aplica la verificación ×24 de `orchestration/extraction.py::_verify_precipitation_scale`.
+- Lo usan:
+  - `sectors/road.py:191` (exposición y P99 del puntaje).
+  - `sectors/real_estate.py:183`.
+  - `POST /api/v1/spatial-sampling/power/daily`.
+- Reproducción, polígono −71.40/−71.20 × −17.70/−17.55, PRECTOTCORR:
+
+  | Ventana | Suma anual | Máximo diario |
+  |---|---|---|
+  | 2025-10-25 a 2026-10-24 | 1,587.4 mm | 150.96 mm |
+  | 2024-10-25 a 2025-10-24 | 70.1 mm | 6.18 mm |
+
+  1,587.4 / 24 = 66.1.
+- En el corredor piloto, los tramos 2–4 y el 5 comparten la celda −17.5/−71.25, pero dan P99 65.51 frente a 2.73 mm/día y RX1DAY 150.96 frente a 6.29 mm: razón 24.0 exacta.
+- Esto también replantea el «RX1DAY 151 mm» que atribuimos a MERRA-2 2022 en el puntaje vial: es el ×24 de la ventana reciente.
+- **Propuesta:** antes de agregar, verificar la escala de cada celda contra una ventana de referencia sin días recientes, como `_verify_precipitation_scale` (dividir por 24 si la razón es 24 ± tolerancia; rechazar cualquier otra). Agregar una prueba con una respuesta ×24 sintética.
+- No lo toqué: es código K1/K2/K3.
+
+**Brechas visibles:**
+- INGEMMET `DATA_UNAVAILABLE`.
+- LHASA pendiente.
+- IGN de 2015.
+- Más de 200 ha = área de análisis.
+- Cero intersecciones no es riesgo cero.
+- Sin contraste con estaciones SENAMHI.
+
+**Cambios sugeridos al manifiesto** (no lo edité):
+1. Actualizar el baseline a `2f38914` o al commit que lo integre.
+2. La fila de QA visual pasa a «10 flujos × 1440/768/390».
+3. Agregar K6 como bloqueo del acto 2A, o del puntaje vial en general, hasta verificar la corrección.
+4. La puerta final debería incluir `node scripts/qa/demo_ensayo.cjs dia-demo` el mismo día.
+5. Calendario oficial: la página de Space Apps 2026 abre el envío el sábado 14-nov a las 09:00 y lo cierra el domingo 15-nov a las 23:59, hora local. La guía de envío 2026 sale el 13-nov; la de 2025 exigía demo ≤ 30 s con subtítulos en inglés o ≤ 7 láminas en inglés. Christian debe confirmar si el 7-nov es el cierre interno.
+
+**No se creó ni publicó `v0.1.0`.** Gemini no se usó en la QA.
