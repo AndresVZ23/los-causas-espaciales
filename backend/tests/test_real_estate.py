@@ -271,6 +271,7 @@ def test_large_ign_territory_is_analysis_area_and_single_subject_is_not_comparis
     response = asyncio.run(real_estate.run_real_estate_screening(request))
 
     assert envelope_violations(response) == []
+    assert 60 < response.sites[0].area_km2 < 70
     assert response.sites[0].area_km2 > real_estate.PROJECT_SCALE_KM2
     assert any(
         "más de 200 ha" in caution and "no describe un proyecto inmobiliario" in caution
