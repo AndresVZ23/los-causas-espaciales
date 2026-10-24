@@ -68,6 +68,8 @@ ESTATE_VARIABLES = ["PRECTOTCORR", "T2M"]
 PRECIPITATION = "PRECTOTCORR"
 SECTOR_LABEL = "Desarrollo inmobiliario"
 EXPOSURE_DAYS = 365
+PROJECT_SCALE_KM2 = 2.0
+PROJECT_SCALE_HECTARES = 200
 TERRITORIAL_SOURCE_IDS = [
     "cenepred-flood-risk",
     "cenepred-mass-movement-risk",
@@ -462,7 +464,14 @@ def _scorecard(
         "Cero intersecciones significa solo que el servicio consultado no devolvió cruces; nunca equivale a cero riesgo o restricción.",
         "Una fuente incompleta elimina el criterio relacionado y reduce la cobertura, en vez de convertir el faltante en cero.",
     ]
-    return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    card = build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    if len(rows) == 1:
+        card.margin = None
+        card.tie = False
+        card.notes.append(
+            "Con un solo terreno no existe comparación: margin=None y tie=False no implican liderazgo frente a una alternativa."
+        )
+    return card
 
 
 def _assumption_items(request: RealEstateScreeningRequest) -> list[AssumptionItem]:
@@ -624,6 +633,13 @@ async def run_real_estate_screening(request: RealEstateScreeningRequest) -> Real
             "Precio, costos, edificabilidad y absorción son supuestos del usuario, no observaciones de mercado.",
             "Cero intersecciones en una capa no demuestra ausencia de amenaza, patrimonio o restricción.",
         ]
+        if area > PROJECT_SCALE_KM2:
+            cautions.append(
+                f"Área de análisis de escala territorial (más de {PROJECT_SCALE_HECTARES} ha): el VAN aplica la "
+                "fracción desarrollable y los demás supuestos a toda la geometría, por lo que no describe un "
+                "proyecto inmobiliario. Úsela para comparar exposición y dibuje o cargue un polígono predial "
+                "para evaluar un proyecto."
+            )
         if exposure is None:
             cautions.append("El muestreo K1 no estuvo disponible; no se interpreta como exposición climática nula.")
         if slope is None:
@@ -655,6 +671,13 @@ async def run_real_estate_screening(request: RealEstateScreeningRequest) -> Real
     gaps = _data_gaps(terrain, subjects, spatial_errors, territorial, territorial_errors)
     pending = sum(item.status == Provenance.UNAVAILABLE for item in gaps)
     npvs = [item.finance.npv_usd for item in results]
+    oversized = [item.label for item in results if item.area_km2 > PROJECT_SCALE_KM2]
+    scale_note = ""
+    if oversized:
+        scale_note = (
+            f" {', '.join(oversized)} superan {PROJECT_SCALE_HECTARES} ha y se tratan como áreas de análisis "
+            "territorial: sus VAN no describen proyectos; se requiere un polígono predial para evaluar uno."
+        )
     lens = SectorLens(
         readings=ESTATE_READINGS,
         stable_notes=ESTATE_STABLE_NOTES,
@@ -662,6 +685,7 @@ async def run_real_estate_screening(request: RealEstateScreeningRequest) -> Real
             f"Con supuestos del usuario, el VAN condicionado va de {millions_usd(min(npvs))} a {millions_usd(max(npvs))}; "
             f"{sum(value >= 0 for value in npvs)} de {len(npvs)} terrenos son no negativos. "
             "No acredita zonificación, titularidad, mercado ni factibilidad."
+            f"{scale_note}"
         ),
     )
     nasa_questions = answer_nasa_questions(

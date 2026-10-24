@@ -253,6 +253,39 @@ def test_zero_intersections_remain_qualified_not_zero_risk(estate_response):
     assert any("cero no demuestra ausencia" in item.value for item in territorial_stage.evidence)
 
 
+def test_large_ign_territory_is_analysis_area_and_single_subject_is_not_comparison(monkeypatch):
+    request = RealEstateScreeningRequest(
+        sites=[RealEstateSiteInput(
+            id="samegua",
+            label="Samegua",
+            territory=RealEstateTerritoryReference(level="district", ubigeo="180104"),
+        )],
+        start_date=date(2018, 1, 1),
+        end_date=date(2023, 12, 31),
+    )
+    monkeypatch.setattr(real_estate, "extract_power", _power)
+    monkeypatch.setattr(real_estate, "extract_terrain", _terrain)
+    monkeypatch.setattr(real_estate, "_spatial_exposures", _spatial)
+    monkeypatch.setattr(real_estate, "_territorial_evidence", _territory)
+
+    response = asyncio.run(real_estate.run_real_estate_screening(request))
+
+    assert envelope_violations(response) == []
+    assert 60 < response.sites[0].area_km2 < 70
+    assert response.sites[0].area_km2 > real_estate.PROJECT_SCALE_KM2
+    assert any(
+        "más de 200 ha" in caution and "no describe un proyecto inmobiliario" in caution
+        for caution in response.sites[0].cautions
+    )
+    fifth_answer = next(item.answer for item in response.nasa_questions if item.key == "so_what")
+    assert "Samegua" in fifth_answer
+    assert "sus VAN no describen proyectos" in fifth_answer
+    assert response.scorecard is not None
+    assert response.scorecard.margin is None
+    assert response.scorecard.tie is False
+    assert any("no existe comparación" in note for note in response.scorecard.notes)
+
+
 def test_real_estate_endpoint_rejects_non_polygon_before_external_io():
     response = TestClient(app).post("/api/v1/projects/real-estate-screening", json={
         "start_date": "2018-01-01",

@@ -82,8 +82,8 @@ export function RealEstateControls({ source, onSource, myParcels, territories, o
 const alertCount = (site: RealEstateSite) => Object.values(site.territorial_intersections).reduce<number>((sum, count) => sum + (count ?? 0), 0);
 const area = (km2: number) => (km2 < 1 ? `${formatNumber(km2 * 100, 1)} ha` : `${formatNumber(km2, 1)} km²`);
 
-// Sobre 200 ha el modelo urbaniza una fracción fija de todo el territorio: el VAN deja de describir un proyecto.
-const PROJECT_SCALE_KM2 = 2;
+// El umbral de escala (200 ha) lo decide el backend K3 y llega como advertencia en `cautions`; aquí solo se muestra.
+const SCALE_CAUTION = "escala territorial";
 
 export function scoreVerdict(card: RealEstateResult["scorecard"], count: number, noun: string) {
   if (!card) return null;
@@ -95,7 +95,9 @@ export function scoreVerdict(card: RealEstateResult["scorecard"], count: number,
 
 export function RealEstateReading({ result, headingId }: { result: RealEstateResult; headingId: string }) {
   const card = result.scorecard;
-  const oversized = result.sites.filter((site) => site.area_km2 > PROJECT_SCALE_KM2);
+  const oversized = result.sites
+    .map((site) => ({ label: site.label, caution: site.cautions.find((text) => text.includes(SCALE_CAUTION)) }))
+    .filter((item): item is { label: string; caution: string } => Boolean(item.caution));
   return (
     <section className="verdict" aria-labelledby={headingId}>
       <div className="verdictHead"><h2 id={headingId}>Lectura de terrenos</h2><span>{result.sites.length} terreno(s)</span></div>
@@ -113,9 +115,7 @@ export function RealEstateReading({ result, headingId }: { result: RealEstateRes
         </tbody>
       </table>
       <p className="verdictNote">Pendiente NASADEM en el punto representativo. El VAN usa los supuestos del usuario; no es tasación ni factibilidad.</p>
-      {oversized.length > 0 && (
-        <p className="layerNotice">{oversized.map((site) => site.label).join(", ")}: más de 200 ha. El VAN supone urbanizar esa fracción de todo el territorio, así que no describe un proyecto; use estas áreas para comparar exposición y dibuje un polígono de terreno para evaluar uno.</p>
-      )}
+      {oversized.map((item) => <p key={item.label} className="layerNotice"><b>{item.label}:</b> {item.caution}</p>)}
       {card && (
         <div className="verdictAssumptions climateExtremes">
           <p><span>Puntaje multicriterio</span><b>{scoreVerdict(card, result.sites.length, "terreno")}</b></p>
