@@ -456,3 +456,11 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 - **QA inmobiliario:** espera la salud de la API antes de empezar; tras reconstruir el stack fallaba por arrancar antes que la API.
 
 **Regresión:** inmobiliario, vial, clima, territorio, capas, geometrías, puntaje, escenarios y asistente, 0 errores y 0 desborde.
+
+## 2026-10-24 · Codex · `codex/release-freeze-2026-11-07` · 6e9570f · baseline y versión preparados
+
+**Revisión e integración aprobadas:** el commit visual de Claude `0bfb4e3` fue revisado y fusionado localmente en `master` mediante `c0f7366`. El cambio consume la cautela K3 del backend, corrige el desborde móvil y mantiene el contrato C2. Puerta común sobre el merge: 161/161 backend, build Next.js 16.4.2, audit 0, auditor científico `ok: true`, sintaxis DOP/QA válida, diff limpio y solo `.env.example` versionado.
+
+**Congelamiento:** `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` quedan como baseline de `v0.1.0` para la entrega del 7-nov. Las brechas siguen visibles; después de este punto una corrección necesita evidencia, QA y registro. `docs/coordination/RELEASE_2026-11-07.md` contiene la matriz del candidato, la puerta final y los comandos exactos para crear y comprobar la etiqueta anotada.
+
+**Etiqueta:** `v0.1.0` está disponible y preparada, pero no se crea antes del 7-nov ni antes de la aprobación del commit final. No se iniciaron 3100/8000 y Codex no ejecutó QA con Gemini.
