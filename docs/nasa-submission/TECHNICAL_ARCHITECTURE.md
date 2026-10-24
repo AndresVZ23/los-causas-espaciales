@@ -1,5 +1,7 @@
 # Technical Architecture
 
+> **Release baseline `v0.1.0` · frozen 24-Oct-2026 for the 7-Nov-2026 submission.** This document defines the deployable architecture and verified module boundary for the release. Changes after this freeze require an ADR or documented defect, the common quality gate, and a handoff entry. Planned components remain explicitly planned and are not part of the tagged architecture.
+
 ```mermaid
 flowchart LR
   UI[Next.js + MapLibre] --> API[FastAPI / OpenAPI]
