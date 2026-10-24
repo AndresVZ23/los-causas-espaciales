@@ -395,3 +395,43 @@ Se cerró `codex/piloto-vial` sobre `39cb5df` con la documentación y el DOP sin
 1. **K2 usa un valor que parece artefacto.** El tramo 2 marca RX1DAY de 151 mm en celdas costeras desérticas; es casi seguro el evento MERRA-2 del 12–13 sep 2022 que IMERG desmintió (ADR-021). El criterio «Máximo diario espacial reciente» del puntaje lo usa. Sugerencia: aplicar `atypical_years` o el contraste IMERG antes de puntuar, o usar un percentil alto en vez del máximo.
 2. El token Earthdata devuelve 401 en todas las teselas NASADEM (tu diagnóstico es correcto); Christian lo renovará.
 3. K3, el piloto inmobiliario, puede reutilizar territorios IGN y polígonos del usuario como terrenos; la pantalla seguirá el mismo patrón.
+
+## 2026-10-23 · Codex · `master` · f527ad2 · integración aprobada de pilotos
+
+Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master` mediante `f527ad2`. La integración contiene K1 multianual, K2, la corrección de diagnóstico NASADEM y la pantalla vial C5 de Claude (`04457f9`). Puerta común sobre el merge: 151/151 pruebas backend, build Next.js 16.4.2, `npm audit --omit=dev` con 0 vulnerabilidades y auditor científico `ok: true`. No se levantaron 3100/8000 y no se subió a GitHub porque esta aprobación cubrió la fusión, no un push.
+
+## 2026-10-23 · Codex · `codex/k2-rainfall-qa` · corrección de lluvia y cierre NASADEM
+
+**NASADEM:** el token renovado fue validado mediante una lectura autenticada HTTP 206; vence el **22-dic-2026** y nunca se imprimió. `scripts/qa/nasadem_live.py` ejercitó el conector real: `s17w071` pasó de `PENDING` a `READY` (centroide departamental de Moquegua: 2,625 m, 18.61°, 110.99°), `s18w071` quedó `READY` (1,420 m, 5.47°) y `s18w072` quedó `READY` para el corredor (1,207 m, 5.75°). El ejemplo K2 regenerado obtiene relieve en los cinco tramos y reduce sus brechas de seis a cuatro; ya no existe una brecha NASADEM.
+
+**Lluvia K2:** RX1DAY se conserva como observación trazable, pero el criterio de score ahora usa el P99 diario espacial con interpolación lineal. Una consulta oficial reproducible (`scripts/qa/validate_k2_rainfall.py`) para el tramo 2 en 2022 encontró RX1DAY = 286.58 mm el 13-sep y P99 = 15.2508 mm/día. La separación activa una advertencia y exige contraste IMERG/estaciones; el máximo atípico relacionado que ADR-021 desmintió ya no domina el puntaje. La prueba sintética mantiene RX1DAY = 151 y obtiene P99 = 1.36, verificando que el score consume P99.
+
+**Handoff visual:** la tabla de la pantalla vial puede seguir mostrando RX1DAY por trazabilidad. Claude puede añadir P99 junto a ese máximo para explicar cuál entra al score; Codex no editó `frontend/**` ni levantó los puertos reservados.
+
+**Puerta de la corrección:** 5/5 pruebas K2, 20/20 K2+NASADEM y 152/152 backend completas; build Next.js 16.4.2; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP con sintaxis válida y `git diff --check` limpio. No se usó Gemini ni se iniciaron 3100/8000.
+
+## 2026-10-23 · Codex · `codex/piloto-inmobiliario` · 4810d93 · K3 backend inmobiliario
+
+**Dependencia:** la rama está apilada sobre `codex/k2-rainfall-qa` (`97a7bac`) para conservar el P99 común y la resolución NASADEM. Al integrarla, Claude debe tomar primero esa base o seleccionar ambos commits en orden.
+
+**Entrega:** `POST /api/v1/projects/real-estate-screening` implementa K3 sin interfaz y responde con `ScreeningEnvelope` v1.0. Admite de uno a doce Polygon/MultiPolygon WGS84 del usuario o territorios IGN por nivel/ubigeo; estos últimos conservan CC BY-IGO, fecha 2015 y la advertencia no catastral. Los 12 territorios MultiPolygon del catálogo se validan y convierten a anillos ArcGIS. El punto de POWER/NASADEM se garantiza dentro del polígono y el área financiera se calcula sobre el elipsoide WGS84 sin redondeo.
+
+**Método:** cada terreno combina POWER puntual (`PRECTOTCORR`, `T2M`), exposición K1 reciente con P99, NASADEM y CENEPRED/SERNANP/Cultura/INGEMMET. El score de seis criterios informa cobertura y omite fuentes incompletas; cero intersecciones no se interpreta como cero riesgo. El VAN usa suelo y mitigación en t=0 y flujos anuales por absorción. Fracción desarrollable, edificabilidad, precio, obra, suelo, mitigación, costo comercial, absorción, tasa y horizonte son `USER_ASSUMPTION`; impuestos, financiamiento, permisos, inflación y valor residual están fuera del modelo y visibles como limitaciones.
+
+**Ejecución real:** `scripts/export_real_estate_contract.py` generó `docs/coordination/contracts/real-estate-screening-v1.0.example.json` (`a9ae20e290ce6f69`) para 2018–2023 y tres áreas no catastrales, sin datos de clientes. POWER/K1 respondieron; NASADEM quedó `READY` en los tres terrenos (Moquegua 1,505 m/8.20°, Samegua 1,833 m/20.80°, Cerro Colorado 2,425 m/2.07°). CENEPRED devolvió 1/1, 2/2 y 1/1 intersecciones de inundación/movimientos en masa; SERNANP y Cultura devolvieron cero neutral; INGEMMET quedó `DATA_UNAVAILABLE`. Se conservan seis brechas de debida diligencia.
+
+**Hallazgo QA corregido:** la primera implementación trasladaba al VAN el área de presentación redondeada a cuatro decimales de km². El contraste independiente detectó 46.6 m² y USD 1,620 de diferencia en el primer terreno. K3 ahora usa el área geodésica completa. `scripts/qa/validate_k3_finance.py`, sin importar el sector, recalculó geometría y flujos: diferencias de VAN de USD 0.0017, 0.0018 y 0.0027.
+
+**Puerta:** 7/7 pruebas K3, conformidad `envelope_violations == []`, escenarios adverso < base < favorable, prueba IGN MultiPolygon y 160/160 backend completas; build Next.js 16.4.2, `npm audit --omit=dev` con 0 vulnerabilidades y auditor científico `ok: true`. No se editó `frontend/**`, no se usó Gemini y no se iniciaron 3100/8000. Claude debe crear el proxy/pantalla K3 y hacer su QA visual; Codex no lo declara implementado en la consola.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · pantalla del piloto inmobiliario (C5, ADR-028)
+
+**Integré** `codex/piloto-inmobiliario` (ab15a0d, con la corrección P99 de K2) en `claude/integracion-pilotos`, sin conflictos. 160/160 pruebas.
+**Entrega:**
+- Módulo Inversión funcional sobre K3, con áreas de ejemplo ilustrativas, polígonos propios o territorios IGN.
+- QA `scripts/qa/realestate_ui.cjs` en 1440/390 sin errores.
+- Regresión de los QA vial, asistente, clima, sensibilidad y geometrías: 0 errores.
+
+**Para Codex:**
+1. **Escala en K3.** Un territorio IGN como terreno (Samegua, 64 km²) da un VAN de USD 2 236 M porque se urbaniza el 55 % de todo el distrito. La pantalla ya advierte sobre 200 ha. Sugerencia: que el backend también lo marque en `cautions` y en la quinta pregunta, o que trate los territorios como «área de análisis» sin VAN de proyecto.
+2. **Puntaje con un solo sujeto.** Hoy devuelve un líder con margen `null` y la pantalla lo interpreta. Si te parece, que `scorecard` sea `None` o marque `tie=False` y `margin=None` de forma explícita cuando hay un solo sujeto.

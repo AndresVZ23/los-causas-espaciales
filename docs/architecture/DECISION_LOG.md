@@ -175,3 +175,28 @@ El módulo Infraestructura usa el backend K2 de Codex (`POST /api/v1/projects/ro
 El gráfico anual, las fechas de datos y la procedencia leen sitios o tramos a través de `seriesSubjects()`.
 
 **Error corregido en el mapa:** `whenReady` usaba `isStyleLoaded()`, que da falso mientras se descargan teselas. Si el evento `load` ya había pasado, la actualización esperaba para siempre, y el corredor no aparecía tras la consulta. Ahora el mapa se marca como listo al terminar su propio `load`.
+
+## ADR-028 — K2 puntúa lluvia extrema con P99 y conserva RX1DAY como evidencia
+
+El máximo diario espacial de K2 no es robusto ante un valor aislado del producto. En el tramo 2, una ejecución reproducible de 2022 encontró RX1DAY MERRA-2 de 286.58 mm el 13-sep frente a P99 de 15.2508 mm/día; ADR-021 ya mostró que IMERG no confirma el evento extremo relacionado del 12–13 sep. Eliminar el dato habría ocultado una discrepancia científica, pero puntuarlo como si fuera una amenaza confirmada distorsionaba la prioridad.
+
+K2 conserva `rx1day_mm` y su fecha para trazabilidad, calcula `p99_precipitation_mm_day` con interpolación lineal sobre la serie diaria espacial reciente y usa P99 en el criterio `recent_p99_precip`. Si `RX1DAY - P99 ≥ 50 mm` y RX1DAY es al menos tres veces P99, añade una limitación que exige contraste IMERG o estaciones. No se corrige ni reemplaza el dato original, y P99 tampoco se interpreta como lluvia de diseño, período de retorno o suficiencia hidráulica. La prueba controlada con 361 valores de 1 mm y los valores 2, 3, 4 y 151 mm verifica que el máximo queda en 151 y P99 en 1.36, mientras el score usa únicamente P99.
+
+## ADR-029 — K3 separa evidencia territorial de supuestos inmobiliarios
+
+K3 acepta Polygon/MultiPolygon WGS84 del usuario o un territorio IGN identificado por nivel y ubigeo. La geometría se valida sin reparaciones ocultas, el punto de consulta se obtiene con `representative_point()` para garantizar que quede dentro del polígono y el área financiera se calcula directamente sobre el elipsoide WGS84 sin usar el valor redondeado de presentación. Los 12 territorios MultiPolygon de la versión fijada se aceptan y sus anillos se convierten explícitamente al formato ArcGIS para las consultas de intersección. Los límites IGN mantienen licencia CC BY-IGO, fecha 2015 y la advertencia de que no son catastro ni acreditan propiedad o zonificación.
+
+El VAN carga suelo y mitigación en t=0 y reconoce ingreso, costo de construcción y costo comercial a medida que la absorción anual supuesta vende área. Fracción desarrollable, edificabilidad, precio, costos, absorción, tasa y horizonte son siempre `USER_ASSUMPTION`; no se infieren de NASA, IGN ni de las intersecciones. El modelo omite impuestos, financiamiento, permisos, cronograma de obra, inflación y valor residual, y lo declara. El score combina P99, pendiente, alertas devueltas, VAN/inversión y fracción desarrollable. Si falta una fuente necesaria el criterio queda sin dato y baja la cobertura; cero intersecciones no equivale a cero riesgo. Un recálculo separado de área y flujo descontado debe coincidir a USD 0.01 antes de aceptar la entrega.
+
+## ADR-028 — Pantalla del piloto inmobiliario sobre K3
+
+El módulo Inversión usa el backend K3 de Codex (`POST /api/v1/projects/real-estate-screening`) con tres fuentes de terrenos:
+- **Áreas de ejemplo del contrato:** 3 cuadrados de unos 330 m, rotulados como ilustrativos («no son lotes reales»).
+- **Polígonos propios:** dibujados o cargados en el panel de geometrías.
+- **Territorios IGN:** se eligen con el mismo selector de Clima.
+
+Incluye supuestos editables (precio, costos, fracción urbanizable, coeficiente de edificación, absorción, tasa y horizonte), lectura por terreno, tabla de terrenos y la tabla de capas territoriales, que ahora comparten ambos pilotos. Puntaje, escenarios, preguntas NASA, asistente y PDF se reutilizan del sobre C2.
+
+Dos salvaguardas de interpretación, encontradas en el QA:
+- **Escala:** un distrito usado como terreno daba un VAN de USD 2 236 M (Samegua, 64 km²), porque el modelo urbaniza una fracción fija de toda el área. Sobre 200 ha la lectura advierte que el VAN no describe un proyecto.
+- **Un solo sujeto:** el puntaje dice que no compara, en vez de «lidera por 0 puntos». Aplica también al piloto vial.

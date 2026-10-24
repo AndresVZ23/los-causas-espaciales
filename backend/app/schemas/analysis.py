@@ -104,7 +104,7 @@ class GeometryRequest(BaseModel):
 
 
 class GeometryResponse(BaseModel):
-    geometry_type: Literal["Point", "LineString", "Polygon"]
+    geometry_type: Literal["Point", "LineString", "Polygon", "MultiPolygon"]
     centroid: Point
     bounding_box: tuple[float, float, float, float]
     length_km: float | None = None

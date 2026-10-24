@@ -96,7 +96,7 @@ class TerritorialSourceResult(BaseModel):
 
 class TerritorialQueryResponse(BaseModel):
     generated_at: datetime
-    geometry_type: Literal["Point", "LineString", "Polygon"]
+    geometry_type: Literal["Point", "LineString", "Polygon", "MultiPolygon"]
     crs: str = "EPSG:4326; longitude/latitude"
     sources: list[TerritorialSourceResult]
     note: str

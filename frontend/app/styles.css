@@ -347,6 +347,7 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .tornadoTip { position: absolute; right: 0; bottom: calc(100% - 4px); z-index: 5; width: min(320px, 100%); padding: 9px 11px; display: none; flex-direction: column; gap: 4px; background: var(--raised); border: 1px solid var(--border); box-shadow: 0 6px 18px rgb(0 0 0 / .4); font-size: 11px; color: var(--text); }
 .tornadoTip small { color: var(--muted); line-height: 1.4; }
 .tornadoRow:hover .tornadoTip, .tornadoRow:focus-visible .tornadoTip { display: flex; }
+.verdict .layerNotice { margin: 6px 0; padding: 7px 9px; border-left: 2px solid var(--warning); background: #201c13; color: #d8cba9; font-size: 11px; line-height: 1.45; }
 /* Piloto vial: corredor y supuestos. */
 .roadControls { padding-bottom: 6px; }
 .roadControls h3 { margin: 0 0 6px; font-size: 13px; }

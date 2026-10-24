@@ -46,7 +46,13 @@ def build_context(envelope: dict[str, Any]) -> dict[str, Any]:
         } for item in sensitivity]
     sites = []
     for site in envelope.get("sites", []):
-        entry: dict[str, Any] = {"sujeto": (site.get("location") or {}).get("label")}
+        entry: dict[str, Any] = {"sujeto": (site.get("location") or {}).get("label") or site.get("label")}
+        if site.get("area_km2") is not None:  # terrenos del piloto inmobiliario
+            entry["terreno"] = {
+                **_pick(site, "area_km2", "terrain_slope_degrees"),
+                "lluvia_p99_mm_dia": (site.get("spatial_exposure") or {}).get("p99_precipitation_mm_day"),
+                "alertas_territoriales": {key: value for key, value in (site.get("territorial_intersections") or {}).items() if value},
+            }
         entry["variables"] = [{
             **_pick(v, "label", "mean", "display_unit", "annual_variability_percent", "last_valid_date"),
             "año_en_curso": _pick(v.get("current_period") or {}, "year", "through", "anomaly", "anomaly_percent", "rank", "years_compared"),
@@ -91,6 +97,7 @@ RULES: list[tuple[tuple[str, ...], str]] = [
     (("empate", "puntaje", "ranking", "score", "mejor sitio", "cual conviene", "priorizar", "multicriterio", "peso"), "puntaje"),
     (("van", "escenario", "sensibil", "precio", "capex", "opex", "equilibrio", "rentab", "tornado"), "sensibilidad_van"),
     (("tramo", "corredor", "carretera", "via ", "vial", "interrup"), "tramos"),
+    (("terreno", "lote", "inmobiliar", "parcela", "area de analisis"), "terrenos"),
     (("imerg", "atipic", "artefacto", "contraste", "satelit"), "contraste"),
     (("extrem", "lluvia max", "lluvias max", "huaico", "rx1day", "rx5day", "racha seca", "sequia"), "extremos"),
     (("brecha", "falta", "pendiente", "no se sabe", "limitacion"), "brechas"),
@@ -212,6 +219,20 @@ def answer_by_rules(question: str, context: dict[str, Any]) -> tuple[str, list[s
             for t in named
         ]
         return f"{context.get('corredor', {}).get('name', 'Corredor')}. " + "; ".join(lines) + ".", ["segments", "territorial_evidence"]
+    parcels = [site for site in context.get("sitios", []) if "terreno" in site]
+    if section == "terrenos" and parcels:
+        named = [site for site in parcels if site["sujeto"] and _plain(site["sujeto"]) in plain] or parcels
+        lines = []
+        for site in named:
+            info = site["terreno"]
+            van = (site.get("finanzas") or {}).get("npv_usd")
+            alerts = info.get("alertas_territoriales") or {}
+            lines.append(
+                f"{site['sujeto']}: {_fmt(info.get('area_km2'), 3)} km², pendiente {_fmt(info.get('terrain_slope_degrees'), 1)}°, "
+                f"VAN {_musd(van) if van is not None else 'N/D'}"
+                + (f", alertas: {', '.join(f'{LAYER_NAMES.get(k, k)} {v}' for k, v in alerts.items())}" if alerts else ", sin alertas territoriales devueltas")
+            )
+        return "; ".join(lines) + ".", ["sites", "territorial_evidence"]
     if section == "puntaje" and "puntaje" in context:
         card = context["puntaje"]
         parts = [f"{s['subject']}: {s.get('score', 'N/D')}/100, primero en {round(s.get('first_place_share', 0) * 100)} % de las combinaciones de pesos" for s in card["sujetos"]]

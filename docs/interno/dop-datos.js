@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-24T02:00:00Z",
+  updatedAt: "2026-10-24T05:00:00Z",
   updatedBy: "Codex",
 
   statuses: {
@@ -67,7 +67,7 @@ window.DOP_DATA = {
       evidence: [
         { label: "Integración CMR y vista previa", ref: "08be4ff" },
         { label: "Descarga autenticada real: 2 de 2 sitios READY", ref: "HANDOFF_LOG 2026-10-22" },
-        { label: "s17w071 existe; token actual rechazado globalmente con 401", ref: "CMR G2816776437/G2816803398 · QA 23-oct-2026" },
+        { label: "Token renovado (vence 22-dic-2026); s17w071/s18w071/s18w072 descargadas y READY", ref: "HTTP 206 · scripts/qa/nasadem_live.py · QA 23-oct-2026" },
         { label: "Descarga asíncrona, reanudable, atómica y con precarga", ref: "df128a0 · merge 7a42125" },
         { label: "14 pruebas K0: fría, Range, caché, concurrencia, PENDING y prefetch", ref: "pytest backend/tests/test_nasadem.py" },
         { label: "Celdas contrastadas por lectura ZIP independiente", ref: "Moquegua 1420 m · 5.47° · 315.12°; Arequipa 2316 m · 3.67° · 225.3°" },
@@ -206,7 +206,7 @@ window.DOP_DATA = {
     units: [
       // Entradas
       { id: "in-power", layer: "in", group: "NASA", name: "NASA POWER diario", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", detail: "Irradiancia, temperatura, viento y precipitación desde 1981, con caché y procedencia." },
-      { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; caché real 2 de 2 READY en 470.6 ms.", evidence: ["df128a0", "7a42125", "14 pruebas K0", "contraste ZIP independiente"] },
+      { id: "in-nasadem", layer: "in", group: "NASA", name: "NASADEM · relieve", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K0", dopNode: "dem", detail: "Elevación, pendiente y orientación a ~30 m; token renovado hasta 22-dic-2026 y teselas del piloto vial READY en caché.", evidence: ["df128a0", "f527ad2", "14 pruebas K0", "HTTP 206", "s17w071/s18w071/s18w072 READY", "contraste ZIP independiente"] },
       { id: "in-imerg", layer: "in", group: "NASA", name: "GPM IMERG V07", owner: "Claude", status: "VERIFICADO", provenance: "REAL_DATA", planTask: "K1b", dopNode: "gpm", detail: "Activo vía NASA POWER (IMERG_PRECTOT, diario UTC, hasta ~5 semanas atrás): contraste satelital de los extremos ETCCDI (ADR-021). Desmintió los 314 mm de MERRA-2 en Moquegua (2022).", evidence: ["175b07e", "107 pruebas", "merge 63e0f36"] },
       { id: "in-modis", layer: "in", group: "NASA", name: "AppEEARS · vegetación y agua", owner: "Codex", status: "VERIFICADO", provenance: "REAL_DATA", dopNode: "appeears", detail: "MOD13Q1.061 NDVI/EVI + QA y MOD44W.061 agua + QA; tarea real READY, descargas verificadas por SHA-256 y campos QA inspeccionados.", evidence: ["AppEEARS task 975994a2-f686-4742-9805-714ad035c0c8", "SHA-256 e6bb8c294237… / c7466b67304c…", "backend/tests/test_appeears.py"] },
       { id: "in-lhasa", layer: "in", group: "NASA", name: "NASA LHASA · deslizamientos", owner: "Codex", status: "EN_CURSO", provenance: "DATA_UNAVAILABLE", planTask: "K1b", detail: "Ruta vigente verificada: NASA Earthdata GIS LHASA_Hazard_Today ImageServer, WGS84, 30 arcsec (~1 km), actualización dos veces al día. Falta validar semántica numérica, nodata y muestreo antes de integrarla.", evidence: ["DATA_SOURCES.md · verificación 23-oct-2026"] },
@@ -246,8 +246,8 @@ window.DOP_DATA = {
       // Capa C
       { id: "c-questions", layer: "C", name: "Preguntas del reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Qué, dónde, cuánto, si es significativo y qué significa para invertir." },
       { id: "c-solar", layer: "C", name: "Lente solar", owner: "Claude", status: "VERIFICADO", detail: "Piloto Moquegua–Arequipa sobre el contrato C2." },
-      { id: "c-road", layer: "C", name: "Lente vial", owner: "Codex", status: "VERIFICADO", planTask: "K2", detail: "Backend K2 por tramo: POWER puntual, celdas K1, NASADEM, capas territoriales, score con cobertura y VAN de mitigación con sensibilidad. Es screening; no declara seguridad ni factibilidad.", evidence: ["39cb5df", "backend/tests/test_road.py · 4 pruebas", "envelope_violations == []", "ejecución real 2018–2023", "149 pruebas · build · audit 0 · auditor científico ok"] },
-      { id: "c-realestate", layer: "C", name: "Lente inmobiliario", owner: "Codex", status: "PENDIENTE", planTask: "K3", detail: "Terreno, amenazas, restricciones y mitigación por polígono." },
+      { id: "c-road", layer: "C", name: "Lente vial", owner: "Codex", status: "VERIFICADO", planTask: "K2", detail: "Backend K2 por tramo: POWER puntual, celdas K1, NASADEM READY, capas territoriales, score con P99 robusto y VAN de mitigación con sensibilidad. RX1DAY queda trazable y no domina el puntaje cuando es atípico. Es screening; no declara seguridad ni factibilidad.", evidence: ["f527ad2", "backend/tests/test_road.py · 5 pruebas", "envelope_violations == []", "QA real 2022: RX1DAY 286.58 / P99 15.2508 mm", "ejecución real 2018–2023", "152 pruebas · build · audit 0 · auditor científico ok"] },
+      { id: "c-realestate", layer: "C", name: "Lente inmobiliario", owner: "Codex", status: "VERIFICADO", planTask: "K3", detail: "Backend K3 para Polygon/MultiPolygon del usuario o territorios IGN: POWER/K1, NASADEM, capas oficiales, score con cobertura y VAN/sensibilidad basado solo en supuestos. No acredita propiedad, zonificación ni factibilidad.", evidence: ["POST /api/v1/projects/real-estate-screening", "envelope_violations == []", "ejemplo real a9ae20e290ce6f69", "7 pruebas K3", "12 territorios IGN MultiPolygon cubiertos", "VAN y área recalculados independientemente", "160 pruebas backend"] },
       { id: "c-windhydro", layer: "C", name: "Lentes eólico e hidroeléctrico", owner: "Claude", status: "PENDIENTE", detail: "Viento a 10 m no sustituye medición a altura de buje; lluvia no es caudal." },
       { id: "c-finance", layer: "C", name: "Motor financiero", owner: "Claude", status: "VERIFICADO", detail: "VAN con escenarios base, adverso y favorable, tornado y equilibrios (precio, CAPEX, recurso); motor genérico finance/sensitivity.py para los tres pilotos (ADR-020). Contraste independiente del tornado y precio de equilibrio aprobado.", evidence: ["4b1ac82", "merge 735a127", "77 pruebas", "VAN y tornado recalculados sin importar el backend", "QA 1280/390 sin errores"] },
       { id: "c-scoring", layer: "C", name: "Puntajes multicriterio", owner: "Claude", status: "VERIFICADO", detail: "Escalas declaradas, pesos editables, cobertura, estabilidad Dirichlet y empate práctico (ADR-022); solar operativo, vial e inmobiliario con K2/K3.", evidence: ["8681db8", "107 pruebas", "build y audit aprobados", "QA Claude 1440/390"] },
@@ -259,9 +259,9 @@ window.DOP_DATA = {
       { id: "o-hazards", layer: "out", group: "Módulos", name: "3 · Amenazas naturales", owner: "Claude", status: "PENDIENTE", detail: "Requiere capas de amenaza y extremos de lluvia." },
       { id: "o-environment", layer: "out", group: "Módulos", name: "4 · Ambiente", owner: "Claude", status: "PENDIENTE", detail: "Requiere AppEEARS y restricciones ambientales." },
       { id: "o-social", layer: "out", group: "Módulos", name: "5 · Social y arqueológico", owner: "Claude", status: "PENDIENTE", detail: "Alertas de debida diligencia con fuentes oficiales." },
-      { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C5", detail: "Backend K2 listo en 39cb5df; falta que Claude integre el contrato y construya/verifique la pantalla del corredor." },
+      { id: "o-infra", layer: "out", group: "Módulos", name: "6 · Infraestructura (piloto vial)", owner: "Claude", status: "VERIFICADO", planTask: "C5", detail: "Pantalla vial integrada en 04457f9 y fusionada en f527ad2; QA Claude 1440/390 sin errores y puerta común aprobada." },
       { id: "o-invest", layer: "out", group: "Módulos", name: "7 · Inversión", owner: "Claude", status: "EN_CURSO", detail: "VAN condicionado con escenarios, sensibilidad y puntaje multicriterio en pantalla y PDF." },
-      { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "PENDIENTE", planTask: "C5", detail: "Comparación de terrenos con relieve, amenazas y restricciones." },
+      { id: "o-realestate", layer: "out", group: "Pilotos", name: "Piloto inmobiliario", owner: "Claude", status: "LISTO_PARA_QA", planTask: "C5", detail: "Backend K3 verificado y ejemplo real listos para integración; Claude debe construir y validar la pantalla de comparación." },
       { id: "o-nasa", layer: "out", group: "Entregables", name: "Respuestas al reto NASA", owner: "Claude", status: "VERIFICADO", detail: "Las cinco preguntas, con evidencia y etapas que las sostienen." },
       { id: "o-reports", layer: "out", group: "Entregables", name: "Reportes PDF y JSON", owner: "Claude", status: "VERIFICADO", detail: "PDF ejecutivo con huella SHA-256 y JSON reproducible." },
       { id: "o-api", layer: "out", group: "Entregables", name: "API para terceros", owner: "Codex", status: "EN_CURSO", detail: "OpenAPI operativa; falta versionado público y límites de uso." },
@@ -371,15 +371,15 @@ window.DOP_DATA = {
     { id: "C2", owner: "Claude", title: "Contrato común entre sectores (ScreeningEnvelope)", status: "VERIFICADO", ref: "5b6effa", nodes: ["solar", "pilots"] },
     { id: "C3", owner: "Claude", title: "PDF ejecutivo", status: "VERIFICADO", ref: "6a661c1", nodes: ["delivery"] },
     { id: "C4", owner: "Claude", title: "Asistente analítico (reglas sin costo; Gemini a pedido)", status: "VERIFICADO", ref: "f3074cb · merge 63e0f36 · puerta común aprobada sin clave Gemini", nodes: ["delivery"] },
-    { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "EN_CURSO", ref: "vial listo para QA (claude/integracion-pilotos); inmobiliario espera K3", nodes: ["pilots"] },
+    { id: "C5", owner: "Claude", title: "Pantallas de los pilotos", status: "LISTO_PARA_QA", ref: "vial 04457f9 · inmobiliario claude/integracion-pilotos · ADR-027/028", nodes: ["pilots"] },
     { id: "C6", owner: "Claude", title: "Capas visuales NASA GIBS en el mapa (fecha, leyenda, etiqueta visual)", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-024", nodes: ["delivery"] },
     { id: "C7", owner: "Claude", title: "Selector territorial y mapa de tendencias por celda", status: "LISTO_PARA_QA", ref: "claude/capas-territorio · ADR-025", nodes: ["sampling", "delivery"] },
     { id: "K0", owner: "Codex", title: "Descarga NASADEM asíncrona y reanudable", status: "VERIFICADO", ref: "df128a0 · merge 7a42125 · 14 pruebas · caché real 470.6 ms", nodes: ["dem"] },
     { id: "K1", owner: "Codex", title: "Muestreo de corredores, polígonos y territorios (celdas POWER)", status: "VERIFICADO", ref: "Moquegua 9 celdas · La Punta POINT · multianual 370 días · 7 pruebas", nodes: ["sampling"] },
     { id: "K1b", owner: "Codex", title: "AppEEARS, capas Perú, LHASA y conector COES (IMERG ya activo)", status: "EN_CURSO", ref: "AppEEARS, capas activas y COES XLSX verificados; ruta LHASA confirmada, conector LHASA y fuentes Perú restantes pendientes", nodes: ["gpm", "peru", "labels"] },
     { id: "K5", owner: "Codex", title: "Límites IGN e índice territorial (búsqueda por nombre y ubigeo)", status: "VERIFICADO", ref: "COD-AB Perú · CC BY-IGO · 25/196/1,873 · 5 pruebas", nodes: ["sampling"] },
-    { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "VERIFICADO", ref: "39cb5df · C2 conforme · ejemplo real · 149 pruebas · build · audit 0", nodes: ["pilots"] },
-    { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "PENDIENTE", ref: "—", nodes: ["pilots"] },
-    { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 21-dic-2026)", status: "EN_CURSO", ref: "continuo", nodes: [] },
+    { id: "K2", owner: "Codex", title: "Backend del piloto vial", status: "VERIFICADO", ref: "f527ad2 · C2 conforme · P99 robusto · NASADEM READY · ejemplo real · 152 pruebas · build · audit 0", nodes: ["pilots"] },
+    { id: "K3", owner: "Codex", title: "Backend del piloto inmobiliario", status: "VERIFICADO", ref: "4810d93 · C2 conforme · ejemplo real a9ae20e290ce6f69 · 7 pruebas · MultiPolygon · área/VAN independientes · 160 backend", nodes: ["pilots"] },
+    { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "HTTP 206 verificado · continuo", nodes: [] },
   ],
 };

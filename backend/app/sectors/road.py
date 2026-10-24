@@ -66,6 +66,7 @@ from ..schemas.screening import (
 from ..schemas.spatial_sampling import SpatialSamplingRequest
 from ..schemas.terrain import TerrainResponse
 from ..scoring.multicriteria import build_scorecard
+from ..statistics.extremes import linear_percentile
 
 ROAD_VARIABLES = ["PRECTOTCORR", "T2M"]
 PRECIPITATION = "PRECTOTCORR"
@@ -201,6 +202,23 @@ async def _spatial_exposure(subject: StudySubject, request: RoadScreeningRequest
     except RegionalPowerError as exc:
         return None, str(exc)
     aggregate_values = [item.value for item in sampled.aggregate]
+    aggregate_rx1day = max(aggregate_values) if aggregate_values else None
+    aggregate_p99 = linear_percentile(aggregate_values, 0.99)
+    limitations = [
+        *sampled.limitations,
+        "RX1DAY se conserva para trazabilidad, pero no entra al puntaje K2: la prioridad usa el percentil 99 diario "
+        "interpolado del agregado espacial para evitar que un solo valor atípico domine el ranking.",
+    ]
+    if (
+        aggregate_rx1day is not None
+        and aggregate_p99 is not None
+        and aggregate_rx1day - aggregate_p99 >= 50
+        and aggregate_rx1day >= 3 * max(aggregate_p99, 0.1)
+    ):
+        limitations.append(
+            f"RX1DAY ({aggregate_rx1day:.2f} mm/día) es materialmente mayor que P99 "
+            f"({aggregate_p99:.2f} mm/día); se marca como extremo potencialmente atípico y requiere contraste IMERG/estaciones."
+        )
     cells = []
     for cell in sampled.cells:
         values = [item.value for item in cell.observations]
@@ -217,12 +235,13 @@ async def _spatial_exposure(subject: StudySubject, request: RoadScreeningRequest
         cell_count=len(sampled.cells),
         spatial_coverage_percent=sampled.spatial_coverage_percent,
         mean_precipitation_mm_day=round(fmean(aggregate_values), 4) if aggregate_values else None,
-        rx1day_mm=round(max(aggregate_values), 4) if aggregate_values else None,
+        rx1day_mm=round(aggregate_rx1day, 4) if aggregate_rx1day is not None else None,
+        p99_precipitation_mm_day=round(aggregate_p99, 4) if aggregate_p99 is not None else None,
         cells=cells,
         provenance=sampled.source.provenance,
         source_url=sampled.source.source_url,
         method=sampled.method,
-        limitations=sampled.limitations,
+        limitations=limitations,
     ), None
 
 
@@ -379,8 +398,9 @@ def _road_sensitivity(segment: RoadSegmentInput, label: str, length_km: float, a
 
 
 ROAD_CRITERIA = [
-    ("recent_rx1day", "Máximo diario espacial reciente", "mm/día", Direction.HIGHER_IS_BETTER, 0.20, 0.0, 100.0,
-     "Máximo del agregado K1 del último año; mayor exposición implica mayor prioridad de estudio."),
+    ("recent_p99_precip", "Percentil 99 de lluvia espacial reciente", "mm/día", Direction.HIGHER_IS_BETTER, 0.20, 0.0, 30.0,
+     "P99 diario interpolado del agregado K1 del último año. RX1DAY queda visible, pero no puntúa porque un valor aislado "
+     "de MERRA-2 puede ser atípico y requiere contraste independiente."),
     ("heavy_rain_days", "Días de lluvia fuerte", "días/año", Direction.HIGHER_IS_BETTER, 0.15, 0.0, 30.0,
      "Promedio de años con ≥95% de cobertura que superan el umbral del usuario."),
     ("terrain_slope", "Pendiente NASADEM", "°", Direction.HIGHER_IS_BETTER, 0.15, 0.0, 20.0,
@@ -404,7 +424,7 @@ def _scorecard(
     for subject, segment, result in zip(subjects, segments, results, strict=True):
         base = _base_finance(segment, result.length_km, assumptions)
         rows.append(SubjectValues(subject=subject.label, values={
-            "recent_rx1day": result.spatial_exposure.rx1day_mm if result.spatial_exposure else None,
+            "recent_p99_precip": result.spatial_exposure.p99_precipitation_mm_day if result.spatial_exposure else None,
             "heavy_rain_days": result.heavy_rain_days_per_year,
             "terrain_slope": result.terrain_slope_degrees,
             "length": result.length_km,

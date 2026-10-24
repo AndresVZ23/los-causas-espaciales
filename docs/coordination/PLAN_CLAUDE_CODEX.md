@@ -55,7 +55,7 @@ Regla general de datos y decisión: **Codex entrega datos verificados** (conecto
 | K5 | Límites oficiales IGN (COD-AB Perú, CC BY-IGO): departamentos, provincias y distritos simplificados por nivel; búsqueda por nombre y ubigeo; geometría por territorio vía API. Declarar que los trazos son de 2015 | **Codex** | — | `codex/territorio` |
 | C6 | Capas visuales NASA GIBS en el mapa: temperatura del mar y anomalía, viento sobre el mar, lluvia IMERG, temperatura de superficie, NDVI y humedad del suelo, con fecha, leyenda y etiqueta «visual, no entra en el cálculo» | **Claude** | — | `claude/capas-territorio` |
 | C7 | Selector territorial (departamento → provincia → distrito, zona propia o clic; 2–4 territorios) y mapa de tendencias por celda | **Claude** | K5, K1 | `claude/capas-territorio` |
-| O1 | Operación continua: revisar y fusionar ramas aprobadas, subir a GitHub con aprobación, mantener dependencias y Docker, y vigilar el vencimiento del token Earthdata (21-dic-2026) | **Codex** | — | — |
+| O1 | Operación continua: revisar y fusionar ramas aprobadas, subir a GitHub con aprobación, mantener dependencias y Docker, y vigilar el vencimiento del token Earthdata (22-dic-2026) | **Codex** | — | — |
 | Q1 | QA cruzado y materiales del jurado: Claude redacta `PITCH.md` y `DEMO_SCENARIOS.md`; Codex `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` | Ambos | todo lo anterior | — |
 
 ### Orden

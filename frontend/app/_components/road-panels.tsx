@@ -1,7 +1,7 @@
 "use client";
 
 import { formatMillions, formatNumber } from "./format";
-import type { RoadAssumptions, RoadResult, RoadSegment } from "./types";
+import type { RoadAssumptions, RoadResult, RoadSegment, TerritorialEvidence } from "./types";
 
 export const DEFAULT_ROAD_ASSUMPTIONS: RoadAssumptions = {
   baseline_interruption_days_per_year: 5, residual_interruption_fraction: 0.4, cost_per_interruption_day_usd: 200_000,
@@ -81,17 +81,42 @@ export function RoadReading({ result, headingId }: { result: RoadResult; heading
       <p className="verdictNote">Lluvia fuerte: días por año sobre el umbral elegido (NASA POWER). El VAN compara mitigar contra el costo de interrupción supuesto; no es factibilidad.</p>
       {card && (
         <div className="verdictAssumptions climateExtremes">
-          <p><span>Puntaje multicriterio</span><b>{card.tie
-            ? `Empate práctico entre tramos (${formatNumber(card.margin ?? 0, 1)} puntos): priorice con los criterios uno por uno.`
-            : `${card.leader} lidera por ${formatNumber(card.margin ?? 0, 1)} puntos.`}</b></p>
+          <p><span>Puntaje multicriterio</span><b>{result.segments.length < 2
+            ? "Un solo tramo: el puntaje no compara; agregue otro corredor para priorizar."
+            : card.tie
+              ? `Empate práctico entre tramos (${formatNumber(card.margin ?? 0, 1)} puntos): priorice con los criterios uno por uno.`
+              : `${card.leader} lidera por ${formatNumber(card.margin ?? 0, 1)} puntos.`}</b></p>
         </div>
       )}
     </section>
   );
 }
 
+/** Objetos devueltos por cada capa oficial por sujeto; «No disponible» si la capa no respondió. Compartida por los pilotos. */
+export function TerritorialTable({ evidence, scope }: { evidence: TerritorialEvidence[]; scope: string }) {
+  const sourceIds = [...new Set(evidence.flatMap((item) => item.sources.map((source) => source.source_id)))];
+  return (
+    <article className="siteResult">
+      <div className="siteResultHeader"><div><h3>Capas territoriales oficiales</h3><p>Objetos devueltos por cada servicio {scope}. Cero no prueba ausencia de riesgo o restricción.</p></div></div>
+      <div className="tableScroll">
+        <table>
+          <thead><tr><th>Capa</th>{evidence.map((item) => <th key={item.subject}>{item.subject}</th>)}</tr></thead>
+          <tbody>{sourceIds.map((id) => (
+            <tr key={id}>
+              <th>{sourceLabel(id)}</th>
+              {evidence.map((item) => {
+                const source = item.sources.find((entry) => entry.source_id === id);
+                return <td key={item.subject}>{!source || source.status !== "READY" || source.intersection_count == null ? "No disponible" : source.intersection_count}</td>;
+              })}
+            </tr>
+          ))}</tbody>
+        </table>
+      </div>
+    </article>
+  );
+}
+
 export function RoadEvidence({ result }: { result: RoadResult }) {
-  const sourceIds = [...new Set(result.territorial_evidence.flatMap((item) => item.sources.map((source) => source.source_id)))];
   return (
     <>
       <div className="siteResults">
@@ -118,23 +143,7 @@ export function RoadEvidence({ result }: { result: RoadResult }) {
             </table>
           </div>
         </article>
-        <article className="siteResult">
-          <div className="siteResultHeader"><div><h3>Capas territoriales oficiales</h3><p>Objetos devueltos por cada servicio dentro del corredor. Cero no prueba ausencia de riesgo o restricción.</p></div></div>
-          <div className="tableScroll">
-            <table>
-              <thead><tr><th>Capa</th>{result.territorial_evidence.map((item) => <th key={item.subject}>{item.subject}</th>)}</tr></thead>
-              <tbody>{sourceIds.map((id) => (
-                <tr key={id}>
-                  <th>{sourceLabel(id)}</th>
-                  {result.territorial_evidence.map((item) => {
-                    const source = item.sources.find((entry) => entry.source_id === id);
-                    return <td key={item.subject}>{!source || source.status !== "READY" || source.intersection_count == null ? "No disponible" : source.intersection_count}</td>;
-                  })}
-                </tr>
-              ))}</tbody>
-            </table>
-          </div>
-        </article>
+        <TerritorialTable evidence={result.territorial_evidence} scope="dentro del corredor" />
       </div>
       <div className="findingsPanel methodPanel">
         <h3>Corredor y método</h3>

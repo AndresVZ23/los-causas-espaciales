@@ -151,31 +151,42 @@
 - Endpoint tipado `POST /api/v1/projects/road-screening`, backend-only, compatible con `ScreeningEnvelope` v1.0 y sus nueve etapas.
 - Corredor público Moquegua–Ilo calculado con OSRM sobre OpenStreetMap, ODbL 1.0, 89.157 km de ruta y cinco tramos contiguos; se declara que no es eje ni inventario oficial del MTC.
 - Por tramo: NASA POWER diario para precipitación y temperatura, exposición espacial K1 del último año, NASADEM cuando está disponible e intersecciones de CENEPRED, SERNANP, Cultura e INGEMMET. Un cero de intersecciones no se presenta como ausencia de riesgo o restricción.
-- Puntaje de prioridad con escalas y pesos explícitos, cobertura por faltantes y estabilidad; VAN de mitigación con días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte etiquetados `USER_ASSUMPTION`.
+- Puntaje de prioridad con escalas y pesos explícitos, cobertura por faltantes y estabilidad. El extremo espacial que entra al score es el percentil 99 diario; RX1DAY se conserva para trazabilidad y se marca para contraste IMERG/estaciones cuando se separa de forma extrema del P99. El VAN de mitigación usa días y costo de interrupción, CAPEX, mantenimiento, fracción residual, tasa y horizonte etiquetados `USER_ASSUMPTION`.
 - Sensibilidad con escenarios base/adverso/favorable, tornado y puntos de equilibrio mediante el motor común. El VAN fue contrastado con una suma descontada independiente.
-- Ejecución real 2018–2023 conforme a C2: cinco series y exposiciones POWER disponibles; CENEPRED con intersecciones reales, SERNANP/Cultura con ceros neutrales, INGEMMET y NASADEM como brechas visibles. Ejemplo reproducible en `docs/coordination/contracts/road-screening-v1.0.example.json`.
-- Pruebas K2 aisladas: 4/4, incluidas conformidad `envelope_violations == []`, VAN independiente, degradación honesta por faltantes y validación HTTP de geometría.
+- Ejecución real 2018–2023 conforme a C2: cinco series y exposiciones POWER disponibles; CENEPRED con intersecciones reales, SERNANP/Cultura con ceros neutrales, INGEMMET como brecha visible y las cinco lecturas NASADEM `READY`. El ejemplo reproducible está en `docs/coordination/contracts/road-screening-v1.0.example.json` y conserva cuatro brechas explícitas.
+- QA real del tramo 2 en 2022: RX1DAY MERRA-2 = 286.58 mm/día (13-sep), P99 = 15.2508 mm/día. El score usa P99 y no deja que el máximo atípico ya refutado por IMERG en ADR-021 domine la prioridad.
+- Pruebas K2 aisladas: 5/5, incluidas conformidad `envelope_violations == []`, VAN independiente, degradación honesta por faltantes, validación HTTP de geometría y protección frente al máximo atípico.
 
 ## Brechas prioritarias
 
 0. ~~Confirmar las tendencias autocorrelacionadas con Mann–Kendall modificado~~ **Hecho (ADR-014):** Hamed–Rao como prueba de decisión; la tendencia de temperatura se confirma (p corregido 0.0016 en Moquegua y 0.0141 en Arequipa; factor 1.000) y el pre-blanqueo libre de tendencia coincide. El viento de Moquegua queda al límite (p BH 0.048).
 
-1. Renovar `EARTHDATA_TOKEN` o reautorizar LP DAAC: el token local declara vigencia hasta el 21-dic-2026, pero el servicio protegido devuelve 401 para teselas nuevas y también para las dos ya validadas. Los archivos previamente descargados siguen disponibles en caché.
+1. ~~Renovar `EARTHDATA_TOKEN` y reautorizar LP DAAC~~ **Resuelto:** credencial renovada y validada por HTTP 206; vence el **22-dic-2026**. `s17w071`, `s18w071` y `s18w072` quedaron `READY` y en caché. Debe vigilarse la caducidad, sin exponer el token.
 2. ~~Incorporar red eléctrica y subestaciones~~ **Fuente activa:** Osinergmin GISEM; falta calcular distancia y verificar capacidad de conexión.
 3. ~~Añadir áreas protegidas~~ **Fuente activa:** SERNANP; faltan ecosistemas frágiles y el análisis normativo de restricciones.
 4. Incorporar sensibilidad social y comunidades; Cultura SIGDA ya aporta la alerta arqueológica inicial, sin reemplazar CIRA ni debida diligencia.
 
 5. Integrar GPM IMERG V07 y LHASA. AppEEARS MOD13Q1/MOD44W ya está verificado con descarga y QA reales.
-6. Implementar muestreo NASA a lo largo de corredores y polígonos; hoy esas geometrías solo se validan y miden.
-7. ~~Construir el backend del piloto vial~~ **K2 listo en `codex/piloto-vial`**; falta la pantalla de Claude y permanece pendiente K3 inmobiliario.
+6. ~~Implementar muestreo NASA a lo largo de corredores y polígonos~~ **K1 listo:** celdas regionales ponderadas por área, división multianual y series por celda.
+7. ~~Construir los backends vial e inmobiliario~~ **K2 integrado y K3 listo** en `codex/piloto-inmobiliario`; la pantalla inmobiliaria corresponde a Claude/C5.
 8. Añadir persistencia PostGIS, trabajos asíncronos y exportación PDF para análisis de mayor escala.
 
 ## Diagnóstico NASADEM `s17w071` (rama `codex/nasadem-s17w071`)
 
 - CMR confirmó `NASADEM_HGT_s17w071` (`G2816776437-LPCLOUD`) y `NASADEM_SC_s17w071` (`G2816803398-LPCLOUD`) con nombres y rutas LP DAAC correctos; la tesela no está ausente ni mal identificada.
-- Lecturas de un byte devolvieron HTTP 401 en ambos gránulos y también en `s18w071`/`s17w072`, previamente accesibles. La causa observable es la credencial/autorización Earthdata actual, no el contenido de `s17w071`.
+- El incidente del token anterior devolvió HTTP 401 en ambos gránulos y también en teselas previamente accesibles, lo que descartó un problema específico de `s17w071`.
 - El conector ahora distingue 401 («renueve el token») de 403 («autorice LP DAAC») y el log ya no atribuye el rechazo a un gránulo específico. El secreto nunca se imprime ni se cachea.
-- Puerta: 15/15 pruebas NASADEM y 146/146 backend; build Next.js aprobado; auditoría npm con 0 vulnerabilidades; auditor científico `ok: true`; sin tocar 3100/8000.
+- La credencial renovada vence el 22-dic-2026. La validación autenticada devolvió HTTP 206 y descargó `s17w071`, `s18w071` y `s18w072`; Moquegua departamental quedó `READY` con 2,625 m, 18.61° y 110.99°. El piloto vial ya obtiene relieve `READY` en sus cinco tramos.
+- Puerta del diagnóstico: 15/15 pruebas NASADEM y 146/146 backend; la nueva validación real usa `scripts/qa/nasadem_live.py`, sin levantar 3100/8000.
+
+## Piloto inmobiliario K3 (rama `codex/piloto-inmobiliario`)
+
+- Endpoint tipado `POST /api/v1/projects/real-estate-screening`, backend-only y conforme a `ScreeningEnvelope` v1.0. Acepta de uno a doce Polygon/MultiPolygon WGS84 del usuario o referencias oficiales IGN por nivel/ubigeo; cada entrada resuelve un punto interior, área geodésica sin redondeo y procedencia. Los 12 territorios MultiPolygon del catálogo están cubiertos.
+- Por terreno: NASA POWER diario (`PRECTOTCORR`, `T2M`), P99 espacial K1 del último año, NASADEM, CENEPRED, SERNANP, Cultura e INGEMMET. Los faltantes quedan `DATA_UNAVAILABLE`; cero intersecciones no se traduce a cero riesgo.
+- VAN condicionado con fracción desarrollable, edificabilidad, precio, obra, suelo, mitigación, costo comercial, absorción, tasa y horizonte etiquetados `USER_ASSUMPTION`. Incluye base/adverso/favorable, tornado y equilibrios mediante el motor común.
+- Scorecard de seis criterios con cobertura: P99, pendiente, alertas de amenaza, alertas de restricción, VAN/inversión inicial y fracción desarrollable. Las fuentes incompletas eliminan el criterio relacionado en vez de imputar cero.
+- Ejecución real 2018–2023 para tres áreas de análisis no catastrales cerca de Moquegua, Samegua y Cerro Colorado: POWER/K1 disponibles, tres NASADEM `READY`, CENEPRED/SERNANP/Cultura consultados e INGEMMET visible como brecha. Contrato reproducible en `docs/coordination/contracts/real-estate-screening-v1.0.example.json`.
+- Recalculo independiente de área WGS84 y flujos descontados: diferencia de VAN menor a USD 0.003 en los tres terrenos. Pruebas K3: 7/7; suite backend: 160/160.
 
 ## Traspaso a Claude Code
 

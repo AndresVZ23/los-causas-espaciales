@@ -117,7 +117,8 @@ def _esri_geometry(geojson: dict[str, Any]) -> tuple[str, dict[str, Any]]:
         return "esriGeometryPoint", {"x": coords[0], "y": coords[1], "spatialReference": sr}
     if kind == "LineString":
         return "esriGeometryPolyline", {"paths": [coords], "spatialReference": sr}
-    return "esriGeometryPolygon", {"rings": coords, "spatialReference": sr}
+    rings = [ring for polygon in coords for ring in polygon] if kind == "MultiPolygon" else coords
+    return "esriGeometryPolygon", {"rings": rings, "spatialReference": sr}
 
 
 def _safe_attributes(attributes: dict[str, Any]) -> dict[str, Any]:
