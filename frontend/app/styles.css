@@ -37,7 +37,8 @@ a { color: inherit; text-decoration: none; }
 .utilityPlate { min-width: 0; padding: 0 18px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 18px; }
 .systemLine { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; font: 500 10px/1 var(--font-data-mono), monospace; letter-spacing: .05em; white-space: nowrap; }
 .systemLine b { display: flex; align-items: center; gap: 7px; font-weight: 500; color: #cdd4d9; text-transform: uppercase; }
-.systemLine b i { width: 7px; height: 7px; border-radius: 50%; background: var(--positive); box-shadow: 0 0 0 2px rgba(117,229,154,.12); }
+.systemLine b i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.systemLine .source-real i { background: var(--positive); box-shadow: 0 0 0 2px rgba(117,229,154,.12); }.systemLine .source-cached i { background: var(--cached); }.systemLine .source-error i { background: var(--negative); }
 .systemLine small { color: var(--subtle); font-size: 10px; }
 .filterStrip { display: grid; grid-template-columns: 1fr 1.25fr 1fr 1fr; gap: 8px; }
 .filterStrip label { min-width: 0; display: grid; grid-template-rows: 14px 30px; gap: 2px; color: var(--muted); font: 500 10px/1 var(--font-data-mono), monospace; }
@@ -47,6 +48,7 @@ a { color: inherit; text-decoration: none; }
 .filterStrip input { color-scheme: dark; }
 .filterStrip input:hover { border-color: #596168; }
 .filterStrip input:focus { border-color: var(--accent); outline: 0; }
+input::-webkit-calendar-picker-indicator:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px; }
 .provenanceStrip { grid-column: 1 / -1; min-width: 0; padding: 0 18px; display: flex; align-items: center; gap: 22px; overflow: hidden; border-top: 1px solid var(--rule); background: #090d0e; }
 .provenanceStrip > span { min-width: 0; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 .provenanceStrip > .provenanceTitle { color: var(--subtle); font: 500 10px/1 var(--font-data-mono), monospace; letter-spacing: .07em; text-transform: uppercase; }
@@ -355,7 +357,7 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .corridorDraw { margin: 6px 0 4px; border-top: 1px solid var(--rule); padding-top: 6px; }
 .corridorDraw summary { min-height: 30px; display: flex; align-items: center; font-size: 12px; color: var(--muted); cursor: pointer; }
 /* Territorios oficiales (IGN) y grilla de tendencias por celda. */
-.siteRemove { align-self: end; min-height: 30px; padding: 0 8px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; }
+.siteRemove { grid-column: 2 / -1; justify-self: start; align-self: end; min-height: 30px; padding: 0 8px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; }
 .territorySection { margin: 10px 0 4px; padding-top: 10px; border-top: 1px solid var(--rule); }
 .territorySection h3 { margin: 0 0 8px; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .territorySection h3 span { color: var(--subtle); font: 10px var(--font-data-mono), monospace; font-weight: 400; }
@@ -502,7 +504,7 @@ footer { border-top: 1px solid var(--border); padding: 26px clamp(22px,4vw,64px)
   .moduleNav button { min-height: 54px; }.mapKey { display: none; }
   .mapStage { order: 1; height: 340px; flex: 0 0 auto; border-right: 0; }.panelCaption { min-height: 34px; }
   .controlPane { order: 2; display: block; }.controlContent { overflow: visible; padding: 13px 16px; }.mobileContext { display: block; margin-bottom: 12px; border-block: 1px solid var(--border); }.mobileContext summary { min-height: 44px; display: flex; align-items: center; justify-content: space-between; list-style: none; color: var(--text); font: 500 11px var(--font-data-mono), monospace; }.mobileContext summary::-webkit-details-marker { display: none; }.mobileContext summary span { color: var(--accent); font-size: 10px; }.mobileContextGrid { padding: 4px 0 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }.mobileContextGrid p, .mobileContextGrid label { min-width: 0; margin: 0; display: grid; gap: 4px; }.mobileContextGrid span { color: var(--muted); font-size: 10px; }.mobileContextGrid b { min-height: 44px; padding: 8px; display: flex; align-items: center; border: 1px solid var(--border); background: var(--surface); font: 500 10px/1.3 var(--font-data-mono), monospace; overflow-wrap: anywhere; }.mobileContextGrid input { height: 44px; }.mobileContextGrid .mobileProvenance { grid-column: 1 / -1; }.siteRow { grid-template-columns: 20px minmax(100px, 1.3fr) 1fr 1fr; }.siteRow input, .filterStrip input { height: 44px; }
-  .actionRow button, .verdictAssumptions button { min-height: 44px; }
+  .actionRow button, .verdictAssumptions button, .siteRemove { min-height: 44px; }
   .terrainHeading { min-height: 52px; }.terrainHeading button { min-height: 44px; }.terrainSite { min-height: 54px; }
   .trendPanel { order: 3; height: 360px; flex: 0 0 auto; grid-template-rows: auto 1fr 34px; }.trendHeader { padding: 9px 16px 0; grid-template-columns: 1fr auto; grid-template-rows: 20px 42px; align-items: center; }.trendHeader > span { grid-column: 1; }.seriesKey { grid-column: 2; grid-row: 1; gap: 10px; }.trendHeader > div { grid-column: 1 / 3; grid-row: 2; overflow-x: auto; }.trendHeader button { min-height: 40px; white-space: nowrap; }
   .pipelineStrip { order: 4; display: block; overflow: visible; }.pipelineMain { padding-right: 0; border-right: 0; border-bottom: 1px solid var(--border); }.pipelineLabel { padding-right: 16px; }.pipelineScroll { overflow-x: auto; }.pipelineStrip ol { min-width: 740px; padding-right: 20px; }

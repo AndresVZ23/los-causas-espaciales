@@ -181,6 +181,12 @@ export default function Workspace() {
   const sourceSummary = selectedSources.length > 0
     ? `${selectedSources.map((source) => `${source.site} ${source.provenance}`).join(" · ")} · ${selectedSources[0].dataset} ${selectedSources[0].version} · descarga ${selectedSources[0].downloaded_at.slice(0, 10)} · ${selectedSources[0].spatial_resolution}`
     : "SIN DATOS · la cuadrícula no representa observaciones";
+  // Estado de la fuente según la última consulta: nunca se declara "operativo" sin haberlo comprobado.
+  const sourceState = error ? { tone: "error", text: "Última consulta con error" }
+    : loading ? { tone: "idle", text: "Consultando NASA POWER…" }
+    : !result ? { tone: "idle", text: "NASA POWER · sin consulta" }
+    : selectedSources.length > 0 && selectedSources.every((source) => source.provenance === "CACHED_DATA") ? { tone: "cached", text: "NASA POWER · copia en caché" }
+    : { tone: "real", text: "NASA POWER respondió" };
   const temporalSeries = useMemo(() => {
     if (!result) return [];
     const years = new Set<number>();
@@ -319,7 +325,7 @@ export default function Workspace() {
             <label><span>Desde</span><input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
             <label><span>Hasta</span><input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
           </div>
-          <div className="systemLine"><b><i />NASA POWER operativo</b><small>{dataThrough ?? "Datos hasta hoy · se actualizan en cada consulta"}</small><small>{result ? `ID ${result.analysis_id}` : "Sin ejecución"}</small></div>
+          <div className="systemLine" role="status"><b className={`source-${sourceState.tone}`}><i />{sourceState.text}</b><small>{dataThrough ?? "Datos hasta hoy · se actualizan en cada consulta"}</small><small>{result ? `ID ${result.analysis_id}` : "Sin ejecución"}</small></div>
         </section>
         <div className="provenanceStrip" role="list" aria-label="Clave de procedencia">
           <span className="provenanceTitle" aria-hidden="true">Procedencia</span>
@@ -392,7 +398,7 @@ export default function Workspace() {
               </details>
               <div className="actionRow">
                 <button onClick={() => setRoadAssumptions(DEFAULT_ROAD_ASSUMPTIONS)}>Supuestos por defecto</button>
-                <button className="runAnalysis" onClick={runScreening} disabled={loading || !endDate || (roadSource === "mine" && !myCorridors.length)}>{loading ? "Consultando NASA y capas…" : "Ejecutar análisis"}</button>
+                <button className="runAnalysis" onClick={runScreening} aria-busy={loading} disabled={loading || !endDate || (roadSource === "mine" && !myCorridors.length)}>{loading ? "Consultando NASA y capas…" : "Ejecutar análisis"}</button>
               </div>
             </> : isRealEstateModule ? <>
               <RealEstateControls source={parcelSource} onSource={setParcelSource} myParcels={myParcels.length}
@@ -406,7 +412,7 @@ export default function Workspace() {
               </details>
               <div className="actionRow">
                 <button onClick={() => setRealEstateAssumptions(DEFAULT_REAL_ESTATE_ASSUMPTIONS)}>Supuestos por defecto</button>
-                <button className="runAnalysis" onClick={runScreening}
+                <button className="runAnalysis" onClick={runScreening} aria-busy={loading}
                         disabled={loading || !endDate || (parcelSource === "mios" && !myParcels.length) || (parcelSource === "territorios" && !parcelTerritories.length)}>
                   {loading ? "Consultando NASA y capas…" : "Ejecutar análisis"}
                 </button>
@@ -438,7 +444,7 @@ export default function Workspace() {
                 <p className="territoryHint">Cada territorio se analiza con las celdas NASA POWER que lo cubren (≈ 55 × 65 km); un distrito menor que una celda se trata como punto. La primera consulta de un territorio puede tardar hasta un minuto.</p>
               </section>
             )}
-            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} disabled={loading || !selectedModule.ready || !endDate || subjectCount === 0}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
+            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} aria-busy={loading} disabled={loading || !selectedModule.ready || !endDate || subjectCount === 0}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
             </>}
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (

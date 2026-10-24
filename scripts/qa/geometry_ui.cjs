@@ -3,6 +3,7 @@
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
+const { isCompact, runAll } = require("./viewports.cjs");
 
 const BASE = process.env.QA_BASE_URL || "http://localhost:3100";
 const OUT = path.join(__dirname, "..", "..", ".claude-qa", "geometrias");
@@ -28,9 +29,12 @@ async function run(viewport, tag) {
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
+  // El corbatín se rechaza a propósito con 422 en la inspección; el navegador lo anota en consola y no es un defecto.
+  let expectedRejections = 0;
+  page.on("response", (response) => { if (response.status() === 422 && response.url().includes("geometry-inspect")) expectedRejections += 1; });
   await page.goto(BASE, { waitUntil: "networkidle" });
-  const nav = viewport.width < 700 ? ".mobileBottomNav button" : ".moduleNav button";
-  if (viewport.width < 700) {
+  const nav = isCompact(viewport) ? ".mobileBottomNav button" : ".moduleNav button";
+  if (isCompact(viewport)) {
     await page.getByRole("button", { name: /Más/ }).click();
     await page.locator(".moduleNav button", { hasText: "Infraestructura" }).click();
   } else {
@@ -75,10 +79,12 @@ async function run(viewport, tag) {
   const exported = path.join(OUT, `export-${tag}.geojson`);
   await download.saveAs(exported);
   await browser.close();
-  return { tag, drawn, list, uploads, overflow, exported, errors };
+  let pending = expectedRejections;
+  const unexpected = errors.filter((text) => !(text.includes("status of 422") && pending-- > 0));
+  return { tag, drawn, list, uploads, overflow, exported, expectedRejections, errors: unexpected };
 }
 
 (async () => {
-  const results = [await run({ width: 1440, height: 900 }, "1440"), await run({ width: 390, height: 844 }, "390")];
+  const results = await runAll(run);
   console.log(JSON.stringify(results, null, 1));
 })();

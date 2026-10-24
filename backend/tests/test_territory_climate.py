@@ -3,10 +3,12 @@
 import asyncio
 from datetime import date
 
+import httpx
 import pytest
 from pydantic import ValidationError
 
 from backend.app.connectors.nasa import power_regional
+from backend.app.connectors.nasa.power import PowerConnectorError
 from backend.app.orchestration import extraction, territory
 from backend.app.orchestration.conformance import envelope_violations
 from backend.app.schemas.analysis import Observation, Point
@@ -79,6 +81,25 @@ def test_cell_trends_cover_every_cell_and_variable(patched):
 def test_too_many_cells_asks_for_a_smaller_territory(patched, monkeypatch):
     monkeypatch.setattr(territory, "MAX_CELLS", 1)
     with pytest.raises(territory.TerritoryAnalysisError, match="provincia o un distrito"):
+        asyncio.run(climate.run_climate_screening(_request()))
+
+
+class RegionalDown:
+    """Descubrimiento que falla como lo hace el conector cuando NASA POWER no responde."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def sample(self, request):
+        try:
+            raise httpx.ConnectError("All connection attempts failed")
+        except httpx.HTTPError as exc:
+            raise power_regional.RegionalPowerError(f"La consulta regional NASA POWER falló: {exc}") from exc
+
+
+def test_provider_outage_is_a_provider_error_not_a_bad_request(patched, monkeypatch):
+    monkeypatch.setattr(territory, "RegionalPowerConnector", RegionalDown)
+    with pytest.raises(PowerConnectorError, match="Moquegua.*falló"):
         asyncio.run(climate.run_climate_screening(_request()))
 
 

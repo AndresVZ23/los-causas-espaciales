@@ -2,6 +2,7 @@
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
+const { isCompact, runAll } = require("./viewports.cjs");
 
 const BASE = process.env.QA_BASE_URL || "http://localhost:3100";
 const OUT = path.join(__dirname, "..", "..", ".claude-qa", "territorio");
@@ -14,7 +15,7 @@ async function run(viewport, tag) {
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
   await page.goto(BASE, { waitUntil: "networkidle" });
-  if (viewport.width < 700) await page.locator(".mobileBottomNav button", { hasText: "Clima" }).click();
+  if (isCompact(viewport)) await page.locator(".mobileBottomNav button", { hasText: "Clima" }).click();
   else await page.locator(".moduleNav button", { hasText: "Clima" }).click();
   await page.locator(".territorySection").waitFor();
 
@@ -61,6 +62,6 @@ async function run(viewport, tag) {
 }
 
 (async () => {
-  const results = [await run({ width: 1440, height: 900 }, "1440"), await run({ width: 390, height: 844 }, "390")];
+  const results = await runAll(run);
   console.log(JSON.stringify(results, null, 1));
 })();

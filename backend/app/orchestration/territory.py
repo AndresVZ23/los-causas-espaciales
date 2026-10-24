@@ -11,6 +11,9 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import date, timedelta
 
+import httpx
+
+from ..connectors.nasa.power import PowerConnectorError
 from ..connectors.nasa.power_regional import RegionalPowerConnector, RegionalPowerError, aggregate_cells
 from ..connectors.peru.admin_boundaries import PeruTerritoryCatalog, TerritoryCatalogError
 from ..schemas.analysis import Observation, Point, Provenance, SourceMetadata
@@ -75,7 +78,11 @@ async def extract_territory(level: TerritoryLevel, ubigeo: str, variables: Seque
     try:
         discovery = await RegionalPowerConnector().sample(request)
     except RegionalPowerError as exc:
-        raise TerritoryAnalysisError(f"No se pudieron ubicar las celdas de {geometry.territory.name}: {exc}") from exc
+        message = f"No se pudieron ubicar las celdas de {geometry.territory.name}: {exc}"
+        # Caída o error HTTP del proveedor: es falla de NASA POWER (502), no de la solicitud (422).
+        if isinstance(exc.__cause__, httpx.HTTPError):
+            raise PowerConnectorError(message) from exc
+        raise TerritoryAnalysisError(message) from exc
     if len(discovery.cells) > MAX_CELLS:
         raise TerritoryAnalysisError(f"{geometry.territory.name} abarca {len(discovery.cells)} celdas; el máximo es {MAX_CELLS}. Elija una provincia o un distrito.")
     cells = [TerritoryCell(cell_id=cell.cell_id, center=Point(latitude=cell.center.latitude, longitude=cell.center.longitude, label=cell.cell_id),
