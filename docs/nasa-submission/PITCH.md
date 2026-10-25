@@ -25,13 +25,13 @@ Each block matches an act in [DEMO_SCENARIOS.md](DEMO_SCENARIOS.md). Figures bel
 
 ### 2 · Translate it into a decision for an asset (≈90 s)
 
-Use act 2A (road corridor) when the K2 rainfall-scale fix is verified; otherwise use act 2B (solar). Both end on the same idea: a conditioned decision, not a verdict.
+Use act 2A (road corridor) or act 2B (solar); both are verified. Both end on the same idea: a conditioned decision, not a verdict.
 
 **2A · Road corridor Moquegua–Ilo**
 
 > The same evidence now runs along an 86 km corridor split into five segments. Official layers are read per segment: flood risk and mass movements from CENEPRED, protected areas from SERNANP, archaeology from the Ministry of Culture. Zero objects does not mean zero risk, and the geological hazard service is shown as unavailable, not as clean.
 >
-> The multicriteria score shows its scales, weights and stability under 2,000 random weightings. When the margin is too small to separate the segments, it says so: a practical tie, so decide criterion by criterion.
+> The multicriteria score shows its scales, weights and stability under 2,000 random weightings. Here one segment leads under every weighting, and the reason is not rain: recent rainfall is low and almost identical along the corridor. It is the terrain. NASA's elevation model gives segment 5 a slope of almost 18 degrees, against 4 to 7 elsewhere. The first study to fund is geotechnical, not hydrological.
 
 **2B · Solar screening Moquegua vs Arequipa**
 

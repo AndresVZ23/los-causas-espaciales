@@ -1,7 +1,7 @@
 {
   "contract_version": "1.0",
   "analysis_id": "51c9fdaaa7e2711a",
-  "generated_at": "2026-10-23T20:11:54.907713Z",
+  "generated_at": "2026-10-25T02:08:13.557280Z",
   "sector": "road",
   "sector_label": "Infraestructura vial",
   "title": "Screening vial preliminar — corredor Moquegua–Ilo",
@@ -322,7 +322,7 @@
       "status": "COMPLETADO",
       "summary": "NASA POWER entregó 21,910 observaciones diarias para 2 variables en 5 sujetos.",
       "provenance": [
-        "CACHED_DATA"
+        "REAL_DATA"
       ],
       "evidence": [
         {
@@ -337,12 +337,12 @@
         },
         {
           "label": "Series desde caché",
-          "value": "10 de 10",
-          "provenance": "CACHED_DATA"
+          "value": "0 de 10",
+          "provenance": "REAL_DATA"
         },
         {
           "label": "Descarga NASA (UTC)",
-          "value": "2026-10-23 a 2026-10-23",
+          "value": "2026-10-25 a 2026-10-25",
           "provenance": null
         },
         {
@@ -351,7 +351,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 1084.2,
+      "duration_ms": 17290.3,
       "answers": [
         "what"
       ]
@@ -392,7 +392,7 @@
           "provenance": null
         }
       ],
-      "duration_ms": 220.7,
+      "duration_ms": 221.7,
       "answers": [
         "what",
         "how_much",
@@ -404,7 +404,7 @@
       "key": "territorial",
       "name": "Inteligencia territorial",
       "status": "PARCIAL",
-      "summary": "NASADEM localizó 5 de 5 sujetos y calculó métricas en 5. 4 capas oficiales siguen pendientes y no se interpretan como riesgo cero.",
+      "summary": "NASADEM localizó 5 de 5 sujetos y calculó métricas en 5. 5 capas oficiales siguen pendientes y no se interpretan como riesgo cero.",
       "provenance": [
         "MODEL_ESTIMATE",
         "CACHED_DATA",
@@ -423,7 +423,7 @@
         },
         {
           "label": "Capas pendientes",
-          "value": "ingemmet-geohazards, Eje vial e inventario de activos MTC, Interrupciones, tránsito y pérdidas observadas, Comunidades y conflictos",
+          "value": "ingemmet-geohazards, cultura-archaeology-declared, Eje vial e inventario de activos MTC, Interrupciones, tránsito y pérdidas observadas, Comunidades y conflictos",
           "provenance": "DATA_UNAVAILABLE"
         },
         {
@@ -432,7 +432,7 @@
           "provenance": "MODEL_ESTIMATE"
         }
       ],
-      "duration_ms": 2227.4,
+      "duration_ms": 25760.0,
       "answers": [
         "where",
         "so_what"
@@ -547,7 +547,7 @@
           "provenance": "USER_ASSUMPTION"
         }
       ],
-      "duration_ms": 50.8,
+      "duration_ms": 30.3,
       "answers": [
         "so_what"
       ]
@@ -557,9 +557,8 @@
       "key": "results",
       "name": "Resultados",
       "status": "COMPLETADO",
-      "summary": "Respuestas a las preguntas NASA, 0 tendencias significativas y 4 brechas documentadas.",
+      "summary": "Respuestas a las preguntas NASA, 0 tendencias significativas y 5 brechas documentadas.",
       "provenance": [
-        "CACHED_DATA",
         "REAL_DATA",
         "MODEL_ESTIMATE",
         "USER_ASSUMPTION",
@@ -573,7 +572,7 @@
         },
         {
           "label": "Brechas para debida diligencia",
-          "value": "4",
+          "value": "5",
           "provenance": "DATA_UNAVAILABLE"
         }
       ],
@@ -587,7 +586,6 @@
       "status": "LISTO",
       "summary": "Reporte JSON y PDF ejecutivo disponibles; la etapa se marca completada al descargar uno de ellos.",
       "provenance": [
-        "CACHED_DATA",
         "REAL_DATA",
         "MODEL_ESTIMATE",
         "USER_ASSUMPTION",
@@ -687,7 +685,7 @@
       "answer": "La precipitación media no cambia con significancia en los tramos; eso no demuestra estabilidad de los extremos diarios. Con supuestos del usuario, el VAN de mitigación va de USD 1.48 M a USD 2.43 M; 5 de 5 tramos son no negativos. Esto prioriza estudios y no constituye una decisión de inversión.",
       "evidence": [
         "Regla sectorial explícita por variable y dirección de la tendencia; no se cuantifica impacto sin modelo técnico.",
-        "4 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
+        "5 capas territoriales siguen pendientes; su ausencia no equivale a riesgo cero.",
         "Screening preliminar: no sustituye estudios de recurso, ingeniería, impacto ambiental ni factibilidad."
       ],
       "provenance": [
@@ -704,7 +702,7 @@
   ],
   "trend_findings": [],
   "terrain": {
-    "generated_at": "2026-10-23T20:11:54.139413Z",
+    "generated_at": "2026-10-25T02:08:07.736286Z",
     "dataset": "NASADEM V001",
     "crs": "EPSG:4326; longitude/latitude",
     "spatial_resolution": "1 arc-second (~30 m at the equator)",
@@ -1017,6 +1015,12 @@
       "dataset": "ingemmet-geohazards",
       "status": "DATA_UNAVAILABLE",
       "impact": "La capa territorial no pudo verificarse: El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+      "next_action": "Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas."
+    },
+    {
+      "dataset": "cultura-archaeology-declared",
+      "status": "DATA_UNAVAILABLE",
+      "impact": "La capa territorial no pudo verificarse: El servicio oficial no respondió con datos utilizables: Server error '500 Internal Server Error' for url 'https://sigda.cultura.gob.pe/sigda/rest/services/v_4/declarados_v4/MapServer/0/query'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
       "next_action": "Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas."
     },
     {
@@ -2293,9 +2297,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:03.587109Z",
+            "downloaded_at": "2026-10-25T02:07:43.074476Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2370,9 +2374,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:03.587109Z",
+            "downloaded_at": "2026-10-25T02:07:43.074476Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2450,7 +2454,7 @@
             "rx1day_mm": 43.2
           }
         ],
-        "provenance": "CACHED_DATA",
+        "provenance": "REAL_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
@@ -2568,9 +2572,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:02.456160Z",
+            "downloaded_at": "2026-10-25T02:07:43.622147Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2645,9 +2649,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:02.456160Z",
+            "downloaded_at": "2026-10-25T02:07:43.622147Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2703,7 +2707,7 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "CACHED_DATA",
+        "provenance": "REAL_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
@@ -2821,9 +2825,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:04.236823Z",
+            "downloaded_at": "2026-10-25T02:07:44.158480Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2898,9 +2902,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:04.236823Z",
+            "downloaded_at": "2026-10-25T02:07:44.158480Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -2956,7 +2960,7 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "CACHED_DATA",
+        "provenance": "REAL_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
@@ -3074,9 +3078,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:03.684824Z",
+            "downloaded_at": "2026-10-25T02:07:44.634787Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3151,9 +3155,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:03.684824Z",
+            "downloaded_at": "2026-10-25T02:07:44.634787Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3209,7 +3213,7 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "CACHED_DATA",
+        "provenance": "REAL_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
@@ -3327,9 +3331,9 @@
             "unit": "mm/day",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:03.658197Z",
+            "downloaded_at": "2026-10-25T02:07:45.127632Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3404,9 +3408,9 @@
             "unit": "C",
             "temporal_resolution": "diaria; análisis agregado a escala anual",
             "spatial_resolution": "grilla nativa del producto; consultar metadatos NASA POWER",
-            "downloaded_at": "2026-10-23T19:19:03.658197Z",
+            "downloaded_at": "2026-10-25T02:07:45.127632Z",
             "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point",
-            "provenance": "CACHED_DATA",
+            "provenance": "REAL_DATA",
             "quality_notes": []
           },
           "annual_series": [
@@ -3462,7 +3466,7 @@
             "rx1day_mm": 4.99
           }
         ],
-        "provenance": "CACHED_DATA",
+        "provenance": "REAL_DATA",
         "source_url": "https://power.larc.nasa.gov/api/temporal/daily/regional",
         "method": "Intersección de cada celda devuelta por NASA POWER con el sujeto; promedio diario ponderado por área geodésica de intersección y desviación estándar ponderada entre celdas.",
         "limitations": [
@@ -3478,7 +3482,7 @@
         "cenepred-mass-movement-risk": 2,
         "sernanp-anp": 0,
         "cultura-archaeology": 0,
-        "cultura-archaeology-declared": 0,
+        "cultura-archaeology-declared": null,
         "ingemmet-geohazards": null
       },
       "finance": {
@@ -3535,8 +3539,8 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:02.104988Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:54.821177Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3546,8 +3550,8 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:04.638545Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:54.843442Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3557,8 +3561,8 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:02.440035Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:54.860587Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3568,8 +3572,8 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:04.648626Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:54.835885Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3579,8 +3583,8 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:04.648626Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:54.855000Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3606,8 +3610,8 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 1,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:08.348058Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:59.364532Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3617,8 +3621,8 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 1,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:08.338338Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:59.351212Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3628,8 +3632,8 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:08.439518Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:59.412885Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3639,8 +3643,8 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:08.375993Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:07:59.373503Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3651,7 +3655,7 @@
           "status": "READY",
           "intersection_count": 0,
           "provenance": "REAL_DATA",
-          "downloaded_at": "2026-10-23T20:11:54.256402Z",
+          "downloaded_at": "2026-10-25T02:07:59.377505Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3677,8 +3681,8 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 3,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:31.420330Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:03.864389Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3688,8 +3692,8 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 3,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:31.430440Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:03.844279Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3699,8 +3703,8 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:31.471226Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:03.986128Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3710,8 +3714,8 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:31.437988Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:03.873676Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3721,8 +3725,8 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:31.451022Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:03.878933Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3748,8 +3752,8 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:35.022842Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:08.331889Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3759,8 +3763,8 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:35.016874Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:08.353490Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3770,8 +3774,8 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:35.079038Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:08.375147Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3781,8 +3785,8 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:35.065556Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:08.355250Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3792,8 +3796,8 @@
           "source_id": "cultura-archaeology-declared",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:35.076062Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:08.363879Z",
           "limitations": [
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3819,8 +3823,8 @@
           "source_id": "cenepred-flood-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:38.513268Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:12.781234Z",
           "limitations": [
             "Es un escenario prospectivo de riesgo, no un inventario exhaustivo ni una probabilidad predial.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3830,8 +3834,8 @@
           "source_id": "cenepred-mass-movement-risk",
           "status": "READY",
           "intersection_count": 2,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:38.488493Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:12.789900Z",
           "limitations": [
             "No reemplaza estudios geotécnicos ni cartografía de detalle de INGEMMET.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3841,8 +3845,8 @@
           "source_id": "sernanp-anp",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:38.532217Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:12.824527Z",
           "limitations": [
             "La superposición es una alerta de debida diligencia y no constituye opinión legal de compatibilidad.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3852,8 +3856,8 @@
           "source_id": "cultura-archaeology",
           "status": "READY",
           "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:38.667803Z",
+          "provenance": "REAL_DATA",
+          "downloaded_at": "2026-10-25T02:08:12.817891Z",
           "limitations": [
             "La ausencia de intersección en SIGDA no prueba ausencia de patrimonio arqueológico.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
@@ -3861,11 +3865,12 @@
         },
         {
           "source_id": "cultura-archaeology-declared",
-          "status": "READY",
-          "intersection_count": 0,
-          "provenance": "CACHED_DATA",
-          "downloaded_at": "2026-10-23T19:19:38.603304Z",
+          "status": "DATA_UNAVAILABLE",
+          "intersection_count": null,
+          "provenance": "DATA_UNAVAILABLE",
+          "downloaded_at": null,
           "limitations": [
+            "El servicio oficial no respondió con datos utilizables: Server error '500 Internal Server Error' for url 'https://sigda.cultura.gob.pe/sigda/rest/services/v_4/declarados_v4/MapServer/0/query'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
             "La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",
             "Cero intersecciones significa solo que el servicio no devolvió objetos; no demuestra ausencia de riesgo o restricción."
           ]

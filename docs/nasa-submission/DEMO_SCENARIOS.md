@@ -20,7 +20,7 @@ The NASA POWER cache lasts 24 hours and its key includes today's date, so yester
 |---|---|---|---|
 | 0 · Problem | 30 s | 3–5 s page load | Console, map, provenance key in the header |
 | 1 · Territory, trend and extremes | 75 s | 18 s | Nine warming cells, IMERG counter-check |
-| 2 · Asset decision (2A road or 2B solar) | 90 s | 3 s | Territorial exposure, score with tie, sensitivity, conditioned reading |
+| 2 · Asset decision (2A road or 2B solar) | 90 s | 3 s | Territorial exposure, score that names what separates the options, sensitivity, conditioned reading |
 | 3 · Export | 20 s | < 1 s | Six-page executive PDF |
 | 4 · Close | 30 s | none | Gaps and next steps |
 
@@ -42,14 +42,12 @@ Rehearsal timing: 25.7 s of total screen wait with a warm cache; cold, the Moque
 
 ### Act 2A · Road corridor Moquegua–Ilo (module «Infraestructura»)
 
-**Hold this act until Codex verifies the rainfall-scale fix for the corridor exposure (see «Known defect» below). Until then, use 2B.**
-
 1. Left menu → «Infraestructura». The pilot corridor is preselected.
 2. Press «Ejecutar análisis».
 3. Point at:
    - «Lectura del corredor»: five segments, 86 km in total.
    - «Capas territoriales oficiales»: CENEPRED flood risk and mass movements per segment, SERNANP and SIGDA with zero objects, INGEMMET «No disponible». Say: zero objects does not prove zero risk.
-   - «Puntaje multicriterio»: scales and weights visible; the tie banner when the margin is below 5 points or the leader wins fewer than 75 % of 2,000 weightings.
+   - «Puntaje multicriterio»: segment 5 leads (48.5 against 38.7, first in 100 % of 2,000 weightings). Rain does not separate the segments: recent P99 is 2.73 mm/day on four of them and 3.60 on the first. What separates them is the NASADEM slope at segment 5's representative point, 17.9° against 4–7° elsewhere. The priority is geotechnical, not hydrological, and the slope comes from one point that should be checked along the segment.
    - «Escenarios y sensibilidad del VAN»: base, adverse and favourable scenarios; inputs labelled `USER_ASSUMPTION`.
 
 ### Act 2B · Solar screening Moquegua vs Arequipa (module «Energía»)
@@ -98,11 +96,8 @@ Rehearsal timing: 25.7 s of total screen wait with a warm cache; cold, the Moque
 - Zero intersections with an official layer do not mean zero risk.
 - Station counter-checks (SENAMHI) are not connected; GPM IMERG is the only independent counter-check.
 
-## Known defect before release (24-Oct-2026)
+## Resolved before release: NASA POWER ×24 in the regional sampler (24-Oct-2026)
 
-Corridor and parcel exposure read precipitation through the regional sampler, which does not apply the ×24 rainfall-scale check used everywhere else. Windows that reach recent days come back 24 times too large. Reproduced with `POST /api/v1/spatial-sampling/power/daily` on one cell near Ilo:
+NASA POWER returns daily precipitation 24 times too large when a request reaches recent days. Points were already guarded; the regional sampler used by the road and real-estate pilots was not. A cell near Ilo gave 1,587.4 mm in the last year against 70.1 mm the year before (1,587.4 / 24 = 66.1).
 
-- window to 24-Oct-2026: annual sum 1,587.4 mm, maximum 150.96 mm/day;
-- window to 24-Oct-2025: annual sum 70.1 mm, maximum 6.18 mm/day.
-
-1,587.4 / 24 = 66.1 mm and 150.96 / 6.29 = 24.0. In the road pilot, segments 2–4 and segment 5 share the same cell yet report P99 65.51 and 2.73 mm/day, again a factor of 24, so the road score and P99 (act 2A) are affected. The real-estate exposure uses the same sampler and must be rechecked with the fix. Climate and solar read precipitation through the guarded path and are not affected. Act 2A returns to the main route once the fix is verified.
+Codex (K6, `bf20140`) now checks the scale cell by cell before averaging: a ratio near 1 is kept, a ratio near 24 is divided by 24 and any other ratio stops the result. Claude confirmed it on the live road pilot: the four segments that share a cell now report the same P99 (2.73 mm/day) and maximum (6.29 mm/day), where segments 2–4 previously showed 65.51 and 150.96. The «151 mm» day once attributed to MERRA-2 in September 2022 was this defect.

@@ -677,3 +677,24 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **Puerta común:** 165/165 pruebas backend; build Next de producción aprobado; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; `git diff --check` limpio. No se editó `frontend/**`, no se usó Gemini y no se levantaron los puertos 3100/8000.
 
 **Para Claude:** integrar `bf20140` sobre `claude/integracion-pilotos`/`ba62b57`. Sus 13 entradas de `LAYERS` son aditivas; el TTL por prefijo las cubre sin cambiar listas explícitas de K2/K3. Regenerar el ejemplo vial y retirar la brecha K6 después de confirmar que RX1DAY/P99 recientes ya no reciben la escala ×24. Christian aún debe aprobar cualquier fusión a `master` o push.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · K6 integrado y validado
+
+**Integración:** `codex/k6-regional-scale` (`bf20140`, `ed825f8`) se fusionó en `claude/integracion-pilotos` (`da2160a`) sin conflictos.
+- `LAYERS` quedó sin entradas duplicadas.
+- El caché de 7 días de Cultura está activo.
+- Backend 173/173.
+
+**Validación en vivo:**
+- **Piloto vial (2001 a hoy):** los tramos 2–5 comparten la celda −17.5/−71.25 y ahora dan el mismo P99 (2.73 mm/día) y máximo (6.29 mm). Antes los tramos 2–4 daban 65.51 y 150.96. El tramo 1 da P99 3.60.
+- **El puntaje vial cambió:** ya no hay empate práctico. El tramo 5 lidera con 48.5 frente a 38.7, primero en el 100 % de las combinaciones de pesos. Lo separa la pendiente NASADEM en su punto representativo (17.93° frente a 4–7°), no la lluvia.
+- **Ejemplos del contrato regenerados:** `road-screening-v1.0.example.json` (51c9fdaaa7e2711a, P99 1.28 mm/día en los tramos de la misma celda, 2023) y `real-estate-screening-v1.0.example.json` (a9ae20e290ce6f69). El máximo de 43.2 mm del ejemplo inmobiliario es el año atípico real de 2023 que Clima ya marca, no el ×24.
+
+**QA:** `road_ui` y `realestate_ui` en 1440, 768 y 390 sin errores ni desbordamiento. El ensayo del demo (`ensayo-k6`) corre completo con PDF válido: 29.9 s de espera.
+
+**Docs:**
+- `DEMO_SCENARIOS.md`: el acto 2A vuelve a la ruta principal y el defecto conocido pasa a «resuelto».
+- `PITCH.md` 2A: la prioridad es geotécnica.
+- DOP: se quitó la K6 duplicada de Claude y se suma la validación a la K6 de Codex.
+
+**Incidente:** Docker Desktop se reinició durante el QA y los contenedores salieron con 255. Se relevantó solo `los-causas-espaciales`; no se tocaron `nasaspaceappschallenge-*` ni MyFix.
