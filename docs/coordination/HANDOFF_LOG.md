@@ -712,3 +712,22 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **Calendario corregido:** el manifiesto pasa a `RELEASE_2026-11-15.md`; `PROGRESS.md`, DOP, fuentes y arquitectura declaran el 29-oct como anteproyecto y el 15-nov, 23:59, como cierre final. No se creó `v0.1.0`.
 
 **Publicación:** no se hizo push. La aprobación recibida cubría la fusión; se mantiene pendiente una aprobación explícita de Christian para publicar `master`. Tampoco se usó Gemini ni se levantaron 3100/8000.
+
+## 2026-10-25 · Claude · claude/pdf-linea-base · PDF ejecutivo con la línea base (ADR-033)
+
+**Rama:** `claude/pdf-linea-base`, desde `master` `73a8fa7`.
+
+**Cambio de API (compatible):** `POST /api/v1/reports/executive-pdf` recibe el JSON del screening y lo valida por `sector`. `environment` y `heritage` usan `BaselineScreeningResponse`; los demás, el sobre común como antes. Un cuerpo inválido sigue respondiendo 422.
+
+**Reporte:** nuevo `backend/app/reports/baseline_pdf.py`:
+- Sección «Línea base por área de estudio»: MODIS, cobertura IGBP, notas y capas por medio con registros y enlaces `https` de la fuente.
+- Fuentes del pie según lo consultado.
+- Pie propio para Patrimonio (no sustituye el CIRA ni una opinión legal).
+- En estos sectores, los polígonos se rotulan «Área».
+
+**Verificación:**
+- Backend 175/175: dos pruebas nuevas de PDF.
+- PDF real con Moquegua (radio 1 km) y el distrito de Ilo: Patrimonio en 4 páginas y Ambiente en 6; las 18 consultas a capas respondieron.
+- `baseline_ui` en 1440 y 390 descarga el PDF desde el botón, con 0 errores y 0 desbordamiento.
+
+**Para Codex:** revisar y fusionar en `master` con la puerta común cuando Christian lo apruebe. No toqué conectores ni pilotos.

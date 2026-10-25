@@ -25,7 +25,7 @@ async function runAndRead(page, heading) {
 
 async function run(viewport, tag) {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport });
+  const page = await browser.newPage({ viewport, acceptDownloads: true });
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
@@ -61,6 +61,14 @@ async function run(viewport, tag) {
   out.heritageOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   await page.screenshot({ path: path.join(OUT, `patrimonio-${tag}.png`), fullPage: true });
   await page.locator(".siteResults").first().screenshot({ path: path.join(OUT, `patrimonio-tablas-${tag}.png`) });
+  // PDF ejecutivo desde el botón de la pantalla: debe llegar con la sección de línea base.
+  const pdfButton = page.locator(".exportAction.primaryExport");
+  await pdfButton.scrollIntoViewIfNeeded();
+  const [download] = await Promise.all([page.waitForEvent("download", { timeout: 120000 }), pdfButton.click()]);
+  const pdfPath = path.join(OUT, `patrimonio-${tag}.pdf`);
+  await download.saveAs(pdfPath);
+  const bytes = fs.readFileSync(pdfPath);
+  out.heritagePdf = { header: bytes.subarray(0, 4).toString(), kb: Math.round(bytes.length / 1024) };
   out.errors = errors;
   await browser.close();
   return out;

@@ -156,6 +156,37 @@ def test_heritage_baseline_reports_records_without_inventing_trends(patched):
     assert next(s for s in result.pipeline if s.key == "analysis").status == PipelineStatus.UNAVAILABLE
 
 
+def _pdf_text(pdf: bytes) -> str:
+    from io import BytesIO
+
+    from pypdf import PdfReader
+    return " ".join(page.extract_text() for page in PdfReader(BytesIO(pdf)).pages)
+
+
+def test_heritage_pdf_carries_records_links_and_honest_footer(patched):
+    from fastapi.testclient import TestClient
+
+    from backend.app.main import app
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.HERITAGE))
+    response = TestClient(app).post("/api/v1/reports/executive-pdf", json=result.model_dump(mode="json"))
+    assert response.status_code == 200 and response.headers["content-type"] == "application/pdf"
+    text = _pdf_text(response.content)
+    assert "Línea base por área de estudio" in text and "Moquegua (radio 1 km)" in text
+    assert "Diagnóstico Arqueológico Superficial del Proyecto X" in text and "S.A. ALGARROBAL 1" in text
+    assert "No disponible" in text                                                 # la capa caída no se lee como cero
+    assert "registros oficiales del Ministerio de Cultura" in text and "NASA POWER, API" not in text
+    assert b"/URI" in response.content and b"2025-0082264.pdf" in response.content  # enlace al PDF del DAS
+
+
+def test_environment_pdf_lists_modis_series_and_sources(patched):
+    from backend.app.reports.executive_pdf import render_executive_pdf
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.ENVIRONMENT))
+    text = _pdf_text(render_executive_pdf(result))
+    assert "Suelo sin vegetación" in text and "MOD44B" in text and "Cobertura IGBP" in text
+    assert "ORNL DAAC" in text and "NASA POWER, API" not in text
+    assert "ningún año" in text                                                    # productividad sin serie, declarada
+
+
 def test_layer_summary_flags_truncated_responses():
     result = TerritorialSourceResult(source_id="cultura-qhapaq-nan", organization="Cultura", dataset="Qhapaq Ñan", status="READY", intersection_count=100,
                                      features=[TerritorialFeature(layer_id=1, layer_name="Proyección", attributes={"tramnomb": "Quilca - Sama"})] * 100,

@@ -1,8 +1,9 @@
 """Reporte ejecutivo PDF a partir del sobre común C2.
 
-Lee solo campos de `ScreeningEnvelope`, así que sirve para cualquier sector (solar, vial, inmobiliario).
-No calcula nada nuevo: presenta respuestas, tendencias, relieve, pipeline, supuestos y brechas tal como
-llegaron, con su procedencia y una huella SHA-256 del contenido para trazabilidad.
+Lee campos de `ScreeningEnvelope`, así que sirve para cualquier sector (solar, vial, inmobiliario). La línea base
+(ambiente y patrimonio) agrega su propia sección por área desde `baseline_pdf`. No calcula nada nuevo: presenta
+respuestas, tendencias, relieve, pipeline, supuestos y brechas tal como llegaron, con su procedencia y una huella
+SHA-256 del contenido para trazabilidad.
 """
 
 import hashlib
@@ -23,6 +24,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from ..schemas.analysis import Provenance
+from ..schemas.baseline import BaselineScreeningResponse
 from ..schemas.screening import ScreeningEnvelope, TrendFinding
 
 FONT_DIR = Path(__file__).parent / "fonts"
@@ -173,7 +175,10 @@ def _decorate(envelope: ScreeningEnvelope, short_hash: str):
         canvas.line(left, 13 * mm, right, 13 * mm)
         canvas.setFont(SANS, 6.8)
         basis = "datos NASA y supuestos del usuario" if envelope.assumption_items else "datos NASA, sin supuestos financieros"
-        canvas.drawString(left, 9 * mm, f"Screening preliminar con {basis}; no sustituye factibilidad ni mediciones in situ.")
+        # Patrimonio no usa datos NASA: su alcance se dice aparte y corto, para no montarse sobre la huella.
+        scope = ("Identificación preliminar con registros de Cultura; no sustituye el CIRA ni una opinión legal." if envelope.sector == "heritage"
+                 else f"Screening preliminar con {basis}; no sustituye factibilidad ni mediciones in situ.")
+        canvas.drawString(left, 9 * mm, scope)
         canvas.drawRightString(right, 9 * mm, f"Huella {short_hash} · página {doc.page}")
         canvas.restoreState()
     return draw
@@ -335,6 +340,9 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
     else:
         story.append(Paragraph("Evidencia insuficiente para establecer una tendencia estadísticamente significativa en las variables y sujetos analizados.", styles["body"]))
 
+    baseline = envelope if isinstance(envelope, BaselineScreeningResponse) else None
+    kind_labels = {**KIND_LABELS, "polygon": "Área"} if baseline else KIND_LABELS
+
     story.append(Paragraph("Sujetos de estudio y relieve", styles["h2"]))
     terrain_by_label = {site.location.label: site for site in (envelope.terrain.sites if envelope.terrain else [])}
     subject_rows = [[Paragraph(h, styles["cellHead"]) for h in ("Sujeto", "Tipo", "Punto representativo (WGS84)", "Elevación", "Pendiente", "Orientación")]]
@@ -352,12 +360,16 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
                 f"{metrics.slope_degrees:.2f}°" if metrics.slope_degrees is not None else "N/D",
                 f"{metrics.aspect_cardinal} · {metrics.aspect_degrees:.0f}°" if metrics.aspect_degrees is not None else "N/D",
             ]
-        subject_rows.append([Paragraph(f"<b>{_text(subject.label)}</b>", styles["cell"]), Paragraph(KIND_LABELS.get(subject.kind, subject.kind), styles["cell"]),
+        subject_rows.append([Paragraph(f"<b>{_text(subject.label)}</b>", styles["cell"]), Paragraph(kind_labels.get(subject.kind, subject.kind), styles["cell"]),
                              Paragraph(f"{point.latitude:.4f}, {point.longitude:.4f}", styles["mono"])] + [Paragraph(_text(value), styles["cell"]) for value in relief])
     story.append(_table(subject_rows, [34 * mm, 18 * mm, 42 * mm, 24 * mm, 24 * mm, usable - 142 * mm]))
     if envelope.terrain:
         story.append(Spacer(1, 2 * mm))
         story.append(Paragraph(_text(f"Relieve: {envelope.terrain.dataset}, {envelope.terrain.spatial_resolution}, altura ortométrica respecto al geoide EGM96. No sustituye un levantamiento topográfico."), styles["cellMuted"]))
+
+    if baseline is not None:
+        from .baseline_pdf import baseline_sections  # local: baseline_pdf importa este módulo
+        story += baseline_sections(baseline, styles, usable)
 
     story.append(Paragraph("Pipeline de análisis", styles["h2"]))
     stage_rows = [[Paragraph(h, styles["cellHead"]) for h in ("#", "Etapa", "Estado", "Lo que ocurrió")]]
@@ -395,7 +407,11 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
     story.append(Paragraph("Método, fuentes y trazabilidad", styles["h2"]))
     significant = next((question for question in envelope.nasa_questions if question.key == "significant"), None)
     method = significant.evidence[0] if significant and significant.evidence else "Mann–Kendall corregido y pendiente de Sen sobre medias anuales."
-    sources = ["NASA POWER, API Daily Point (https://power.larc.nasa.gov/docs/services/api/), estimaciones en grilla que no sustituyen mediciones en sitio."]
+    if baseline is not None:
+        from .baseline_pdf import baseline_sources
+        sources = baseline_sources(baseline)
+    else:
+        sources = ["NASA POWER, API Daily Point (https://power.larc.nasa.gov/docs/services/api/), estimaciones en grilla que no sustituyen mediciones en sitio."]
     if envelope.terrain:
         dois = sorted({granule.doi_url for site in envelope.terrain.sites for granule in site.granules})
         sources.append(f"{envelope.terrain.dataset}: {', '.join(dois)}.")

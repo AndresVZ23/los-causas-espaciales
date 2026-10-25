@@ -242,3 +242,19 @@ Cada año se promedia sobre los píxeles cuyo centro cae dentro del área (proye
 **Resultados reales del 24-oct:**
 - **Moquegua, radio 1 km.** El suelo sin vegetación sube (+3.8 puntos en 2000–2025, p BH 0.014) y la vegetación no arbórea baja: señal compatible con expansión urbana.
 - **Distrito de Ilo.** La vegetación no arbórea sube +4.6 puntos y el pastizal MCD12Q1 pasa de 0.1 % a 9.2 % (2001–2024), donde MINAM registra lomas costeras. Cultura registra 7 bienes referenciales, 4 declarados (Icuy 2 y 3, Tancona 1) y 4 ámbitos de consulta previa.
+## ADR-033 — El PDF ejecutivo lleva la línea base por área
+
+**Problema.** El endpoint del PDF validaba el cuerpo como `ScreeningEnvelope` y descartaba los campos del sector. En Ambiente y Patrimonio eso borraba lo principal: áreas, capas, registros y vegetación. El reporte además citaba NASA POWER como fuente, aunque esos módulos no lo consultan.
+
+**Cambio.** `POST /api/v1/reports/executive-pdf` elige el esquema por `sector`: `environment` y `heritage` se validan con `BaselineScreeningResponse` y los demás siguen con el sobre común. `reports/baseline_pdf.py` agrega, después de los sujetos de estudio, una sección por área con:
+- indicadores MODIS: media, Sen, cambio, p BH y evidencia;
+- cobertura IGBP del primer y el último año;
+- notas;
+- capas por medio con hasta seis registros en palabras de la fuente.
+
+Los enlaces del DAS van como hipervínculos, y solo se aceptan direcciones `https`. Una capa caída se imprime «No disponible» con su motivo, nunca como cero. Las fuentes del pie son las consultadas (ORNL DAAC y los organismos de las capas). En Patrimonio, el pie dice que el reporte no sustituye el CIRA ni una opinión legal.
+
+**Verificación:**
+- Pruebas: dos de PDF sobre resultados sintéticos (registros, enlace `/URI` al PDF del DAS, «No disponible», sin NASA POWER).
+- PDF real con Moquegua (radio 1 km) y el distrito de Ilo: Patrimonio en 4 páginas, Ambiente en 6, las 18 consultas respondieron.
+- QA desde el botón en 1440 y 390.
