@@ -2,7 +2,25 @@
 
 Fecha: 2026-10-22 · Dueño del producto: Christian · Documento vivo; cada agente actualiza solo su fila de estado.
 
-## 0. Calendario hacia la entrega: sábado 7 de noviembre de 2026
+## 0. Hitos de la sede Moquegua (mensaje de la Local Lead, 24-oct-2026)
+
+| Fecha | Hito | Qué se entrega |
+|---|---|---|
+| **jue 29 oct** (límite de la sede: 30 oct) | Anteproyecto | Plantilla de una hoja de la sede: equipo, objetivos, idea principal y recursos. Sirve para asignar mentores y jueces. |
+| 14 nov | Registro y equipos en la plataforma oficial | Equipo inscrito en NASA Space Apps |
+| 14–15 nov | Hackathon internacional | Ajustes, demo y material de envío |
+| **dom 15 nov, 23:59** | Entrega final en la plataforma oficial | Proyecto, demo (video ≤ 30 s o ≤ 7 láminas, según la guía vigente) y enlaces |
+
+| Días | Claude | Codex |
+|---|---|---|
+| 24–28 oct | Anteproyecto (A1); K6 en pantalla cuando llegue | K6: escala ×24 en el muestreo regional, con prueba; manifiesto al 15-nov |
+| 29 oct | Entrega del anteproyecto | — |
+| 30 oct–13 nov | Material del demo (láminas y/o video), ensayo en voz alta, regresión 10 flujos × 1440/768/390 | Puerta final, push y etiqueta `v0.1.0` con aprobación de Christian |
+| 14–15 nov | Hackathon: ensayo del día, precalentamiento y envío | Respaldo operativo |
+
+Reglas: hasta el 15-nov no entran funcionalidades grandes. Si K6 no está verificado, el demo usa el acto 2B (solar) y el puntaje vial no se muestra.
+
+### Calendario original (reemplazado el 24-oct)
 
 Las olas salen de la vista «Orquestación» del DOP (`docs/interno/dop-neuronal.html`): cada una agrupa lo que puede avanzar en paralelo.
 

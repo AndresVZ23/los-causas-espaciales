@@ -30,7 +30,7 @@
     .source code { font: 11px var(--mono); color: var(--accent); }
     .source nav { margin-top: 8px; display: flex; gap: 14px; justify-content: flex-end; }
 
-    .metrics { display: grid; grid-template-columns: repeat(5, 1fr) 2.2fr; border-bottom: 1px solid var(--border); }
+    .metrics { display: grid; grid-template-columns: repeat(6, 1fr) 2.2fr; border-bottom: 1px solid var(--border); }
     .metric { padding: 14px 20px; border-right: 1px solid var(--rule); }
     .metric strong { display: block; font: 500 24px/1.1 var(--mono); }
     .metric span { color: var(--muted); font-size: 12px; }
@@ -204,7 +204,8 @@
     <div class="metric"><strong id="m-inputs">—</strong><span>entradas activas</span></div>
     <div class="metric"><strong id="m-engines">—</strong><span>motores activos (capas A, B y C)</span></div>
     <div class="metric"><strong id="m-outputs">—</strong><span id="m-outputs-label">resultados disponibles</span></div>
-    <div class="metric"><strong id="m-waves">—</strong><span>olas hasta el demo del jurado</span></div>
+    <div class="metric"><strong id="m-waves">—</strong><span id="m-waves-label">olas hasta el demo del jurado</span></div>
+    <div class="metric"><strong id="m-delivery">—</strong><span id="m-delivery-label">días para la entrega</span></div>
     <div class="metric"><strong id="m-plan">—</strong><span>tareas del plan cerradas</span></div>
     <div class="next">
       <div><small id="next-kicker">Siguiente acción de mayor impacto</small><h2 id="next-title">—</h2><p id="next-reason"></p></div>
@@ -356,16 +357,29 @@
       waveMemo.set(id, w);
       return w;
     }
-    // Ola en que un resultado queda completo: la más tardía de su cadena requerida pendiente.
-    const completionWave = (id) => Math.max(wave(id), ...[...walk(id, uReq)].map(wave));
+    // Ola en que un resultado queda completo: la más tardía de su cadena requerida pendiente. Un resultado ya
+    // verificado está entregado aunque alguna pieza de su cadena siga mejorándose: cuenta 0.
+    const completionWave = (id) => (isDone(uById.get(id)) ? 0 : Math.max(wave(id), ...[...walk(id, uReq)].map(wave)));
     const inLayer = (l) => units.filter((u) => u.layer === l);
     const engines = units.filter((u) => ["A", "B", "C"].includes(u.layer));
     $("m-inputs").textContent = `${inLayer("in").filter(isDone).length} / ${inLayer("in").length}`;
     $("m-engines").textContent = `${engines.filter(isDone).length} / ${engines.length}`;
     $("m-outputs").textContent = `${outputs.filter((u) => u.status === "VERIFICADO").length} / ${outputs.length}`;
     $("m-outputs-label").textContent = `resultados disponibles · ${outputs.filter((u) => u.status === "EN_CURSO").length} en curso`;
-    $("m-waves").textContent = Math.max(...P.juryTargets.map(completionWave));
-    const juryReach = (id) => P.juryTargets.filter((t) => t === id || walk(id, uReqSuccs).has(t));
+    const juryWaves = Math.max(0, ...P.juryTargets.map(completionWave));
+    const juryDone = P.juryTargets.filter((t) => isDone(uById.get(t))).length;
+    $("m-waves").textContent = juryWaves ? juryWaves : `${juryDone} / ${P.juryTargets.length}`;
+    $("m-waves-label").textContent = juryWaves ? `olas hasta el demo del jurado · ${juryDone} de ${P.juryTargets.length} resultados listos` : "resultados del demo del jurado listos";
+    // Próximo hito pendiente (hora de Lima): el mismo día del hito marca 0; pasado el último, queda en 0.
+    const milestones = D.milestones ?? (D.deliveryDate ? [{ date: D.deliveryDate, label: "entrega" }] : []);
+    const untilEnd = (m) => Math.ceil((new Date(`${m.date}T00:00:00-05:00`) - new Date()) / 86400000);
+    const next = milestones.find((m) => untilEnd(m) >= 0) ?? milestones[milestones.length - 1];
+    if (next) {
+      $("m-delivery").textContent = Math.max(0, untilEnd(next));
+      $("m-delivery-label").textContent = `días para ${next.label} · ${new Date(`${next.date}T12:00:00`).toLocaleDateString("es-PE", { weekday: "long", day: "numeric", month: "long" })}`;
+    }
+    // Solo cuentan los resultados del demo que aún no están listos: mejorar algo ya entregado no es lo más urgente.
+    const juryReach = (id) => P.juryTargets.filter((t) => !isDone(uById.get(t)) && (t === id || walk(id, uReqSuccs).has(t)));
     const nextUnit = units
       .filter((u) => !isDone(u) && wave(u.id) === 1 && juryReach(u.id).length)
       .sort((a, b) => juryReach(b.id).length - juryReach(a.id).length || walk(b.id, uReqSuccs).size - walk(a.id, uReqSuccs).size)[0];
@@ -375,6 +389,16 @@
       $("next-title").textContent = nextUnit.name;
       $("next-reason").textContent = `Ola 1 · ${STATUS_LABEL[nextUnit.status]} · alimenta ${reach.length} resultados del demo: ${reach.join(", ")}.`;
       $("next-open").onclick = () => { showView("net"); selectUnit(nextUnit.id); };
+    } else {
+      // Demo completo: la siguiente acción útil es la pendiente que más resultados alimenta, aunque no sea del jurado.
+      const extra = units.filter((u) => !isDone(u) && wave(u.id) === 1).sort((a, b) => walk(b.id, uReqSuccs).size - walk(a.id, uReqSuccs).size)[0];
+      $("next-kicker").textContent = "Demo del jurado completo";
+      $("next-title").textContent = extra ? `Después: ${extra.name}` : "Todo verificado";
+      $("next-reason").textContent = extra
+        ? `${extra.owner} · ${STATUS_LABEL[extra.status]} · amplía ${walk(extra.id, uReqSuccs).size} unidades de la plataforma más allá del demo.`
+        : "No quedan unidades pendientes.";
+      if (extra) $("next-open").onclick = () => { showView("net"); selectUnit(extra.id); };
+      else $("next-open").hidden = true;
     }
 
     // Pestañas

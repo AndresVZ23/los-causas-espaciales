@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api.assistant import router as assistant_router
+from .api.baseline import router as baseline_router
 from .api.climate import router as climate_router
 from .api.data_sources import router as data_sources_router
 from .api.map_layers import router as map_router
@@ -28,6 +29,7 @@ app.include_router(reports_router)
 app.include_router(road_router)
 app.include_router(real_estate_router)
 app.include_router(climate_router)
+app.include_router(baseline_router)
 app.include_router(data_sources_router)
 app.include_router(scoring_router)
 app.include_router(assistant_router)

@@ -134,16 +134,41 @@ export type RealEstateResult = Omit<ScreeningResult, "sites" | "comparative_find
   sector: "real_estate"; site_sources: { subject: string; origin: string; dataset: string; license: string | null; provenance: string; limitations: string[] }[];
   sites: RealEstateSite[]; territorial_evidence: TerritorialEvidence[]; assumptions: RealEstateAssumptions;
 };
-export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult;
+// Línea base territorial (módulos 4 y 5 · sectores "environment" y "heritage" del contrato C2).
+export type BaselineComponent = "fisico" | "biologico" | "sociocultural";
+export type LayerHighlight = { label: string; count: number; detail: string | null; link: string | null };
+export type BaselineLayer = {
+  source_id: string; organization: string; dataset: string; component: BaselineComponent; status: "READY" | "DATA_UNAVAILABLE";
+  intersection_count: number | null; truncated: boolean; highlights: LayerHighlight[]; provenance: string; downloaded_at: string | null;
+  source_url: string; limitations: string[];
+};
+export type LandCoverChange = {
+  product: string; first_year: number; last_year: number; pixels: number; changed_percent: number;
+  classes: { code: number; label: string; first_percent: number; last_percent: number }[]; provenance: string; source_url: string; limitations: string[];
+};
+export type SubjectBaseline = {
+  subject: string; origin: string; area_km2: number; study_area: GeoJSON.Geometry; modis_window_km: number | null; modis_pixels: Record<string, number>;
+  vegetation: VariableSummary[]; vegetation_notes: string[]; land_cover: LandCoverChange | null; layers: BaselineLayer[]; errors: string[];
+};
+export type BaselineResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
+  sector: "environment" | "heritage"; components: BaselineComponent[]; baselines: SubjectBaseline[]; method_notes: string[];
+};
+export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult | BaselineResult;
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export const isRoad = (result: AnyResult | null): result is RoadResult => result?.sector === "road";
 export const isRealEstate = (result: AnyResult | null): result is RealEstateResult => result?.sector === "real_estate";
+export const isBaseline = (result: AnyResult | null): result is BaselineResult => result?.sector === "environment" || result?.sector === "heritage";
 /** Sujetos con series NASA, cualquiera sea el sector: sitios (solar, clima) o tramos (vial). */
 export type SeriesSubject = { location: Point; variables: VariableSummary[]; extremes?: ExtremeIndex[] };
 export const seriesSubjects = (result: AnyResult | null): SeriesSubject[] => {
   if (!result) return [];
   if (isRoad(result)) return result.segments.map((segment) => ({ location: { ...segment.representative_point, label: segment.label }, variables: segment.variables }));
   if (isRealEstate(result)) return result.sites.map((site) => ({ location: { ...site.representative_point, label: site.label }, variables: site.variables }));
+  // Patrimonio no tiene series: sus registros no son temporales.
+  if (isBaseline(result)) return result.baselines.filter((item) => item.vegetation.length).map((item) => {
+    const subject = result.subjects?.find((entry) => entry.label === item.subject);
+    return { location: { latitude: subject?.representative_point.latitude ?? 0, longitude: subject?.representative_point.longitude ?? 0, label: item.subject }, variables: item.vegetation };
+  });
   return result.sites;
 };
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };

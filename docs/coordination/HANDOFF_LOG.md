@@ -468,3 +468,233 @@ Con aprobación de Christian se fusionó `claude/integracion-pilotos` en `master
 ## 2026-10-24 · Codex · `master` · a3ac298 · publicación aprobada en GitHub
 
 Después de la puerta común y del congelamiento documental, `origin/master` avanzó de `0510656` a `a3ac298` con aprobación de Christian. Antes del push, `git fetch origin` confirmó divergencia `0/41`; no se sobrescribió historia remota. La etiqueta `v0.1.0` no fue creada ni publicada: queda reservada para el commit final aprobado del 7-nov según `RELEASE_2026-11-07.md`.
+## 2026-10-24 · Claude · claude/integracion-pilotos · DOP al día
+
+**Estados con evidencia:**
+- **Verificados:** C6/C7 y sus unidades (`in-gibs`, `o-layers`, `b-celltrends`, `o-territory`), `in-geom` y `b-hydro`, por la fusión de Codex en `bbe600d`, el QA cruzado 49/49 y los QA de Claude en 1440/390.
+- **Ruta del modelo:** IMERG y pilotos quedan verificados.
+
+**Red:** amenazas y restricciones pasan a enlaces que enriquecen a los pilotos vial e inmobiliario (`E`). Los pilotos funcionan con las capas disponibles; antes la red los mostraba verificados con su cadena requerida incompleta.
+
+**HTML:**
+- Un resultado verificado ya no suma olas.
+- La «siguiente acción» ignora los resultados del demo ya listos.
+- Nueva métrica de días para la entrega (`deliveryDate` 2026-11-07).
+- Cuando el demo está completo, la cabecera dice «8 / 8 resultados del demo del jurado listos».
+
+**Plan:** Q1 (Claude: pitch, escenarios y ensayo) y Q2 (Codex: congelamiento, puerta final y etiqueta).
+## 2026-10-24 · Claude · claude/integracion-pilotos · Cierre visible para el jurado (Q1)
+
+**Base:**
+- `master` en `dfc5c2b`.
+- Rama rebasada encima con dos commits:
+  - `548257a`: DOP.
+  - `2f38914`: pitch, escenarios, interfaz, API y QA.
+- `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` no se tocaron.
+
+**Entregables:**
+- `docs/nasa-submission/PITCH.md`:
+  - Narrativa de 3–5 min por actos.
+  - Corte de 30 s.
+  - Esquema de 7 láminas.
+- `docs/nasa-submission/DEMO_SCENARIOS.md`:
+  - Preparación el mismo día.
+  - Ruta cronometrada con actos 2A (vial) y 2B (solar).
+  - Rutas alternativas por fuente.
+  - Clave de las seis procedencias.
+  - Brechas visibles y defecto conocido.
+
+**Flujos probados (1440/768/390):**
+- Clima, sensibilidad, puntaje, capas GIBS, territorio, geometrías, asistente (sin Gemini), vial e inmobiliario.
+- Más la puerta nueva `release_ui.cjs`: recortes de texto, 45 pasos de Tab, carga y error simulados (503) en los 7 módulos.
+
+**Resultado:**
+- 0 errores de consola.
+- 0 desbordamientos.
+- 0 recortes.
+- Foco visible y nunca en elementos ocultos.
+- `aria-busy` durante la consulta.
+- Estado «Última consulta con error» con el mensaje del proveedor.
+- El único 422 de la consola es el rechazo intencional del corbatín en `geometry_ui`, que ahora se cuenta aparte.
+
+**Defectos corregidos por esta QA:**
+- «Quitar» medía 20 px con texto de 40 px en los tres anchos (recortado).
+- La línea de estado decía «NASA POWER operativo» fijo, aunque fallara o usara caché.
+- El ícono del calendario tenía un foco nativo casi invisible.
+- La caída de POWER en el descubrimiento territorial respondía 422; ahora responde 502, con prueba.
+
+**Pruebas:**
+- Backend: 162/162.
+- Build del contenedor web: aprobado.
+- `npm audit --omit=dev`: 0.
+- `design-taste-frontend`:
+  - Lint: 0 FAIL.
+  - Inspector:
+    - `micro-label` y `tiny-text` son el estilo de consola de 10 px pendiente de decisión de Christian; no se refactorizó, como pediste.
+    - `covered-text` es el título bajo la barra inferior fija durante el desplazamiento; no es defecto.
+
+**Duración del demo (`scripts/qa/demo_ensayo.cjs`, 1440 px, caché caliente):**
+- Espera de pantalla:
+  - Apertura: 1.2 s.
+  - Clima del departamento de Moquegua: 9.1 s.
+  - Vial: 3.5 s.
+  - Solar: 2.2 s.
+  - PDF: 0.4 s.
+  - Total: 16.4 s.
+- Discurso: 4 min 05 s.
+- En frío, un departamento de 11 celdas tarda 17 s en la API (6 s con caché).
+
+**Caída simulada de NASA POWER** (host bloqueado dentro del contenedor api y luego restaurado):
+- Con la caché del día, el demo completo corre en 14.4 s, todo `CACHED_DATA`, con PDF.
+- Sin caché, el usuario ve HTTP 502 y un mensaje claro.
+
+**Capturas:**
+- `.claude-qa/demo/ensayo-1`, `ensayo-2` y `caida-power`.
+- `.claude-qa/cierre/error-*.png`.
+- `.claude-qa/inmobiliario/lectura-territorio-390.png`: VAN, advertencia de más de 200 ha y «Un solo terreno» visibles.
+- `.claude-qa/taste/`.
+
+**DEFECTO PARA CODEX (K6 en el DOP; bloquea el acto 2A):**
+- El muestreo regional (`connectors/nasa/power_regional.py`, también en modo POINT) no aplica la verificación ×24 de `orchestration/extraction.py::_verify_precipitation_scale`.
+- Lo usan:
+  - `sectors/road.py:191` (exposición y P99 del puntaje).
+  - `sectors/real_estate.py:183`.
+  - `POST /api/v1/spatial-sampling/power/daily`.
+- Reproducción, polígono −71.40/−71.20 × −17.70/−17.55, PRECTOTCORR:
+
+  | Ventana | Suma anual | Máximo diario |
+  |---|---|---|
+  | 2025-10-25 a 2026-10-24 | 1,587.4 mm | 150.96 mm |
+  | 2024-10-25 a 2025-10-24 | 70.1 mm | 6.18 mm |
+
+  1,587.4 / 24 = 66.1.
+- En el corredor piloto, los tramos 2–4 y el 5 comparten la celda −17.5/−71.25, pero dan P99 65.51 frente a 2.73 mm/día y RX1DAY 150.96 frente a 6.29 mm: razón 24.0 exacta.
+- Esto también replantea el «RX1DAY 151 mm» que atribuimos a MERRA-2 2022 en el puntaje vial: es el ×24 de la ventana reciente.
+- **Propuesta:** antes de agregar, verificar la escala de cada celda contra una ventana de referencia sin días recientes, como `_verify_precipitation_scale` (dividir por 24 si la razón es 24 ± tolerancia; rechazar cualquier otra). Agregar una prueba con una respuesta ×24 sintética.
+- No lo toqué: es código K1/K2/K3.
+
+**Brechas visibles:**
+- INGEMMET `DATA_UNAVAILABLE`.
+- LHASA pendiente.
+- IGN de 2015.
+- Más de 200 ha = área de análisis.
+- Cero intersecciones no es riesgo cero.
+- Sin contraste con estaciones SENAMHI.
+
+**Cambios sugeridos al manifiesto** (no lo edité):
+1. Actualizar el baseline a `2f38914` o al commit que lo integre.
+2. La fila de QA visual pasa a «10 flujos × 1440/768/390».
+3. Agregar K6 como bloqueo del acto 2A, o del puntaje vial en general, hasta verificar la corrección.
+4. La puerta final debería incluir `node scripts/qa/demo_ensayo.cjs dia-demo` el mismo día.
+5. Calendario oficial: la página de Space Apps 2026 abre el envío el sábado 14-nov a las 09:00 y lo cierra el domingo 15-nov a las 23:59, hora local. La guía de envío 2026 sale el 13-nov; la de 2025 exigía demo ≤ 30 s con subtítulos en inglés o ≤ 7 láminas en inglés. Christian debe confirmar si el 7-nov es el cierre interno.
+
+**No se creó ni publicó `v0.1.0`.** Gemini no se usó en la QA.
+**Corrección (Claude, 24-oct):** en la entrada anterior, «Discurso: 4 min 05 s» es la suma de los bloques planificados en PITCH.md (30 + 75 + 90 + 20 + 30 s), no un tiempo medido. El ensayo en voz alta queda pendiente para el día del demo.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · Entrega adelantada al 29-oct
+
+**Fecha:** Christian confirmó que la entrega es el **jueves 29-oct-2026**, no el 7-nov.
+
+**Actualizado:**
+- `PLAN_CLAUDE_CODEX.md` §0: calendario comprimido día por día, con congelamiento de código el lunes 26 y etiqueta el miércoles 28.
+- `dop-datos.js`: `deliveryDate` 2026-10-29, y Q1 y Q2 al 29-oct.
+- `PITCH.md`: sin la referencia a la guía del 13-nov.
+
+**Pendiente de Codex:**
+- Renombrar y ajustar `RELEASE_2026-11-07.md` y la sección de `PROGRESS.md`, que son suyos.
+- K6 es ahora la ruta crítica: si no está verificado el domingo 25, el demo usa el acto 2B solar y el puntaje vial no se muestra.
+## 2026-10-24 · Claude · claude/integracion-pilotos · Corrección: el 29-oct es el anteproyecto, no la entrega final
+
+Según el mensaje de la Local Lead de la sede Moquegua:
+
+| Fecha | Hito |
+|---|---|
+| 30-oct (el equipo entrega el 29) | Anteproyecto en la plantilla de una hoja de la sede |
+| 14-nov | Registro y equipos |
+| 14–15 nov | Hackathon |
+| 15-nov, 23:59 | Entrega final en la plataforma oficial |
+
+Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay congelamiento de código el 26-oct**.
+
+**Actualizado:**
+- `PLAN_CLAUDE_CODEX.md` §0, con hitos y reparto.
+- DOP: `milestones` en lugar de `deliveryDate`; la métrica muestra el próximo hito.
+- Plan del DOP:
+  - Q1 y Q2 apuntan al 15-nov.
+  - Nueva A1, el anteproyecto (Claude).
+
+**Anteproyecto lleno:** `docs/nasa-submission/anteproyecto/` (.pptx y .pdf, generados sobre la plantilla con PowerPoint COM).
+- Llenos: título, objetivos, idea principal y recursos.
+- Vacíos: los nombres del equipo, a la espera de Christian.
+
+**Pendiente de Codex:**
+- El manifiesto `RELEASE_2026-11-07.md` y `PROGRESS.md` deben apuntar al **15-nov**, no al 29-oct.
+- K6 sigue siendo la prioridad técnica.
+## 2026-10-24 · Claude · claude/integracion-pilotos · Módulos 4 y 5: línea base ambiental y patrimonial (ADR-032)
+
+**Pedido de Christian:** restos arqueológicos y datos para estudios de impacto ambiental, según los módulos 4 y 5 del prompt maestro. Dejan de estar pendientes.
+
+**Backend** (sobre C2, sectores nuevos `environment` y `heritage`, cambio aditivo):
+- `POST /api/v1/projects/environment-screening` y `/heritage-screening`.
+- Áreas: sitios con radio, territorios IGN y polígonos o corredores del usuario; de 1 a 4 en total.
+- Conector nuevo `connectors/nasa/modis_subsets.py`: ORNL DAAC con productos anuales MOD44B, MOD17A3HGF y MCD12Q1. Admite 10 fechas por consulta y tarda de 4 a 30 s cada una, así que no hay NDVI 16 días en vivo.
+- Geometría: `geospatial/buffers.py` y `geospatial/modis_grid.py`; el píxel central queda verificado a 0.001° del punto pedido.
+- Capas nuevas en `connectors/peru/territory.py` (solo entradas agregadas; no se tocó la lógica):
+  - Cultura: CIRA, DAS, Qhapaq Ñan, paisaje cultural, Patrimonio Mundial, consulta previa y registro ciudadano.
+  - MINAM: ecosistemas, cobertura vegetal 2015, lomas costeras y Ramsar.
+  - ANA: cuerpos de agua ECA y unidades hidrográficas.
+- Los pilotos vial e inmobiliario usan listas explícitas, así que no cambian.
+- 7 pruebas nuevas; total 169/169.
+
+**Frontend:**
+- Ambiente y Territorio pasan a funcionales y reutilizan el editor de sitios, el selector IGN y el panel de geometrías, con un radio en km.
+- La vegetación entra al gráfico anual.
+- Panel por área: lectura, tabla MODIS, cambio de cobertura y capas por medio con los registros y sus enlaces.
+- QA `baseline_ui.cjs` en 1440, 768 y 390: 0 errores y 0 desbordamientos. `release_ui` sigue en 0 recortes y 0 problemas de teclado.
+
+**Hallazgo operativo para todos (afecta también a los pilotos):** SIGDA (sigda.cultura.gob.pe) corta la conexión TLS a nuestra IP tras unas 20 consultas seguidas, aun de dos en dos. Lo verifiqué dos veces el 24-oct; se recupera en minutos.
+- La línea base consulta una capa a la vez por servidor, con 0.5 s de pausa entre consultas reales, y reintenta una vez.
+- **Sugerencia para Codex:** un vencimiento de caché más largo para las capas de Cultura (por ejemplo 7 días; sus registros cambian poco) reduciría el riesgo en el demo. Hoy usan las 24 h generales.
+
+**Pendiente de Codex** (no los toqué):
+- Agregar las 13 capas nuevas y el servicio ORNL a `docs/nasa-submission/DATA_SOURCES.md`, que está congelado; este es un requisito de entrega con evidencia en ADR-032.
+- K6 sigue siendo la prioridad.
+
+**Brechas visibles en el módulo 5:**
+- BDPI (sin servicio geográfico).
+- Comunidades MIDAGRI (TLS inválido).
+- Defensoría (PDF).
+- SENACE (TLS inválido).
+
+## 2026-10-24 · Codex · `codex/k6-regional-scale` · `bf20140` · K6 y endurecimiento de fuentes ADR-032
+
+**K6 cerrado en backend.** Se extrajo una guarda compartida de escala `PRECTOTCORR` y se aplicó a K1 tanto en modo `POINT` como `REGIONAL`. En regional la comparación y eventual división ocurre por celda, antes de `aggregate_cells()`: razón ≈1 se conserva, razón ≈24 se divide por 24 y cualquier otra razón detiene el resultado. La extracción común conserva el mismo contrato y reutiliza la misma clasificación.
+
+**Evidencia oficial, 24-oct-2026:** `scripts/qa/k6_regional_scale.py` consultó NASA POWER sin iniciar 3100/8000. El polígono pequeño reportado entró correctamente como `POINT`: 363 días, 66.14 mm, máximo 6.29 mm/día y razón 1.00. Un polígono regional devolvió 12 celdas intersectantes; las 16 celdas devueltas por la grilla presentaron razón 24 y se corrigieron antes de ponderar: 87.49 mm, máximo 5.46 mm/día. Esto confirma que los 150.96 mm/día recientes eran el defecto ×24, distinto del evento atípico de septiembre de 2022. Tres pruebas sin red cubren mezcla ×24/×1, escala desconocida rechazada y modo POINT.
+
+**SIGDA y catálogo:** todas las fuentes cuyo `source_id` empieza por `cultura-` usan caché de siete días; el resto conserva el TTL general. La regla cubre las capas existentes y las siete entradas nuevas de Cultura de `ba62b57`, por lo que alcanza también a pilotos y módulos que llaman al conector. `DATA_SOURCES.md` registra las 13 capas Cultura/MINAM/ANA de ADR-032, rutas oficiales, revisión 24-oct, cobertura/escala, estado de licencia y limitaciones, además del servicio ORNL DAAC y sus productos anuales MOD44B, MOD17A3HGF y MCD12Q1. El DOP marca K6 `VERIFICADO`.
+
+**Puerta común:** 165/165 pruebas backend; build Next de producción aprobado; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; `git diff --check` limpio. No se editó `frontend/**`, no se usó Gemini y no se levantaron los puertos 3100/8000.
+
+**Para Claude:** integrar `bf20140` sobre `claude/integracion-pilotos`/`ba62b57`. Sus 13 entradas de `LAYERS` son aditivas; el TTL por prefijo las cubre sin cambiar listas explícitas de K2/K3. Regenerar el ejemplo vial y retirar la brecha K6 después de confirmar que RX1DAY/P99 recientes ya no reciben la escala ×24. Christian aún debe aprobar cualquier fusión a `master` o push.
+
+## 2026-10-24 · Claude · claude/integracion-pilotos · K6 integrado y validado
+
+**Integración:** `codex/k6-regional-scale` (`bf20140`, `ed825f8`) se fusionó en `claude/integracion-pilotos` (`da2160a`) sin conflictos.
+- `LAYERS` quedó sin entradas duplicadas.
+- El caché de 7 días de Cultura está activo.
+- Backend 173/173.
+
+**Validación en vivo:**
+- **Piloto vial (2001 a hoy):** los tramos 2–5 comparten la celda −17.5/−71.25 y ahora dan el mismo P99 (2.73 mm/día) y máximo (6.29 mm). Antes los tramos 2–4 daban 65.51 y 150.96. El tramo 1 da P99 3.60.
+- **El puntaje vial cambió:** ya no hay empate práctico. El tramo 5 lidera con 48.5 frente a 38.7, primero en el 100 % de las combinaciones de pesos. Lo separa la pendiente NASADEM en su punto representativo (17.93° frente a 4–7°), no la lluvia.
+- **Ejemplos del contrato regenerados:** `road-screening-v1.0.example.json` (51c9fdaaa7e2711a, P99 1.28 mm/día en los tramos de la misma celda, 2023) y `real-estate-screening-v1.0.example.json` (a9ae20e290ce6f69). El máximo de 43.2 mm del ejemplo inmobiliario es el año atípico real de 2023 que Clima ya marca, no el ×24.
+
+**QA:** `road_ui` y `realestate_ui` en 1440, 768 y 390 sin errores ni desbordamiento. El ensayo del demo (`ensayo-k6`) corre completo con PDF válido: 29.9 s de espera.
+
+**Docs:**
+- `DEMO_SCENARIOS.md`: el acto 2A vuelve a la ruta principal y el defecto conocido pasa a «resuelto».
+- `PITCH.md` 2A: la prioridad es geotécnica.
+- DOP: se quitó la K6 duplicada de Claude y se suma la validación a la K6 de Codex.
+
+**Incidente:** Docker Desktop se reinició durante el QA y los contenedores salieron con 255. Se relevantó solo `los-causas-espaciales`; no se tocaron `nasaspaceappschallenge-*` ni MyFix.

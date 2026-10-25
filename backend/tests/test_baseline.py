@@ -1,0 +1,174 @@
+"""Línea base ambiental y patrimonial (módulos 4 y 5) con fuentes sintéticas: sin red, contrato C2, MODIS y capas."""
+
+import asyncio
+from datetime import date, datetime, timezone
+from math import pi
+
+import pytest
+from pydantic import ValidationError
+from shapely.geometry import shape
+
+from backend.app.connectors.nasa.modis_subsets import ModisBand, ModisDate, ModisGrid, ModisSubsetError
+from backend.app.geospatial.buffers import buffer_km
+from backend.app.geospatial.geometry import GEOD
+from backend.app.geospatial.modis_grid import pixel_centers, pixels_inside
+from backend.app.orchestration.conformance import envelope_violations
+from backend.app.schemas.analysis import Point, Provenance
+from backend.app.schemas.baseline import BaselineGeometry, BaselineRequest
+from backend.app.schemas.data_sources import TerritorialFeature, TerritorialQueryResponse, TerritorialSourceResult
+from backend.app.schemas.screening import PipelineStatus, QuestionStatus, Sector
+from backend.app.sectors import baseline, baseline_vegetation
+from backend.app.sectors.baseline_layers import summarize_layer
+
+# Ventana 9×9 real del ORNL alrededor de Moquegua (-17.193, -70.934), verificada el 2026-10-24.
+GRID = ModisGrid(xllcorner=-7536012.97, yllcorner=-1912786.51, cellsize=231.656358264, nrows=9, ncols=9)
+STAMP = datetime(2026, 10, 24, tzinfo=timezone.utc)
+
+
+def _band(product: str, band: str, value_for_year) -> ModisBand:
+    years = range(2000, 2026) if product != "MCD12Q1" else range(2001, 2025)
+    return ModisBand(product=product, band=band, units="", scale=None, grid=GRID,
+                     dates=[ModisDate(date(year, 3, 1), [value_for_year(year)] * 81) for year in years],
+                     provenance=Provenance.CACHED, downloaded_at=STAMP, source_url=f"https://modis.ornl.gov/rst/api/v1/{product}/subset")
+
+
+class FakeModis:
+    """Suelo sin vegetación que sube 0.5 puntos por año; vegetación que baja; NPP de relleno (desierto); cobertura que cambia en 2024."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def band(self, product, band, latitude, longitude, km):
+        if band == "Percent_NonVegetated":
+            return _band(product, band, lambda y: 70 + (y - 2000) // 2)
+        if band == "Percent_NonTree_Vegetation":
+            return _band(product, band, lambda y: 30 - (y - 2000) // 2)
+        if band == "Percent_Tree_Cover":
+            return _band(product, band, lambda y: 0)
+        if band == "Npp_500m":
+            return _band(product, band, lambda y: 32766)
+        if band == "LC_Type1":
+            return _band(product, band, lambda y: 16 if y < 2024 else 13)
+        raise ModisSubsetError("banda inesperada")
+
+
+FEATURES = {
+    "cultura-das": [{"proyecto": "Diagnóstico Arqueológico Superficial del Proyecto X", "cod_das_informe": "DAS-2025-0000020", "categoria": "Electrificación",
+                     "fecha_informe": 1752624000000, "enlace": "https://sigda.cultura.gob.pe/cirasdsfl/das/2025-0082264.pdf"}],
+    "cultura-archaeology": [{"nombre": "S.A. ALGARROBAL 1", "clasificac": "Sitio Arqueológico", "distrito": "ILO"}] * 2,
+    "minam-coastal-lomas": [{"nombdist": "ILO", "nombprov": "ILO", "nombdep": "MOQUEGUA"}],
+    "ana-water-bodies": [{"NOMBRE_CA": "Río Ilo", "CATEGORIA": "Categoría 3", "NOMBRE_UH": "Cuenca Ilo - Moquegua"}],
+}
+
+
+class FakeTerritory:
+    """Capas sintéticas: registros en cuatro fuentes, una fuente caída y el resto sin intersecciones."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def query(self, request):
+        results = []
+        for source_id in request.source_ids:
+            common = dict(source_id=source_id, organization="Prueba", dataset=f"Capa {source_id}", source_url="https://example.gob.pe",
+                          crs="EPSG:4326", coverage="Perú", scale_or_resolution="—", license="—")
+            if source_id == "cultura-world-heritage":
+                results.append(TerritorialSourceResult(status="DATA_UNAVAILABLE", provenance=Provenance.UNAVAILABLE,
+                                                       limitations=["El servicio oficial no respondió con datos utilizables: prueba"], **common))
+                continue
+            features = [TerritorialFeature(layer_id=0, layer_name="capa", attributes=a) for a in FEATURES.get(source_id, [])]
+            results.append(TerritorialSourceResult(status="READY", intersection_count=len(features), features=features, provenance=Provenance.REAL,
+                                                   downloaded_at=STAMP, limitations=["Cero intersecciones no prueba ausencia."], **common))
+        return TerritorialQueryResponse(generated_at=STAMP, geometry_type="Polygon", sources=results, note="prueba")
+
+
+async def _no_terrain(points):
+    return None, "NASADEM sin red en la prueba.", 0.0
+
+
+@pytest.fixture
+def patched(monkeypatch):
+    monkeypatch.setattr(baseline_vegetation, "ModisSubsetConnector", FakeModis)
+    monkeypatch.setattr(baseline, "TerritoryConnector", FakeTerritory)
+    monkeypatch.setattr(baseline, "extract_terrain", _no_terrain)
+    monkeypatch.setattr(baseline, "RETRY_SECONDS", 0)
+    monkeypatch.setattr(baseline, "PACE_SECONDS", 0)
+
+
+def _request(**overrides):
+    data = dict(sites=[Point(latitude=-17.193, longitude=-70.934, label="Moquegua")],
+                geometries=[BaselineGeometry(id="via", label="Vía de acceso", geometry={"type": "LineString", "coordinates": [[-70.94, -17.20], [-70.93, -17.19]]})])
+    data.update(overrides)
+    return BaselineRequest(**data)
+
+
+def test_pixel_centers_match_the_requested_point():
+    lon, lat = pixel_centers(GRID)[40]          # celda central de una ventana 9×9
+    assert lon == pytest.approx(-70.934, abs=0.002) and lat == pytest.approx(-17.193, abs=0.002)
+
+
+def test_buffer_is_geodesic_and_selects_the_pixels_inside():
+    circle = buffer_km({"type": "Point", "coordinates": [-70.934, -17.193]}, 1.0)
+    area_km2 = abs(GEOD.geometry_area_perimeter(shape(circle))[0]) / 1e6
+    assert area_km2 == pytest.approx(pi, rel=0.01)
+    inside, fallback = pixels_inside(GRID, circle, -70.934, -17.193)
+    assert not fallback and 55 <= len(inside) <= 63   # π km² / 0.0537 km² por píxel ≈ 58.5
+
+
+def test_tiny_area_falls_back_to_the_nearest_pixel():
+    tiny = buffer_km({"type": "Point", "coordinates": [-70.934, -17.193]}, 0.02)
+    inside, fallback = pixels_inside(GRID, tiny, -70.934, -17.193)
+    assert fallback and len(inside) == 1
+
+
+def test_environment_baseline_detects_vegetation_loss_and_conforms(patched):
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.ENVIRONMENT))
+    assert envelope_violations(result) == []
+    site = result.baselines[0]
+    assert site.subject == "Moquegua (radio 1 km)" and site.area_km2 == pytest.approx(pi, rel=0.01)
+    bare = next(item for item in site.vegetation if item.variable == "VCF_BARE")
+    assert bare.trend.direction == "increasing" and bare.significant_after_bh
+    assert bare.trend.slope_per_year == pytest.approx(0.5, abs=0.01)
+    assert all(item.variable != "NPP" for item in site.vegetation)          # relleno MODIS: no se inventa una serie
+    assert any("ningún año" in note for note in site.vegetation_notes)
+    assert site.land_cover.changed_percent == 100.0 and site.land_cover.classes[0].label.startswith("Suelo desnudo")
+    corridor = result.subjects[1]
+    assert corridor.geometry["type"] == "Polygon"                            # la línea se amplía con el buffer
+    assert result.nasa_questions[0].status == QuestionStatus.ANSWERED
+    assert "ventana MODIS" in result.nasa_questions[1].evidence[0]
+    assert "capa minam-coastal-lomas (1)" in result.nasa_questions[4].answer.lower()   # lo que las capas registran entra a la quinta pregunta
+    assert any(gap.dataset.startswith("SENACE") for gap in result.data_gaps)
+    assert next(s for s in result.pipeline if s.key == "finance").status == PipelineStatus.UNAVAILABLE
+
+
+def test_heritage_baseline_reports_records_without_inventing_trends(patched):
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.HERITAGE))
+    assert envelope_violations(result) == []
+    assert result.trend_findings == [] and result.baselines[0].vegetation == []
+    assert all(q.status == QuestionStatus.INSUFFICIENT for q in result.nasa_questions[:4])
+    das = next(layer for layer in result.baselines[0].layers if layer.source_id == "cultura-das")
+    assert das.highlights[0].link.endswith(".pdf") and "2025-07-16" in das.highlights[0].detail
+    archaeology = next(layer for layer in result.baselines[0].layers if layer.source_id == "cultura-archaeology")
+    assert archaeology.highlights[0].count == 2                              # registros iguales se agrupan
+    assert any(gap.dataset == "Capa cultura-world-heritage" for gap in result.data_gaps)
+    down = next(layer for layer in result.baselines[0].layers if layer.source_id == "cultura-world-heritage")
+    assert down.status == "DATA_UNAVAILABLE" and down.intersection_count is None      # caída: nunca un cero
+    assert next(s for s in result.pipeline if s.key == "analysis").status == PipelineStatus.UNAVAILABLE
+
+
+def test_layer_summary_flags_truncated_responses():
+    result = TerritorialSourceResult(source_id="cultura-qhapaq-nan", organization="Cultura", dataset="Qhapaq Ñan", status="READY", intersection_count=100,
+                                     features=[TerritorialFeature(layer_id=1, layer_name="Proyección", attributes={"tramnomb": "Quilca - Sama"})] * 100,
+                                     provenance=Provenance.REAL, source_url="https://sigda.cultura.gob.pe", crs="EPSG:4326", coverage="Perú",
+                                     scale_or_resolution="—", license="—", limitations=["La respuesta superó 100 objetos; el detalle se truncó y no es un conteo exhaustivo."])
+    layer = summarize_layer(result, "sociocultural")
+    assert layer.truncated and layer.highlights[0].label == "Proyección de camino: Quilca - Sama" and layer.highlights[0].count == 100
+
+
+def test_request_validation():
+    with pytest.raises(ValidationError, match="entre 1 y 4"):
+        BaselineRequest(sites=[])
+    with pytest.raises(ValidationError):
+        BaselineRequest(sites=[Point(latitude=-17.2, longitude=-70.9)], buffer_km=50)
+    with pytest.raises(baseline.BaselineScreeningError, match="nombre distinto"):
+        baseline.resolve_areas(BaselineRequest(sites=[Point(latitude=-17.2, longitude=-70.9, label="A"), Point(latitude=-17.3, longitude=-70.8, label="A")]))

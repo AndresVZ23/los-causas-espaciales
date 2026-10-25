@@ -206,3 +206,39 @@ Dos salvaguardas de interpretación, encontradas en el QA:
 K3 conserva los territorios IGN como entradas útiles para exposición climática, relieve y alertas territoriales, pero una geometría mayor de 2 km² (200 ha) deja de interpretarse como escala de proyecto. El backend no elimina el VAN ilustrativo ni cambia el contrato ya consumido por la consola: añade una cautela inequívoca en el resultado del sujeto y en la quinta pregunta NASA. La cautela explica que la fracción desarrollable y los demás supuestos se aplican a toda la geometría y exige un polígono predial para evaluar un proyecto.
 
 Para una sola geometría, el scorecard conserva los puntajes de criterios pero declara `margin=None` y `tie=False`; una nota explica que esos valores no implican liderazgo frente a una alternativa. Una prueba controlada con el distrito IGN de Samegua reproduce la escala superior a 200 ha, verifica ambas cautelas y exige conformidad C2 sin convertir la ausencia de comparación en empate.
+
+## ADR-032 — Línea base ambiental y patrimonial (módulos 4 y 5) como insumo de EIA
+
+**Qué cubre.** Los módulos 4 (Ambiente) y 5 (Territorio: patrimonio y dimensión social) dejan de estar pendientes. Comparten un motor (`backend/app/sectors/baseline*.py`) que ordena la evidencia como la línea base de un EIA peruano:
+
+| Medio | Módulo | Fuentes |
+|---|---|---|
+| Físico | 4 | ANA (cuerpos de agua con categoría ECA, unidades hidrográficas) y relieve NASADEM |
+| Biológico | 4 | MODIS anual vía ORNL DAAC, MINAM (ecosistemas, cobertura vegetal 2015, lomas costeras, Ramsar) y SERNANP |
+| Sociocultural | 5 | Ministerio de Cultura: bienes registrados y declarados, CIRA, DAS, Qhapaq Ñan, paisajes culturales, Patrimonio Mundial, consulta previa y reportes ciudadanos |
+
+Responden con el sobre C2, en dos sectores nuevos: `environment` y `heritage` (cambio aditivo). Así heredan las preguntas NASA, la tubería, el asistente y el PDF.
+
+**Áreas de estudio.** Se aceptan de 1 a 4 entre:
+- sitios, convertidos en círculos geodésicos de radio elegido;
+- territorios IGN;
+- polígonos o corredores del usuario, ampliados con el mismo radio.
+
+**Vegetación MODIS.** El servicio del ORNL entrega 10 fechas por consulta y tarda de 4 a 30 s por consulta (medido el 24-oct). Por eso se usan solo productos anuales:
+- MOD44B: árboles, vegetación no arbórea y suelo sin vegetación.
+- MOD17A3HGF: producción primaria neta.
+- MCD12Q1: cobertura IGBP.
+
+Cada año se promedia sobre los píxeles cuyo centro cae dentro del área (proyección sinusoidal, verificada contra el punto pedido) y entra solo si al menos la mitad de esos píxeles es válida. La tendencia es la misma que en clima: Hamed–Rao, Sen y Benjamini–Hochberg por indicador entre áreas. La producción primaria neta del desierto es relleno MODIS y no genera serie, en lugar de dar un cero. La ventana tiene un tope de ±10 km y se declara qué fracción del área cubre.
+
+**Patrimonio.** El módulo 5 no mide cambios en el tiempo. Declara las cuatro preguntas de tendencia como evidencia insuficiente y responde la quinta con los registros, en palabras de la fuente: nombre, resolución y enlace al PDF del DAS. Quedan como brechas visibles:
+- la Base de Datos de Pueblos Indígenas (sin servicio geográfico);
+- las comunidades de MIDAGRI (TLS inválido);
+- los conflictos de la Defensoría (solo PDF);
+- los instrumentos aprobados de SENACE (TLS inválido).
+
+**Cortesía con SIGDA.** El servidor corta la conexión TLS a la IP tras unas 20 consultas seguidas, aun de dos en dos (verificado dos veces el 24-oct). La línea base consulta una capa a la vez por servidor, espera 0.5 s entre consultas reales y reintenta una vez. Lo que sale de caché no espera. Si la fuente sigue caída, la capa queda `DATA_UNAVAILABLE` con su motivo.
+
+**Resultados reales del 24-oct:**
+- **Moquegua, radio 1 km.** El suelo sin vegetación sube (+3.8 puntos en 2000–2025, p BH 0.014) y la vegetación no arbórea baja: señal compatible con expansión urbana.
+- **Distrito de Ilo.** La vegetación no arbórea sube +4.6 puntos y el pastizal MCD12Q1 pasa de 0.1 % a 9.2 % (2001–2024), donde MINAM registra lomas costeras. Cultura registra 7 bienes referenciales, 4 declarados (Icuy 2 y 3, Tancona 1) y 4 ámbitos de consulta previa.

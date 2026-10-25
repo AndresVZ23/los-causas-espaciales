@@ -26,6 +26,14 @@ from ...schemas.spatial_sampling import (
 )
 from ..cache import RawPayloadCache
 from .power import PowerConnector, PowerConnectorError, VARIABLE_UNITS
+from .power_scale import (
+    KNOWN_SCALE,
+    PRECIPITATION,
+    RECENT_DAYS,
+    PrecipitationScaleError,
+    precipitation_divisor,
+    reference_period,
+)
 
 TIMEOUT = httpx.Timeout(connect=20, read=120, write=30, pool=20)
 GEOD = Geod(ellps="WGS84")
@@ -166,6 +174,30 @@ def _spacing(values: list[float], fallback: float = DOCUMENTED_CELL_DEGREES) -> 
     return median(differences) if differences else fallback
 
 
+def _payload_cell_series(payload: dict[str, Any], variable: str) -> dict[tuple[float, float], dict[date, float]]:
+    """Parse valid cell series from a POWER FeatureCollection for scale comparison."""
+    result: dict[tuple[float, float], dict[date, float]] = {}
+    for feature in payload.get("features") or []:
+        coordinates = feature.get("geometry", {}).get("coordinates", [])
+        raw_series = feature.get("properties", {}).get("parameter", {}).get(variable)
+        if len(coordinates) < 2 or not isinstance(raw_series, dict):
+            continue
+        key = (round(float(coordinates[0]), 8), round(float(coordinates[1]), 8))
+        series: dict[date, float] = {}
+        for raw_stamp, raw_value in raw_series.items():
+            if raw_value is None:
+                continue
+            try:
+                stamp = date(int(raw_stamp[:4]), int(raw_stamp[4:6]), int(raw_stamp[6:8]))
+                value = float(raw_value)
+            except (TypeError, ValueError) as exc:
+                raise RegionalPowerError("NASA POWER devolvió una fecha o valor regional inválido.") from exc
+            if math.isfinite(value) and value > -900:
+                series[stamp] = value
+        result[key] = series
+    return result
+
+
 class RegionalPowerConnector:
     def __init__(
         self,
@@ -243,6 +275,42 @@ class RegionalPowerConnector:
                 )
             except PowerConnectorError as exc:
                 raise RegionalPowerError(str(exc)) from exc
+            if request.variable == PRECIPITATION and request.end_date > date.today() - timedelta(days=RECENT_DAYS):
+                reference_start, reference_end = reference_period(request.start_date, request.end_date)
+                notes = list(source.quality_notes)
+                if reference_end <= reference_start:
+                    notes.append("Escala de precipitación no verificable: no existe una ventana histórica suficiente.")
+                else:
+                    try:
+                        reference, _ = await self.point_connector.daily_point(
+                            representative.y, representative.x, request.variable, reference_start, reference_end
+                        )
+                        scale, divisor = precipitation_divisor(
+                            {item.timestamp: item.value for item in observations},
+                            {item.timestamp: item.value for item in reference},
+                        )
+                    except (PowerConnectorError, PrecipitationScaleError) as exc:
+                        raise RegionalPowerError(str(exc)) from exc
+                    if divisor is None:
+                        notes.append(
+                            f"Escala de precipitación no verificable: menos de 3 días húmedos entre "
+                            f"{reference_start} y {reference_end}."
+                        )
+                    elif divisor == KNOWN_SCALE:
+                        observations = [
+                            Observation.model_construct(timestamp=item.timestamp, value=item.value / divisor)
+                            for item in observations
+                        ]
+                        notes.append(
+                            f"NASA POWER devolvió precipitación ×24; se dividió por 24 tras compararla con "
+                            f"{reference_start} a {reference_end} (razón {scale:.2f})."
+                        )
+                    else:
+                        notes.append(
+                            f"Escala de precipitación verificada contra {reference_start} a {reference_end} "
+                            f"(razón {scale:.2f})."
+                        )
+                source = source.model_copy(update={"quality_notes": notes})
             cells = [PowerCellSeries(
                 cell_id=f"point:{representative.y:.6f},{representative.x:.6f}",
                 center=Point(latitude=representative.y, longitude=representative.x),
@@ -288,6 +356,7 @@ class RegionalPowerConnector:
         api_versions: set[str] = set()
         provenances: list[Provenance] = []
         download_times = []
+        scale_quality_notes: list[str] = []
         periods = _annual_periods(request.start_date, request.end_date)
         for chunk_start, chunk_end in periods:
             payload, chunk_provenance, chunk_downloaded_at = await self._regional_payload(
@@ -345,6 +414,39 @@ class RegionalPowerConnector:
                 chunk_elevations[key] = elevation
             if not chunk_cells:
                 raise RegionalPowerError("NASA POWER no devolvió series válidas para la variable solicitada.")
+            if request.variable == PRECIPITATION and chunk_end > date.today() - timedelta(days=RECENT_DAYS):
+                reference_start, reference_end = reference_period(chunk_start, chunk_end)
+                if reference_end <= reference_start:
+                    scale_quality_notes.append(
+                        f"Escala no verificable para {chunk_start}–{chunk_end}: no existe ventana histórica suficiente."
+                    )
+                else:
+                    reference_payload, _, _ = await self._regional_payload(
+                        request, bounds, reference_start, reference_end
+                    )
+                    reference_cells = _payload_cell_series(reference_payload, request.variable)
+                    if set(reference_cells) != set(chunk_cells):
+                        raise RegionalPowerError(
+                            "NASA POWER cambió el conjunto de celdas entre la serie reciente y su referencia."
+                        )
+                    corrected = verified = unverifiable = 0
+                    for key, series in chunk_cells.items():
+                        try:
+                            scale, divisor = precipitation_divisor(series, reference_cells[key])
+                        except PrecipitationScaleError as exc:
+                            raise RegionalPowerError(f"Celda {key}: {exc}") from exc
+                        if divisor is None:
+                            unverifiable += 1
+                        elif divisor == KNOWN_SCALE:
+                            chunk_cells[key] = {stamp: value / divisor for stamp, value in series.items()}
+                            corrected += 1
+                        else:
+                            verified += 1
+                    scale_quality_notes.append(
+                        f"Escala PRECTOTCORR por celda contra {reference_start}–{reference_end}: "
+                        f"{corrected} corregida(s) ÷24, {verified} verificada(s) ×1 y "
+                        f"{unverifiable} no verificable(s)."
+                    )
             chunk_cell_keys = set(chunk_cells)
             if expected_cell_keys is None:
                 expected_cell_keys = chunk_cell_keys
@@ -411,6 +513,7 @@ class RegionalPowerConnector:
             provenance=provenance,
             quality_notes=[
                 "Se deduplicaron celdas por centro y se conservaron series por celda.",
+                *scale_quality_notes,
                 (
                     f"El período se dividió en {len(periods)} solicitud(es) por año calendario, "
                     f"cada una de hasta 366 días inclusivos: {real_chunks} nueva(s) y {cached_chunks} en caché."

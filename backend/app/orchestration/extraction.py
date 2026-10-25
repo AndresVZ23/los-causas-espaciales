@@ -12,6 +12,15 @@ from time import perf_counter
 
 from ..connectors.nasa.nasadem import NasademConnector, NasademConnectorError
 from ..connectors.nasa.power import PowerConnector, PowerConnectorError
+from ..connectors.nasa.power_scale import (
+    KNOWN_SCALE,
+    PRECIPITATION,
+    RECENT_DAYS,
+    PrecipitationScaleError,
+    precipitation_divisor,
+    precipitation_scale,
+    reference_period,
+)
 from ..geospatial.geometry import GEOD
 from ..schemas.analysis import Observation, Point, SourceMetadata
 from ..schemas.terrain import TerrainResponse
@@ -42,43 +51,32 @@ async def extract_power(points: Sequence[Point], variables: Sequence[str], start
 # Defecto observado en la API NASA POWER Daily v2.10.1 (2026-10-22): si el rango incluye los días más recientes,
 # toda la serie PRECTOTCORR de la respuesta llega multiplicada por 24, aunque declara mm/day. Se verifica contra una
 # ventana de referencia antigua y se corrige solo si la razón es exactamente la del defecto.
-PRECIPITATION = "PRECTOTCORR"
-RECENT_DAYS = 60
-REFERENCE_DAYS = 730
-KNOWN_SCALE = 24.0
-SCALE_TOLERANCE = 0.02
-
-
-def precipitation_scale(main: dict[date, float], reference: dict[date, float]) -> float | None:
-    """Mediana de la razón principal/referencia en días húmedos comunes; None si no hay suficientes."""
-    ratios = [main[day] / value for day, value in reference.items() if value >= 0.1 and day in main]
-    if len(ratios) < 3:
-        return None
-    ratios.sort()
-    return ratios[len(ratios) // 2]
-
-
 async def _verify_precipitation_scale(connector: PowerConnector, point: Point, dataset: PowerDataset, start_date: date, end_date: date) -> PowerDataset:
     observations, source = dataset[PRECIPITATION]
-    reference_end = min(end_date, date.today() - timedelta(days=RECENT_DAYS))
-    reference_start = max(start_date, reference_end - timedelta(days=REFERENCE_DAYS))
+    reference_start, reference_end = reference_period(start_date, end_date)
     if reference_end <= reference_start:
         note = "Escala de precipitación no verificable: el período no tiene una ventana de referencia anterior a los datos recientes."
         return {**dataset, PRECIPITATION: (observations, source.model_copy(update={"quality_notes": [*source.quality_notes, note]}))}
     reference = await connector.daily_point_multi(point.latitude, point.longitude, [PRECIPITATION], reference_start, reference_end)
-    scale = precipitation_scale({item.timestamp: item.value for item in observations}, {item.timestamp: item.value for item in reference[PRECIPITATION][0]})
+    try:
+        scale, divisor = precipitation_divisor(
+            {item.timestamp: item.value for item in observations},
+            {item.timestamp: item.value for item in reference[PRECIPITATION][0]},
+        )
+    except PrecipitationScaleError as exc:
+        raise PowerConnectorError(str(exc)) from exc
     if scale is None:
         note = f"Escala de precipitación no verificable: menos de 3 días húmedos entre {reference_start} y {reference_end}."
         return {**dataset, PRECIPITATION: (observations, source.model_copy(update={"quality_notes": [*source.quality_notes, note]}))}
-    if abs(scale - 1) <= SCALE_TOLERANCE:
+    if divisor == 1:
         note = f"Escala de precipitación verificada contra la ventana {reference_start} a {reference_end} (razón 1.00)."
         return {**dataset, PRECIPITATION: (observations, source.model_copy(update={"quality_notes": [*source.quality_notes, note]}))}
-    if abs(scale - KNOWN_SCALE) / KNOWN_SCALE <= SCALE_TOLERANCE:
+    if divisor == KNOWN_SCALE:
         corrected = [Observation.model_construct(timestamp=item.timestamp, value=item.value / KNOWN_SCALE) for item in observations]
         note = (f"NASA POWER devolvió la precipitación multiplicada por 24 al incluir días recientes; se dividió por 24 tras verificarlo "
                 f"contra la ventana {reference_start} a {reference_end} (razón {scale:.2f}).")
         return {**dataset, PRECIPITATION: (corrected, source.model_copy(update={"quality_notes": [*source.quality_notes, note]}))}
-    raise PowerConnectorError(f"La precipitación de NASA POWER llegó con una escala inconsistente (razón {scale:.2f} frente a la referencia); no se usa.")
+    raise PowerConnectorError("La escala de precipitación no pudo clasificarse.")
 
 
 async def extract_terrain(points: Sequence[Point]) -> tuple[TerrainResponse | None, str | None, float]:
