@@ -167,6 +167,8 @@ input:hover { border-color: #545b62; } input:focus { border-color: var(--accent)
 .climateTable thead th i { width: 10px; height: 2px; margin: 0 6px 3px 0; display: inline-block; vertical-align: middle; }
 .climateTable td small { display: block; margin-top: 3px; white-space: normal; color: var(--subtle); font: 400 10px/1.1 var(--font-data-mono), monospace; }
 .climateTable td small span { white-space: nowrap; }
+.climateTable td small.negative { color: var(--negative); }
+.verdictTable.baselineReading tbody th small { white-space: normal; padding-left: 0; }
 .climateExtremes b { line-height: 1.5; }
 .climateExtremes + .climateExtremes { border-top-style: dashed; }
 tbody th small.atypical { margin-top: 3px; color: var(--warning); }
@@ -419,6 +421,16 @@ td.agreement.sin_tendencia { color: var(--muted); }
 /* Las etiquetas .srOnly son absolutas: sin un ancestro posicionado se ubican respecto de la página y, dentro de una
    tabla con scroll, la desbordan en móvil (116 px con un solo terreno). */
 .tableScroll { position: relative; }
+/* Línea base (módulos 4 y 5): capas por medio con los registros citados por cada fuente. */
+.baselineLayers th:first-child { width: 32%; }.baselineLayers td:last-child, .baselineLayers thead th:last-child { text-align: left; vertical-align: top; }.baselineLayers td { vertical-align: top; }
+.layerHighlights { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }
+.layerHighlights li { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.layerHighlights b { color: var(--text); font-weight: 500; }.layerHighlights a { color: var(--accent); font-weight: 500; }
+.layerHighlights em { color: var(--muted); font-style: normal; font-size: 11px; }
+.layerHighlights small { flex-basis: 100%; color: var(--subtle); font-size: 11px; }
+.layerMuted { color: var(--subtle); font-size: 11px; }
+.baselineCount { min-width: 0; margin: 0; display: grid; gap: 3px; color: var(--muted); font: 10px/1 var(--font-data-mono), monospace; }
+.baselineCount b { min-height: 31px; display: flex; align-items: center; color: var(--text); font-size: 12px; }
 .scoreTable tbody th small { overflow-wrap: anywhere; }
 .scorecardPanel { margin-top: 14px; background: var(--surface); border: 1px solid var(--border); border-radius: 2px; padding: 19px; }
 .scoreVerdict { margin: 14px 0 0; padding: 9px 11px; border-left: 2px solid var(--accent); background: var(--ground); font-size: 12px; line-height: 1.5; }

@@ -11,10 +11,13 @@ DISPLAY_UNITS: dict[str, str] = {
     "C": "°C",
     "deg C": "°C",
     "m/s": "m/s",
+    "percent_cover": "% del área",
+    "kg_C/m^2": "kg C/m²",
 }
 
-# Escalas de intervalo: un porcentaje sobre la media no tiene sentido físico (0 °C no es ausencia de magnitud).
-INTERVAL_SCALE_UNITS = {"C", "deg C"}
+# Sin porcentaje sobre la media: escalas de intervalo (0 °C no es ausencia de magnitud) y fracciones de área, cuyo
+# cambio se lee en puntos porcentuales y no como porcentaje de un porcentaje.
+INTERVAL_SCALE_UNITS = {"C", "deg C", "percent_cover"}
 
 
 def display_unit(raw: str) -> str:

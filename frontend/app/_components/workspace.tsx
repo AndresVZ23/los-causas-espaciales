@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssistantPanel from "./assistant-panel";
+import { BASELINE_HINT, BaselineEvidence, BaselineOptions, BaselineReading } from "./baseline-panels";
 import { ClimateEvidence, ClimateReading } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
@@ -20,7 +21,7 @@ import SensitivityPanel from "./sensitivity-panel";
 import TerritoryPicker from "./territory-picker";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
-import { isClimate, isRealEstate, isRoad, seriesSubjects } from "./types";
+import { isBaseline, isClimate, isRealEstate, isRoad, seriesSubjects } from "./types";
 import type { AnyResult, Assumptions, Module, Point, QuestionKey, RealEstateAssumptions, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
@@ -31,8 +32,8 @@ const modules: Module[] = [
   { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER, extremos de lluvia ETCCDI y año en curso hasta hoy." },
   { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con observaciones NASA POWER." },
   { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Capas pendientes", ready: false, description: "Requiere integrar y validar capas oficiales de amenazas." },
-  { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "AppEEARS pendiente", ready: false, description: "Vegetación, agua y cobertura todavía no están conectadas." },
-  { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Fuentes pendientes", ready: false, description: "No se infiere patrimonio o contexto social desde satélites." },
+  { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "Línea base funcional", ready: true, description: "Insumos para la línea base de un EIA: vegetación MODIS con tendencia, cobertura, agua (ANA), ecosistemas y lomas (MINAM), áreas protegidas y relieve." },
+  { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Patrimonio funcional", ready: true, description: "Patrimonio arqueológico registrado y declarado, CIRA, diagnósticos previos, Qhapaq Ñan y consulta previa (Ministerio de Cultura); comunidades y conflictos siguen pendientes." },
   { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Piloto vial funcional", ready: true, description: "Corredor Moquegua–Ilo o uno propio: lluvia por tramo, capas territoriales, VAN de mitigación y puntaje." },
   { id: "investment", short: "Inversión", name: "Inteligencia de inversión", icon: "investment", status: "Piloto inmobiliario funcional", ready: true, description: "Compara terrenos (polígonos propios o territorios IGN): lluvia, relieve, capas territoriales, VAN y puntaje." },
 ];
@@ -70,13 +71,22 @@ const climateTabs = [
   { id: "CDD", short: "Racha seca" },
   { id: "WS10M", short: "Viento" },
 ];
+// Línea base ambiental: indicadores MODIS anuales (MOD44B y MOD17A3HGF).
+const environmentTabs = [
+  { id: "VCF_BARE", short: "Suelo sin vegetación" },
+  { id: "VCF_NONTREE", short: "Vegetación no arbórea" },
+  { id: "VCF_TREE", short: "Árboles" },
+  { id: "NPP", short: "Productividad" },
+];
+const BASELINE_MODULES = ["environment", "social"];
 
 function getVariable(site: SeriesSubject, variable: string) { return site.variables.find((item) => item.variable === variable)!; }
 // Serie anual de una variable NASA o de un índice ETCCDI (solo en clima); los índices heredan la fuente de la precipitación.
+// Devuelve null si el sujeto no tiene esa serie (p. ej. productividad MODIS en desierto): no se dibuja un cero.
 function seriesFor(site: SeriesSubject, code: string) {
   const extreme = site.extremes?.find((item) => item.variable === code);
   if (extreme) return { annual_series: extreme.annual_series, display_unit: extreme.display_unit, source: getVariable(site, "PRECTOTCORR").source };
-  return getVariable(site, code);
+  return site.variables.find((item) => item.variable === code) ?? null;
 }
 
 export default function Workspace() {
@@ -114,6 +124,7 @@ export default function Workspace() {
   const [parcelTerritories, setParcelTerritories] = useState<TerritoryPick[]>([]);
   const [realEstateAssumptions, setRealEstateAssumptions] = useState<RealEstateAssumptions>(DEFAULT_REAL_ESTATE_ASSUMPTIONS);
   const [realEstateOpen, setRealEstateOpen] = useState(false);
+  const [bufferKm, setBufferKm] = useState(1);
   const geometryHint = GEOMETRY_HINTS[activeModule];
   const mapGeometries = useMemo(() => study.geometries.map((item) => ({ id: item.id, name: item.name, geometry: item.geometry, valid: item.status !== "invalida" })), [study.geometries]);
   const mapDrawing = useMemo(() => (study.draft ? { draft: study.draft, onVertex: study.addVertex, onFinish: study.finishDraft } : null), [study.draft, study.addVertex, study.finishDraft]);
@@ -132,16 +143,24 @@ export default function Workspace() {
   const climateResult = isClimate(result) ? result : null;
   const roadResult = isRoad(result) ? result : null;
   const realEstateResult = isRealEstate(result) ? result : null;
-  const solarResult = result && !isClimate(result) && !isRoad(result) && !isRealEstate(result) ? result : null;
+  const baselineResult = isBaseline(result) ? result : null;
+  const solarResult = result && !isClimate(result) && !isRoad(result) && !isRealEstate(result) && !isBaseline(result) ? result : null;
   const isClimateModule = activeModule === "climate";
-  const subjectCount = sites.length + (isClimateModule ? territories.length : 0);
-  const mapTerritories = useMemo(() => (isClimateModule
-    ? territories.filter((item) => item.geometry).map((item) => ({ id: item.ubigeo, label: item.name, geometry: item.geometry as GeoJSON.Geometry }))
-    : []), [territories, isClimateModule]);
+  const isBaselineModule = BASELINE_MODULES.includes(activeModule);
+  const isHeritageModule = activeModule === "social";
+  // Clima y la línea base aceptan territorios IGN; la línea base además suma polígonos y corredores propios.
+  const usesTerritories = isClimateModule || isBaselineModule;
+  const baselineGeometries = isBaselineModule ? study.geometries.filter((item) => item.status === "valida") : [];
+  const subjectCount = sites.length + (usesTerritories ? territories.length : 0) + baselineGeometries.length;
+  const mapTerritories = useMemo(() => {
+    // Con resultado, la línea base dibuja las áreas que realmente se consultaron (círculos, corredores ampliados, territorios).
+    if (baselineResult) return (baselineResult.subjects ?? []).map((subject) => ({ id: subject.id, label: subject.label, geometry: subject.geometry as unknown as GeoJSON.Geometry }));
+    return usesTerritories ? territories.filter((item) => item.geometry).map((item) => ({ id: item.ubigeo, label: item.name, geometry: item.geometry as GeoJSON.Geometry })) : [];
+  }, [territories, usesTerritories, baselineResult]);
   const cellLayer = useMemo(() => cellsFor(climateResult, cellVariable), [climateResult, cellVariable]);
   const isRoadModule = activeModule === "infrastructure";
   const isRealEstateModule = activeModule === "investment";
-  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : solarTabs;
+  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : activeModule === "environment" ? environmentTabs : isHeritageModule ? [] : solarTabs;
   const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
   const subjectsList = useMemo(() => seriesSubjects(result), [result]);
   const selectedVariable = subjectsList[0] ? seriesFor(subjectsList[0], activeVariable) : null;
@@ -171,7 +190,10 @@ export default function Workspace() {
   const corridorLines = useMemo(() => (roadResult
     ? (roadResult.subjects ?? []).map((subject) => ({ id: subject.id, label: subject.label, geometry: subject.geometry as unknown as GeoJSON.Geometry }))
     : []), [roadResult]);
-  const selectedSources = useMemo(() => subjectsList.map((site) => ({ site: site.location.label, ...seriesFor(site, activeVariable).source })), [subjectsList, activeVariable]);
+  const selectedSources = useMemo(() => subjectsList.flatMap((site) => {
+    const series = seriesFor(site, activeVariable);
+    return series ? [{ site: site.location.label, ...series.source }] : [];
+  }), [subjectsList, activeVariable]);
   const terrainOverlay = useMemo(() => {
     const granule = terrain?.sites[0]?.granules.find((item) => item.short_name === "NASADEM_HGT" && item.preview_url);
     return granule?.preview_url
@@ -182,19 +204,23 @@ export default function Workspace() {
     ? `${selectedSources.map((source) => `${source.site} ${source.provenance}`).join(" · ")} · ${selectedSources[0].dataset} ${selectedSources[0].version} · descarga ${selectedSources[0].downloaded_at.slice(0, 10)} · ${selectedSources[0].spatial_resolution}`
     : "SIN DATOS · la cuadrícula no representa observaciones";
   // Estado de la fuente según la última consulta: nunca se declara "operativo" sin haberlo comprobado.
+  const sourceName = isHeritageModule ? "Capas oficiales" : isBaselineModule ? "MODIS y capas oficiales" : "NASA POWER";
+  const effectiveProvenance = baselineResult
+    ? [...baselineResult.baselines.flatMap((item) => item.layers.filter((layer) => layer.status === "READY").map((layer) => layer.provenance)), ...selectedSources.map((source) => source.provenance)]
+    : selectedSources.map((source) => source.provenance);
   const sourceState = error ? { tone: "error", text: "Última consulta con error" }
-    : loading ? { tone: "idle", text: "Consultando NASA POWER…" }
-    : !result ? { tone: "idle", text: "NASA POWER · sin consulta" }
-    : selectedSources.length > 0 && selectedSources.every((source) => source.provenance === "CACHED_DATA") ? { tone: "cached", text: "NASA POWER · copia en caché" }
-    : { tone: "real", text: "NASA POWER respondió" };
+    : loading ? { tone: "idle", text: `Consultando ${sourceName}…` }
+    : !result ? { tone: "idle", text: `${sourceName} · sin consulta` }
+    : effectiveProvenance.length > 0 && effectiveProvenance.every((code) => code === "CACHED_DATA") ? { tone: "cached", text: `${sourceName} · copia en caché` }
+    : { tone: "real", text: `${sourceName} respondió` };
   const temporalSeries = useMemo(() => {
     if (!result) return [];
     const years = new Set<number>();
-    subjectsList.forEach((site) => seriesFor(site, activeVariable).annual_series.forEach((item) => years.add(item.year)));
+    subjectsList.forEach((site) => seriesFor(site, activeVariable)?.annual_series.forEach((item) => years.add(item.year)));
     return [...years].sort().map((year) => {
       const point: { year: number } & Record<string, number> = { year };
       subjectsList.forEach((site, index) => {
-        const value = seriesFor(site, activeVariable).annual_series.find((item) => item.year === year)?.value;
+        const value = seriesFor(site, activeVariable)?.annual_series.find((item) => item.year === year)?.value;
         if (value !== undefined) point[`site${index}`] = value;
       });
       return point;
@@ -224,9 +250,9 @@ export default function Workspace() {
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
   function removeSite(index: number) { setSites((current) => current.filter((_, position) => position !== index)); }
   function selectModule(id: string) {
-    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
-    // Solo Clima acepta territorios o un único sitio; el piloto solar compara al menos dos sitios.
-    if (id !== "climate" && sites.length < 2) setSites(initialSites);
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : id === "environment" ? "VCF_BARE" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
+    // Clima y la línea base aceptan territorios o un único sitio; el piloto solar compara al menos dos sitios.
+    if (id !== "climate" && !BASELINE_MODULES.includes(id) && sites.length < 2) setSites(initialSites);
     setActiveModule(id); setMobileNavOpen(false);
     if (id === "investment") setRealEstateOpen(true);
   }
@@ -263,6 +289,10 @@ export default function Workspace() {
             start_date: startDate, end_date: endDate, assumptions: roadAssumptions } }
         : isClimateModule
         ? { url: "/api/climate-screening", body: { sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), start_date: startDate, end_date: endDate } }
+        : isBaselineModule
+        ? { url: isHeritageModule ? "/api/heritage-screening" : "/api/environment-screening", body: {
+            sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), buffer_km: bufferKm,
+            geometries: baselineGeometries.map((item) => ({ id: item.id, label: item.name, geometry: item.geometry })) } }
         : { url: "/api/solar-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions } };
       const response = await fetch(request.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request.body) });
       const data = await response.json();
@@ -338,6 +368,7 @@ export default function Workspace() {
           <div className="mobileVerdict" ref={mobileVerdictRef}>
             {climateResult
               ? <ClimateReading result={climateResult} headingId="lectura-movil" />
+              : baselineResult ? <BaselineReading result={baselineResult} headingId="lectura-movil" />
               : roadResult ? <RoadReading result={roadResult} headingId="lectura-movil" />
               : realEstateResult ? <RealEstateReading result={realEstateResult} headingId="lectura-movil" />
               : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />}
@@ -425,11 +456,11 @@ export default function Workspace() {
                   <label>Ubicación<input value={site.label} onChange={(event) => updateSite(index, "label", event.target.value)} /></label>
                   <label>Latitud<input type="number" step="0.001" value={site.latitude} onChange={(event) => updateSite(index, "latitude", event.target.value)} /></label>
                   <label>Longitud<input type="number" step="0.001" value={site.longitude} onChange={(event) => updateSite(index, "longitude", event.target.value)} /></label>
-                  {isClimateModule && subjectCount > 1 && <button className="siteRemove" onClick={() => removeSite(index)} aria-label={`Quitar ${site.label || `sitio ${index + 1}`}`}>Quitar</button>}
+                  {usesTerritories && subjectCount > 1 && <button className="siteRemove" onClick={() => removeSite(index)} aria-label={`Quitar ${site.label || `sitio ${index + 1}`}`}>Quitar</button>}
                 </div>
               ))}
             </div>
-            {isClimateModule && (
+            {usesTerritories && (
               <section className="territorySection" aria-labelledby="territorios-title">
                 <h3 id="territorios-title">Territorios oficiales <span>IGN · COD-AB · trazos de 2015</span></h3>
                 {territories.length > 0 && (
@@ -441,22 +472,32 @@ export default function Workspace() {
                   </ul>
                 )}
                 <TerritoryPicker onAdd={(pick) => setTerritories((current) => [...current, pick])} disabled={subjectCount >= 4} chosen={territories.map((item) => item.ubigeo)} />
-                <p className="territoryHint">Cada territorio se analiza con las celdas NASA POWER que lo cubren (≈ 55 × 65 km); un distrito menor que una celda se trata como punto. La primera consulta de un territorio puede tardar hasta un minuto.</p>
+                <p className="territoryHint">{isBaselineModule
+                  ? `El territorio completo se cruza con las capas oficiales${isHeritageModule ? "" : "; MODIS usa una ventana de hasta ±10 km alrededor de su punto representativo"}. La primera consulta de un área nueva puede tardar 1–2 minutos.`
+                  : "Cada territorio se analiza con las celdas NASA POWER que lo cubren (≈ 55 × 65 km); un distrito menor que una celda se trata como punto. La primera consulta de un territorio puede tardar hasta un minuto."}</p>
               </section>
             )}
+            {isBaselineModule && <>
+              <BaselineOptions bufferKm={bufferKm} onBuffer={setBufferKm} geometries={baselineGeometries.length} heritage={isHeritageModule} />
+              <details className="corridorDraw" open={baselineGeometries.length > 0}>
+                <summary>Dibujar o cargar polígonos y corredores</summary>
+                <GeometryPanel state={study} hint={BASELINE_HINT} />
+              </details>
+            </>}
             <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} aria-busy={loading} disabled={loading || !selectedModule.ready || !endDate || subjectCount === 0}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
             </>}
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (
               !isMobile && (climateResult
                 ? <ClimateReading result={climateResult} headingId="lectura-escritorio" />
+                : baselineResult ? <BaselineReading result={baselineResult} headingId="lectura-escritorio" />
                 : roadResult ? <RoadReading result={roadResult} headingId="lectura-escritorio" />
                 : realEstateResult ? <RealEstateReading result={realEstateResult} headingId="lectura-escritorio" />
                 : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />)
             ) : (
               <div className="emptyReading"><span><i /><i /></span><div><strong>LISTO PARA CONSULTAR</strong><p>{selectedModule.description}</p></div></div>
             )}
-            <section className="terrainReadout" aria-label="Relieve NASADEM" aria-busy={loading}>
+            {!isHeritageModule && <section className="terrainReadout" aria-label="Relieve NASADEM" aria-busy={loading}>
               <div className="terrainHeading">
                 <div><strong>Relieve NASADEM</strong><span>HGT + pendiente y orientación · 1 arc-second</span></div>
                 {terrainOverlay && <button type="button" aria-pressed={terrainVisible} onClick={() => setTerrainVisible((current) => !current)}>{terrainVisible ? "Ocultar capa" : "Mostrar capa"}</button>}
@@ -481,7 +522,7 @@ export default function Workspace() {
                 </p>
               </div>}
               {!loading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis; no se muestran métricas sin una respuesta oficial.</p>}
-            </section>
+            </section>}
             {activeModule === "solar" && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
               <summary>Supuestos financieros <span>USER_ASSUMPTION</span></summary>
               <div className="assumptionFields">
@@ -511,7 +552,7 @@ export default function Workspace() {
             <p className="seriesKey">{subjectsList.map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
           </div>
           <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={subjectsList.map((site, index) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
-          <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>Años completos · {["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"} · eje ajustado al rango observado</span></div>
+          <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>{baselineResult ? "Valor anual MODIS · promedio de los píxeles dentro del área" : `Años completos · ${["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"}`} · eje ajustado al rango observado</span></div>
         </section>
 
         <PipelinePanel stages={visiblePipeline} running={loading} hasResult={result !== null} selectedStep={selectedStep} onSelect={setSelectedStep} onQuestion={goToQuestion} />
@@ -527,6 +568,7 @@ export default function Workspace() {
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
           <AssistantPanel result={result} />
           {climateResult && <ClimateEvidence result={climateResult} />}
+          {baselineResult && <BaselineEvidence result={baselineResult} />}
           {realEstateResult && <>
             {realEstateResult.scorecard ? <ScorecardPanel initial={realEstateResult.scorecard} /> : null}
             {realEstateResult.financial_sensitivity?.length ? <SensitivityPanel items={realEstateResult.financial_sensitivity} stale={staleAssumptions} /> : null}

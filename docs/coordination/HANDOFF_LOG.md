@@ -630,3 +630,38 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **Pendiente de Codex:**
 - El manifiesto `RELEASE_2026-11-07.md` y `PROGRESS.md` deben apuntar al **15-nov**, no al 29-oct.
 - K6 sigue siendo la prioridad técnica.
+## 2026-10-24 · Claude · claude/integracion-pilotos · Módulos 4 y 5: línea base ambiental y patrimonial (ADR-032)
+
+**Pedido de Christian:** restos arqueológicos y datos para estudios de impacto ambiental, según los módulos 4 y 5 del prompt maestro. Dejan de estar pendientes.
+
+**Backend** (sobre C2, sectores nuevos `environment` y `heritage`, cambio aditivo):
+- `POST /api/v1/projects/environment-screening` y `/heritage-screening`.
+- Áreas: sitios con radio, territorios IGN y polígonos o corredores del usuario; de 1 a 4 en total.
+- Conector nuevo `connectors/nasa/modis_subsets.py`: ORNL DAAC con productos anuales MOD44B, MOD17A3HGF y MCD12Q1. Admite 10 fechas por consulta y tarda de 4 a 30 s cada una, así que no hay NDVI 16 días en vivo.
+- Geometría: `geospatial/buffers.py` y `geospatial/modis_grid.py`; el píxel central queda verificado a 0.001° del punto pedido.
+- Capas nuevas en `connectors/peru/territory.py` (solo entradas agregadas; no se tocó la lógica):
+  - Cultura: CIRA, DAS, Qhapaq Ñan, paisaje cultural, Patrimonio Mundial, consulta previa y registro ciudadano.
+  - MINAM: ecosistemas, cobertura vegetal 2015, lomas costeras y Ramsar.
+  - ANA: cuerpos de agua ECA y unidades hidrográficas.
+- Los pilotos vial e inmobiliario usan listas explícitas, así que no cambian.
+- 7 pruebas nuevas; total 169/169.
+
+**Frontend:**
+- Ambiente y Territorio pasan a funcionales y reutilizan el editor de sitios, el selector IGN y el panel de geometrías, con un radio en km.
+- La vegetación entra al gráfico anual.
+- Panel por área: lectura, tabla MODIS, cambio de cobertura y capas por medio con los registros y sus enlaces.
+- QA `baseline_ui.cjs` en 1440, 768 y 390: 0 errores y 0 desbordamientos. `release_ui` sigue en 0 recortes y 0 problemas de teclado.
+
+**Hallazgo operativo para todos (afecta también a los pilotos):** SIGDA (sigda.cultura.gob.pe) corta la conexión TLS a nuestra IP tras unas 20 consultas seguidas, aun de dos en dos. Lo verifiqué dos veces el 24-oct; se recupera en minutos.
+- La línea base consulta una capa a la vez por servidor, con 0.5 s de pausa entre consultas reales, y reintenta una vez.
+- **Sugerencia para Codex:** un vencimiento de caché más largo para las capas de Cultura (por ejemplo 7 días; sus registros cambian poco) reduciría el riesgo en el demo. Hoy usan las 24 h generales.
+
+**Pendiente de Codex** (no los toqué):
+- Agregar las 13 capas nuevas y el servicio ORNL a `docs/nasa-submission/DATA_SOURCES.md`, que está congelado; este es un requisito de entrega con evidencia en ADR-032.
+- K6 sigue siendo la prioridad.
+
+**Brechas visibles en el módulo 5:**
+- BDPI (sin servicio geográfico).
+- Comunidades MIDAGRI (TLS inválido).
+- Defensoría (PDF).
+- SENACE (TLS inválido).

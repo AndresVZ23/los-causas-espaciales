@@ -94,6 +94,86 @@ LAYERS: dict[str, OfficialLayer] = {
         "Vector EPSG:4326; escala de levantamiento no declarada", PUBLIC_LICENSE_NOTE,
         ("La consulta no sustituye un CIRA ni la evaluación formal del Ministerio de Cultura.",),
     ),
+    # Línea base ambiental y patrimonial (módulos 4 y 5, Claude, 24-oct-2026): servicios ArcGIS verificados con
+    # metadatos y una consulta de conteo sobre Moquegua–Ilo antes de agregarlos.
+    "cultura-ciras": OfficialLayer(
+        "cultura-ciras", "Ministerio de Cultura · SIGDA", "Certificados de Inexistencia de Restos Arqueológicos (CIRA) emitidos",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/CIRAS_V4/MapServer", (0,),
+        "Perú; ámbitos de CIRA publicados por DSFL/Geomática",
+        "Vector EPSG:4326; escala de levantamiento no declarada", PUBLIC_LICENSE_NOTE,
+        ("Un CIRA vale para el ámbito y proyecto que lo solicitó; no se extiende a un proyecto nuevo.",),
+    ),
+    "cultura-das": OfficialLayer(
+        "cultura-das", "Ministerio de Cultura · SIGDA", "Diagnósticos arqueológicos en superficie (DAS)",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/das/MapServer", (0,),
+        "Perú; áreas de diagnóstico comunicadas por proyectos",
+        "Vector EPSG:4326; escala de levantamiento no declarada", PUBLIC_LICENSE_NOTE,
+        ("Un DAS es un antecedente de evaluación de otro proyecto; no reemplaza el propio.",),
+    ),
+    "cultura-qhapaq-nan": OfficialLayer(
+        "cultura-qhapaq-nan", "Ministerio de Cultura · Qhapaq Ñan", "Caminos prehispánicos registrados y proyectados",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/pqn_v4/MapServer", (0, 1),
+        "Perú; red vial inca registrada (capa 0) y proyección de caminos (capa 1)",
+        "Vector EPSG:4326; escala de levantamiento no declarada", PUBLIC_LICENSE_NOTE,
+        ("Las proyecciones de camino (capa 1) son trazos inferidos, no tramos registrados en campo.",),
+    ),
+    "cultura-cultural-landscape": OfficialLayer(
+        "cultura-cultural-landscape", "Ministerio de Cultura · SIGDA", "Paisajes culturales",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/Paisaje_Cultural/MapServer", (0,),
+        "Perú; paisajes culturales a nivel nacional", "Vector EPSG:4326; escala no declarada", PUBLIC_LICENSE_NOTE,
+    ),
+    "cultura-world-heritage": OfficialLayer(
+        "cultura-world-heritage", "Ministerio de Cultura · SIGDA", "Sitios del Patrimonio Mundial",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/spm_v4/MapServer", (0,),
+        "Perú; sitios inscritos en la Lista del Patrimonio Mundial", "Vector EPSG:4326; escala no declarada", PUBLIC_LICENSE_NOTE,
+    ),
+    "cultura-prior-consultation": OfficialLayer(
+        "cultura-prior-consultation", "Ministerio de Cultura · Consulta previa", "Ámbitos con procesos de consulta previa",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/consulta_previa_v4/MapServer", (0,),
+        "Perú; ámbitos distritales con procesos de consulta previa publicados", "Vector EPSG:4326; nivel distrital", PUBLIC_LICENSE_NOTE,
+        ("El campo «tipo» es un código sin tabla publicada en el servicio; no identifica pueblos ni comunidades.",
+         "Esta capa no reemplaza la Base de Datos de Pueblos Indígenas ni la identificación formal de pueblos.",),
+    ),
+    "cultura-citizen-records": OfficialLayer(
+        "cultura-citizen-records", "Ministerio de Cultura · SIGDA", "Bienes inmuebles prehispánicos reportados por ciudadanos",
+        "https://sigda.cultura.gob.pe/sigda/rest/services/v_4/registro_externo/MapServer", (0,),
+        "Perú; reportes ciudadanos publicados por DSFL/Geomática", "Vector EPSG:4326; escala no declarada", PUBLIC_LICENSE_NOTE,
+        ("Son reportes ciudadanos: indican dónde revisar, no son registros oficiales validados.",),
+    ),
+    "minam-ecosystems": OfficialLayer(
+        "minam-ecosystems", "MINAM · GeoPerú", "Mapa Nacional de Ecosistemas",
+        "https://geoservidorperu.minam.gob.pe/arcgis/rest/services/Servicios_GeoPERU/ServicioEcosistemas_MINAM/MapServer", (0,),
+        "Perú; ecosistemas continentales", "Vector; escala nacional de compilación", PUBLIC_LICENSE_NOTE,
+        ("Escala nacional: no delimita ecosistemas a nivel de proyecto.",),
+    ),
+    "minam-vegetation-cover": OfficialLayer(
+        "minam-vegetation-cover", "MINAM · Geoservidor", "Mapa de Cobertura Vegetal 2015",
+        "https://geoservidorperu.minam.gob.pe/arcgis/rest/services/Servicio_cobertura_vegetal/MapServer", (0,),
+        "Perú; cobertura vegetal aprobada por R.M. 059-2015-MINAM", "Vector; escala nacional de compilación", PUBLIC_LICENSE_NOTE,
+        ("Refleja la cobertura de 2013–2015; los cambios posteriores se leen con MODIS.",),
+    ),
+    "minam-coastal-lomas": OfficialLayer(
+        "minam-coastal-lomas", "MINAM · Geoservidor", "Lomas costeras (ecosistema frágil)",
+        "https://geoservidorperu.minam.gob.pe/arcgis/rest/services/Loma_costera/MapServer", (0,),
+        "Costa peruana; ecosistemas frágiles de lomas", "Vector; escala no declarada", PUBLIC_LICENSE_NOTE,
+        ("Las lomas dependen de la neblina estacional; su extensión real varía entre años.",),
+    ),
+    "minam-ramsar": OfficialLayer(
+        "minam-ramsar", "MINAM · GeoPerú", "Sitios Ramsar (humedales de importancia internacional)",
+        "https://geoservidorperu.minam.gob.pe/arcgis/rest/services/Servicios_GeoPERU/ServicioSitiosRAMSAR_MINAM/MapServer", (0,),
+        "Perú; sitios Ramsar designados", "Vector; escala no declarada", PUBLIC_LICENSE_NOTE,
+    ),
+    "ana-water-bodies": OfficialLayer(
+        "ana-water-bodies", "ANA · SNIRH", "Cuerpos de agua con categoría de Estándar de Calidad Ambiental (ECA)",
+        "https://geosnirh.ana.gob.pe/server/rest/services/ws_Rios_Quebradas/MapServer", (37,),
+        "Perú; ríos y quebradas categorizados por la ANA", "Vector; red hidrográfica codificada Pfafstetter", PUBLIC_LICENSE_NOTE,
+        ("La categoría ECA indica el uso asignado al cuerpo de agua, no su calidad medida.",),
+    ),
+    "ana-hydro-units": OfficialLayer(
+        "ana-hydro-units", "ANA · SNIRH", "Unidades hidrográficas (Pfafstetter)",
+        "https://geosnirh.ana.gob.pe/server/rest/services/ws_UnidadesHidro/MapServer", (1,),
+        "Perú; cuencas e intercuencas codificadas", "Vector; codificación Pfafstetter hasta nivel 7", PUBLIC_LICENSE_NOTE,
+    ),
     "ingemmet-geohazards": OfficialLayer(
         "ingemmet-geohazards", "INGEMMET · GEOCATMIN", "Peligros geológicos",
         "https://geocatminapp.ingemmet.gob.pe/arcgis/rest/services", (), "Perú",

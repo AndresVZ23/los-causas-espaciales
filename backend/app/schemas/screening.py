@@ -25,6 +25,8 @@ class Sector(StrEnum):
     SOLAR = "solar"
     ROAD = "road"
     REAL_ESTATE = "real_estate"
+    ENVIRONMENT = "environment"    # módulo 4: línea base ambiental (medios físico y biológico)
+    HERITAGE = "heritage"          # módulo 5: patrimonio y dimensión social (medio sociocultural)
 
 
 class PipelineStatus(StrEnum):
