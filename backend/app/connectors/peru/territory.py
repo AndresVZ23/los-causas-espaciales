@@ -22,6 +22,7 @@ from ...schemas.data_sources import (
 from ..cache import RawPayloadCache
 
 TIMEOUT = httpx.Timeout(connect=20, read=45, write=20, pool=20)
+CULTURA_CACHE_TTL = timedelta(days=7)
 
 
 class TerritoryConnectorError(RuntimeError):
@@ -190,6 +191,13 @@ LAYERS: dict[str, OfficialLayer] = {
 }
 
 
+def _cache_max_age(source: OfficialLayer, default_hours: int) -> timedelta:
+    """Use a courteous longer TTL for rate-sensitive Ministerio de Cultura SIGDA layers."""
+    if source.source_id.startswith("cultura-"):
+        return CULTURA_CACHE_TTL
+    return timedelta(hours=default_hours)
+
+
 def _esri_geometry(geojson: dict[str, Any]) -> tuple[str, dict[str, Any]]:
     kind, coords = geojson["type"], geojson["coordinates"]
     sr = {"wkid": 4326}
@@ -218,7 +226,7 @@ class TerritoryConnector:
     async def _layer_query(self, source: OfficialLayer, layer_id: int, geometry_type: str, geometry: dict[str, Any]):
         descriptor = {"source": source.source_id, "layer": layer_id, "type": geometry_type, "geometry": geometry, "v": 1}
         cache_key = self.cache.request_key(descriptor)
-        cached = self.cache.get(cache_key, max_age=timedelta(hours=self.settings.cache_ttl_hours))
+        cached = self.cache.get(cache_key, max_age=_cache_max_age(source, self.settings.cache_ttl_hours))
         if cached:
             return json.loads(cached.content), cached.downloaded_at, Provenance.CACHED
         endpoint = f"{source.base_url}/{layer_id}/query"

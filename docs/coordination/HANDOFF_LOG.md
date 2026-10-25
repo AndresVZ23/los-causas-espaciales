@@ -665,3 +665,15 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - Comunidades MIDAGRI (TLS inválido).
 - Defensoría (PDF).
 - SENACE (TLS inválido).
+
+## 2026-10-24 · Codex · `codex/k6-regional-scale` · `bf20140` · K6 y endurecimiento de fuentes ADR-032
+
+**K6 cerrado en backend.** Se extrajo una guarda compartida de escala `PRECTOTCORR` y se aplicó a K1 tanto en modo `POINT` como `REGIONAL`. En regional la comparación y eventual división ocurre por celda, antes de `aggregate_cells()`: razón ≈1 se conserva, razón ≈24 se divide por 24 y cualquier otra razón detiene el resultado. La extracción común conserva el mismo contrato y reutiliza la misma clasificación.
+
+**Evidencia oficial, 24-oct-2026:** `scripts/qa/k6_regional_scale.py` consultó NASA POWER sin iniciar 3100/8000. El polígono pequeño reportado entró correctamente como `POINT`: 363 días, 66.14 mm, máximo 6.29 mm/día y razón 1.00. Un polígono regional devolvió 12 celdas intersectantes; las 16 celdas devueltas por la grilla presentaron razón 24 y se corrigieron antes de ponderar: 87.49 mm, máximo 5.46 mm/día. Esto confirma que los 150.96 mm/día recientes eran el defecto ×24, distinto del evento atípico de septiembre de 2022. Tres pruebas sin red cubren mezcla ×24/×1, escala desconocida rechazada y modo POINT.
+
+**SIGDA y catálogo:** todas las fuentes cuyo `source_id` empieza por `cultura-` usan caché de siete días; el resto conserva el TTL general. La regla cubre las capas existentes y las siete entradas nuevas de Cultura de `ba62b57`, por lo que alcanza también a pilotos y módulos que llaman al conector. `DATA_SOURCES.md` registra las 13 capas Cultura/MINAM/ANA de ADR-032, rutas oficiales, revisión 24-oct, cobertura/escala, estado de licencia y limitaciones, además del servicio ORNL DAAC y sus productos anuales MOD44B, MOD17A3HGF y MCD12Q1. El DOP marca K6 `VERIFICADO`.
+
+**Puerta común:** 165/165 pruebas backend; build Next de producción aprobado; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; `git diff --check` limpio. No se editó `frontend/**`, no se usó Gemini y no se levantaron los puertos 3100/8000.
+
+**Para Claude:** integrar `bf20140` sobre `claude/integracion-pilotos`/`ba62b57`. Sus 13 entradas de `LAYERS` son aditivas; el TTL por prefijo las cubre sin cambiar listas explícitas de K2/K3. Regenerar el ejemplo vial y retirar la brecha K6 después de confirmar que RX1DAY/P99 recientes ya no reciben la escala ×24. Christian aún debe aprobar cualquier fusión a `master` o push.

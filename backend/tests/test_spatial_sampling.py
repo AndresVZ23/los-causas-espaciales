@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 import pytest
@@ -277,3 +277,104 @@ async def test_region_larger_than_ten_degrees_is_rejected_before_network(tmp_pat
     connector = RegionalPowerConnector(settings=Settings(_env_file=None, cache_dir=tmp_path))
     with pytest.raises(RegionalPowerError, match="supera 10"):
         await connector.sample(request)
+
+
+def _precipitation_payload(multiplier_by_longitude: dict[float, float]):
+    features = []
+    for longitude, multiplier in multiplier_by_longitude.items():
+        for latitude in (-17.5, -17.0):
+            features.append({
+                "type": "Feature",
+                "geometry": {"type": "Point", "coordinates": [longitude, latitude, 100]},
+                "properties": {"parameter": {"PRECTOTCORR": {
+                    "20260101": 1 * multiplier,
+                    "20260102": 2 * multiplier,
+                    "20260103": 3 * multiplier,
+                }}},
+            })
+    return {
+        "type": "FeatureCollection",
+        "features": features,
+        "header": {"api": {"version": "v2.10.1"}, "time_standard": "UTC"},
+        "parameters": {"PRECTOTCORR": {"units": "mm/day"}},
+        "messages": [],
+    }
+
+
+@pytest.mark.asyncio
+async def test_recent_regional_precipitation_is_verified_per_cell_before_aggregation(tmp_path):
+    cutoff = date.today() - timedelta(days=60)
+
+    def handler(request: httpx.Request):
+        end = date.fromisoformat(
+            f"{request.url.params['end'][:4]}-{request.url.params['end'][4:6]}-{request.url.params['end'][6:]}"
+        )
+        multipliers = {-71.0: 24.0, -70.5: 1.0} if end > cutoff else {-71.0: 1.0, -70.5: 1.0}
+        return httpx.Response(200, json=_precipitation_payload(multipliers))
+
+    request = _polygon_request().model_copy(update={
+        "variable": "PRECTOTCORR",
+        "start_date": date(date.today().year, 1, 1),
+        "end_date": date.today(),
+    })
+    result = await RegionalPowerConnector(
+        settings=Settings(_env_file=None, cache_dir=tmp_path),
+        transport=httpx.MockTransport(handler),
+    ).sample(request)
+
+    assert {cell.observations[0].value for cell in result.cells} == {1.0}
+    assert result.aggregate[0].value == pytest.approx(1.0)
+    assert any("2 corregida(s) ÷24, 2 verificada(s) ×1" in note for note in result.source.quality_notes)
+
+
+@pytest.mark.asyncio
+async def test_recent_regional_precipitation_rejects_unknown_scale(tmp_path):
+    cutoff = date.today() - timedelta(days=60)
+
+    def handler(request: httpx.Request):
+        end = date.fromisoformat(
+            f"{request.url.params['end'][:4]}-{request.url.params['end'][4:6]}-{request.url.params['end'][6:]}"
+        )
+        multiplier = 3.0 if end > cutoff else 1.0
+        return httpx.Response(200, json=_precipitation_payload({-71.0: multiplier, -70.5: multiplier}))
+
+    request = _polygon_request().model_copy(update={
+        "variable": "PRECTOTCORR",
+        "start_date": date(date.today().year, 1, 1),
+        "end_date": date.today(),
+    })
+    connector = RegionalPowerConnector(
+        settings=Settings(_env_file=None, cache_dir=tmp_path),
+        transport=httpx.MockTransport(handler),
+    )
+    with pytest.raises(RegionalPowerError, match="razón 3.00"):
+        await connector.sample(request)
+
+
+class _ScaledPrecipitationPointConnector:
+    async def daily_point(self, latitude, longitude, variable, start, end):
+        multiplier = 24 if end > date.today() - timedelta(days=60) else 1
+        observations = [
+            Observation(timestamp=date(date.today().year, 1, day), value=float(day * multiplier))
+            for day in (1, 2, 3)
+        ]
+        return observations, SourceMetadata(
+            source_id="nasa-power", dataset="NASA POWER Daily Point", version="test",
+            variable=variable, unit="mm/day", temporal_resolution="daily UTC",
+            spatial_resolution="native grid", downloaded_at=datetime.now(timezone.utc),
+            source_url="https://power.larc.nasa.gov/api/temporal/daily/point", provenance=Provenance.REAL,
+        )
+
+
+@pytest.mark.asyncio
+async def test_recent_point_mode_precipitation_applies_same_scale_guard(tmp_path):
+    request = SpatialSamplingRequest(
+        subject={"type": "Point", "coordinates": [-70.934, -17.193]},
+        variable="PRECTOTCORR", start_date=date(date.today().year, 1, 1), end_date=date.today(),
+    )
+    result = await RegionalPowerConnector(
+        settings=Settings(_env_file=None, cache_dir=tmp_path),
+        point_connector=_ScaledPrecipitationPointConnector(),
+    ).sample(request)
+    assert [item.value for item in result.aggregate] == [1.0, 2.0, 3.0]
+    assert any("se dividió por 24" in note for note in result.source.quality_notes)
