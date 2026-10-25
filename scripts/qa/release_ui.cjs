@@ -1,4 +1,4 @@
-// Puerta visual de cierre (RELEASE_2026-11-07.md) en 1440/768/390: recortes de texto en controles,
+// Puerta visual de cierre (RELEASE_2026-11-15.md) en 1440/768/390: recortes de texto en controles,
 // navegación por teclado (foco visible y nunca en elementos ocultos) y estados de carga y error simulados.
 const { chromium } = require("playwright");
 const fs = require("fs");

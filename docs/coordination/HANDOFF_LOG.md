@@ -698,3 +698,17 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - DOP: se quitó la K6 duplicada de Claude y se suma la validación a la K6 de Codex.
 
 **Incidente:** Docker Desktop se reinició durante el QA y los contenedores salieron con 255. Se relevantó solo `los-causas-espaciales`; no se tocaron `nasaspaceappschallenge-*` ni MyFix.
+
+## 2026-10-25 · Codex · `master` · `dc137b4` · revisión e integración de módulos 4/5 y K6
+
+**Fusión aprobada por Christian:** `claude/integracion-pilotos` (`46ea64e`) se revisó y fusionó en `master` mediante `dc137b4`. Incluye los módulos Ambiental y Patrimonial de ADR-032, la integración validada de K6, ejemplos C2 regenerados, pitch, escenarios y anteproyecto. La revisión no encontró cambios incompatibles del sobre C2 ni faltantes convertidos en cero: MODIS conserva procedencia, excluye rellenos y declara cobertura; las capas territoriales mantienen sus limitaciones y `DATA_UNAVAILABLE`.
+
+**Puerta común sobre el merge:** 173/173 pruebas backend; build Next.js 16.4.2 con 16 rutas; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`; DOP y scripts de QA con sintaxis válida; `git diff --check` limpio. El escaneo de asignaciones de secretos encontró solo ejemplos literales `your-key` dentro de la Skill de diseño, no credenciales.
+
+**Contraste K6 independiente, 25-oct:** `scripts/qa/k6_regional_scale.py` volvió a obtener POINT con máximo 6.29 mm/día y Regional con 16 celdas verificadas y divididas por 24 antes de ponderar, máximo 5.46 mm/día. Los valores coinciden con la validación de Claude y sostienen la retirada de la brecha K6.
+
+**QA visual independiente:** la Skill Browser figuraba en el catálogo pero su `SKILL.md` cacheado no existía; se usó el fallback Playwright versionado. `release_ui.cjs` corrió contra puertos temporales 13100/18100, luego apagados. En 1440/768/390, los siete módulos tuvieron cero recortes y cero desbordamiento; 45 focos navegables sin problemas; estado de carga visible; caída 503 simulada mostrada como error, sin veredictos ficticios ni errores de consola. Las capturas desktop/mobile fueron inspeccionadas.
+
+**Calendario corregido:** el manifiesto pasa a `RELEASE_2026-11-15.md`; `PROGRESS.md`, DOP, fuentes y arquitectura declaran el 29-oct como anteproyecto y el 15-nov, 23:59, como cierre final. No se creó `v0.1.0`.
+
+**Publicación:** no se hizo push. La aprobación recibida cubría la fusión; se mantiene pendiente una aprobación explícita de Christian para publicar `master`. Tampoco se usó Gemini ni se levantaron 3100/8000.

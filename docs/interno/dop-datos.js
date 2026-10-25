@@ -393,6 +393,6 @@ window.DOP_DATA = {
     { id: "A1", owner: "Claude", title: "Anteproyecto con la plantilla de la sede Moquegua (una hoja: equipo, objetivos, idea principal, recursos)", status: "EN_CURSO", ref: "límite de la sede 30-oct · el equipo lo entrega el 29", nodes: ["delivery"] },
     { id: "Q1", owner: "Claude", title: "Entrega final del 15-nov: PITCH.md, DEMO_SCENARIOS.md, material del demo, ensayo y regresión 1440/768/390", status: "EN_CURSO", ref: "2f38914 · pitch y escenarios escritos · regresión 10 flujos × 3 anchos sin errores · falta el ensayo del día", nodes: ["delivery"] },
     { id: "Q2", owner: "Codex", title: "Entrega final del 15-nov: DATA_SOURCES y TECHNICAL_ARCHITECTURE congelados, puerta final y etiqueta de versión", status: "EN_CURSO", ref: "congelado en a3ac298 · etiqueta v0.1.0 al cierre aprobado", nodes: ["delivery"] },
-    { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "master c0f7366 · 161 pruebas · build · audit 0 · fuentes/arquitectura congeladas para v0.1.0 · etiqueta preparada para 7-nov", nodes: [] },
+    { id: "O1", owner: "Codex", title: "Operación: fusiones, dependencias, Docker y token (vence 22-dic-2026)", status: "EN_CURSO", ref: "master integrado · 173 pruebas · build · audit 0 · baseline v0.1.0 · etiqueta reservada para el cierre del 15-nov", nodes: [] },
   ],
 };
