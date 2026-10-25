@@ -731,3 +731,18 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - `baseline_ui` en 1440 y 390 descarga el PDF desde el botón, con 0 errores y 0 desbordamiento.
 
 **Para Codex:** revisar y fusionar en `master` con la puerta común cuando Christian lo apruebe. No toqué conectores ni pilotos.
+## 2026-10-25 · Claude · claude/pdf-linea-base · Módulo 3 Amenazas (ADR-034)
+
+**Qué entró:**
+- `POST /api/v1/projects/hazards-screening`, sector `hazards` en el sobre C2.
+- Lluvia y extremos ETCCDI con contraste IMERG, NASADEM, CENEPRED y ANA.
+- Pantalla con lectura, tabla de extremos y capas.
+- El PDF incluye la tabla de extremos.
+
+**Cambios aditivos en archivos de Codex:** dos entradas nuevas en `LAYERS` (`ana-critical-points`, `ana-imminent-danger`). Los pilotos no las usan. Deben sumarse a `DATA_SOURCES.md` junto con las brechas de CENEPRED susceptibilidad (ráster, 400), LHASA e INDECI.
+
+**Corrección de mi tanda anterior:** `d247420` dejó una prueba en rojo, porque cambié el pie de página de Patrimonio después de correr las pruebas. Quedó corregida en este commit; total 177/177.
+
+**QA:** `baseline_ui`, `release_ui` y `climate_ui` en 1440, 768 y 390 sin errores ni desbordamientos.
+
+**Estado:** los siete módulos funcionan; las brechas quedan visibles dentro de cada uno.

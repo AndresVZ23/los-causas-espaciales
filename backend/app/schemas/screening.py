@@ -27,6 +27,7 @@ class Sector(StrEnum):
     REAL_ESTATE = "real_estate"
     ENVIRONMENT = "environment"    # módulo 4: línea base ambiental (medios físico y biológico)
     HERITAGE = "heritage"          # módulo 5: patrimonio y dimensión social (medio sociocultural)
+    HAZARDS = "hazards"            # módulo 3: amenazas naturales (extremos de lluvia, relieve y capas de riesgo)
 
 
 class PipelineStatus(StrEnum):

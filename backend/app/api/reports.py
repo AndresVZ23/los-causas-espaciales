@@ -13,7 +13,9 @@ router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 MAX_SUBJECTS = 50
 MAX_FINDINGS = 400
 # Sectores cuyo reporte necesita sus propios campos además del sobre común.
-SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {Sector.ENVIRONMENT: BaselineScreeningResponse, Sector.HERITAGE: BaselineScreeningResponse}
+SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {
+    Sector.ENVIRONMENT: BaselineScreeningResponse, Sector.HERITAGE: BaselineScreeningResponse, Sector.HAZARDS: BaselineScreeningResponse,
+}
 
 
 @router.post(

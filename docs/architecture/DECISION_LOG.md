@@ -258,3 +258,27 @@ Los enlaces del DAS van como hipervínculos, y solo se aceptan direcciones `http
 - Pruebas: dos de PDF sobre resultados sintéticos (registros, enlace `/URI` al PDF del DAS, «No disponible», sin NASA POWER).
 - PDF real con Moquegua (radio 1 km) y el distrito de Ilo: Patrimonio en 4 páginas, Ambiente en 6, las 18 consultas respondieron.
 - QA desde el botón en 1440 y 390.
+## ADR-034 — Módulo 3: amenazas naturales sobre el motor de la línea base
+
+**Qué cubre.** El módulo 3 deja de estar pendiente. Usa el mismo motor que los módulos 4 y 5: mismas áreas de estudio y sobre C2 (sector nuevo `hazards`, cambio aditivo), con un medio «amenazas». Por cada área reúne:
+- lluvia anual y los seis índices ETCCDI desde 2001, en el punto representativo (NASA POWER con la guarda ×24), con contraste GPM IMERG y años atípicos marcados;
+- relieve NASADEM;
+- capas oficiales:
+  - CENEPRED, escenarios de riesgo por inundación y movimientos en masa por distrito, con sus niveles de riesgo, susceptibilidad o peligro y vulnerabilidad;
+  - ANA, puntos críticos por inundación 2022 y declaratoria de peligro inminente D.U. 015-2023;
+  - INGEMMET, que sigue `DATA_UNAVAILABLE` por TLS.
+
+**Reutilización.** Extracción, índices, ajuste BH, contraste IMERG y lente de lectura salen del módulo Clima. `countercheck_summary` pasó a recibir pares (etiqueta, extremos), y la tabla de extremos de la interfaz quedó como componente compartido.
+
+**Lo que no se hizo:**
+- No se agregaron las capas de susceptibilidad de CENEPRED (servicio FEN, capas 1 y 2): son ráster y responden 400 a una consulta por área.
+- Los conteos de viviendas, escuelas y establecimientos de salud de CENEPRED no se muestran sin su definición oficial; solo se muestran los niveles.
+- LHASA (NASA), el inventario de emergencias de INDECI y las estaciones SENAMHI quedan como brechas visibles.
+
+**Resultado real del 25-oct (Moquegua con radio 1 km y distrito de Ilo):**
+- Ningún índice de extremos tiene tendencia significativa.
+- IMERG no respalda 6 años atípicos de 2022 (por ejemplo, PRCPTOT de Ilo: 387.6 mm en MERRA-2 frente a 10.5 mm en IMERG).
+- CENEPRED marca riesgo alto por inundación en Moquegua y El Algarrobal, y riesgo alto por movimientos en masa en Ilo.
+- La ANA registra un punto crítico en el río Ilo (valle de Ilo) y Moquegua dentro de la declaratoria de 2023.
+
+**Verificación:** 177/177 pruebas (dos nuevas: amenazas con datos sintéticos y caída de NASA POWER declarada como brecha). QA `baseline_ui` en 1440, 768 y 390 sin errores; `release_ui` sin recortes ni problemas de teclado; `climate_ui` intacto tras el refactor.

@@ -1,8 +1,8 @@
-"""Sección del reporte ejecutivo para la línea base ambiental y patrimonial (módulos 4 y 5).
+"""Sección del reporte ejecutivo para la línea base: amenazas, ambiente y patrimonio (módulos 3, 4 y 5).
 
 Presenta, por área de estudio, lo que el sobre común no lleva: los indicadores MODIS con su tendencia, el
-cambio de cobertura y las capas oficiales por medio de la línea base, con los registros en palabras de la
-fuente y sus enlaces. No calcula nada: transcribe el resultado con su procedencia.
+cambio de cobertura, los extremos de lluvia con su contraste IMERG y las capas oficiales por medio, con los
+registros en palabras de la fuente y sus enlaces. No calcula nada: transcribe el resultado con su procedencia.
 """
 
 from xml.sax.saxutils import quoteattr
@@ -14,7 +14,8 @@ from reportlab.platypus import KeepTogether, Paragraph
 from ..schemas.baseline import BaselineLayer, BaselineScreeningResponse, SubjectBaseline
 from .executive_pdf import _table, _text
 
-COMPONENT_LABELS = {"fisico": "Medio físico", "biologico": "Medio biológico", "sociocultural": "Medio sociocultural"}
+COMPONENT_LABELS = {"fisico": "Medio físico", "biologico": "Medio biológico", "sociocultural": "Medio sociocultural", "amenazas": "Amenazas y riesgo"}
+AGREEMENT_LABELS = {"coincide": "Coincide", "contradice": "Contradice", "sin_respaldo": "Sin respaldo", "solo_contraste": "Solo IMERG", "sin_tendencia": "Sin tendencia"}
 EVIDENCE_STRONG = 0.01
 MAX_HIGHLIGHTS = 6
 
@@ -55,6 +56,31 @@ def _vegetation(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable
             Paragraph(_evidence(variable.significant_after_bh, variable.adjusted_p_value), styles["cell"]),
         ])
     return [_table(rows, [56 * mm, 26 * mm, 26 * mm, 22 * mm, 14 * mm, usable - 144 * mm])]
+
+
+def _extremes(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable: float) -> list:
+    """Índices ETCCDI del punto representativo con su contraste GPM IMERG y los años atípicos marcados."""
+    if not item.extremes:
+        return []
+    rows = [[Paragraph(h, styles["cellHead"]) for h in ("Índice ETCCDI", "Media anual", "Pendiente Sen", "p BH", "Evidencia", "GPM IMERG")]]
+    for index in item.extremes:
+        slope = index.trend.slope_per_year
+        atypical = "".join(f"<br/><font size='6.6' color='#9a6b00'>Año atípico {year.year}: {year.value:.1f} {_text(index.display_unit)}"
+                           + (f" · IMERG {year.countercheck_value:.1f}" if year.countercheck_value is not None else "") + "</font>"
+                           for year in index.atypical_years)
+        check = index.countercheck
+        rows.append([
+            Paragraph(f"<b>{_text(index.label)}</b><br/><font size='6.8' color='#5b6670'>{_text(index.variable)}</font>{atypical}", styles["cell"]),
+            Paragraph(_text(f"{index.mean:.1f} {index.display_unit}"), styles["mono"]),
+            Paragraph(_text("N/D" if slope is None else f"{_signed(slope, 3)}/año"), styles["mono"]),
+            Paragraph("N/D" if index.adjusted_p_value is None else f"{index.adjusted_p_value:.3f}", styles["mono"]),
+            Paragraph(_evidence(index.significant_after_bh, index.adjusted_p_value), styles["cell"]),
+            Paragraph(_text(AGREEMENT_LABELS.get(check.agreement, check.agreement) if check else "N/D"), styles["cell"]),
+        ])
+    out = [_table(rows, [58 * mm, 24 * mm, 26 * mm, 14 * mm, 20 * mm, usable - 142 * mm])]
+    if item.wet_day_p95_mm is not None:
+        out.append(Paragraph(_text(f"P95 de los días húmedos: {item.wet_day_p95_mm:.1f} mm. Serie NASA POWER (MERRA-2) en la celda del punto representativo."), styles["cellMuted"]))
+    return out
 
 
 def _land_cover(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable: float) -> list:
@@ -106,15 +132,16 @@ def _layers(item: SubjectBaseline, components: list[str], styles: dict[str, Para
 
 
 def baseline_sections(result: BaselineScreeningResponse, styles: dict[str, ParagraphStyle], usable: float) -> list:
-    environment = result.sector == "environment"
+    lede = {
+        "environment": "Indicadores satelitales indirectos (MODIS) y capas oficiales ordenados como la línea base de un EIA. "
+                       "Una capa sin registros no prueba ausencia; una capa que no respondió se informa como no disponible.",
+        "hazards": "Extremos de lluvia ETCCDI con contraste GPM IMERG en el punto representativo y capas oficiales de riesgo por distrito. "
+                   "Una capa sin registros o caída no equivale a riesgo cero.",
+    }.get(result.sector, "Registros del Ministerio de Cultura en palabras de la fuente. Cero registros no prueba ausencia de patrimonio; "
+                         "nada de esto es opinión legal ni sustituye el CIRA.")
     story: list = [
-        Paragraph("Línea base por área de estudio", styles["h2"]),
-        Paragraph(_text(
-            "Indicadores satelitales indirectos (MODIS) y capas oficiales ordenados como la línea base de un EIA. "
-            "Una capa sin registros no prueba ausencia; una capa que no respondió se informa como no disponible."
-            if environment else
-            "Registros del Ministerio de Cultura en palabras de la fuente. Cero registros no prueba ausencia de patrimonio; "
-            "nada de esto es opinión legal ni sustituye el CIRA."), styles["lede"]),
+        Paragraph("Línea base por área de estudio" if result.sector != "hazards" else "Amenazas por área de estudio", styles["h2"]),
+        Paragraph(_text(lede), styles["lede"]),
     ]
     for item in result.baselines:
         window = f" · ventana MODIS ±{item.modis_window_km} km · {item.modis_pixels.get('MOD44B', 0)} píxeles de 250 m" if item.modis_window_km else ""
@@ -122,7 +149,7 @@ def baseline_sections(result: BaselineScreeningResponse, styles: dict[str, Parag
             Paragraph(_text(f"{item.subject} · {item.area_km2:,.2f} km²"), styles["h3"]),
             Paragraph(_text(f"{item.origin}{window}"), styles["cellMuted"]),
         ]
-        blocks = _vegetation(item, styles, usable) + _land_cover(item, styles, usable)
+        blocks = _vegetation(item, styles, usable) + _land_cover(item, styles, usable) + _extremes(item, styles, usable)
         blocks += [Paragraph(_text(note), styles["cellMuted"]) for note in [*item.vegetation_notes, *item.errors]]
         blocks += _layers(item, result.components, styles, usable)
         # El encabezado del área viaja con su primer bloque: no queda huérfano al pie de una página.
@@ -140,6 +167,9 @@ def baseline_sources(result: BaselineScreeningResponse) -> list[str]:
     sources = []
     if any(item.vegetation or item.land_cover for item in result.baselines):
         sources.append("NASA ORNL DAAC · MODIS Web Service (https://modis.ornl.gov/rst/api/v1/): MOD44B, MOD17A3HGF y MCD12Q1, productos anuales.")
+    if any(item.climate or item.extremes for item in result.baselines):
+        sources.append("NASA POWER, API Daily Point (https://power.larc.nasa.gov/docs/services/api/): PRECTOTCORR (MERRA-2) e IMERG_PRECTOT (GPM IMERG), "
+                       "estimaciones en grilla que no sustituyen pluviómetros.")
     if organizations:
         sources.append(f"Capas oficiales consultadas por intersección espacial: {', '.join(organizations)}.")
     return sources

@@ -1,4 +1,4 @@
-// QA de la línea base (módulos 4 y 5) en 3100: Ambiente con Moquegua (radio 1 km) y Patrimonio con Moquegua + distrito de Ilo.
+// QA de la línea base (módulos 3, 4 y 5) en 3100: Ambiente y Amenazas con Moquegua (radio 1 km) y Patrimonio con Moquegua + distrito de Ilo.
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
@@ -44,6 +44,17 @@ async function run(viewport, tag) {
   out.environmentHighlights = await page.locator(".layerHighlights li").count();
   out.environmentOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   await page.screenshot({ path: path.join(OUT, `ambiente-${tag}.png`), fullPage: true });
+
+  // Módulo 3 · Amenazas: el mismo sitio; extremos con contraste IMERG y capas de riesgo.
+  await openModule(page, viewport, "Amenazas");
+  out.hazardsSeconds = await runAndRead(page, "Lectura de amenazas");
+  out.hazardsReading = (await page.locator(".verdict").first().innerText()).slice(0, 400);
+  out.hazardsTabs = await page.locator('[aria-label="Variable NASA POWER"] button').allInnerTexts();
+  out.hazardsExtremeRows = await page.locator(".siteResult .agreement").count();
+  out.hazardsLayers = await page.locator(".baselineLayers tbody tr").count();
+  out.hazardsChartPoints = await page.locator(".recharts-line path, .recharts-line-dot").count();
+  out.hazardsOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  await page.screenshot({ path: path.join(OUT, `amenazas-${tag}.png`), fullPage: true });
 
   // Módulo 5 · Patrimonio: el mismo sitio más el distrito de Ilo.
   await openModule(page, viewport, "Territorio");

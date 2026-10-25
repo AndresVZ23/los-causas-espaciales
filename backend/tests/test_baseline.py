@@ -58,6 +58,8 @@ FEATURES = {
     "cultura-archaeology": [{"nombre": "S.A. ALGARROBAL 1", "clasificac": "Sitio Arqueológico", "distrito": "ILO"}] * 2,
     "minam-coastal-lomas": [{"nombdist": "ILO", "nombprov": "ILO", "nombdep": "MOQUEGUA"}],
     "ana-water-bodies": [{"NOMBRE_CA": "Río Ilo", "CATEGORIA": "Categoría 3", "NOMBRE_UH": "Cuenca Ilo - Moquegua"}],
+    "cenepred-flood-risk": [{"nombdist": "ILO", "nombprov": "ILO", "nriesgo_in": "Alto", "niv_sinu": "Medio", "nvuln_in": "Alto"}],
+    "ana-critical-points": [{"RIO_QDA": "Ilo", "SECTOR": "Valle de Ilo", "CUENCA": "Ilo-Moquegua", "DISTRITO": "Ilo, Pacocha y El Algarrobal"}],
 }
 
 
@@ -174,7 +176,7 @@ def test_heritage_pdf_carries_records_links_and_honest_footer(patched):
     assert "Línea base por área de estudio" in text and "Moquegua (radio 1 km)" in text
     assert "Diagnóstico Arqueológico Superficial del Proyecto X" in text and "S.A. ALGARROBAL 1" in text
     assert "No disponible" in text                                                 # la capa caída no se lee como cero
-    assert "registros oficiales del Ministerio de Cultura" in text and "NASA POWER, API" not in text
+    assert "no sustituye el CIRA ni una opinión legal" in text and "NASA POWER, API" not in text   # pie propio de Patrimonio
     assert b"/URI" in response.content and b"2025-0082264.pdf" in response.content  # enlace al PDF del DAS
 
 
@@ -185,6 +187,41 @@ def test_environment_pdf_lists_modis_series_and_sources(patched):
     assert "Suelo sin vegetación" in text and "MOD44B" in text and "Cobertura IGBP" in text
     assert "ORNL DAAC" in text and "NASA POWER, API" not in text
     assert "ningún año" in text                                                    # productividad sin serie, declarada
+
+
+def test_hazards_module_reads_rainfall_extremes_and_risk_levels(patched, monkeypatch):
+    from backend.app.orchestration import extraction
+    from backend.app.reports.executive_pdf import render_executive_pdf
+    from backend.tests.test_solar import FakePowerConnector
+    monkeypatch.setattr(extraction, "PowerConnector", FakePowerConnector)
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.HAZARDS))
+    assert envelope_violations(result) == []
+    area = result.baselines[0]
+    assert [item.variable for item in area.climate] == ["PRECTOTCORR"]
+    assert {item.variable for item in area.extremes} >= {"RX1DAY", "RX5DAY", "CDD"}
+    assert all(item.countercheck is not None for item in area.extremes)               # contraste IMERG adjunto
+    flood = next(layer for layer in area.layers if layer.source_id == "cenepred-flood-risk")
+    assert flood.highlights[0].label == "Ilo (Ilo)" and flood.highlights[0].detail == "riesgo alto · susceptibilidad medio · vulnerabilidad alto"
+    assert any(gap.dataset.startswith("NASA LHASA") for gap in result.data_gaps)
+    assert result.period.startswith("2001-01-01/")
+    assert next(s for s in result.pipeline if s.key == "analysis").status != PipelineStatus.UNAVAILABLE
+    text = _pdf_text(render_executive_pdf(result))
+    assert "Amenazas por área de estudio" in text and "Índice ETCCDI" in text and "GPM IMERG" in text and "Valle de Ilo" in text
+
+
+def test_hazards_without_power_series_declares_the_gap(patched, monkeypatch):
+    from backend.app.connectors.nasa.power import PowerConnectorError
+    from backend.app.orchestration import extraction
+
+    class Down:
+        async def daily_point_multi(self, *args, **kwargs):
+            raise PowerConnectorError("caída controlada")
+
+    monkeypatch.setattr(extraction, "PowerConnector", Down)
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.HAZARDS))
+    assert envelope_violations(result) == []
+    assert result.baselines[0].extremes == [] and result.trend_findings == []
+    assert result.data_gaps[0].dataset == "NASA POWER · lluvia diaria" and "caída controlada" in result.data_gaps[0].impact
 
 
 def test_layer_summary_flags_truncated_responses():

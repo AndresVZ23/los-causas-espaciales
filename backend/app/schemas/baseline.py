@@ -11,11 +11,11 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field, model_validator
 
 from .analysis import Point, Provenance
-from .climate import TerritoryRef
+from .climate import ExtremeIndexSummary, TerritoryRef
 from .pipeline import VariableSummary
 from .screening import ScreeningEnvelope
 
-Component = Literal["fisico", "biologico", "sociocultural"]
+Component = Literal["fisico", "biologico", "sociocultural", "amenazas"]
 
 
 class BaselineGeometry(BaseModel):
@@ -94,6 +94,9 @@ class SubjectBaseline(BaseModel):
     vegetation: list[VariableSummary] = Field(default_factory=list)
     vegetation_notes: list[str] = Field(default_factory=list)
     land_cover: LandCoverChange | None = None
+    climate: list[VariableSummary] = Field(default_factory=list, description="Módulo 3: lluvia anual NASA POWER en el punto representativo.")
+    extremes: list[ExtremeIndexSummary] = Field(default_factory=list, description="Módulo 3: índices ETCCDI con contraste GPM IMERG.")
+    wet_day_p95_mm: float | None = None
     layers: list[BaselineLayer] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
 
