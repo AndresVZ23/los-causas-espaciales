@@ -1,9 +1,16 @@
 import json
+from datetime import timedelta
 
 import httpx
 import pytest
 
-from backend.app.connectors.peru.territory import TerritoryConnector, TerritoryConnectorError, _esri_geometry
+from backend.app.connectors.peru.territory import (
+    LAYERS,
+    TerritoryConnector,
+    TerritoryConnectorError,
+    _cache_max_age,
+    _esri_geometry,
+)
 from backend.app.core.config import Settings
 from backend.app.schemas.analysis import Provenance
 from backend.app.schemas.data_sources import TerritorialQueryRequest
@@ -73,3 +80,8 @@ async def test_unknown_source_is_rejected(tmp_path):
         await connector.query(TerritorialQueryRequest(
             geometry={"type": "Point", "coordinates": [-70.934, -17.193]}, source_ids=["invented-source"]
         ))
+
+
+def test_cultura_layers_use_seven_day_cache_and_other_sources_keep_default():
+    assert _cache_max_age(LAYERS["cultura-archaeology"], 24) == timedelta(days=7)
+    assert _cache_max_age(LAYERS["cenepred-flood-risk"], 24) == timedelta(hours=24)
