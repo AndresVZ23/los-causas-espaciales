@@ -1,4 +1,4 @@
-// QA de la línea base (módulos 4 y 5) en 3100: Ambiente con Moquegua (radio 1 km) y Patrimonio con Moquegua + distrito de Ilo.
+// QA de la línea base (módulos 3, 4 y 5) en 3100: Ambiente y Amenazas con Moquegua (radio 1 km) y Patrimonio con Moquegua + distrito de Ilo.
 const { chromium } = require("playwright");
 const fs = require("fs");
 const path = require("path");
@@ -25,7 +25,7 @@ async function runAndRead(page, heading) {
 
 async function run(viewport, tag) {
   const browser = await chromium.launch();
-  const page = await browser.newPage({ viewport });
+  const page = await browser.newPage({ viewport, acceptDownloads: true });
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
@@ -45,6 +45,17 @@ async function run(viewport, tag) {
   out.environmentOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   await page.screenshot({ path: path.join(OUT, `ambiente-${tag}.png`), fullPage: true });
 
+  // Módulo 3 · Amenazas: el mismo sitio; extremos con contraste IMERG y capas de riesgo.
+  await openModule(page, viewport, "Amenazas");
+  out.hazardsSeconds = await runAndRead(page, "Lectura de amenazas");
+  out.hazardsReading = (await page.locator(".verdict").first().innerText()).slice(0, 400);
+  out.hazardsTabs = await page.locator('[aria-label="Variable NASA POWER"] button').allInnerTexts();
+  out.hazardsExtremeRows = await page.locator(".siteResult .agreement").count();
+  out.hazardsLayers = await page.locator(".baselineLayers tbody tr").count();
+  out.hazardsChartPoints = await page.locator(".recharts-line path, .recharts-line-dot").count();
+  out.hazardsOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  await page.screenshot({ path: path.join(OUT, `amenazas-${tag}.png`), fullPage: true });
+
   // Módulo 5 · Patrimonio: el mismo sitio más el distrito de Ilo.
   await openModule(page, viewport, "Territorio");
   await page.getByLabel("Buscar departamento, provincia o distrito").fill("Ilo");
@@ -61,6 +72,14 @@ async function run(viewport, tag) {
   out.heritageOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   await page.screenshot({ path: path.join(OUT, `patrimonio-${tag}.png`), fullPage: true });
   await page.locator(".siteResults").first().screenshot({ path: path.join(OUT, `patrimonio-tablas-${tag}.png`) });
+  // PDF ejecutivo desde el botón de la pantalla: debe llegar con la sección de línea base.
+  const pdfButton = page.locator(".exportAction.primaryExport");
+  await pdfButton.scrollIntoViewIfNeeded();
+  const [download] = await Promise.all([page.waitForEvent("download", { timeout: 120000 }), pdfButton.click()]);
+  const pdfPath = path.join(OUT, `patrimonio-${tag}.pdf`);
+  await download.saveAs(pdfPath);
+  const bytes = fs.readFileSync(pdfPath);
+  out.heritagePdf = { header: bytes.subarray(0, 4).toString(), kb: Math.round(bytes.length / 1024) };
   out.errors = errors;
   await browser.close();
   return out;

@@ -20,6 +20,12 @@ async def environment_screening(request: BaselineRequest) -> BaselineScreeningRe
     return await _run(request, Sector.ENVIRONMENT)
 
 
+@router.post("/hazards-screening", response_model=BaselineScreeningResponse)
+async def hazards_screening(request: BaselineRequest) -> BaselineScreeningResponse:
+    """Módulo 3: amenazas naturales con extremos de lluvia (NASA POWER + GPM IMERG), relieve y capas de riesgo de CENEPRED y ANA."""
+    return await _run(request, Sector.HAZARDS)
+
+
 @router.post("/heritage-screening", response_model=BaselineScreeningResponse)
 async def heritage_screening(request: BaselineRequest) -> BaselineScreeningResponse:
     """Módulo 5: patrimonio arqueológico, antecedentes y consulta previa (medio sociocultural)."""

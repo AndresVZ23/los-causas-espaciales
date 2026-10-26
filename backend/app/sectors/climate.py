@@ -3,6 +3,7 @@
 import asyncio
 import hashlib
 import json
+from collections.abc import Sequence
 from datetime import datetime, timezone
 from time import perf_counter
 
@@ -32,6 +33,7 @@ from ..schemas.climate import (
     ClimateScreeningRequest,
     ClimateScreeningResponse,
     ClimateSiteResult,
+    ExtremeIndexSummary,
     TerritoryInfo,
 )
 from ..schemas.territory import TerritoryGeometryResponse
@@ -137,17 +139,20 @@ def _data_gaps(terrain: TerrainResponse | None, countercheck_error: str | None) 
     return gaps
 
 
-def _countercheck_summary(sites: list[ClimateSiteResult]) -> str:
-    """Frase para la pregunta de significancia: cuántas tendencias de extremos repite IMERG y qué valores atípicos desmiente."""
-    significant = [(site, item) for site in sites for item in site.extremes if item.significant_after_bh and item.countercheck]
+def countercheck_summary(sites: Sequence[tuple[str, Sequence[ExtremeIndexSummary]]]) -> str:
+    """Frase para la pregunta de significancia: cuántas tendencias de extremos repite IMERG y qué valores atípicos desmiente.
+
+    Recibe pares (etiqueta del sujeto, índices de extremos); la usan Clima y Amenazas.
+    """
+    significant = [(label, item) for label, extremes in sites for item in extremes if item.significant_after_bh and item.countercheck]
     refuted = [
-        f"{item.variable} {site.location.label} {year.year} ({year.value:.0f} mm en MERRA-2, {year.countercheck_value:.0f} mm en IMERG)"
-        for site in sites for item in site.extremes if item.unit == "mm" for year in item.atypical_years
+        f"{item.variable} {label} {year.year} ({year.value:.0f} mm en MERRA-2, {year.countercheck_value:.0f} mm en IMERG)"
+        for label, extremes in sites for item in extremes if item.unit == "mm" for year in item.atypical_years
         if year.countercheck_value is not None and year.countercheck_value < year.value / 5
     ]
     parts = []
     if significant:
-        backed = [f"{item.label.lower()} en {site.location.label}" for site, item in significant if item.countercheck.agreement == Agreement.COINCIDE]
+        backed = [f"{item.label.lower()} en {label}" for label, item in significant if item.countercheck.agreement == Agreement.COINCIDE]
         if not backed:
             subject = "la única tendencia significativa de extremos de lluvia no se repite" if len(significant) == 1 \
                 else f"ninguna de las {len(significant)} tendencias significativas de extremos de lluvia se repite"
@@ -208,7 +213,7 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         {subject.label: (subject.representative_point.latitude, subject.representative_point.longitude) for subject in subjects},
         pending, SectorLens(readings=CLIMATE_READINGS, stable_notes=CLIMATE_STABLE_NOTES, economics=ECONOMICS_NOTE),
     )
-    contrast = _countercheck_summary(sites)
+    contrast = countercheck_summary([(site.location.label, site.extremes) for site in sites])
     if contrast:
         significant = next(question for question in nasa_questions if question.key == "significant")
         significant.answer = f"{significant.answer} {contrast}"

@@ -712,3 +712,37 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **Calendario corregido:** el manifiesto pasa a `RELEASE_2026-11-15.md`; `PROGRESS.md`, DOP, fuentes y arquitectura declaran el 29-oct como anteproyecto y el 15-nov, 23:59, como cierre final. No se creó `v0.1.0`.
 
 **Publicación:** no se hizo push. La aprobación recibida cubría la fusión; se mantiene pendiente una aprobación explícita de Christian para publicar `master`. Tampoco se usó Gemini ni se levantaron 3100/8000.
+
+## 2026-10-25 · Claude · claude/pdf-linea-base · PDF ejecutivo con la línea base (ADR-033)
+
+**Rama:** `claude/pdf-linea-base`, desde `master` `73a8fa7`.
+
+**Cambio de API (compatible):** `POST /api/v1/reports/executive-pdf` recibe el JSON del screening y lo valida por `sector`. `environment` y `heritage` usan `BaselineScreeningResponse`; los demás, el sobre común como antes. Un cuerpo inválido sigue respondiendo 422.
+
+**Reporte:** nuevo `backend/app/reports/baseline_pdf.py`:
+- Sección «Línea base por área de estudio»: MODIS, cobertura IGBP, notas y capas por medio con registros y enlaces `https` de la fuente.
+- Fuentes del pie según lo consultado.
+- Pie propio para Patrimonio (no sustituye el CIRA ni una opinión legal).
+- En estos sectores, los polígonos se rotulan «Área».
+
+**Verificación:**
+- Backend 175/175: dos pruebas nuevas de PDF.
+- PDF real con Moquegua (radio 1 km) y el distrito de Ilo: Patrimonio en 4 páginas y Ambiente en 6; las 18 consultas a capas respondieron.
+- `baseline_ui` en 1440 y 390 descarga el PDF desde el botón, con 0 errores y 0 desbordamiento.
+
+**Para Codex:** revisar y fusionar en `master` con la puerta común cuando Christian lo apruebe. No toqué conectores ni pilotos.
+## 2026-10-25 · Claude · claude/pdf-linea-base · Módulo 3 Amenazas (ADR-034)
+
+**Qué entró:**
+- `POST /api/v1/projects/hazards-screening`, sector `hazards` en el sobre C2.
+- Lluvia y extremos ETCCDI con contraste IMERG, NASADEM, CENEPRED y ANA.
+- Pantalla con lectura, tabla de extremos y capas.
+- El PDF incluye la tabla de extremos.
+
+**Cambios aditivos en archivos de Codex:** dos entradas nuevas en `LAYERS` (`ana-critical-points`, `ana-imminent-danger`). Los pilotos no las usan. Deben sumarse a `DATA_SOURCES.md` junto con las brechas de CENEPRED susceptibilidad (ráster, 400), LHASA e INDECI.
+
+**Corrección de mi tanda anterior:** `d247420` dejó una prueba en rojo, porque cambié el pie de página de Patrimonio después de correr las pruebas. Quedó corregida en este commit; total 177/177.
+
+**QA:** `baseline_ui`, `release_ui` y `climate_ui` en 1440, 768 y 390 sin errores ni desbordamientos.
+
+**Estado:** los siete módulos funcionan; las brechas quedan visibles dentro de cada uno.

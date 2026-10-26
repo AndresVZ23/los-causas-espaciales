@@ -117,6 +117,18 @@ function ExtremeRow({ item }: { item: ExtremeIndex }) {
   );
 }
 
+/** Índices ETCCDI con años atípicos y contraste GPM IMERG; la usan Clima y Amenazas. */
+export function ExtremesTable({ extremes }: { extremes: ExtremeIndex[] }) {
+  return (
+    <div className="tableScroll">
+      <table>
+        <thead><tr><th>Índice</th><th>Media anual</th><th>Pendiente Sen</th><th>Cambio en el período</th><th>p BH</th><th>Evidencia</th><th>Contraste GPM IMERG</th></tr></thead>
+        <tbody>{extremes.map((item) => <ExtremeRow key={item.variable} item={item} />)}</tbody>
+      </table>
+    </div>
+  );
+}
+
 export function ClimateEvidence({ result }: { result: ClimateResult }) {
   return (
     <>
@@ -135,12 +147,7 @@ export function ClimateEvidence({ result }: { result: ClimateResult }) {
               </div>
               <span>P95 de días húmedos: {site.wet_day_p95_mm == null ? "N/D" : `${formatNumber(site.wet_day_p95_mm, 1)} mm`}</span>
             </div>
-            <div className="tableScroll">
-              <table>
-                <thead><tr><th>Índice</th><th>Media anual</th><th>Pendiente Sen</th><th>Cambio en el período</th><th>p BH</th><th>Evidencia</th><th>Contraste GPM IMERG</th></tr></thead>
-                <tbody>{site.extremes.map((item) => <ExtremeRow key={item.variable} item={item} />)}</tbody>
-              </table>
-            </div>
+            <ExtremesTable extremes={site.extremes} />
           </article>
         ))}
       </div>

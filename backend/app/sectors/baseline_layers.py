@@ -18,6 +18,7 @@ COMPONENT_SOURCES: dict[Component, list[str]] = {
         "cultura-archaeology", "cultura-archaeology-declared", "cultura-ciras", "cultura-das", "cultura-qhapaq-nan",
         "cultura-cultural-landscape", "cultura-world-heritage", "cultura-prior-consultation", "cultura-citizen-records",
     ],
+    "amenazas": ["cenepred-flood-risk", "cenepred-mass-movement-risk", "ana-critical-points", "ana-imminent-danger", "ingemmet-geohazards"],
 }
 MAX_HIGHLIGHTS = 12
 
@@ -69,6 +70,18 @@ READERS: dict[str, Reader] = {
     "minam-ramsar": lambda a, _: (_text(a.get("NOMBRE")), _text(a.get("D_LEGAL")) or None, None),
     "ana-water-bodies": lambda a, _: (_text(a.get("NOMBRE_CA")), _join(a.get("CATEGORIA"), a.get("NOMBRE_UH")), None),
     "ana-hydro-units": lambda a, _: (_text(a.get("NOMBRE")), _join(f"código {_text(a.get('CODIGO'))}" if a.get("CODIGO") else "", a.get("NOMB_UH_N3")), None),
+    # CENEPRED publica niveles por distrito; los conteos de viviendas no se muestran sin su definición oficial.
+    "cenepred-flood-risk": lambda a, _: (f"{_title(a.get('nombdist'))} ({_title(a.get('nombprov'))})",
+                                         _join(f"riesgo {_text(a.get('nriesgo_in')).lower()}" if a.get("nriesgo_in") else "",
+                                               f"susceptibilidad {_text(a.get('niv_sinu')).lower()}" if a.get("niv_sinu") else "",
+                                               f"vulnerabilidad {_text(a.get('nvuln_in')).lower()}" if a.get("nvuln_in") else ""), None),
+    "cenepred-mass-movement-risk": lambda a, _: (f"{_title(a.get('nombdist'))} ({_title(a.get('nombprov'))})",
+                                                 _join(f"riesgo {_text(a.get('nriesgo_mm')).lower()}" if a.get("nriesgo_mm") else "",
+                                                       f"peligro {_text(a.get('npel_mm')).lower()}" if a.get("npel_mm") else "",
+                                                       f"vulnerabilidad {_text(a.get('vuln_mm')).lower()}" if a.get("vuln_mm") else ""), None),
+    "ana-critical-points": lambda a, _: (_join(f"Río {_text(a.get('RIO_QDA'))}" if a.get("RIO_QDA") else "", a.get("SECTOR")) or "Punto crítico",
+                                         _join(a.get("CUENCA"), a.get("DISTRITO")), None),
+    "ana-imminent-danger": lambda a, _: (f"{_title(a.get('NOMBDIST'))} ({_title(a.get('NOMBPROV'))})", "Declaratoria D.U. 015-2023", None),
 }
 
 

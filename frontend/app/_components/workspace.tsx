@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AssistantPanel from "./assistant-panel";
 import { BASELINE_HINT, BaselineEvidence, BaselineOptions, BaselineReading } from "./baseline-panels";
+import type { BaselineModule } from "./baseline-panels";
 import { ClimateEvidence, ClimateReading } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
@@ -31,7 +32,7 @@ const ComparisonChart = dynamic(() => import("./comparison-chart"), { ssr: false
 const modules: Module[] = [
   { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER, extremos de lluvia ETCCDI y año en curso hasta hoy." },
   { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con observaciones NASA POWER." },
-  { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Capas pendientes", ready: false, description: "Requiere integrar y validar capas oficiales de amenazas." },
+  { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Funcional", ready: true, description: "Extremos de lluvia con contraste IMERG, relieve NASADEM, riesgo por distrito de CENEPRED y puntos críticos de la ANA; INGEMMET y LHASA siguen pendientes." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "Línea base funcional", ready: true, description: "Insumos para la línea base de un EIA: vegetación MODIS con tendencia, cobertura, agua (ANA), ecosistemas y lomas (MINAM), áreas protegidas y relieve." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Patrimonio funcional", ready: true, description: "Patrimonio arqueológico registrado y declarado, CIRA, diagnósticos previos, Qhapaq Ñan y consulta previa (Ministerio de Cultura); comunidades y conflictos siguen pendientes." },
   { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Piloto vial funcional", ready: true, description: "Corredor Moquegua–Ilo o uno propio: lluvia por tramo, capas territoriales, VAN de mitigación y puntaje." },
@@ -78,7 +79,15 @@ const environmentTabs = [
   { id: "VCF_TREE", short: "Árboles" },
   { id: "NPP", short: "Productividad" },
 ];
-const BASELINE_MODULES = ["environment", "social"];
+// Amenazas: lluvia anual y extremos ETCCDI en el punto representativo de cada área.
+const hazardTabs = [
+  { id: "RX1DAY", short: "Lluvia máx. 1 día" },
+  { id: "RX5DAY", short: "Lluvia máx. 5 días" },
+  { id: "PRECTOTCORR", short: "Precipitación" },
+  { id: "CDD", short: "Racha seca" },
+];
+const BASELINE_MODULES = ["environment", "social", "hazards"];
+const BASELINE_ENDPOINTS: Record<string, string> = { environment: "/api/environment-screening", social: "/api/heritage-screening", hazards: "/api/hazards-screening" };
 
 function getVariable(site: SeriesSubject, variable: string) { return site.variables.find((item) => item.variable === variable)!; }
 // Serie anual de una variable NASA o de un índice ETCCDI (solo en clima); los índices heredan la fuente de la precipitación.
@@ -160,7 +169,7 @@ export default function Workspace() {
   const cellLayer = useMemo(() => cellsFor(climateResult, cellVariable), [climateResult, cellVariable]);
   const isRoadModule = activeModule === "infrastructure";
   const isRealEstateModule = activeModule === "investment";
-  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : activeModule === "environment" ? environmentTabs : isHeritageModule ? [] : solarTabs;
+  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : activeModule === "environment" ? environmentTabs : activeModule === "hazards" ? hazardTabs : isHeritageModule ? [] : solarTabs;
   const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
   const subjectsList = useMemo(() => seriesSubjects(result), [result]);
   const selectedVariable = subjectsList[0] ? seriesFor(subjectsList[0], activeVariable) : null;
@@ -204,7 +213,7 @@ export default function Workspace() {
     ? `${selectedSources.map((source) => `${source.site} ${source.provenance}`).join(" · ")} · ${selectedSources[0].dataset} ${selectedSources[0].version} · descarga ${selectedSources[0].downloaded_at.slice(0, 10)} · ${selectedSources[0].spatial_resolution}`
     : "SIN DATOS · la cuadrícula no representa observaciones";
   // Estado de la fuente según la última consulta: nunca se declara "operativo" sin haberlo comprobado.
-  const sourceName = isHeritageModule ? "Capas oficiales" : isBaselineModule ? "MODIS y capas oficiales" : "NASA POWER";
+  const sourceName = isHeritageModule ? "Capas oficiales" : activeModule === "hazards" ? "NASA POWER y capas oficiales" : isBaselineModule ? "MODIS y capas oficiales" : "NASA POWER";
   const effectiveProvenance = baselineResult
     ? [...baselineResult.baselines.flatMap((item) => item.layers.filter((layer) => layer.status === "READY").map((layer) => layer.provenance)), ...selectedSources.map((source) => source.provenance)]
     : selectedSources.map((source) => source.provenance);
@@ -250,7 +259,7 @@ export default function Workspace() {
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
   function removeSite(index: number) { setSites((current) => current.filter((_, position) => position !== index)); }
   function selectModule(id: string) {
-    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : id === "environment" ? "VCF_BARE" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : id === "environment" ? "VCF_BARE" : id === "hazards" ? "RX1DAY" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
     // Clima y la línea base aceptan territorios o un único sitio; el piloto solar compara al menos dos sitios.
     if (id !== "climate" && !BASELINE_MODULES.includes(id) && sites.length < 2) setSites(initialSites);
     setActiveModule(id); setMobileNavOpen(false);
@@ -290,7 +299,7 @@ export default function Workspace() {
         : isClimateModule
         ? { url: "/api/climate-screening", body: { sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), start_date: startDate, end_date: endDate } }
         : isBaselineModule
-        ? { url: isHeritageModule ? "/api/heritage-screening" : "/api/environment-screening", body: {
+        ? { url: BASELINE_ENDPOINTS[activeModule], body: {
             sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), buffer_km: bufferKm,
             geometries: baselineGeometries.map((item) => ({ id: item.id, label: item.name, geometry: item.geometry })) } }
         : { url: "/api/solar-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions } };
@@ -473,12 +482,13 @@ export default function Workspace() {
                 )}
                 <TerritoryPicker onAdd={(pick) => setTerritories((current) => [...current, pick])} disabled={subjectCount >= 4} chosen={territories.map((item) => item.ubigeo)} />
                 <p className="territoryHint">{isBaselineModule
-                  ? `El territorio completo se cruza con las capas oficiales${isHeritageModule ? "" : "; MODIS usa una ventana de hasta ±10 km alrededor de su punto representativo"}. La primera consulta de un área nueva puede tardar 1–2 minutos.`
+                  ? `El territorio completo se cruza con las capas oficiales${activeModule === "environment" ? "; MODIS usa una ventana de hasta ±10 km alrededor de su punto representativo"
+                      : activeModule === "hazards" ? "; la lluvia se lee en su punto representativo (para el promedio por celdas, use Clima)" : ""}. La primera consulta de un área nueva puede tardar 1–2 minutos.`
                   : "Cada territorio se analiza con las celdas NASA POWER que lo cubren (≈ 55 × 65 km); un distrito menor que una celda se trata como punto. La primera consulta de un territorio puede tardar hasta un minuto."}</p>
               </section>
             )}
             {isBaselineModule && <>
-              <BaselineOptions bufferKm={bufferKm} onBuffer={setBufferKm} geometries={baselineGeometries.length} heritage={isHeritageModule} />
+              <BaselineOptions bufferKm={bufferKm} onBuffer={setBufferKm} geometries={baselineGeometries.length} module={activeModule as BaselineModule} />
               <details className="corridorDraw" open={baselineGeometries.length > 0}>
                 <summary>Dibujar o cargar polígonos y corredores</summary>
                 <GeometryPanel state={study} hint={BASELINE_HINT} />
@@ -552,7 +562,7 @@ export default function Workspace() {
             <p className="seriesKey">{subjectsList.map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
           </div>
           <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={subjectsList.map((site, index) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
-          <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>{baselineResult ? "Valor anual MODIS · promedio de los píxeles dentro del área" : `Años completos · ${["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"}`} · eje ajustado al rango observado</span></div>
+          <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>{baselineResult?.sector === "environment" ? "Valor anual MODIS · promedio de los píxeles dentro del área" : `Años completos · ${["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"}`} · eje ajustado al rango observado</span></div>
         </section>
 
         <PipelinePanel stages={visiblePipeline} running={loading} hasResult={result !== null} selectedStep={selectedStep} onSelect={setSelectedStep} onQuestion={goToQuestion} />

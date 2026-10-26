@@ -175,6 +175,22 @@ LAYERS: dict[str, OfficialLayer] = {
         "https://geosnirh.ana.gob.pe/server/rest/services/ws_UnidadesHidro/MapServer", (1,),
         "Perú; cuencas e intercuencas codificadas", "Vector; codificación Pfafstetter hasta nivel 7", PUBLIC_LICENSE_NOTE,
     ),
+    # Módulo 3 · amenazas naturales (Claude, 25-oct-2026). Las capas 1 y 2 del servicio FEN de CENEPRED
+    # (susceptibilidad) no admiten consultas por área (400): no se agregan.
+    "ana-critical-points": OfficialLayer(
+        "ana-critical-points", "ANA · SNIRH", "Puntos críticos por riesgo de inundación en ríos y quebradas (2022)",
+        "https://geosnirh.ana.gob.pe/server/rest/services/Puntos_Criticos/PuntosCriticos2022/MapServer", (57,),
+        "Perú; puntos críticos identificados por las Autoridades Administrativas del Agua", "Puntos; ubicación aproximada del tramo crítico",
+        PUBLIC_LICENSE_NOTE,
+        ("Inventario de 2022: un punto crítico no estima probabilidad de inundación ni reemplaza un estudio hidráulico.",
+         "El servidor de la ANA responde de forma intermitente; una falla se informa como no disponible."),
+    ),
+    "ana-imminent-danger": OfficialLayer(
+        "ana-imminent-danger", "ANA · SNIRH", "Distritos declarados en peligro inminente por intensas precipitaciones (D.U. 015-2023)",
+        "https://geosnirh.ana.gob.pe/server/rest/services/Puntos_Criticos/Distritos_en_peligro_inminente_por_intensas_precipitaciones/MapServer", (1,),
+        "Perú; distritos incluidos en la declaratoria de 2023", "Polígonos distritales", PUBLIC_LICENSE_NOTE,
+        ("Es una declaratoria administrativa de 2023, no un mapa de amenaza vigente.",),
+    ),
     "ingemmet-geohazards": OfficialLayer(
         "ingemmet-geohazards", "INGEMMET · GEOCATMIN", "Peligros geológicos",
         "https://geocatminapp.ingemmet.gob.pe/arcgis/rest/services", (), "Perú",

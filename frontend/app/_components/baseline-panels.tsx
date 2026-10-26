@@ -1,24 +1,26 @@
 "use client";
 
-import { evidenceLabel } from "./climate-panels";
+import { evidenceLabel, ExtremesTable } from "./climate-panels";
 import { formatNumber } from "./format";
 import type { BaselineComponent, BaselineLayer, BaselineResult, SubjectBaseline } from "./types";
 
 export const BASELINE_HINT = "Dibuje o cargue polígonos o corredores; se suman a los sitios y territorios como áreas de estudio (hasta 4 en total).";
-const COMPONENT_LABEL: Record<BaselineComponent, string> = { fisico: "Medio físico", biologico: "Medio biológico", sociocultural: "Medio sociocultural" };
+const COMPONENT_LABEL: Record<BaselineComponent, string> = { fisico: "Medio físico", biologico: "Medio biológico", sociocultural: "Medio sociocultural", amenazas: "Amenazas y riesgo" };
+export type BaselineModule = "environment" | "social" | "hazards";
+const MODULE_SOURCES: Record<BaselineModule, string> = {
+  environment: "MODIS anual (vegetación y cobertura), relieve NASADEM y capas de ANA, MINAM y SERNANP, ordenados como la línea base de un EIA.",
+  social: "Cultura (SIGDA): patrimonio registrado y declarado, CIRA, diagnósticos arqueológicos, Qhapaq Ñan, paisajes culturales y consulta previa.",
+  hazards: "Lluvia y extremos ETCCDI desde 2001 con contraste GPM IMERG, relieve NASADEM, riesgo por distrito de CENEPRED y puntos críticos de la ANA.",
+};
 const signed = (value: number, digits: number) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatNumber(Math.abs(value), digits)}`;
 const withRecords = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status === "READY" && (layer.intersection_count ?? 0) > 0);
 const unanswered = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status !== "READY").length;
 
-export function BaselineOptions({ bufferKm, onBuffer, geometries, heritage }: { bufferKm: number; onBuffer: (km: number) => void; geometries: number; heritage: boolean }) {
+export function BaselineOptions({ bufferKm, onBuffer, geometries, module }: { bufferKm: number; onBuffer: (km: number) => void; geometries: number; module: BaselineModule }) {
   return (
     <section className="roadControls" aria-labelledby="linea-base-title">
       <h3 id="linea-base-title">Áreas de estudio</h3>
-      <p className="territoryHint">
-        {heritage
-          ? "Cultura (SIGDA): patrimonio registrado y declarado, CIRA, diagnósticos arqueológicos, Qhapaq Ñan, paisajes culturales y consulta previa."
-          : "MODIS anual (vegetación y cobertura), relieve NASADEM y capas de ANA, MINAM y SERNANP, ordenados como la línea base de un EIA."}
-      </p>
+      <p className="territoryHint">{MODULE_SOURCES[module]}</p>
       <div className="assumptionFields">
         <label>Radio de sitios y corredores (km)
           <input type="number" min={0.25} max={10} step={0.25} value={bufferKm} onChange={(event) => onBuffer(+event.target.value)} />
@@ -29,17 +31,26 @@ export function BaselineOptions({ bufferKm, onBuffer, geometries, heritage }: { 
   );
 }
 
+const HEADINGS: Record<BaselineResult["sector"], string> = { environment: "Lectura de la línea base", heritage: "Lectura patrimonial", hazards: "Lectura de amenazas" };
+const NOTES: Record<BaselineResult["sector"], string> = {
+  environment: "Indicadores satelitales indirectos para preparar la línea base; no sustituyen el trabajo de campo ni el EIA.",
+  heritage: "Registros oficiales del Ministerio de Cultura. Cero registros no prueba ausencia de patrimonio; nada de esto es opinión legal.",
+  hazards: "Lluvia en el punto representativo (NASA POWER, contraste IMERG) y riesgo por distrito (CENEPRED). No es un mapa de amenaza a escala de proyecto.",
+};
+
 export function BaselineReading({ result, headingId }: { result: BaselineResult; headingId: string }) {
   const environment = result.sector === "environment";
+  const hazards = result.sector === "hazards";
   return (
     <section className="verdict" aria-labelledby={headingId}>
-      <div className="verdictHead"><h2 id={headingId}>{environment ? "Lectura de la línea base" : "Lectura patrimonial"}</h2><span>{result.baselines.length} área(s)</span></div>
+      <div className="verdictHead"><h2 id={headingId}>{HEADINGS[result.sector]}</h2><span>{result.baselines.length} área(s)</span></div>
       <table className="verdictTable climateTable baselineReading">
-        <thead><tr><th scope="col">Área</th><th scope="col">Capas con registros</th>{environment && <th scope="col">Sin vegetación</th>}</tr></thead>
+        <thead><tr><th scope="col">Área</th><th scope="col">Capas con registros</th>{environment && <th scope="col">Sin vegetación</th>}{hazards && <th scope="col">Lluvia máx. 1 día</th>}</tr></thead>
         <tbody>
           {result.baselines.map((item) => {
             const bare = item.vegetation.find((variable) => variable.variable === "VCF_BARE");
             const slope = bare?.trend.slope_per_year;
+            const rx1 = item.extremes?.find((index) => index.variable === "RX1DAY");
             return (
               <tr key={item.subject}>
                 <th scope="row">{item.subject}<small>{formatNumber(item.area_km2, item.area_km2 < 10 ? 2 : 0)} km² · {item.origin}</small></th>
@@ -47,14 +58,13 @@ export function BaselineReading({ result, headingId }: { result: BaselineResult;
                 <td className="figure">{withRecords(item).length} de {item.layers.length - unanswered(item)}
                   {unanswered(item) > 0 && <small className="negative">{unanswered(item)} sin respuesta</small>}</td>
                 {environment && <td className="figure">{bare ? `${formatNumber(bare.mean, 1)} %` : "N/D"}<small>{bare && slope != null ? `${signed(slope * 10, 1)} pts/década · ${evidenceLabel(bare).toLowerCase()}` : "sin serie"}</small></td>}
+                {hazards && <td className="figure">{rx1 ? `${formatNumber(rx1.mean, 1)} mm` : "N/D"}<small>{rx1 ? `tendencia ${evidenceLabel(rx1).toLowerCase()}${rx1.atypical_years?.length ? ` · ${rx1.atypical_years.length} año(s) atípico(s)` : ""}` : "sin serie"}</small></td>}
               </tr>
             );
           })}
         </tbody>
       </table>
-      <p className="verdictNote">{environment
-        ? "Indicadores satelitales indirectos para preparar la línea base; no sustituyen el trabajo de campo ni el EIA."
-        : "Registros oficiales del Ministerio de Cultura. Cero registros no prueba ausencia de patrimonio; nada de esto es opinión legal."}</p>
+      <p className="verdictNote">{NOTES[result.sector]}</p>
     </section>
   );
 }
@@ -124,6 +134,10 @@ function AreaArticle({ item, components }: { item: SubjectBaseline; components: 
           <p className="verdictNote">Cambió de clase el {formatNumber(item.land_cover.changed_percent, 1)} % de {item.land_cover.pixels} píxeles de 500 m. {item.land_cover.limitations[0]}</p>
         </div>
       )}
+      {item.extremes && item.extremes.length > 0 && <>
+        <ExtremesTable extremes={item.extremes} />
+        {item.wet_day_p95_mm != null && <p className="verdictNote">P95 de los días húmedos: {formatNumber(item.wet_day_p95_mm, 1)} mm · serie NASA POWER en la celda del punto representativo.</p>}
+      </>}
       {[...item.vegetation_notes, ...item.errors].map((note) => <p className="verdictNote" key={note}>{note}</p>)}
       {components.map((component) => {
         const layers = item.layers.filter((layer) => layer.component === component);

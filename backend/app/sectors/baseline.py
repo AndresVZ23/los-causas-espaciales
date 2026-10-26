@@ -1,7 +1,8 @@
-"""Línea base territorial sobre el contrato C2: módulo 4 (ambiental) y módulo 5 (patrimonio y dimensión social).
+"""Línea base territorial sobre el contrato C2: módulos 3 (amenazas), 4 (ambiental) y 5 (patrimonio y dimensión social).
 
-Ambos módulos comparten las áreas de estudio y el orden de una línea base de EIA peruana. El ambiental suma
-vegetación MODIS con tendencia, relieve NASADEM y capas del ANA, MINAM y SERNANP; el patrimonial consulta las
+Los tres comparten las áreas de estudio y el orden de una línea base de EIA peruana. El ambiental suma
+vegetación MODIS con tendencia, relieve NASADEM y capas del ANA, MINAM y SERNANP; el de amenazas suma lluvia y
+extremos ETCCDI con contraste IMERG, relieve y capas de riesgo de CENEPRED y ANA; el patrimonial consulta las
 capas del Ministerio de Cultura y no mide cambios en el tiempo, por lo que declara las preguntas de tendencia
 como evidencia insuficiente en lugar de forzarlas.
 """
@@ -27,18 +28,25 @@ from ..orchestration.nasa_questions import INSUFFICIENT, SectorLens, SubjectSumm
 from ..orchestration.stages import analysis_stage, assemble_pipeline, export_stage, results_stage, selection_stage, stage, unique
 from ..schemas.analysis import Point, Provenance
 from ..schemas.baseline import BaselineLayer, BaselineRequest, BaselineScreeningResponse, Component, SubjectBaseline
+from ..schemas.climate import Agreement
 from ..schemas.data_sources import TerritorialQueryRequest
 from ..schemas.pipeline import VariableSummary
 from ..schemas.screening import DataGap, NasaQuestionAnswer, PipelineStatus, QuestionStatus, Sector, StageEvidence, StudySubject, SubjectKind
 from ..statistics.multiple_testing import benjamini_hochberg
 from ..statistics.trends import decision_p_value
+from ..statistics.extremes import METHOD_NOTES as EXTREME_METHOD_NOTES
+from .baseline_hazards import START as RAINFALL_START
+from .baseline_hazards import rainfall_extremes
 from .baseline_layers import COMPONENT_SOURCES, summarize_layer
 from .baseline_vegetation import VEGETATION_VARIABLES, subject_vegetation
-from .climate import LEVEL_SUFFIX
+from .climate import CLIMATE_READINGS, CLIMATE_STABLE_NOTES, COUNTERCHECK_NOTE, LEVEL_SUFFIX, countercheck_summary
 
-SECTOR_LABELS = {Sector.ENVIRONMENT: "Línea base ambiental", Sector.HERITAGE: "Patrimonio y dimensión social"}
-COMPONENTS: dict[Sector, list[Component]] = {Sector.ENVIRONMENT: ["fisico", "biologico"], Sector.HERITAGE: ["sociocultural"]}
-COMPONENT_LABELS: dict[Component, str] = {"fisico": "Medio físico", "biologico": "Medio biológico", "sociocultural": "Medio sociocultural"}
+SECTOR_LABELS = {Sector.ENVIRONMENT: "Línea base ambiental", Sector.HERITAGE: "Patrimonio y dimensión social", Sector.HAZARDS: "Amenazas naturales"}
+COMPONENTS: dict[Sector, list[Component]] = {Sector.ENVIRONMENT: ["fisico", "biologico"], Sector.HERITAGE: ["sociocultural"], Sector.HAZARDS: ["amenazas"]}
+COMPONENT_LABELS: dict[Component, str] = {"fisico": "Medio físico", "biologico": "Medio biológico", "sociocultural": "Medio sociocultural",
+                                          "amenazas": "Amenazas y riesgo"}
+# Sectores que consultan relieve NASADEM en el punto representativo de cada área.
+TERRAIN_SECTORS = {Sector.ENVIRONMENT, Sector.HAZARDS}
 
 ENVIRONMENT_READINGS = {
     ("VCF_BARE", "increasing"): "aumenta la proporción de suelo sin vegetación: la línea base debe verificar en campo si es degradación, expansión urbana o la variabilidad propia de las lomas",
@@ -63,6 +71,11 @@ DISCLAIMERS = {
         "Identificación preliminar de restricciones y antecedentes registrados por el Ministerio de Cultura. No sustituye el CIRA, el plan de "
         "monitoreo arqueológico, la consulta previa ni la evaluación del Ministerio de Cultura. La ausencia de registros no prueba la ausencia de "
         "patrimonio arqueológico, pueblos indígenas o conflictos, y nada de esto es opinión legal."
+    ),
+    Sector.HAZARDS: (
+        "Screening de amenazas: tendencias de lluvia y de sus extremos (NASA POWER con contraste GPM IMERG) en el punto representativo de "
+        "cada área, relieve NASADEM y capas oficiales de riesgo por distrito. No es un mapa de amenaza a escala de proyecto ni sustituye "
+        "estudios hidrológicos o geotécnicos ni la evaluación de riesgo de desastres; una capa sin registros o caída no equivale a riesgo cero."
     ),
 }
 SENACE_GAP = DataGap(
@@ -92,6 +105,16 @@ STATIC_GAPS = {
         DataGap(dataset="Evaluación arqueológica del propio proyecto",
                 impact="Los registros y antecedentes de otros proyectos no reemplazan el CIRA ni el diagnóstico propio.",
                 next_action="Tramitar el CIRA o el procedimiento que corresponda ante el Ministerio de Cultura."),
+    ],
+    Sector.HAZARDS: [
+        DataGap(dataset="NASA LHASA · susceptibilidad y pronóstico de deslizamientos",
+                impact="Sin la capa global de deslizamientos de NASA: la ruta oficial está confirmada, pero el conector y la lectura de sus valores siguen pendientes.",
+                next_action="Integrar LHASA declarando su resolución y su propósito (alerta, no mapa de amenaza local)."),
+        DataGap(dataset="Inventario histórico de emergencias (INDECI · SINPAD)",
+                impact="No se listan emergencias ocurridas en el área: no se verificó un servicio geográfico consultable.",
+                next_action="Consultar SINPAD o el reporte de emergencias del distrito."),
+        DataGap(dataset="Estaciones SENAMHI", impact="Los extremos de lluvia se contrastan satélite contra reanálisis; no hay mediciones en sitio.",
+                next_action="Verificar acceso a series diarias de estaciones cercanas."),
     ],
 }
 
@@ -212,10 +235,11 @@ def _layer_sentences(baselines: Sequence[SubjectBaseline]) -> list[str]:
     """Una frase por área con lo que las capas sí registran, en palabras de la fuente."""
     sentences = []
     for baseline in baselines:
-        present = [f"{layer.dataset.lower()} ({layer.intersection_count}{'+' if layer.truncated else ''})"
+        # El nombre de la capa va tal como lo publica la fuente (siglas incluidas), separado por punto y coma.
+        present = [f"{layer.dataset} ({layer.intersection_count}{'+' if layer.truncated else ''})"
                    for layer in baseline.layers if layer.status == "READY" and layer.intersection_count]
         if present:
-            sentences.append(f"{baseline.subject} se superpone con {join_es(present)}.")
+            sentences.append(f"{baseline.subject} se superpone con: {'; '.join(present)}.")
     return sentences
 
 
@@ -256,11 +280,24 @@ def _extraction_stage(sector: Sector, baselines: Sequence[SubjectBaseline], dura
             StageEvidence(label="Series desde caché", value=f"{cached} de {len(summaries)}", provenance=Provenance.CACHED if cached else Provenance.REAL),
         ]
         provenance += [item.source.provenance for item in summaries]
+    if sector == Sector.HAZARDS:
+        summaries = [item for baseline in baselines for item in baseline.climate]
+        cached = sum(1 for item in summaries if item.source.provenance == Provenance.CACHED)
+        years = max((len(item.annual_series) for item in summaries), default=0)
+        evidence += [
+            StageEvidence(label="Lluvia diaria NASA POWER + GPM IMERG", value=f"{len(summaries)} de {len(baselines)} áreas · {years} años completos · punto representativo",
+                          provenance=Provenance.REAL if summaries else Provenance.UNAVAILABLE),
+            StageEvidence(label="Series desde caché", value=f"{cached} de {len(summaries)}", provenance=Provenance.CACHED if cached else Provenance.REAL),
+        ]
+        provenance += [item.source.provenance for item in summaries]
     if errors:
         evidence.append(StageEvidence(label="Fuentes con error", value=" · ".join(errors)[:300], provenance=Provenance.UNAVAILABLE))
     status = PipelineStatus.PARTIAL if errors or ready < len(layers) else PipelineStatus.COMPLETED
-    summary = f"{ready} de {len(layers)} consultas a capas oficiales respondieron" + (
-        f" y MODIS entregó {sum(len(b.vegetation) for b in baselines)} series anuales." if sector == Sector.ENVIRONMENT else ".")
+    tail = {
+        Sector.ENVIRONMENT: f" y MODIS entregó {sum(len(b.vegetation) for b in baselines)} series anuales.",
+        Sector.HAZARDS: f" y NASA POWER entregó la lluvia diaria de {sum(1 for b in baselines if b.climate)} áreas.",
+    }.get(sector, ".")
+    summary = f"{ready} de {len(layers)} consultas a capas oficiales respondieron{tail}"
     return stage("extraction", status, summary, unique(provenance) or [Provenance.UNAVAILABLE], evidence, duration_ms, ["what"])
 
 
@@ -271,7 +308,7 @@ def _territorial_stage(sector: Sector, baselines: Sequence[SubjectBaseline], ter
         with_records = sorted({layer.dataset for layer in layers if layer.intersection_count})
         evidence.append(StageEvidence(label=COMPONENT_LABELS[component], value=f"{len(with_records)} capas con registros: {', '.join(with_records) or 'ninguna'}",
                                       provenance=Provenance.REAL))
-    if sector == Sector.ENVIRONMENT:
+    if sector in TERRAIN_SECTORS:
         ready = sum(1 for site in terrain.sites if site.status == "READY") if terrain else 0
         evidence.append(StageEvidence(label="Relieve NASADEM", value=f"{ready} de {len(baselines)} áreas" if terrain else (terrain_error or "No consultado"),
                                       provenance=Provenance.REAL if ready else Provenance.UNAVAILABLE))
@@ -282,13 +319,37 @@ def _territorial_stage(sector: Sector, baselines: Sequence[SubjectBaseline], ter
                  [Provenance.REAL, Provenance.UNAVAILABLE] if pending else [Provenance.REAL], evidence, duration_ms, ["where", "so_what"])
 
 
-def _period(baselines: Sequence[SubjectBaseline], is_environment: bool) -> str:
-    """Período «inicio/fin» del contrato: años MODIS en el ambiental; fecha de consulta en el patrimonial (registros vigentes)."""
+def _period(baselines: Sequence[SubjectBaseline], sector: Sector) -> str:
+    """Período «inicio/fin» del contrato: años MODIS en el ambiental, la serie diaria en amenazas y la fecha de consulta
+    en el patrimonial (registros vigentes)."""
     years = [item.annual_series[i].year for b in baselines for item in b.vegetation for i in (0, -1)]
-    if is_environment and years:
+    if sector == Sector.ENVIRONMENT and years:
         return f"{min(years)}-01-01/{max(years)}-12-31"
+    last = [item.last_valid_date for b in baselines for item in b.climate if item.last_valid_date]
+    if sector == Sector.HAZARDS and last:
+        return f"{RAINFALL_START.isoformat()}/{max(last).isoformat()}"
     today = datetime.now(timezone.utc).date().isoformat()
     return f"{today}/{today}"
+
+
+def _hazard_questions(labelled: Sequence[SubjectSummaries], findings, baselines: Sequence[SubjectBaseline], points: Sequence[Point], pending: int) -> list[NasaQuestionAnswer]:
+    """Preguntas del reto con el lente climático y el contraste IMERG; la lectura de inversión suma lo que registran las capas de riesgo."""
+    coordinates = {b.subject: (p.latitude, p.longitude) for b, p in zip(baselines, points, strict=True)}
+    questions = answer_nasa_questions(labelled, findings, coordinates, pending, SectorLens(readings=CLIMATE_READINGS, stable_notes=CLIMATE_STABLE_NOTES))
+    by_key = {question.key: question for question in questions}
+    contrast = countercheck_summary([(b.subject, b.extremes) for b in baselines])
+    if contrast:
+        by_key["significant"].answer = f"{by_key['significant'].answer} {contrast}"
+        by_key["significant"].evidence.append(COUNTERCHECK_NOTE)
+    # La lectura no debe afirmar un cambio de extremos que el satélite no confirma.
+    unbacked = [f"{item.label.lower()} en {b.subject}" for b in baselines for item in b.extremes
+                if item.significant_after_bh and item.countercheck and item.countercheck.agreement != Agreement.COINCIDE]
+    extra = _layer_sentences(baselines)
+    if unbacked:
+        extra.insert(0, f"Salvedad: {', '.join(unbacked)} no se confirma con GPM IMERG; tómese como indicio a verificar.")
+    if extra:
+        by_key["so_what"].answer = f"{by_key['so_what'].answer} {' '.join(extra)}".strip()
+    return questions
 
 
 async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> BaselineScreeningResponse:
@@ -303,11 +364,13 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         return None
 
     is_environment = sector == Sector.ENVIRONMENT
+    is_hazards = sector == Sector.HAZARDS
     limits = _host_limits()   # compartidos entre áreas: el tope es por servidor, no por área
-    layer_results, vegetation, terrain_result = await asyncio.gather(
+    layer_results, vegetation, terrain_result, rainfall = await asyncio.gather(
         asyncio.gather(*(_layers(area, components, limits) for area in areas)),
         asyncio.gather(*(subject_vegetation(area.subject.representative_point, area.subject.geometry, area.window_km, area.area_km2) for area in areas)) if is_environment else nothing(),
-        extract_terrain(points) if is_environment else nothing(),
+        extract_terrain(points) if sector in TERRAIN_SECTORS else nothing(),
+        rainfall_extremes(points) if is_hazards else nothing(),
     )
     extraction_ms = elapsed_ms(started)
     terrain, terrain_error, terrain_ms = terrain_result if terrain_result else (None, None, 0.0)
@@ -316,21 +379,28 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
     for index, area in enumerate(areas):
         layers, layer_error = layer_results[index]
         veg = vegetation[index] if vegetation else None
+        rain = rainfall.areas[index] if rainfall else None
         baselines.append(SubjectBaseline(
             subject=area.subject.label, origin=area.origin, area_km2=area.area_km2, study_area=area.subject.geometry,
             modis_window_km=area.window_km if is_environment else None, modis_pixels=veg.pixels if veg else {},
             vegetation=veg.summaries if veg else [], vegetation_notes=veg.notes if veg else [],
-            land_cover=veg.land_cover if veg else None, layers=layers,
-            errors=[e for e in [layer_error, *(veg.errors if veg else [])] if e],
+            land_cover=veg.land_cover if veg else None,
+            climate=rain.climate if rain else [], extremes=rain.extremes if rain else [], wet_day_p95_mm=rain.wet_day_p95_mm if rain else None,
+            layers=layers, errors=[e for e in [layer_error, *(veg.errors if veg else [])] if e],
         ))
 
     analysis_started = perf_counter()
     _adjust_by_variable([item for baseline in baselines for item in baseline.vegetation])
-    labelled = [SubjectSummaries(label=b.subject, summaries=b.vegetation) for b in baselines]
-    findings = collect_trend_findings(labelled) if is_environment else []
+    # Amenazas: lluvia anual y extremos ya ajustados por BH entre áreas en el análisis compartido con Clima.
+    labelled = [SubjectSummaries(label=b.subject, summaries=[*b.vegetation, *b.climate, *b.extremes]) for b in baselines]
+    findings = collect_trend_findings(labelled) if is_environment or is_hazards else []
     analysis_ms = elapsed_ms(analysis_started)
 
     gaps = list(STATIC_GAPS[sector])
+    if rainfall and rainfall.power_error:
+        gaps.insert(0, DataGap(dataset="NASA POWER · lluvia diaria", impact=f"Sin serie de lluvia: {rainfall.power_error}", next_action="Reintentar la consulta; no se rellena con ceros."))
+    if rainfall and rainfall.countercheck_error:
+        gaps.insert(0, DataGap(dataset="GPM IMERG", impact=f"Sin contraste satelital de los extremos: {rainfall.countercheck_error}", next_action="Reintentar la consulta IMERG_PRECTOT en NASA POWER."))
     for baseline in baselines:
         for layer in baseline.layers:
             if layer.status == "DATA_UNAVAILABLE" and all(gap.dataset != layer.dataset for gap in gaps):
@@ -351,28 +421,34 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         extra = _layer_sentences(baselines)
         if extra:
             questions[4].answer = f"{questions[4].answer} {' '.join(extra)}".strip()
+    elif is_hazards:
+        questions = _hazard_questions(labelled, findings, baselines, points, pending)
     else:
         questions = _heritage_questions(baselines, pending)
 
     all_layers = [layer for b in baselines for layer in b.layers]
     provenance = unique([*(layer.provenance for layer in all_layers), Provenance.MODEL, *([Provenance.UNAVAILABLE] if pending else [])])
     label = SECTOR_LABELS[sector]
-    variables = [v.key for v in VEGETATION_VARIABLES] if is_environment else []
+    indicators = {
+        Sector.ENVIRONMENT: "MODIS MOD44B, MOD17A3HGF, MCD12Q1 y NASADEM",
+        Sector.HAZARDS: f"NASA POWER PRECTOTCORR y GPM IMERG desde {RAINFALL_START.year} (índices ETCCDI) y NASADEM",
+    }.get(sector, "No aplica: registros oficiales")
     configuration = stage("configuration", PipelineStatus.COMPLETED, f"{label}: {', '.join(COMPONENT_LABELS[c].lower() for c in components)}.", [Provenance.ASSUMPTION], [
         StageEvidence(label="Sector", value=label),
         StageEvidence(label="Medios de la línea base", value=", ".join(COMPONENT_LABELS[c] for c in components)),
         StageEvidence(label="Capas oficiales", value=str(sum(len(COMPONENT_SOURCES[c]) for c in components))),
-        StageEvidence(label="Indicadores NASA", value="MODIS MOD44B, MOD17A3HGF, MCD12Q1 y NASADEM" if is_environment else "No aplica: registros oficiales"),
+        StageEvidence(label="Indicadores NASA", value=indicators),
         StageEvidence(label="Radio para sitios y corredores", value=f"{request.buffer_km:g} km", provenance=Provenance.ASSUMPTION),
     ])
-    if is_environment:
+    if is_environment or is_hazards:
         analysis = analysis_stage(labelled, findings, analysis_ms)
     else:
         analysis = stage("analysis", PipelineStatus.UNAVAILABLE, "No aplica: los registros patrimoniales no son series temporales.", [Provenance.UNAVAILABLE],
                          [StageEvidence(label="Pruebas de tendencia", value="No aplica", provenance=Provenance.UNAVAILABLE)], analysis_ms)
     evaluation = stage("evaluation", PipelineStatus.COMPLETED,
                        " ".join(_layer_sentences(baselines)) or "Ninguna capa registra objetos en las áreas; eso no prueba ausencia.", [Provenance.REAL, Provenance.MODEL],
-                       [StageEvidence(label=b.subject, value=f"{sum(1 for layer in b.layers if layer.intersection_count)} capas con registros · {b.area_km2:,.2f} km²") for b in baselines])
+                       [StageEvidence(label=b.subject, value=f"{sum(1 for layer in b.layers if layer.intersection_count)} capas con registros · {b.area_km2:,.2f} km²"
+                                      + "".join(f" · {item.variable} medio {item.mean:.1f} {item.unit}" for item in b.extremes if item.variable == "RX1DAY")) for b in baselines])
     finance = stage("finance", PipelineStatus.UNAVAILABLE, "No aplica: la línea base no evalúa finanzas.", [Provenance.UNAVAILABLE],
                     [StageEvidence(label="Impacto económico", value="No aplica en este módulo", provenance=Provenance.UNAVAILABLE)])
     pipeline = assemble_pipeline([
@@ -396,10 +472,16 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
             "Tendencia de cada indicador con Mann–Kendall corregido por Hamed–Rao y pendiente de Sen; Benjamini–Hochberg por indicador entre áreas.",
             "Cobertura del suelo MCD12Q1 (IGBP): composición del primer y del último año publicados y porcentaje de píxeles que cambiaron de clase.",
         ]
+    if is_hazards:
+        method_notes += [
+            "Lluvia y extremos en el punto representativo de cada área (celda NASA POWER que lo contiene); para el promedio areal por celdas, use el módulo Clima.",
+            *EXTREME_METHOD_NOTES, COUNTERCHECK_NOTE,
+            "CENEPRED publica niveles de riesgo, peligro y vulnerabilidad por distrito para el escenario El Niño; no son probabilidades a escala de predio.",
+        ]
     return BaselineScreeningResponse(
         analysis_id=uuid4().hex[:16], generated_at=datetime.now(timezone.utc), sector=sector, sector_label=label,
         title=f"{label} — {join_es([a.subject.label for a in areas])}",
-        period=_period(baselines, is_environment),
+        period=_period(baselines, sector),
         subjects=[a.subject for a in areas], pipeline=pipeline, nasa_questions=questions, trend_findings=findings, terrain=terrain,
         data_gaps=gaps, assumption_items=[], disclaimer=DISCLAIMERS[sector],
         components=components, baselines=baselines, method_notes=method_notes,

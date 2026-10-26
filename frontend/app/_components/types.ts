@@ -135,7 +135,7 @@ export type RealEstateResult = Omit<ScreeningResult, "sites" | "comparative_find
   sites: RealEstateSite[]; territorial_evidence: TerritorialEvidence[]; assumptions: RealEstateAssumptions;
 };
 // Línea base territorial (módulos 4 y 5 · sectores "environment" y "heritage" del contrato C2).
-export type BaselineComponent = "fisico" | "biologico" | "sociocultural";
+export type BaselineComponent = "fisico" | "biologico" | "sociocultural" | "amenazas";
 export type LayerHighlight = { label: string; count: number; detail: string | null; link: string | null };
 export type BaselineLayer = {
   source_id: string; organization: string; dataset: string; component: BaselineComponent; status: "READY" | "DATA_UNAVAILABLE";
@@ -149,25 +149,29 @@ export type LandCoverChange = {
 export type SubjectBaseline = {
   subject: string; origin: string; area_km2: number; study_area: GeoJSON.Geometry; modis_window_km: number | null; modis_pixels: Record<string, number>;
   vegetation: VariableSummary[]; vegetation_notes: string[]; land_cover: LandCoverChange | null; layers: BaselineLayer[]; errors: string[];
+  climate?: VariableSummary[]; extremes?: ExtremeIndex[]; wet_day_p95_mm?: number | null;
 };
 export type BaselineResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
-  sector: "environment" | "heritage"; components: BaselineComponent[]; baselines: SubjectBaseline[]; method_notes: string[];
+  sector: "environment" | "heritage" | "hazards"; components: BaselineComponent[]; baselines: SubjectBaseline[]; method_notes: string[];
 };
 export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult | BaselineResult;
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export const isRoad = (result: AnyResult | null): result is RoadResult => result?.sector === "road";
 export const isRealEstate = (result: AnyResult | null): result is RealEstateResult => result?.sector === "real_estate";
-export const isBaseline = (result: AnyResult | null): result is BaselineResult => result?.sector === "environment" || result?.sector === "heritage";
+export const isBaseline = (result: AnyResult | null): result is BaselineResult => ["environment", "heritage", "hazards"].includes(result?.sector ?? "");
 /** Sujetos con series NASA, cualquiera sea el sector: sitios (solar, clima) o tramos (vial). */
 export type SeriesSubject = { location: Point; variables: VariableSummary[]; extremes?: ExtremeIndex[] };
 export const seriesSubjects = (result: AnyResult | null): SeriesSubject[] => {
   if (!result) return [];
   if (isRoad(result)) return result.segments.map((segment) => ({ location: { ...segment.representative_point, label: segment.label }, variables: segment.variables }));
   if (isRealEstate(result)) return result.sites.map((site) => ({ location: { ...site.representative_point, label: site.label }, variables: site.variables }));
-  // Patrimonio no tiene series: sus registros no son temporales.
-  if (isBaseline(result)) return result.baselines.filter((item) => item.vegetation.length).map((item) => {
+  // Patrimonio no tiene series: sus registros no son temporales. Ambiente aporta MODIS; Amenazas, lluvia y extremos.
+  if (isBaseline(result)) return result.baselines.filter((item) => item.vegetation.length || item.climate?.length).map((item) => {
     const subject = result.subjects?.find((entry) => entry.label === item.subject);
-    return { location: { latitude: subject?.representative_point.latitude ?? 0, longitude: subject?.representative_point.longitude ?? 0, label: item.subject }, variables: item.vegetation };
+    return {
+      location: { latitude: subject?.representative_point.latitude ?? 0, longitude: subject?.representative_point.longitude ?? 0, label: item.subject },
+      variables: [...item.vegetation, ...(item.climate ?? [])], extremes: item.extremes ?? [],
+    };
   });
   return result.sites;
 };
