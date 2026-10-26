@@ -1,4 +1,4 @@
-"""Amenazas naturales (módulo 3): lluvia anual y extremos ETCCDI con contraste GPM IMERG en cada área.
+"""Amenazas naturales (módulo 3): lluvia anual y extremos ETCCDI con contrastes GPM IMERG y CHIRPS en cada área.
 
 Reutiliza la extracción y la estadística del módulo Clima sobre el punto representativo de cada área: NASA POWER
 (con la verificación de escala ×24) e IMERG servido por la misma API. Un área grande se describe por su punto

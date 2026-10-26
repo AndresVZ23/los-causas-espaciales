@@ -80,9 +80,9 @@ const AGREEMENT_TEXT: Record<Exclude<Agreement, "solo_contraste">, string> = {
   sin_tendencia: "Sin tendencia",
 };
 // Contrastes independientes de la serie principal (NASA POWER · MERRA-2), en el orden en que se muestran.
-const CHECK_SOURCES = [{ key: "IMERG", label: "GPM IMERG" }, { key: "CHIRPS", label: "CHIRPS" }];
-const shortSource = (source: string) => CHECK_SOURCES.find((item) => source.includes(item.key))?.key ?? source;
-const checksOf = (item: ExtremeIndex) => item.counterchecks?.length ? item.counterchecks : item.countercheck ? [item.countercheck] : [];
+export const CHECK_SOURCES = [{ key: "IMERG", label: "GPM IMERG", dash: "5 3" }, { key: "CHIRPS", label: "CHIRPS", dash: "1 3" }];
+export const shortSource = (source: string) => CHECK_SOURCES.find((item) => source.includes(item.key))?.key ?? source;
+export const checksOf = (item: ExtremeIndex) => item.counterchecks?.length ? item.counterchecks : item.countercheck ? [item.countercheck] : [];
 
 /** Valor de cada contraste en un año atípico; los resultados anteriores a CHIRPS solo traen el de IMERG. */
 function atypicalChecks(year: NonNullable<ExtremeIndex["atypical_years"]>[number]) {

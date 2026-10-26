@@ -76,7 +76,7 @@ DISCLAIMERS = {
         "patrimonio arqueológico, pueblos indígenas o conflictos, y nada de esto es opinión legal."
     ),
     Sector.HAZARDS: (
-        "Screening de amenazas: tendencias de lluvia y de sus extremos (NASA POWER con contraste GPM IMERG) en el punto representativo de "
+        "Screening de amenazas: tendencias de lluvia y de sus extremos (NASA POWER, cruzada con GPM IMERG y CHIRPS) en el punto representativo de "
         "cada área, relieve NASADEM y capas oficiales de riesgo por distrito. No es un mapa de amenaza a escala de proyecto ni sustituye "
         "estudios hidrológicos o geotécnicos ni la evaluación de riesgo de desastres; una capa sin registros o caída no equivale a riesgo cero."
     ),
@@ -301,9 +301,12 @@ def _extraction_stage(sector: Sector, baselines: Sequence[SubjectBaseline], dura
         summaries = [item for baseline in baselines for item in baseline.climate]
         cached = sum(1 for item in summaries if item.source.provenance == Provenance.CACHED)
         years = max((len(item.annual_series) for item in summaries), default=0)
+        with_chirps = sum(1 for baseline in baselines if any(check.source.startswith("CHIRPS") for item in baseline.extremes for check in item.counterchecks))
         evidence += [
             StageEvidence(label="Lluvia diaria NASA POWER + GPM IMERG", value=f"{len(summaries)} de {len(baselines)} áreas · {years} años completos · punto representativo",
                           provenance=Provenance.REAL if summaries else Provenance.UNAVAILABLE),
+            StageEvidence(label="Lluvia diaria CHIRPS (NASA SERVIR)", value=f"{with_chirps} de {len(baselines)} áreas · promedio sobre el área",
+                          provenance=Provenance.REAL if with_chirps else Provenance.UNAVAILABLE),
             StageEvidence(label="Series desde caché", value=f"{cached} de {len(summaries)}", provenance=Provenance.CACHED if cached else Provenance.REAL),
         ]
         provenance += [item.source.provenance for item in summaries]

@@ -95,7 +95,7 @@ class SubjectBaseline(BaseModel):
     vegetation_notes: list[str] = Field(default_factory=list)
     land_cover: LandCoverChange | None = None
     climate: list[VariableSummary] = Field(default_factory=list, description="Módulo 3: lluvia anual NASA POWER en el punto representativo.")
-    extremes: list[ExtremeIndexSummary] = Field(default_factory=list, description="Módulo 3: índices ETCCDI con contraste GPM IMERG.")
+    extremes: list[ExtremeIndexSummary] = Field(default_factory=list, description="Módulo 3: índices ETCCDI con contrastes GPM IMERG y CHIRPS.")
     wet_day_p95_mm: float | None = None
     layers: list[BaselineLayer] = Field(default_factory=list)
     errors: list[str] = Field(default_factory=list)
