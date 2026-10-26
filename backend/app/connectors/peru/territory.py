@@ -196,7 +196,9 @@ LAYERS: dict[str, OfficialLayer] = {
         "https://geocatminapp.ingemmet.gob.pe/arcgis/rest/services", (), "Perú",
         "Pendiente de lectura segura de metadatos",
         "INGEMMET declara GEOCATMIN público y de uso gratuito; falta validar la capa concreta.",
-        unavailable_reason="El host oficial presenta una cadena TLS no verificable; no se desactiva la validación TLS.",
+        # 26-oct-2026: el TLS se resuelve agregando el intermedio Sectigo OV R36 (ver identify_layers.py), pero el servicio
+        # del inventario nacional (SERV_PERUALERTA) figura detenido; los mapas volcánicos sí se leen por identify.
+        unavailable_reason="El inventario nacional de peligros geológicos (SERV_PERUALERTA) no está publicado en el servidor de INGEMMET (detenido al 26-oct-2026).",
     ),
     "senamhi-idesep": OfficialLayer(
         "senamhi-idesep", "SENAMHI · IDESEP", "Catálogo oficial WFS meteorológico y climático",

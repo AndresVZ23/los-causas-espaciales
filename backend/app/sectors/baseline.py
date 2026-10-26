@@ -20,6 +20,7 @@ from uuid import uuid4
 from shapely.geometry import shape
 
 from ..connectors.peru.admin_boundaries import PeruTerritoryCatalog, TerritoryCatalogError
+from ..connectors.peru.identify_layers import CENEPRED_FEN, INGEMMET_BASE, IdentifyLayersConnector
 from ..connectors.peru.territory import LAYERS, TerritoryConnector, TerritoryConnectorError
 from ..geospatial.buffers import buffer_km, window_km
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
@@ -194,12 +195,27 @@ def _host_limits() -> dict[str, asyncio.Semaphore]:
     return defaultdict(lambda: asyncio.Semaphore(PER_HOST))
 
 
-async def _one_layer(connector: TerritoryConnector, geometry: dict, source_id: str, limit: asyncio.Semaphore):
+IDENTIFY_HOSTS = {"cenepred-susceptibility": urlparse(CENEPRED_FEN).hostname or "", "ingemmet-volcanic-hazards": urlparse(INGEMMET_BASE).hostname or ""}
+
+
+def _host(source_id: str) -> str:
+    return IDENTIFY_HOSTS.get(source_id) or urlparse(LAYERS[source_id].base_url).hostname or ""
+
+
+async def _query_source(connector: TerritoryConnector, area: StudyArea, source_id: str):
+    if source_id == "cenepred-susceptibility":
+        point = area.subject.representative_point
+        return await IdentifyLayersConnector().cenepred_susceptibility(area.subject.geometry, (point.longitude, point.latitude))
+    if source_id == "ingemmet-volcanic-hazards":
+        return await IdentifyLayersConnector().volcanic_hazards(area.subject.geometry)
+    return (await connector.query(TerritorialQueryRequest(geometry=area.subject.geometry, source_ids=[source_id]))).sources[0]
+
+
+async def _one_layer(connector: TerritoryConnector, area: StudyArea, source_id: str, limit: asyncio.Semaphore):
     """Una capa por consulta, con tope por servidor y un reintento si el servicio no respondió."""
     for attempt in range(2):
         async with limit:
-            response = await connector.query(TerritorialQueryRequest(geometry=geometry, source_ids=[source_id]))
-            result = response.sources[0]
+            result = await _query_source(connector, area, source_id)
             if result.provenance != Provenance.CACHED:
                 await asyncio.sleep(PACE_SECONDS)
         if result.status == "READY" or not result.limitations[0].startswith("El servicio oficial no respondió") or attempt:
@@ -212,8 +228,7 @@ async def _layers(area: StudyArea, components: Sequence[Component], limits: dict
     component_of = {source: component for component in components for source in COMPONENT_SOURCES[component]}
     connector = TerritoryConnector()
     try:
-        results = await asyncio.gather(*(_one_layer(connector, area.subject.geometry, source_id, limits[urlparse(LAYERS[source_id].base_url).hostname or ""])
-                                         for source_id in component_of))
+        results = await asyncio.gather(*(_one_layer(connector, area, source_id, limits[_host(source_id)]) for source_id in component_of))
     except TerritoryConnectorError as exc:
         return [], f"Consulta de capas oficiales: {exc}"
     return [summarize_layer(result, component_of[result.source_id]) for result in results], None
