@@ -746,3 +746,14 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **QA:** `baseline_ui`, `release_ui` y `climate_ui` en 1440, 768 y 390 sin errores ni desbordamientos.
 
 **Estado:** los siete módulos funcionan; las brechas quedan visibles dentro de cada uno.
+## 2026-10-26 · Codex · `master` · `f3c906f` · integración de PDF y módulo de amenazas
+
+**Fusión aprobada por Christian:** `claude/pdf-linea-base` (`2d1c143`, incluido `d247420`) se revisó y fusionó en `master` mediante `f3c906f`. La revisión confirmó que el PDF valida el esquema completo de los sectores de línea base y que Amenazas conserva el sobre C2, la procedencia, el contraste GPM IMERG y los faltantes como `DATA_UNAVAILABLE`; una intersección vacía no se presenta como riesgo cero.
+
+**Fuentes:** `DATA_SOURCES.md` registra `ana-critical-points` (Puntos Críticos 2022, capa 57) y `ana-imminent-danger` (D.U. 015-2023, capa 1), con fecha, cobertura, atribución y limitaciones. También deja explícitas las brechas de susceptibilidad ráster CENEPRED (capas 1/2, HTTP 400 en consulta por área), NASA LHASA e inventario histórico INDECI/SINPAD.
+
+**Puerta común sobre `master`:** 177/177 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; DOP y `baseline_ui.cjs` con sintaxis válida; `git diff --check` limpio. El escaneo de asignaciones de secretos encontró únicamente ejemplos literales `your-key` y lecturas de entorno dentro de la Skill de diseño, no credenciales.
+
+**QA visual independiente:** se usó el fallback Playwright versionado porque la Skill Browser no estaba disponible como archivo legible en esta sesión. `release_ui.cjs` recorrió los siete módulos en 1440/768/390, simuló la caída 503 de NASA POWER y generó capturas con el error visible, sin resultados inventados ni desbordes observables. Los puertos temporales 13100/18100 quedaron con cero listeners; 3100/8000 no se tocaron.
+
+**Publicación:** no se hizo push porque esta instrucción no incluyó aprobación explícita para publicarlo. No se creó `v0.1.0`.
