@@ -148,17 +148,33 @@ def agreement(primary: ExtremeIndexSummary, other: ExtremeIndexSummary) -> Agree
     return Agreement.SOLO_CONTRASTE if b else Agreement.SIN_TENDENCIA
 
 
-def attach_countercheck(primary: list[list[ExtremeIndexSummary]], other: list[list[ExtremeIndexSummary]], source: str) -> None:
-    """Anota en cada índice principal su contraste con la otra fuente y el valor de contraste de sus años atípicos."""
+def attach_countercheck(primary: list[list[ExtremeIndexSummary]], other: list[list[ExtremeIndexSummary] | None], source: str,
+                        legacy_slot: bool = True) -> None:
+    """Anota en cada índice principal su contraste con otra fuente y el valor de esa fuente en sus años atípicos.
+
+    Se puede llamar una vez por fuente (IMERG, CHIRPS…): todas quedan en `counterchecks`. Solo la fuente con
+    `legacy_slot` (IMERG) ocupa además `countercheck`, por compatibilidad: si IMERG falta, ese campo queda vacío en
+    vez de mostrar otra fuente con su nombre. Un sujeto sin serie de contraste (None) queda sin anotar, no en cero.
+    """
     for primary_site, other_site in zip(primary, other, strict=True):
+        if other_site is None:
+            continue
         other_by_code = {item.variable: item for item in other_site}
         for item in primary_site:
             twin = other_by_code[item.variable]
             twin_by_year = {point.year: point.value for point in twin.annual_series}
-            item.countercheck = ExtremeCountercheck(
+            check = ExtremeCountercheck(
                 source=source, valid_years=twin.valid_years, direction=twin.trend.direction, slope_per_year=twin.trend.slope_per_year,
                 adjusted_p_value=twin.adjusted_p_value, significant_after_bh=twin.significant_after_bh,
                 agreement=agreement(item, twin), annual_series=twin.annual_series,
             )
+            item.counterchecks.append(check)
+            first = legacy_slot and item.countercheck is None
+            if first:
+                item.countercheck = check
             for atypical in item.atypical_years:
-                atypical.countercheck_value = twin_by_year.get(atypical.year)
+                value = twin_by_year.get(atypical.year)
+                if value is not None:
+                    atypical.countercheck_values[source] = value
+                if first:
+                    atypical.countercheck_value = value

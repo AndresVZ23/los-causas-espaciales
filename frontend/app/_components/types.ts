@@ -59,15 +59,18 @@ export type ScreeningResult = {
   subjects?: StudySubject[]; assumption_items?: AssumptionItem[]; financial_sensitivity?: SubjectSensitivity[]; scorecard?: Scorecard | null;
   pipeline: Stage[]; nasa_questions: NasaQuestion[]; trend_findings: TrendFinding[];
   sites: SiteResult[]; terrain: TerrainResult | null;
-  comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; disclaimer: string;
+  comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; discoveries?: Discovery[]; disclaimer: string;
 };
+export type DiscoveryKind = "artefacto_probable" | "confirmado" | "sin_respaldo" | "coincidencia" | "contradiccion";
+export type Discovery = { kind: DiscoveryKind; title: string; detail: string; subjects: string[]; sources: string[] };
 // Módulo 1 · Inteligencia climática (sector "climate" del contrato C2).
 export type ExtremeIndex = {
   variable: string; label: string; description: string; unit: string; display_unit: string;
   mean: number; minimum: number; maximum: number; valid_years: number; discarded_years: number;
   trend: Trend; adjusted_p_value: number | null; significant_after_bh: boolean; annual_series: { year: number; value: number }[];
-  atypical_years?: { year: number; value: number; robust_z: number; countercheck_value?: number | null }[];
+  atypical_years?: { year: number; value: number; robust_z: number; countercheck_value?: number | null; countercheck_values?: Record<string, number> }[];
   countercheck?: ExtremeCountercheck | null;
+  counterchecks?: ExtremeCountercheck[];
 };
 export type Agreement = "coincide" | "contradice" | "sin_respaldo" | "solo_contraste" | "sin_tendencia";
 export type ExtremeCountercheck = {

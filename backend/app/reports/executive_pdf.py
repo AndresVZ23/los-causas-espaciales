@@ -46,6 +46,8 @@ STATUS_LABELS = {
     "COMPLETADO": "Completado", "LISTO": "Listo", "NO_DISPONIBLE": "No disponible", "ERROR": "Error",
 }
 STAGE_STATUS_LABELS = {**STATUS_LABELS, "PARCIAL": "Parcial"}
+DISCOVERY_LABELS = {"artefacto_probable": "Artefacto probable", "confirmado": "Confirmado", "sin_respaldo": "Sin respaldo",
+                    "coincidencia": "Coincidencia", "contradiccion": "Contradicción"}
 PROVENANCE_TEXT = {
     Provenance.REAL: "observación original de la fuente", Provenance.CACHED: "copia validada en caché, con su fecha de descarga",
     Provenance.MODEL: "cálculo derivado con método identificado", Provenance.ASSUMPTION: "supuesto editable del usuario",
@@ -340,6 +342,17 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
     else:
         story.append(Paragraph("Evidencia insuficiente para establecer una tendencia estadísticamente significativa en las variables y sujetos analizados.", styles["body"]))
 
+    if envelope.discoveries:
+        story.append(Paragraph("Descubrimientos al cruzar fuentes", styles["h2"]))
+        story.append(Paragraph("Cada dato se comprueba con fuentes independientes: lo que confirman, lo que contradicen y lo que solo una de ellas ve. "
+                               "No son conclusiones; señalan qué mirar primero.", styles["lede"]))
+        discovery_rows = [[Paragraph(h, styles["cellHead"]) for h in ("Tipo", "Descubrimiento", "Fuentes")]]
+        for item in envelope.discoveries:
+            discovery_rows.append([Paragraph(_text(DISCOVERY_LABELS.get(item.kind, item.kind)), styles["cell"]),
+                                   Paragraph(f"<b>{_text(item.title)}</b><br/>{_text(item.detail)}", styles["cell"]),
+                                   Paragraph(_text(" · ".join(item.sources)), styles["cellMuted"])])
+        story.append(_table(discovery_rows, [27 * mm, usable - 71 * mm, 44 * mm]))
+
     baseline = envelope if isinstance(envelope, BaselineScreeningResponse) else None
     kind_labels = {**KIND_LABELS, "polygon": "Área"} if baseline else KIND_LABELS
 
@@ -412,6 +425,10 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
         sources = baseline_sources(baseline)
     else:
         sources = ["NASA POWER, API Daily Point (https://power.larc.nasa.gov/docs/services/api/), estimaciones en grilla que no sustituyen mediciones en sitio."]
+        checks = {check.source for site in getattr(envelope, "sites", []) for index in getattr(site, "extremes", []) for check in index.counterchecks}
+        if any(source.startswith("CHIRPS") for source in checks):
+            sources.append("CHIRPS v2.0 (Climate Hazards Center, UCSB) servido por NASA SERVIR ClimateSERV (https://climateserv.servirglobal.net/), "
+                           "precipitación diaria a 0.05°, como contraste de los extremos.")
     if envelope.terrain:
         dois = sorted({granule.doi_url for site in envelope.terrain.sites for granule in site.granules})
         sources.append(f"{envelope.terrain.dataset}: {', '.join(dois)}.")

@@ -35,7 +35,7 @@ const HEADINGS: Record<BaselineResult["sector"], string> = { environment: "Lectu
 const NOTES: Record<BaselineResult["sector"], string> = {
   environment: "Indicadores satelitales indirectos para preparar la línea base; no sustituyen el trabajo de campo ni el EIA.",
   heritage: "Registros oficiales del Ministerio de Cultura. Cero registros no prueba ausencia de patrimonio; nada de esto es opinión legal.",
-  hazards: "Lluvia en el punto representativo (NASA POWER, contraste IMERG) y riesgo por distrito (CENEPRED). No es un mapa de amenaza a escala de proyecto.",
+  hazards: "Lluvia en el punto representativo (NASA POWER, contrastes IMERG y CHIRPS) y riesgo por distrito (CENEPRED). No es un mapa de amenaza a escala de proyecto.",
 };
 
 export function BaselineReading({ result, headingId }: { result: BaselineResult; headingId: string }) {

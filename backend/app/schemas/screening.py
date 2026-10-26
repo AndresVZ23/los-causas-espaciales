@@ -180,6 +180,24 @@ class SubjectSensitivity(BaseModel):
     break_evens: list[BreakEven]
 
 
+class DiscoveryKind(StrEnum):
+    PROBABLE_ARTIFACT = "artefacto_probable"   # una fuente registra algo que las independientes no ven
+    CONFIRMED = "confirmado"                   # todas las fuentes disponibles coinciden
+    UNBACKED = "sin_respaldo"                  # solo la fuente principal lo muestra
+    AGREEMENT = "coincidencia"                 # instituciones o productos independientes apuntan a lo mismo
+    CONTRADICTION = "contradiccion"            # las fuentes se contradicen
+
+
+class Discovery(BaseModel):
+    """Hallazgo que solo aparece al comparar fuentes independientes; no es una conclusión, es lo que conviene mirar."""
+
+    kind: DiscoveryKind
+    title: str
+    detail: str
+    subjects: list[str]
+    sources: list[str]
+
+
 class ScreeningEnvelope(BaseModel):
     contract_version: Literal["1.0"] = CONTRACT_VERSION
     analysis_id: str
@@ -199,4 +217,5 @@ class ScreeningEnvelope(BaseModel):
         default_factory=list, description="Escenarios, tornado y equilibrios por sujeto; vacío si el sector no evalúa finanzas."
     )
     scorecard: Scorecard | None = Field(default=None, description="Puntaje multicriterio con escalas, pesos, cobertura y estabilidad; None si el sector no lo usa.")
+    discoveries: list[Discovery] = Field(default_factory=list, description="Descubrimientos al cruzar fuentes independientes (artefactos, confirmaciones, coincidencias).")
     disclaimer: str

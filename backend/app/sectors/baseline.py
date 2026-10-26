@@ -24,7 +24,9 @@ from ..connectors.peru.identify_layers import CENEPRED_FEN, INGEMMET_BASE, Ident
 from ..connectors.peru.territory import LAYERS, TerritoryConnector, TerritoryConnectorError
 from ..geospatial.buffers import buffer_km, window_km
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
+from ..orchestration.discoveries import layer_discoveries, rainfall_discoveries, record_in_pipeline
 from ..orchestration.extraction import elapsed_ms, extract_terrain, max_separation_km
+from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, chirps_gaps
 from ..orchestration.nasa_questions import INSUFFICIENT, SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, join_es
 from ..orchestration.stages import analysis_stage, assemble_pipeline, export_stage, results_stage, selection_stage, stage, unique
 from ..schemas.analysis import Point, Provenance
@@ -385,7 +387,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         asyncio.gather(*(_layers(area, components, limits) for area in areas)),
         asyncio.gather(*(subject_vegetation(area.subject.representative_point, area.subject.geometry, area.window_km, area.area_km2) for area in areas)) if is_environment else nothing(),
         extract_terrain(points) if sector in TERRAIN_SECTORS else nothing(),
-        rainfall_extremes(points) if is_hazards else nothing(),
+        rainfall_extremes([(a.subject.label, a.subject.geometry, a.subject.representative_point) for a in areas]) if is_hazards else nothing(),
     )
     extraction_ms = elapsed_ms(started)
     terrain, terrain_error, terrain_ms = terrain_result if terrain_result else (None, None, 0.0)
@@ -416,6 +418,9 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         gaps.insert(0, DataGap(dataset="NASA POWER · lluvia diaria", impact=f"Sin serie de lluvia: {rainfall.power_error}", next_action="Reintentar la consulta; no se rellena con ceros."))
     if rainfall and rainfall.countercheck_error:
         gaps.insert(0, DataGap(dataset="GPM IMERG", impact=f"Sin contraste satelital de los extremos: {rainfall.countercheck_error}", next_action="Reintentar la consulta IMERG_PRECTOT en NASA POWER."))
+    if rainfall and rainfall.chirps:
+        gaps[:0] = chirps_gaps(rainfall.chirps)
+    discoveries = rainfall_discoveries([(b.subject, b.extremes) for b in baselines]) + layer_discoveries(baselines, terrain)
     for baseline in baselines:
         for layer in baseline.layers:
             if layer.status == "DATA_UNAVAILABLE" and all(gap.dataset != layer.dataset for gap in gaps):
@@ -477,6 +482,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         results_stage(findings, gaps, provenance),
         export_stage(provenance),
     ])
+    record_in_pipeline(pipeline, discoveries)
     method_notes = [
         "Áreas de estudio en WGS84; los sitios se convierten en círculos y los corredores se amplían con un buffer geodésico.",
         "Capas oficiales consultadas en línea por intersección espacial; los registros se citan con los atributos que publica cada fuente.",
@@ -490,7 +496,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
     if is_hazards:
         method_notes += [
             "Lluvia y extremos en el punto representativo de cada área (celda NASA POWER que lo contiene); para el promedio areal por celdas, use el módulo Clima.",
-            *EXTREME_METHOD_NOTES, COUNTERCHECK_NOTE,
+            *EXTREME_METHOD_NOTES, COUNTERCHECK_NOTE, CHIRPS_NOTE,
             "CENEPRED publica niveles de riesgo, peligro y vulnerabilidad por distrito para el escenario El Niño; no son probabilidades a escala de predio.",
         ]
     return BaselineScreeningResponse(
@@ -498,6 +504,6 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         title=f"{label} — {join_es([a.subject.label for a in areas])}",
         period=_period(baselines, sector),
         subjects=[a.subject for a in areas], pipeline=pipeline, nasa_questions=questions, trend_findings=findings, terrain=terrain,
-        data_gaps=gaps, assumption_items=[], disclaimer=DISCLAIMERS[sector],
+        data_gaps=gaps, assumption_items=[], disclaimer=DISCLAIMERS[sector], discoveries=discoveries,
         components=components, baselines=baselines, method_notes=method_notes,
     )
