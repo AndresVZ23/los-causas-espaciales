@@ -1,7 +1,7 @@
 """Sección del reporte ejecutivo para la línea base: amenazas, ambiente y patrimonio (módulos 3, 4 y 5).
 
 Presenta, por área de estudio, lo que el sobre común no lleva: los indicadores MODIS con su tendencia, el
-cambio de cobertura, los extremos de lluvia con su contraste IMERG y las capas oficiales por medio, con los
+cambio de cobertura, los extremos de lluvia con sus contrastes IMERG y CHIRPS y las capas oficiales por medio, con los
 registros en palabras de la fuente y sus enlaces. No calcula nada: transcribe el resultado con su procedencia.
 """
 
@@ -12,10 +12,12 @@ from reportlab.lib.units import mm
 from reportlab.platypus import KeepTogether, Paragraph
 
 from ..schemas.baseline import BaselineLayer, BaselineScreeningResponse, SubjectBaseline
+from ..schemas.climate import ExtremeIndexSummary
 from .executive_pdf import _table, _text
 
 COMPONENT_LABELS = {"fisico": "Medio físico", "biologico": "Medio biológico", "sociocultural": "Medio sociocultural", "amenazas": "Amenazas y riesgo"}
-AGREEMENT_LABELS = {"coincide": "Coincide", "contradice": "Contradice", "sin_respaldo": "Sin respaldo", "solo_contraste": "Solo IMERG", "sin_tendencia": "Sin tendencia"}
+AGREEMENT_LABELS = {"coincide": "Coincide", "contradice": "Contradice", "sin_respaldo": "Sin respaldo", "sin_tendencia": "Sin tendencia"}
+CHECK_SOURCES = {"IMERG": "GPM IMERG", "CHIRPS": "CHIRPS"}   # contrastes independientes de MERRA-2, en este orden
 EVIDENCE_STRONG = 0.01
 MAX_HIGHLIGHTS = 6
 
@@ -58,26 +60,39 @@ def _vegetation(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable
     return [_table(rows, [56 * mm, 26 * mm, 26 * mm, 22 * mm, 14 * mm, usable - 144 * mm])]
 
 
+def _short_source(source: str) -> str:
+    return next((key for key in CHECK_SOURCES if key in source), source)
+
+
+def _check_cell(index: ExtremeIndexSummary, source: str, styles: dict[str, ParagraphStyle]) -> Paragraph:
+    check = next((item for item in index.counterchecks if _short_source(item.source) == source), None)
+    if check is None:
+        return Paragraph("N/D", styles["cellMuted"])
+    label = f"Solo {source}" if check.agreement == "solo_contraste" else AGREEMENT_LABELS.get(check.agreement, check.agreement)
+    return Paragraph(_text(label), styles["cell"])
+
+
 def _extremes(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable: float) -> list:
-    """Índices ETCCDI del punto representativo con su contraste GPM IMERG y los años atípicos marcados."""
+    """Índices ETCCDI (MERRA-2) con su contraste GPM IMERG y CHIRPS, y cuánto dio cada fuente en los años atípicos."""
     if not item.extremes:
         return []
-    rows = [[Paragraph(h, styles["cellHead"]) for h in ("Índice ETCCDI", "Media anual", "Pendiente Sen", "p BH", "Evidencia", "GPM IMERG")]]
+    rows = [[Paragraph(h, styles["cellHead"]) for h in ("Índice ETCCDI", "Media anual", "Pendiente Sen", "p BH", "Evidencia", *CHECK_SOURCES.values())]]
     for index in item.extremes:
         slope = index.trend.slope_per_year
-        atypical = "".join(f"<br/><font size='6.6' color='#9a6b00'>Año atípico {year.year}: {year.value:.1f} {_text(index.display_unit)}"
-                           + (f" · IMERG {year.countercheck_value:.1f}" if year.countercheck_value is not None else "") + "</font>"
+        atypical = "".join(f"<br/><font size='6.6' color='#9a6b00'>Año atípico {year.year}: MERRA-2 {year.value:.1f}"
+                           + "".join(f" · {_short_source(source)} {value:.1f}" for source, value in year.countercheck_values.items())
+                           + f" {_text(index.display_unit)}</font>"
                            for year in index.atypical_years)
-        check = index.countercheck
         rows.append([
             Paragraph(f"<b>{_text(index.label)}</b><br/><font size='6.8' color='#5b6670'>{_text(index.variable)}</font>{atypical}", styles["cell"]),
             Paragraph(_text(f"{index.mean:.1f} {index.display_unit}"), styles["mono"]),
             Paragraph(_text("N/D" if slope is None else f"{_signed(slope, 3)}/año"), styles["mono"]),
             Paragraph("N/D" if index.adjusted_p_value is None else f"{index.adjusted_p_value:.3f}", styles["mono"]),
             Paragraph(_evidence(index.significant_after_bh, index.adjusted_p_value), styles["cell"]),
-            Paragraph(_text(AGREEMENT_LABELS.get(check.agreement, check.agreement) if check else "N/D"), styles["cell"]),
+            *(_check_cell(index, source, styles) for source in CHECK_SOURCES),
         ])
-    out = [_table(rows, [58 * mm, 24 * mm, 26 * mm, 14 * mm, 20 * mm, usable - 142 * mm])]
+    check_width = (usable - 128 * mm) / len(CHECK_SOURCES)
+    out = [_table(rows, [50 * mm, 22 * mm, 24 * mm, 12 * mm, 20 * mm, *[check_width] * len(CHECK_SOURCES)])]
     if item.wet_day_p95_mm is not None:
         out.append(Paragraph(_text(f"P95 de los días húmedos: {item.wet_day_p95_mm:.1f} mm. Serie NASA POWER (MERRA-2) en la celda del punto representativo."), styles["cellMuted"]))
     return out
@@ -135,7 +150,7 @@ def baseline_sections(result: BaselineScreeningResponse, styles: dict[str, Parag
     lede = {
         "environment": "Indicadores satelitales indirectos (MODIS) y capas oficiales ordenados como la línea base de un EIA. "
                        "Una capa sin registros no prueba ausencia; una capa que no respondió se informa como no disponible.",
-        "hazards": "Extremos de lluvia ETCCDI con contraste GPM IMERG en el punto representativo y capas oficiales de riesgo por distrito. "
+        "hazards": "Extremos de lluvia ETCCDI con NASA POWER (MERRA-2) contrastados con GPM IMERG y CHIRPS, y capas oficiales de riesgo por distrito. "
                    "Una capa sin registros o caída no equivale a riesgo cero.",
     }.get(result.sector, "Registros del Ministerio de Cultura en palabras de la fuente. Cero registros no prueba ausencia de patrimonio; "
                          "nada de esto es opinión legal ni sustituye el CIRA.")
@@ -170,6 +185,9 @@ def baseline_sources(result: BaselineScreeningResponse) -> list[str]:
     if any(item.climate or item.extremes for item in result.baselines):
         sources.append("NASA POWER, API Daily Point (https://power.larc.nasa.gov/docs/services/api/): PRECTOTCORR (MERRA-2) e IMERG_PRECTOT (GPM IMERG), "
                        "estimaciones en grilla que no sustituyen pluviómetros.")
+    if any(check.source.startswith("CHIRPS") for item in result.baselines for index in item.extremes for check in index.counterchecks):
+        sources.append("CHIRPS v2.0 (Climate Hazards Center, UCSB) servido por NASA SERVIR ClimateSERV (https://climateserv.servirglobal.net/): "
+                       "precipitación diaria a 0.05°, promediada sobre el área.")
     if organizations:
         sources.append(f"Capas oficiales consultadas por intersección espacial: {', '.join(organizations)}.")
     return sources

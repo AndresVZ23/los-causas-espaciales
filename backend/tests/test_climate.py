@@ -69,7 +69,7 @@ def test_every_extreme_carries_imerg_countercheck(response):
             if item.significant_after_bh:
                 assert item.countercheck.agreement == Agreement.COINCIDE
     significant = next(question for question in response.nasa_questions if question.key == "significant")
-    assert "Contraste con GPM IMERG" in significant.answer
+    assert "Contraste satelital (GPM IMERG y CHIRPS)" in significant.answer
     assert not any(gap.dataset == "GPM IMERG" for gap in response.data_gaps)
 
 

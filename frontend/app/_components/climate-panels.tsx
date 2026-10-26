@@ -31,8 +31,8 @@ export function ClimateReading({ result, headingId }: { result: ClimateResult; h
   const extremeFindings = result.trend_findings.filter((item) => extremeCodes.has(item.variable));
   const atypical = sites.flatMap((site) => site.extremes.flatMap((item) => (item.atypical_years ?? []).map((year) =>
     `${item.variable} ${site.location.label} ${year.year}: ${formatNumber(year.value, 1)} ${item.display_unit}`
-    + (year.countercheck_value != null ? ` (IMERG ${formatNumber(year.countercheck_value, 1)})` : ""))));
-  const imergChecked = atypical.some((text) => text.includes("IMERG"));
+    + (atypicalChecks(year).length ? ` (${atypicalChecks(year).map((check) => `${check.source} ${formatNumber(check.value, 1)}`).join(" · ")})` : ""))));
+  const satelliteChecked = sites.some((site) => site.extremes.some((item) => (item.atypical_years ?? []).some((year) => atypicalChecks(year).length)));
   return (
     <section className="verdict" aria-labelledby={headingId}>
       <div className="verdictHead">
@@ -66,28 +66,38 @@ export function ClimateReading({ result, headingId }: { result: ClimateResult; h
       </div>
       {atypical.length > 0 && (
         <div className="verdictAssumptions climateExtremes">
-          <p><span>Valores atípicos de NASA POWER</span><b>{atypical.join(" · ")}. {imergChecked ? "El satélite GPM IMERG sirve de contraste; falta el de estaciones." : "Sin contraste con estaciones."} No cambian la prueba de Mann–Kendall, que usa rangos.</b></p>
+          <p><span>Valores atípicos de NASA POWER</span><b>{atypical.join(" · ")}. {satelliteChecked ? "GPM IMERG y CHIRPS sirven de contraste independiente; falta el de estaciones." : "Sin contraste satelital ni de estaciones."} No cambian la prueba de Mann–Kendall, que usa rangos.</b></p>
         </div>
       )}
     </section>
   );
 }
 
-const AGREEMENT_TEXT: Record<Agreement, string> = {
+const AGREEMENT_TEXT: Record<Exclude<Agreement, "solo_contraste">, string> = {
   coincide: "Coincide",
   contradice: "Contradice",
   sin_respaldo: "Sin respaldo",
-  solo_contraste: "Solo IMERG",
   sin_tendencia: "Sin tendencia",
 };
+// Contrastes independientes de la serie principal (NASA POWER · MERRA-2), en el orden en que se muestran.
+const CHECK_SOURCES = [{ key: "IMERG", label: "GPM IMERG" }, { key: "CHIRPS", label: "CHIRPS" }];
+const shortSource = (source: string) => CHECK_SOURCES.find((item) => source.includes(item.key))?.key ?? source;
+const checksOf = (item: ExtremeIndex) => item.counterchecks?.length ? item.counterchecks : item.countercheck ? [item.countercheck] : [];
 
-function CountercheckCell({ item }: { item: ExtremeIndex }) {
-  const check = item.countercheck;
+/** Valor de cada contraste en un año atípico; los resultados anteriores a CHIRPS solo traen el de IMERG. */
+function atypicalChecks(year: NonNullable<ExtremeIndex["atypical_years"]>[number]) {
+  const values = Object.entries(year.countercheck_values ?? {}).map(([source, value]) => ({ source: shortSource(source), value }));
+  if (!values.length && year.countercheck_value != null) values.push({ source: "IMERG", value: year.countercheck_value });
+  return values;
+}
+
+function CountercheckCell({ item, source }: { item: ExtremeIndex; source: string }) {
+  const check = checksOf(item).find((candidate) => shortSource(candidate.source) === source);
   if (!check) return <td>N/D</td>;
   const slope = check.slope_per_year == null ? "N/D" : `${signed(check.slope_per_year, 3)} ${item.display_unit}/año`;
   return (
     <td className={`agreement ${check.agreement}`}>
-      {AGREEMENT_TEXT[check.agreement]}
+      {check.agreement === "solo_contraste" ? `Solo ${source}` : AGREEMENT_TEXT[check.agreement]}
       <small>{slope} · p BH {check.adjusted_p_value == null ? "N/D" : formatNumber(check.adjusted_p_value, 3)}</small>
     </td>
   );
@@ -100,29 +110,32 @@ function ExtremeRow({ item }: { item: ExtremeIndex }) {
     <tr>
       <th>
         {item.label}<small>{item.variable} · {item.description}</small>
-        {item.atypical_years?.map((atypical) => (
-          <small className="atypical" key={atypical.year}>
-            Año atípico {atypical.year}: {formatNumber(atypical.value, 1)} {item.display_unit} (z robusto {formatNumber(atypical.robust_z, 0)})
-            {atypical.countercheck_value != null ? ` · IMERG: ${formatNumber(atypical.countercheck_value, 1)} ${item.display_unit}` : " · contrastar con estaciones"}
-          </small>
-        ))}
+        {item.atypical_years?.map((atypical) => {
+          const checks = atypicalChecks(atypical);
+          return (
+            <small className="atypical" key={atypical.year}>
+              Año atípico {atypical.year}: MERRA-2 {formatNumber(atypical.value, 1)} {item.display_unit} (z robusto {formatNumber(atypical.robust_z, 0)})
+              {checks.length ? checks.map((check) => ` · ${check.source} ${formatNumber(check.value, 1)}`).join("") + ` ${item.display_unit}` : " · sin contraste satelital"}
+            </small>
+          );
+        })}
       </th>
       <td>{formatNumber(item.mean, 1)} {item.display_unit}</td>
       <td>{trend.slope_per_year == null ? "N/D" : `${signed(trend.slope_per_year, 3)} ${item.display_unit}/año`}</td>
       <td>{trend.slope_per_year == null ? "N/D" : `${signed(trend.slope_per_year * years, 1)} ${item.display_unit}`}</td>
       <td>{item.adjusted_p_value == null ? "N/D" : formatNumber(item.adjusted_p_value, 3)}</td>
       <td>{evidenceLabel(item)}</td>
-      <CountercheckCell item={item} />
+      {CHECK_SOURCES.map((source) => <CountercheckCell key={source.key} item={item} source={source.key} />)}
     </tr>
   );
 }
 
-/** Índices ETCCDI con años atípicos y contraste GPM IMERG; la usan Clima y Amenazas. */
+/** Índices ETCCDI (NASA POWER · MERRA-2) con años atípicos y contraste GPM IMERG y CHIRPS; la usan Clima y Amenazas. */
 export function ExtremesTable({ extremes }: { extremes: ExtremeIndex[] }) {
   return (
     <div className="tableScroll">
       <table>
-        <thead><tr><th>Índice</th><th>Media anual</th><th>Pendiente Sen</th><th>Cambio en el período</th><th>p BH</th><th>Evidencia</th><th>Contraste GPM IMERG</th></tr></thead>
+        <thead><tr><th>Índice</th><th>Media anual</th><th>Pendiente Sen</th><th>Cambio en el período</th><th>p BH</th><th>Evidencia</th>{CHECK_SOURCES.map((source) => <th key={source.key}>Contraste {source.label}</th>)}</tr></thead>
         <tbody>{extremes.map((item) => <ExtremeRow key={item.variable} item={item} />)}</tbody>
       </table>
     </div>

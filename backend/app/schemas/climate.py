@@ -19,6 +19,7 @@ class AtypicalYear(BaseModel):
     value: float
     robust_z: float
     countercheck_value: float | None = Field(default=None, description="Mismo índice y año según la fuente de contraste (GPM IMERG).")
+    countercheck_values: dict[str, float] = Field(default_factory=dict, description="Mismo índice y año en cada fuente de contraste (IMERG, CHIRPS…).")
 
 
 class Agreement(StrEnum):
@@ -60,7 +61,8 @@ class ExtremeIndexSummary(BaseModel):
     significant_after_bh: bool = False
     annual_series: list[AnnualObservation]
     atypical_years: list[AtypicalYear] = Field(default_factory=list, description="Años con z robusto > 10, para contrastar con estaciones.")
-    countercheck: ExtremeCountercheck | None = None
+    countercheck: ExtremeCountercheck | None = Field(default=None, description="Primer contraste (GPM IMERG); se conserva por compatibilidad.")
+    counterchecks: list[ExtremeCountercheck] = Field(default_factory=list, description="Todos los contrastes independientes (IMERG, CHIRPS…).")
 
 
 class CellTrend(BaseModel):

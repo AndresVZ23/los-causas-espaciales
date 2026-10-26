@@ -9,6 +9,7 @@ import { ClimateEvidence, ClimateReading } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
+import DiscoveriesPanel from "./discoveries-panel";
 import PipelinePanel, { STAGE_NAMES } from "./pipeline-panel";
 import { CellTrendLegend, cellsFor } from "./cell-trends";
 import { DEFAULT_REAL_ESTATE_ASSUMPTIONS, EXAMPLE_PARCELS, RealEstateControls, RealEstateEvidence, RealEstateReading } from "./realestate-panels";
@@ -32,7 +33,7 @@ const ComparisonChart = dynamic(() => import("./comparison-chart"), { ssr: false
 const modules: Module[] = [
   { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER, extremos de lluvia ETCCDI y año en curso hasta hoy." },
   { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con observaciones NASA POWER." },
-  { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Funcional", ready: true, description: "Extremos de lluvia con contraste IMERG, relieve NASADEM, riesgo por distrito de CENEPRED y puntos críticos de la ANA; INGEMMET y LHASA siguen pendientes." },
+  { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Funcional", ready: true, description: "Extremos de lluvia cruzados con IMERG y CHIRPS, relieve NASADEM, riesgo y susceptibilidad de CENEPRED, puntos críticos de la ANA y mapas volcánicos de INGEMMET; LHASA y el inventario de peligros geológicos siguen pendientes." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "Línea base funcional", ready: true, description: "Insumos para la línea base de un EIA: vegetación MODIS con tendencia, cobertura, agua (ANA), ecosistemas y lomas (MINAM), áreas protegidas y relieve." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Patrimonio funcional", ready: true, description: "Patrimonio arqueológico registrado y declarado, CIRA, diagnósticos previos, Qhapaq Ñan y consulta previa (Ministerio de Cultura); comunidades y conflictos siguen pendientes." },
   { id: "infrastructure", short: "Infraestructura", name: "Infraestructura", icon: "infrastructure", status: "Piloto vial funcional", ready: true, description: "Corredor Moquegua–Ilo o uno propio: lluvia por tramo, capas territoriales, VAN de mitigación y puntaje." },
@@ -576,6 +577,7 @@ export default function Workspace() {
         {pdfError && <p className="errorMessage" role="alert">{pdfError}</p>}
         {!result ? <div className="emptyEvidence"><div><h3>El flujo está preparado</h3><p>NASA POWER, Mann–Kendall, pendiente de Sen, ajuste BH y VAN condicionado se ejecutan únicamente al solicitar el análisis.</p></div><ul><li>Comparación Moquegua–Arequipa</li><li>Cobertura y limitaciones por variable</li><li>Supuestos financieros explícitos</li><li>Brechas para debida diligencia</li></ul></div> : <>
           <NasaQuestions questions={result.nasa_questions} onGoToStage={goToStage} />
+          <DiscoveriesPanel discoveries={result.discoveries} />
           <AssistantPanel result={result} />
           {climateResult && <ClimateEvidence result={climateResult} />}
           {baselineResult && <BaselineEvidence result={baselineResult} />}

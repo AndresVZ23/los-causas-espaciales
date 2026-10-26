@@ -10,7 +10,9 @@ from time import perf_counter
 from ..connectors.nasa.power import PowerConnectorError
 from ..orchestration.analysis import analyze_extremes, analyze_subjects, attach_countercheck
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
+from ..orchestration.discoveries import rainfall_discoveries, record_in_pipeline
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings
+from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, CHIRPS_SOURCE, attach_chirps, chirps_extremes, chirps_gaps
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -140,29 +142,45 @@ def _data_gaps(terrain: TerrainResponse | None, countercheck_error: str | None) 
 
 
 def countercheck_summary(sites: Sequence[tuple[str, Sequence[ExtremeIndexSummary]]]) -> str:
-    """Frase para la pregunta de significancia: cuántas tendencias de extremos repite IMERG y qué valores atípicos desmiente.
+    """Frase para la pregunta de significancia: cuántas tendencias de extremos repiten los satélites (GPM IMERG y CHIRPS)
+    y qué valores atípicos desmienten.
 
-    Recibe pares (etiqueta del sujeto, índices de extremos); la usan Clima y Amenazas.
+    Recibe pares (etiqueta del sujeto, índices de extremos); la usan Clima y Amenazas. Una tendencia cuenta como
+    respaldada si al menos una fuente independiente coincide; el detalle por fuente va en los descubrimientos.
     """
-    significant = [(label, item) for label, extremes in sites for item in extremes if item.significant_after_bh and item.countercheck]
-    refuted = [
-        f"{item.variable} {label} {year.year} ({year.value:.0f} mm en MERRA-2, {year.countercheck_value:.0f} mm en IMERG)"
-        for label, extremes in sites for item in extremes if item.unit == "mm" for year in item.atypical_years
-        if year.countercheck_value is not None and year.countercheck_value < year.value / 5
-    ]
+    def checks(item: ExtremeIndexSummary):
+        return item.counterchecks or ([item.countercheck] if item.countercheck else [])
+
+    def short(source: str) -> str:
+        return "IMERG" if "IMERG" in source else "CHIRPS" if "CHIRPS" in source else source
+
+    sources = sorted({short(c.source) for _, extremes in sites for item in extremes for c in checks(item)}, key=lambda s: s != "IMERG")
+    names = " y ".join("GPM IMERG" if s == "IMERG" else s for s in sources)
+    significant = [(label, item) for label, extremes in sites for item in extremes if item.significant_after_bh and checks(item)]
+    refuted = []
+    for label, extremes in sites:
+        for item in extremes:
+            if item.unit != "mm":
+                continue
+            for year in item.atypical_years:
+                values = year.countercheck_values or ({"GPM IMERG": year.countercheck_value} if year.countercheck_value is not None else {})
+                if values and all(value < year.value / 5 for value in values.values()):
+                    others = ", ".join(f"{value:.0f} mm en {short(source)}" for source, value in sorted(values.items(), key=lambda kv: short(kv[0]) != "IMERG"))
+                    refuted.append(f"{item.variable} {label} {year.year} ({year.value:.0f} mm en MERRA-2, {others})")
     parts = []
     if significant:
-        backed = [f"{item.label.lower()} en {label}" for label, item in significant if item.countercheck.agreement == Agreement.COINCIDE]
+        backed = [f"{item.label.lower()} en {label}" for label, item in significant if any(c.agreement == Agreement.COINCIDE for c in checks(item))]
         if not backed:
             subject = "la única tendencia significativa de extremos de lluvia no se repite" if len(significant) == 1 \
                 else f"ninguna de las {len(significant)} tendencias significativas de extremos de lluvia se repite"
-            parts.append(f"Contraste con GPM IMERG: {subject} con el satélite; sin respaldo independiente, "
+            parts.append(f"Contraste satelital ({names}): {subject} en ninguna fuente independiente; "
                          + ("se lee como indicio y no como hallazgo." if len(significant) == 1 else "se leen como indicio y no como hallazgo."))
         else:
-            parts.append(f"Contraste con GPM IMERG: {len(backed)} de {len(significant)} tendencias de extremos se repiten con el satélite ({', '.join(backed)})"
+            parts.append(f"Contraste satelital ({names}): {len(backed)} de {len(significant)} tendencias de extremos se repiten en al menos una fuente independiente ({', '.join(backed)})"
                          + ("; las demás no tienen respaldo independiente." if len(backed) < len(significant) else "."))
     if refuted:
-        parts.append(f"IMERG no respalda {len(refuted)} valor(es) atípico(s) del reanálisis: {'; '.join(refuted)}.")
+        parts.append(f"{names} no respaldan {len(refuted)} valor(es) atípico(s) del reanálisis: {'; '.join(refuted)}." if len(sources) > 1
+                     else f"{names} no respalda {len(refuted)} valor(es) atípico(s) del reanálisis: {'; '.join(refuted)}.")
     return " ".join(parts)
 
 
@@ -175,7 +193,10 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     subjects = _subjects(request, geometries)
     points = [subject.representative_point for subject in subjects]
     extraction_start = perf_counter()
-    ((datasets, territories), (terrain, terrain_error, timings.terrain_ms)) = await asyncio.gather(_extract(request), extract_terrain(points))
+    # CHIRPS va en paralelo con NASA POWER: sitios por la celda del punto, territorios por su polígono.
+    chirps_subjects = [(s.label, s.geometry if s.kind == SubjectKind.POLYGON else None, s.representative_point) for s in subjects]
+    ((datasets, territories), (terrain, terrain_error, timings.terrain_ms), chirps) = await asyncio.gather(
+        _extract(request), extract_terrain(points), chirps_extremes(chirps_subjects, request.start_date, request.end_date))
     timings.extraction_ms = elapsed_ms(extraction_start)
     expected_days = (request.end_date - request.start_date).days + 1
 
@@ -188,6 +209,7 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         attach_countercheck(extremes_by_site, countercheck_by_site, COUNTERCHECK_SOURCE)
     except PowerConnectorError as exc:
         countercheck_error = str(exc)
+    attach_chirps(extremes_by_site, chirps)
     timings.analysis_ms = elapsed_ms(analysis_start)
 
     extra = {len(request.sites) + index: territory for index, territory in enumerate(territories)}
@@ -206,8 +228,9 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     ]
     variables_only = [SubjectSummaries(label=subject.label, summaries=variables) for subject, variables in zip(subjects, variables_by_site, strict=True)]
     trend_findings = collect_trend_findings(labelled)
-    gaps = _data_gaps(terrain, countercheck_error)
+    gaps = _data_gaps(terrain, countercheck_error) + chirps_gaps(chirps)
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
+    discoveries = rainfall_discoveries([(site.location.label, site.extremes) for site in sites])
     nasa_questions = answer_nasa_questions(
         labelled, trend_findings,
         {subject.label: (subject.representative_point.latitude, subject.representative_point.longitude) for subject in subjects},
@@ -245,6 +268,14 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
                   f"contradicen {counts[Agreement.CONTRADICE]}" + (f" · IMERG hasta {imerg_last:%d-%m-%Y}" if imerg_last else ""),
             provenance=Provenance.MODEL,
         ))
+    chirps_checks = [check for site in sites for item in site.extremes for check in item.counterchecks if check.source == CHIRPS_SOURCE]
+    if chirps_checks:
+        counts = {value: sum(1 for check in chirps_checks if check.agreement == value) for value in Agreement}
+        evaluation_evidence.append(StageEvidence(
+            label="Contraste CHIRPS",
+            value=f"coinciden {counts[Agreement.COINCIDE]} · sin respaldo {counts[Agreement.SIN_RESPALDO]} · solo CHIRPS {counts[Agreement.SOLO_CONTRASTE]} · "
+                  f"contradicen {counts[Agreement.CONTRADICE]}", provenance=Provenance.MODEL,
+        ))
     evaluation = stage("evaluation", PipelineStatus.COMPLETED, "Extremos de precipitación comparados entre sitios con índices ETCCDI y la misma prueba de tendencia.",
                        source_provenance + [Provenance.MODEL], evaluation_evidence, answers=["so_what"])
     finance = stage("finance", PipelineStatus.UNAVAILABLE, "No aplica: el módulo climático no usa supuestos financieros.",
@@ -260,6 +291,7 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         results_stage(trend_findings, gaps, all_provenance),
         export_stage(all_provenance),
     ])
+    record_in_pipeline(pipeline, discoveries)
     fingerprint = hashlib.sha256(json.dumps({"sector": "climate", **request.model_dump(mode="json")}, sort_keys=True).encode()).hexdigest()[:16]
     return ClimateScreeningResponse(
         analysis_id=fingerprint,
@@ -274,6 +306,8 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         data_gaps=gaps,
         assumption_items=[],
         disclaimer="Análisis de tendencias con estimaciones en grilla de NASA POWER. No sustituye estaciones meteorológicas, estudios hidrológicos ni evaluaciones de riesgo de desastres.",
+        discoveries=discoveries,
         sites=sites,
-        method_notes=[*METHOD_NOTES, *([COUNTERCHECK_NOTE] if countercheck_error is None else []), *([TERRITORY_NOTE] if territories else [])],
+        method_notes=[*METHOD_NOTES, *([COUNTERCHECK_NOTE] if countercheck_error is None else []), *([CHIRPS_NOTE] if chirps_checks else []),
+                      *([TERRITORY_NOTE] if territories else [])],
     )

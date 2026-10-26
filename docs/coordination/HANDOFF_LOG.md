@@ -757,3 +757,32 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **QA visual independiente:** se usó el fallback Playwright versionado porque la Skill Browser no estaba disponible como archivo legible en esta sesión. `release_ui.cjs` recorrió los siete módulos en 1440/768/390, simuló la caída 503 de NASA POWER y generó capturas con el error visible, sin resultados inventados ni desbordes observables. Los puertos temporales 13100/18100 quedaron con cero listeners; 3100/8000 no se tocaron.
 
 **Publicación:** no se hizo push porque esta instrucción no incluyó aprobación explícita para publicarlo. No se creó `v0.1.0`.
+
+## 2026-10-26 · Claude · claude/pdf-linea-base · CHIRPS, descubrimientos e identify (ADR-035 y ADR-036)
+
+**Qué entró:**
+- `ece1a74`: susceptibilidad de CENEPRED por puntos y mapas volcánicos de INGEMMET por `identify` (ADR-035).
+- CHIRPS como tercera fuente de lluvia en Clima y Amenazas, para cualquier punto o área del Perú.
+- «Descubrimientos al cruzar fuentes» en el pipeline, la pantalla, el PDF y el asistente (ADR-036).
+
+**Contrato C2 (aditivo):** `discoveries` en el sobre; `counterchecks` y `countercheck_values` en los extremos. `countercheck` sigue siendo solo IMERG.
+
+**Para Codex:**
+- Sumar a `DATA_SOURCES.md`:
+  - ClimateSERV CHIRPS: URL, licencia CHIRPS, latencia de semanas, un trabajo por año, 503 pasajeros;
+  - identify de CENEPRED FEN 1–2 con su leyenda;
+  - mapas volcánicos de INGEMMET y el intermedio Sectigo OV R36;
+  - brechas de LHASA, SINPAD y SERV_PERUALERTA (no publicado al 26-oct-2026).
+- `backend/tests/conftest.py` es nuevo y común: un fixture autouse reemplaza `ChirpsConnector` por una serie sintética, así ninguna prueba sale a la red. Si un piloto nuevo llama a `chirps_extremes`, ya queda aislado.
+- Primera ejecución de un área nueva:
+  - Clima tarda ~46 s y declara CHIRPS «descargándose»;
+  - la descarga completa tarda de 3 a 6 minutos;
+  - la siguiente ejecución tarda ~5 s.
+
+**Verificación:**
+- 182/182 pruebas.
+- Build correcto; audit con 0 vulnerabilidades.
+- QA `baseline_ui`, `climate_ui` y `release_ui` en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas.
+- En vivo:
+  - Moquegua 2022, RX1DAY: 300 mm en MERRA-2, 12 mm en IMERG y 21 mm en CHIRPS. Queda como artefacto confirmado por las dos fuentes.
+  - Arequipa: la tendencia de RX5DAY se repite en CHIRPS.

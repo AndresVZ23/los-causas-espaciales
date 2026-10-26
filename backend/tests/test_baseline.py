@@ -84,6 +84,29 @@ class FakeTerritory:
         return TerritorialQueryResponse(generated_at=STAMP, geometry_type="Polygon", sources=results, note="prueba")
 
 
+class FakeIdentify:
+    """Susceptibilidad muestreada (dos puntos: alto y muy alto) y una zona de peligro volcánico, sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @staticmethod
+    def _result(source_id, features):
+        return TerritorialSourceResult(source_id=source_id, organization="Prueba", dataset=f"Capa {source_id}", status="READY",
+                                       intersection_count=len(features), features=features, provenance=Provenance.REAL, downloaded_at=STAMP,
+                                       source_url="https://example.gob.pe", crs="EPSG:4326", coverage="Perú", scale_or_resolution="—", license="—",
+                                       limitations=["Muestreo de 2 punto(s) dentro del área."])
+
+    async def cenepred_susceptibility(self, geometry, representative):
+        return self._result("cenepred-susceptibility", [
+            TerritorialFeature(layer_id=2, layer_name="Susceptibilidad a movimientos en masa", attributes={"capa": "Susceptibilidad a movimientos en masa", "nivel": level})
+            for level in ("Alto", "Muy alto")])
+
+    async def volcanic_hazards(self, geometry):
+        return self._result("ingemmet-volcanic-hazards", [TerritorialFeature(layer_id=2, layer_name="Peligro alto",
+                                                                             attributes={"volcan": "Misti", "zona": "Peligro alto", "descripcion": "Zona severamente afectada."})])
+
+
 async def _no_terrain(points):
     return None, "NASADEM sin red en la prueba.", 0.0
 
@@ -92,6 +115,7 @@ async def _no_terrain(points):
 def patched(monkeypatch):
     monkeypatch.setattr(baseline_vegetation, "ModisSubsetConnector", FakeModis)
     monkeypatch.setattr(baseline, "TerritoryConnector", FakeTerritory)
+    monkeypatch.setattr(baseline, "IdentifyLayersConnector", FakeIdentify)
     monkeypatch.setattr(baseline, "extract_terrain", _no_terrain)
     monkeypatch.setattr(baseline, "RETRY_SECONDS", 0)
     monkeypatch.setattr(baseline, "PACE_SECONDS", 0)
@@ -203,6 +227,10 @@ def test_hazards_module_reads_rainfall_extremes_and_risk_levels(patched, monkeyp
     flood = next(layer for layer in area.layers if layer.source_id == "cenepred-flood-risk")
     assert flood.highlights[0].label == "Ilo (Ilo)" and flood.highlights[0].detail == "riesgo alto · susceptibilidad medio · vulnerabilidad alto"
     assert any(gap.dataset.startswith("NASA LHASA") for gap in result.data_gaps)
+    susceptibility = next(layer for layer in area.layers if layer.source_id == "cenepred-susceptibility")
+    assert {h.label for h in susceptibility.highlights} == {"Susceptibilidad a movimientos en masa: alto", "Susceptibilidad a movimientos en masa: muy alto"}
+    volcanic = next(layer for layer in area.layers if layer.source_id == "ingemmet-volcanic-hazards")
+    assert volcanic.highlights[0].label == "Volcán Misti: peligro alto"
     assert result.period.startswith("2001-01-01/")
     assert next(s for s in result.pipeline if s.key == "analysis").status != PipelineStatus.UNAVAILABLE
     text = _pdf_text(render_executive_pdf(result))
@@ -222,6 +250,31 @@ def test_hazards_without_power_series_declares_the_gap(patched, monkeypatch):
     assert envelope_violations(result) == []
     assert result.baselines[0].extremes == [] and result.trend_findings == []
     assert result.data_gaps[0].dataset == "NASA POWER · lluvia diaria" and "caída controlada" in result.data_gaps[0].impact
+
+
+def test_rainfall_artifact_and_unbacked_trend_become_discoveries():
+    from backend.app.orchestration.discoveries import rainfall_discoveries
+    from backend.app.schemas.analysis import TrendResult
+    from backend.app.schemas.climate import AtypicalYear, ExtremeCountercheck, ExtremeIndexSummary
+    trend = TrendResult(method="MK", direction="increasing", slope_per_year=0.2, p_value=0.01, confidence_interval=None, significant=True,
+                        valid_observations=25, interpretation="", limitations=[])
+    check = lambda source, agreement: ExtremeCountercheck(source=source, valid_years=25, direction="no_trend", slope_per_year=0.0, adjusted_p_value=0.5,  # noqa: E731
+                                                          significant_after_bh=False, agreement=agreement, annual_series=[])
+    index = lambda code: ExtremeIndexSummary(  # noqa: E731
+        variable=code, label="Lluvia máxima en 1 día" if code == "RX1DAY" else "Lluvia máxima en 5 días", description="", unit="mm", display_unit="mm",
+        mean=22.6, minimum=1, maximum=300, valid_years=25, discarded_years=0, trend=trend, adjusted_p_value=0.02, significant_after_bh=code == "RX1DAY",
+        annual_series=[], atypical_years=[AtypicalYear(year=2022, value=300.2, robust_z=89, countercheck_values={"GPM IMERG": 12.1, "CHIRPS (UCSB · NASA SERVIR)": 0.0})],
+        counterchecks=[check("GPM IMERG", "sin_respaldo"), check("CHIRPS (UCSB · NASA SERVIR)", "sin_respaldo")])
+    found = rainfall_discoveries([("Moquegua", [index("RX1DAY"), index("RX5DAY")])])
+    artifact = [d for d in found if d.kind == "artefacto_probable"]
+    assert len(artifact) == 1 and "2022" in artifact[0].title                     # un evento, aunque aparezca en dos índices
+    assert "12 mm en IMERG" in artifact[0].detail and "0 mm en CHIRPS" in artifact[0].detail
+    assert [d.kind for d in found if d.kind != "artefacto_probable"] == ["sin_respaldo"]
+    # Al revés: CHIRPS e IMERG ven un cambio que MERRA-2 no.
+    seen = check("CHIRPS (UCSB · NASA SERVIR)", "solo_contraste").model_copy(update={"slope_per_year": 0.4, "adjusted_p_value": 0.01})
+    quiet = index("RX5DAY").model_copy(update={"atypical_years": [], "counterchecks": [seen, seen.model_copy(update={"source": "GPM IMERG"})]})
+    only_satellites = rainfall_discoveries([("Ica", [quiet])])
+    assert [d.kind for d in only_satellites] == ["coincidencia"] and "IMERG y CHIRPS" in only_satellites[0].title   # mismo orden que la tabla
 
 
 def test_layer_summary_flags_truncated_responses():

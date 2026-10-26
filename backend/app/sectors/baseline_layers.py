@@ -18,8 +18,11 @@ COMPONENT_SOURCES: dict[Component, list[str]] = {
         "cultura-archaeology", "cultura-archaeology-declared", "cultura-ciras", "cultura-das", "cultura-qhapaq-nan",
         "cultura-cultural-landscape", "cultura-world-heritage", "cultura-prior-consultation", "cultura-citizen-records",
     ],
-    "amenazas": ["cenepred-flood-risk", "cenepred-mass-movement-risk", "ana-critical-points", "ana-imminent-danger", "ingemmet-geohazards"],
+    "amenazas": ["cenepred-flood-risk", "cenepred-mass-movement-risk", "cenepred-susceptibility", "ana-critical-points", "ana-imminent-danger",
+                 "ingemmet-volcanic-hazards", "ingemmet-geohazards"],
 }
+# Fuentes que no se consultan por intersección de área sino con `identify` (connectors/peru/identify_layers.py).
+IDENTIFY_SOURCES = {"cenepred-susceptibility", "ingemmet-volcanic-hazards"}
 MAX_HIGHLIGHTS = 12
 
 
@@ -82,6 +85,9 @@ READERS: dict[str, Reader] = {
     "ana-critical-points": lambda a, _: (_join(f"Río {_text(a.get('RIO_QDA'))}" if a.get("RIO_QDA") else "", a.get("SECTOR")) or "Punto crítico",
                                          _join(a.get("CUENCA"), a.get("DISTRITO")), None),
     "ana-imminent-danger": lambda a, _: (f"{_title(a.get('NOMBDIST'))} ({_title(a.get('NOMBPROV'))})", "Declaratoria D.U. 015-2023", None),
+    # Agrupa los puntos de muestreo por capa y nivel: «Susceptibilidad por inundaciones: alto ×3».
+    "cenepred-susceptibility": lambda a, _: (f"{_text(a.get('capa'))}: {_text(a.get('nivel')).lower()}", "puntos de muestreo con este nivel", None),
+    "ingemmet-volcanic-hazards": lambda a, _: (f"Volcán {_text(a.get('volcan'))}: {_text(a.get('zona')).lower()}", _text(a.get("descripcion"))[:160] or None, None),
 }
 
 

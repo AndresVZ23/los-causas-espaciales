@@ -282,3 +282,71 @@ Los enlaces del DAS van como hipervínculos, y solo se aceptan direcciones `http
 - La ANA registra un punto crítico en el río Ilo (valle de Ilo) y Moquegua dentro de la declaratoria de 2023.
 
 **Verificación:** 177/177 pruebas (dos nuevas: amenazas con datos sintéticos y caída de NASA POWER declarada como brecha). QA `baseline_ui` en 1440, 768 y 390 sin errores; `release_ui` sin recortes ni problemas de teclado; `climate_ui` intacto tras el refactor.
+
+## ADR-035 — Capas ráster y servicios sin consulta: muestreo por `identify`
+
+**Problema.** Dos fuentes de amenaza no admiten una consulta por área:
+- la susceptibilidad de CENEPRED (servicio FEN, capas 1 y 2) es ráster y responde 400;
+- los mapas volcánicos de INGEMMET responden HTML 500 a `query`, y además el servidor omite el certificado intermedio.
+
+**Decisión.** `connectors/peru/identify_layers.py` muestrea el área por puntos con `identify` de ArcGIS:
+- **CENEPRED:** el píxel 1–5 se traduce a Muy bajo…Muy alto con la leyenda del servicio, validada en Bajo Piura (inundación 5) y Chosica (movimientos en masa 4). Se cuenta cuántos puntos caen en cada nivel y se declara «muestreo por puntos», no superficie.
+- **INGEMMET:** las capas son Misti, Ticsani, Ubinas, Sabancaya y Tutupaca. Se consulta por POST con coordenadas a 5 decimales y se revisa la extensión (EPSG:32719 → WGS84) antes de preguntar.
+- **TLS:** se incluye solo el intermedio Sectigo OV R36, que se carga junto a certifi. La raíz R46 ya está en certifi. La validación nunca se desactiva.
+- **Cortesía:** una consulta a la vez por servidor, 0.5 s de pausa y un reintento.
+
+**Lo que no se hizo.** El inventario nacional de peligros geológicos (SERV_PERUALERTA) no está publicado en el servidor de INGEMMET (verificado el 26-oct-2026); queda como brecha con esa razón.
+
+## ADR-036 — Tres fuentes de lluvia y «descubrimientos» al cruzar fuentes
+
+**Motivo.** MERRA-2, IMERG y CHIRPS miden la lluvia de forma distinta:
+- MERRA-2 es un reanálisis (modelo, celda de ~55 × 65 km) y puede inventar tormentas;
+- IMERG combina microondas e infrarrojo (~11 km) y pierde la garúa;
+- CHIRPS combina infrarrojo, climatología y estaciones (~5 km), suaviza los extremos y da ceros en el desierto.
+
+Ninguna basta sola. El principio desde ahora: cada dato nuevo se integra con al menos una fuente independiente, y lo que aparece al cruzarlas se publica como descubrimiento.
+
+**CHIRPS (`connectors/nasa/climateserv.py`, `orchestration/rainfall_crosscheck.py`).**
+- **Fuente:** CHIRPS v2.0 diario vía NASA SERVIR ClimateSERV, sobre el área (polígono simplificado) o sobre la celda de 0.05° del punto.
+- **Descarga:** un trabajo por año, porque la serie completa de una vez no terminó en 5 minutos.
+  - 6 trabajos en paralelo y 3 intentos ante 429/502/503/504; un 4xx no se reintenta.
+  - Los años cerrados quedan en caché sin vencimiento.
+  - Los valores −9999 o imposibles son faltantes, nunca ceros.
+- **Espera:** 45 s. Si un área nueva no termina, el análisis sigue con MERRA-2 e IMERG y declara la brecha «descargándose», mientras la descarga sigue en segundo plano. Medido el 26-oct: un área nueva tarda de 3 a 6 minutos y la siguiente ejecución, ~5 s.
+- **Cálculo:**
+  - Un área sin días húmedos en CHIRPS sale sola, sin dejar sin contraste a las demás.
+  - Las restantes se calculan juntas, para que Benjamini–Hochberg ajuste entre sitios igual que en MERRA-2.
+
+**Contrato (aditivo).**
+- `ExtremeIndexSummary.counterchecks`: un contraste por fuente.
+- `AtypicalYear.countercheck_values`: el valor de cada fuente en el año atípico.
+- `ScreeningEnvelope.discoveries`.
+- `countercheck` sigue reservado a IMERG por compatibilidad: si IMERG falta, queda vacío en vez de mostrar CHIRPS con su nombre.
+
+**Descubrimientos (`orchestration/discoveries.py`).** Reglas deterministas, sin consultas externas:
+- **Artefacto probable:** el reanálisis supera al menos 5 veces a cada satélite en el mismo año; se agrupa por año, no por índice.
+- **Tendencia significativa de MERRA-2:** se clasifica como confirmada, respaldada por n de m fuentes, sin respaldo o contradicha.
+- **Cambio que solo ven los satélites:** «sin respaldo» si lo ve uno solo; «coincidencia» si lo ven los dos.
+- **Coincidencia entre instituciones:**
+  - riesgo alto de inundación de CENEPRED con un punto crítico de la ANA;
+  - riesgo alto de movimientos en masa con pendiente NASADEM ≥ 15°;
+  - más vegetación no arbórea en MOD44B con ganancia de pastizal o matorral en MCD12Q1.
+
+Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel propio en todas las pantallas, al PDF ejecutivo y al asistente. La pregunta 4 del reto resume el contraste de ambos satélites.
+
+**Resultado real del 26-oct-2026:**
+- **Moquegua, 2022:**
+  - RX1DAY: 300 mm en MERRA-2, 12 mm en IMERG y 21 mm en CHIRPS. Es un artefacto confirmado por las dos fuentes independientes.
+  - CHIRPS ve aumentos significativos en 4 índices que MERRA-2 no ve. Se publican como pistas que hay que contrastar con estaciones, no como tendencias.
+- **Arequipa:** la tendencia de RX5DAY (+1.1 mm/año, p BH 0.019), que IMERG no respaldaba, se repite en CHIRPS.
+
+**Verificación:**
+- 182/182 pruebas, cinco de ellas nuevas:
+  - reintento ante 503 y no ante 400;
+  - faltantes −9999;
+  - un área desértica no arrastra a las demás;
+  - descarga pendiente declarada;
+  - descubrimientos: artefacto, sin respaldo, y cambio visto solo por satélites.
+- Un `conftest.py` común aísla CHIRPS de la red.
+- QA `baseline_ui`, `climate_ui` y `release_ui` en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas.
+- Build de Next.js correcto; audit con 0 vulnerabilidades.

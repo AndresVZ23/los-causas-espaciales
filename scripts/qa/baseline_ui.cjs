@@ -51,6 +51,9 @@ async function run(viewport, tag) {
   out.hazardsReading = (await page.locator(".verdict").first().innerText()).slice(0, 400);
   out.hazardsTabs = await page.locator('[aria-label="Variable NASA POWER"] button').allInnerTexts();
   out.hazardsExtremeRows = await page.locator(".siteResult .agreement").count();
+  out.hazardsCheckColumns = await page.locator(".siteResult thead th", { hasText: "Contraste" }).allInnerTexts();
+  out.hazardsAtypical = await page.locator(".siteResult small.atypical").allInnerTexts();
+  out.hazardsDiscoveries = await page.locator(".discoveriesPanel .discovery h4").allInnerTexts();
   out.hazardsLayers = await page.locator(".baselineLayers tbody tr").count();
   out.hazardsChartPoints = await page.locator(".recharts-line path, .recharts-line-dot").count();
   out.hazardsOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);

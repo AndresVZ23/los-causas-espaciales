@@ -25,6 +25,7 @@ def build_context(envelope: dict[str, Any]) -> dict[str, Any]:
             for t in envelope.get("trend_findings", [])
         ],
         "brechas": [_pick(g, "dataset", "impact", "next_action") for g in envelope.get("data_gaps", [])],
+        "descubrimientos": [_pick(d, "kind", "title", "detail", "sources") for d in envelope.get("discoveries", [])],
         "supuestos": [_pick(a, "label", "value", "unit") for a in envelope.get("assumption_items", [])],
         "pipeline": [_pick(s, "name", "status", "summary") for s in envelope.get("pipeline", [])],
     }
@@ -61,7 +62,8 @@ def build_context(envelope: dict[str, Any]) -> dict[str, Any]:
             entry["extremos_etccdi"] = [{
                 **_pick(e, "variable", "label", "mean", "display_unit", "adjusted_p_value", "significant_after_bh"),
                 "contraste_imerg": _pick(e.get("countercheck") or {}, "agreement", "slope_per_year", "adjusted_p_value"),
-                "años_atipicos": [_pick(a, "year", "value", "countercheck_value") for a in e.get("atypical_years", [])],
+                "contrastes": [_pick(c, "source", "agreement", "slope_per_year", "adjusted_p_value") for c in e.get("counterchecks", [])],
+                "años_atipicos": [_pick(a, "year", "value", "countercheck_value", "countercheck_values") for a in e.get("atypical_years", [])],
             } for e in site["extremes"]]
         if site.get("finance"):
             entry["finanzas"] = _pick(site["finance"], "annual_energy_mwh", "annual_revenue_usd", "npv_usd")
@@ -98,7 +100,7 @@ RULES: list[tuple[tuple[str, ...], str]] = [
     (("van", "escenario", "sensibil", "precio", "capex", "opex", "equilibrio", "rentab", "tornado"), "sensibilidad_van"),
     (("tramo", "corredor", "carretera", "via ", "vial", "interrup"), "tramos"),
     (("terreno", "lote", "inmobiliar", "parcela", "area de analisis"), "terrenos"),
-    (("imerg", "atipic", "artefacto", "contraste", "satelit"), "contraste"),
+    (("imerg", "chirps", "atipic", "artefacto", "contraste", "satelit", "descubr", "cruzar fuentes", "coinciden"), "contraste"),
     (("extrem", "lluvia max", "lluvias max", "huaico", "rx1day", "rx5day", "racha seca", "sequia"), "extremos"),
     (("brecha", "falta", "pendiente", "no se sabe", "limitacion"), "brechas"),
     (("donde",), "where"),
@@ -248,12 +250,15 @@ def answer_by_rules(question: str, context: dict[str, Any]) -> tuple[str, list[s
             lines.append(f"{item['sujeto']}: {scenarios}; el factor que más mueve el VAN es el {top}.")
         return " ".join(lines), ["financial_sensitivity"]
     if section == "contraste":
-        notes = [f"{e['label']} {site['sujeto']} {a['year']}: {a['value']} {e.get('display_unit', '')} (IMERG {a.get('countercheck_value')})"
+        notes = [f"{e['label']} {site['sujeto']} {a['year']}: MERRA-2 {a['value']} {e.get('display_unit', '')}"
+                 + "".join(f", {source.split(' ')[0]} {value}" for source, value in (a.get("countercheck_values") or {}).items())
                  for site in context.get("sitios", []) for e in site.get("extremos_etccdi", []) for a in e.get("años_atipicos", [])]
         significant = _question(context, "significant") or ""
-        contrast = significant[significant.find("Contraste con GPM IMERG"):] if "Contraste con GPM IMERG" in significant else ""
-        if notes or contrast:
-            return (contrast + (" Años atípicos: " + "; ".join(notes) + "." if notes else "")).strip(), ["sites.extremes.countercheck"]
+        contrast = significant[significant.find("Contraste satelital"):] if "Contraste satelital" in significant else ""
+        found = [f"{d['title']}: {d['detail']}" for d in context.get("descubrimientos", [])]
+        if notes or contrast or found:
+            return (contrast + (" Años atípicos: " + "; ".join(notes) + "." if notes else "")
+                    + (" Descubrimientos al cruzar fuentes: " + " ".join(found) if found else "")).strip(), ["sites.extremes.counterchecks", "discoveries"]
     if section == "brechas" and context.get("brechas"):
         return "Brechas abiertas: " + "; ".join(f"{g['dataset']}: {g['impact']}" for g in context["brechas"]) + ".", ["data_gaps"]
     if section == "fuentes":

@@ -6,6 +6,7 @@ from pydantic import ValidationError
 
 from ..reports.executive_pdf import render_executive_pdf
 from ..schemas.baseline import BaselineScreeningResponse
+from ..schemas.climate import ClimateScreeningResponse
 from ..schemas.screening import ScreeningEnvelope, Sector
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -15,6 +16,7 @@ MAX_FINDINGS = 400
 # Sectores cuyo reporte necesita sus propios campos además del sobre común.
 SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {
     Sector.ENVIRONMENT: BaselineScreeningResponse, Sector.HERITAGE: BaselineScreeningResponse, Sector.HAZARDS: BaselineScreeningResponse,
+    Sector.CLIMATE: ClimateScreeningResponse,   # sus extremos dicen si CHIRPS entró como fuente
 }
 
 
@@ -26,8 +28,8 @@ SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {
 def executive_pdf(payload: dict[str, Any] = Body(..., description="Respuesta completa de un screening (sobre C2 y campos del sector).")) -> Response:
     """Genera el reporte ejecutivo de cualquier sector a partir del sobre común C2.
 
-    La línea base (ambiente y patrimonio) se valida con su esquema completo para conservar áreas, capas y vegetación;
-    en los demás sectores los campos propios se ignoran. Es una función síncrona: FastAPI la ejecuta en su pool de
+    La línea base (ambiente, amenazas y patrimonio) y Clima se validan con su esquema completo para conservar áreas,
+    capas, vegetación y contrastes de lluvia; en los demás sectores los campos propios se ignoran. Es una función síncrona: FastAPI la ejecuta en su pool de
     hilos y no bloquea el bucle de eventos.
     """
     schema = SECTOR_SCHEMAS.get(str(payload.get("sector")), ScreeningEnvelope)
