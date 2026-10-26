@@ -15,3 +15,7 @@ scripts/qa/node_modules/
 # Next en modo dev genera este archivo para agentes; no forma parte del proyecto
 frontend/AGENTS.md
 frontend/tsconfig.tsbuildinfo
+
+# Archivos descargados a mano de fuentes oficiales (se documentan en datos-externos/LEEME.md)
+datos-externos/*/*
+!datos-externos/LEEME.md
