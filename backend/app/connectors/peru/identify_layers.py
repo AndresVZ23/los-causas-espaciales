@@ -191,4 +191,3 @@ class IdentifyLayersConnector:
         west, south = UTM19S_TO_WGS84.transform(extent["xmin"], extent["ymin"])
         east, north = UTM19S_TO_WGS84.transform(extent["xmax"], extent["ymax"])
         return box(west, south, east, north)
-

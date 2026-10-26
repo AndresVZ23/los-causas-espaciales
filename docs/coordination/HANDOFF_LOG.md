@@ -786,3 +786,17 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - En vivo:
   - Moquegua 2022, RX1DAY: 300 mm en MERRA-2, 12 mm en IMERG y 21 mm en CHIRPS. Queda como artefacto confirmado por las dos fuentes.
   - Arequipa: la tendencia de RX5DAY se repite en CHIRPS.
+
+## 2026-10-26 · Codex · `master` · `0a37bc3` · integración ADR-035/036 y puerta común
+
+**Fusión aprobada:** los commits nuevos de `claude/pdf-linea-base` (`eb804d6`, `ece1a74`, `d6c01ab`) se revisaron y fusionaron en `master` mediante `0a37bc3`, sobre la integración previa de ADR-033/034. Los campos C2 `discoveries`, `counterchecks` y `countercheck_values` son aditivos; `countercheck` conserva IMERG por compatibilidad. El fixture global de CHIRPS sustituye solo el conector usado por la orquestación, mientras las pruebas directas del transporte real siguen ejercitando reintentos, HTTP 400 y `-9999` con `MockTransport`.
+
+**Fuentes y límites:** `DATA_SOURCES.md` registra ClimateSERV/CHIRPS v2 (trabajo anual, 503 transitorios, caché, latencia de semanas, dominio público con atribución), CENEPRED FEN 1–2 por `identify` con leyenda 1–5, y cinco mapas volcánicos INGEMMET con transformación EPSG:32719→WGS84 y TLS estricto mediante el intermedio Sectigo OV R36. LHASA, SINPAD y SERV_PERUALERTA permanecen `DATA_UNAVAILABLE`; los mapas volcánicos no sustituyen el inventario nacional.
+
+**Puerta común:** 182/182 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; DOP/QA con sintaxis válida; `git diff --check` limpio; escaneo de secretos sin credenciales (solo ejemplos `your-key` y lecturas de entorno en la Skill de diseño).
+
+**Comprobación oficial independiente:** sin levantar 3100/8000, Chosica devolvió CENEPRED `READY/REAL_DATA`, 34 muestras y los cinco niveles de la leyenda; un polígono de Ubinas devolvió INGEMMET `READY/REAL_DATA`, 38 zonas, con TLS verificado. La consulta fría de Amenazas declaró CHIRPS como descarga en curso, tal como exige el contrato asíncrono.
+
+**QA en Browser integrado:** puertos temporales 13101/18101. En 1440 px, Amenazas completó con el descubrimiento del artefacto 2022, procedencia y brechas visibles, sin errores de consola, overlay ni desbordamiento. En 390 px, el panel siguió accesible, el ancho documental tuvo desbordamiento 0 y `Más → Ambiente` cambió de módulo. Ambos puertos quedaron en cero listeners.
+
+**Publicación:** no se hizo push porque no existe aprobación explícita de Christian en esta instrucción. No se creó `v0.1.0`.
