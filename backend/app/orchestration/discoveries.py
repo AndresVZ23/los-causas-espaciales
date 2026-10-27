@@ -32,7 +32,9 @@ SOLAR_CLOSE_PERCENT = 5.0
 SOLAR_APART_PERCENT = 10.0
 # Temperatura: desde 2 °C de diferencia en la media común, el nivel de una de las dos fuentes no representa el sitio.
 TEMPERATURE_APART_DEGREES = 2.0
-PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES"}
+# Viento: dos reanálisis de celda gruesa difieren a menudo; desde 30 % en la media común, el nivel no sirve para diseño.
+WIND_APART_PERCENT = 30.0
+PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2"}
 CLOSE_CLASSES = 1            # dos fuentes «coinciden» en un punto si difieren a lo sumo en una clase,
                              # y en el área si coinciden en al menos dos tercios de los puntos
 
@@ -115,7 +117,7 @@ def _signed(value: float | None, unit: str) -> str:
 
 
 def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]]) -> list[Discovery]:
-    """Temperatura y radiación frente a una segunda fuente (ERA5): tendencia en los años comunes y, en la radiación, nivel del recurso."""
+    """Temperatura, radiación y viento frente a una segunda fuente (ERA5): tendencia en los años comunes y nivel de cada variable."""
     out: list[Discovery] = []
     for label, variables in sites:
         for item in variables:
@@ -160,6 +162,12 @@ def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]])
                         detail=f"Media {years}: {primary} {mine:.1f} °C; {other} {theirs:.1f} °C. Las tendencias pueden coincidir aunque el nivel no: "
                                f"las celdas de cada reanálisis representan altitudes distintas. Para pérdidas térmicas, confort o heladas, "
                                f"el nivel absoluto se toma de una estación cercana o se mide en sitio.",
+                        subjects=[label], sources=sources))
+                if item.variable == "WS10M" and mine and abs(theirs - mine) / mine * 100 >= WIND_APART_PERCENT:
+                    out.append(Discovery(
+                        kind=DiscoveryKind.CONTRADICTION, title=f"{label}: el viento medio difiere {abs(theirs - mine) / mine * 100:.0f} % entre {primary} y {other}",
+                        detail=f"Media {years}: {primary} {mine:.2f} m/s; {other} {theirs:.2f} m/s. Ninguna celda de reanálisis resuelve el viento "
+                               f"de un valle o una ladera: para cargas de diseño, erosión eólica o recurso eólico, se mide en sitio.",
                         subjects=[label], sources=sources))
                 if item.variable != "ALLSKY_SFC_SW_DWN":
                     continue

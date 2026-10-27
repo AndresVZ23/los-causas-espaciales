@@ -19,14 +19,16 @@ from .analysis import agreement
 
 ERA5_SOURCE = "ERA5 (ECMWF) vía PVGIS (JRC)"
 # Variable de NASA POWER → serie anual de ERA5 y nombre de la fuente principal en las frases.
-ERA5_VARIABLES = {"T2M": "temperature", "ALLSKY_SFC_SW_DWN": "irradiance"}
-PRIMARY_NAMES = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES"}
+ERA5_VARIABLES = {"T2M": "temperature", "ALLSKY_SFC_SW_DWN": "irradiance", "WS10M": "wind"}
+PRIMARY_NAMES = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2"}
 MIN_COMMON_YEARS = 10
 CONCURRENCY = 3
+WIND_WAIT_SECONDS = 45.0     # el viento horario de un punto nuevo tarda ~17 s; varios puntos, más de un minuto
+_inflight: dict[str, asyncio.Task] = {}
 ERA5_NOTE = (
-    "Contraste de temperatura y radiación: ERA5 (ECMWF, ~31 km) vía PVGIS del JRC, independiente de MERRA-2 y de CERES. Las tendencias "
-    "se comparan en los años que tienen ambas fuentes (2005–2023), con la pendiente de NASA POWER recalculada en esos mismos años; "
-    "ERA5 se lee en el punto representativo de cada sujeto."
+    "Contraste de temperatura, radiación y viento: ERA5 (ECMWF, ~31 km) vía PVGIS del JRC, independiente de MERRA-2 y de CERES. Las "
+    "tendencias se comparan en los años que tienen ambas fuentes (2005–2023), con la pendiente de NASA POWER recalculada en esos mismos "
+    "años; ERA5 se lee en el punto representativo de cada sujeto y el viento se promedia desde su serie horaria."
 )
 
 
@@ -34,6 +36,18 @@ ERA5_NOTE = (
 class Era5Result:
     series: list[Era5Annual | None]
     errors: list[str] = field(default_factory=list)
+    pending: list[str] = field(default_factory=list)   # sujetos cuyo viento horario sigue descargándose
+
+
+def _wind_task(point: Point) -> asyncio.Task:
+    """Una descarga de viento por punto, compartida entre consultas simultáneas y que sobrevive al presupuesto de espera."""
+    key = f"{point.latitude:.4f},{point.longitude:.4f}"
+    task = _inflight.get(key)
+    if task is None or (task.done() and (task.cancelled() or task.exception() is not None)):
+        task = asyncio.get_running_loop().create_task(PvgisConnector().era5_wind(point.latitude, point.longitude))
+        _inflight[key] = task
+        task.add_done_callback(lambda t, k=key: _inflight.pop(k, None) if not t.cancelled() and t.exception() is None else None)
+    return task
 
 
 @dataclass
@@ -45,11 +59,16 @@ class _Fit:
     significant_after_bh: bool = False
 
 
-async def era5_series(subjects: Sequence[tuple[str, Point]]) -> Era5Result:
-    """Serie anual ERA5 por sujeto (etiqueta, punto representativo); un sujeto sin respuesta queda en None, no en cero."""
+async def era5_series(subjects: Sequence[tuple[str, Point]], wait: float = WIND_WAIT_SECONDS) -> Era5Result:
+    """Serie anual ERA5 por sujeto (etiqueta, punto representativo); un sujeto sin respuesta queda en None, no en cero.
+
+    Temperatura y radiación llegan en una consulta mensual corta. El viento sale de la serie horaria: si no termina
+    dentro de `wait`, se declara «descargándose» y la descarga sigue en segundo plano para la siguiente ejecución.
+    """
     connector = PvgisConnector()
     limit = asyncio.Semaphore(CONCURRENCY)
     result = Era5Result(series=[None] * len(subjects))
+    wind_tasks = [_wind_task(point) for _, point in subjects]
 
     async def one(index: int, label: str, point: Point) -> None:
         async with limit:
@@ -59,6 +78,16 @@ async def era5_series(subjects: Sequence[tuple[str, Point]]) -> Era5Result:
                 result.errors.append(f"{label}: {exc}")
 
     await asyncio.gather(*(one(index, label, point) for index, (label, point) in enumerate(subjects)))
+    done, _ = await asyncio.wait(wind_tasks, timeout=wait) if wind_tasks else (set(), set())
+    for (label, _), series, task in zip(subjects, result.series, wind_tasks, strict=True):
+        if series is None:
+            continue
+        if task not in done:
+            result.pending.append(label)
+        elif task.exception() is not None:
+            result.errors.append(f"{label}: viento · {task.exception()}")
+        else:
+            series.wind = task.result()
     return result
 
 
@@ -98,7 +127,12 @@ def attach_era5(variables_by_site: Sequence[Sequence[VariableSummary]], era5: Er
 
 
 def era5_gaps(era5: Era5Result) -> list[DataGap]:
-    if not era5.errors:
-        return []
-    return [DataGap(dataset="ERA5 vía PVGIS (contraste de temperatura y radiación)", impact="; ".join(era5.errors)[:400],
-                    next_action="Reintentar; un sitio sin ERA5 queda sin ese contraste, no con ceros.")]
+    gaps = []
+    if era5.pending:
+        gaps.append(DataGap(dataset="ERA5 · viento horario (PVGIS)",
+                            impact=f"La serie horaria de viento se está descargando para: {', '.join(era5.pending)}. Esta ejecución contrasta solo temperatura y radiación en esos sujetos.",
+                            next_action="Volver a ejecutar en uno o dos minutos: la descarga continúa en segundo plano y queda en caché."))
+    if era5.errors:
+        gaps.append(DataGap(dataset="ERA5 vía PVGIS (contraste de temperatura, radiación y viento)", impact="; ".join(era5.errors)[:400],
+                            next_action="Reintentar; un sitio sin ERA5 queda sin ese contraste, no con ceros."))
+    return gaps

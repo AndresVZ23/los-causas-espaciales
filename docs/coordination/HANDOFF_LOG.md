@@ -916,3 +916,30 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **QA visual independiente:** servicios temporales en `localhost:13104` y `127.0.0.1:18104`. Energía y Clima completaron para Moquegua/Arequipa. Los gráficos mostraron ERA5 junto a CERES/MERRA-2; Energía publicó la coincidencia solar (+1.6 % / −4.0 %), la confirmación térmica de Moquegua, el respaldo débil de Arequipa y las diferencias de nivel de 10.6/3.4 °C. En 1440×900 y 390×844 hubo desbordamiento horizontal 0 y cero errores o advertencias de consola. Evidencia fuera del repositorio: `qa-evidence/pvgis-era5-desktop.jpg`, `pvgis-era5-mobile.jpg` y `pvgis-era5-climate-desktop.jpg`.
 
 **Operación y publicación:** los listeners temporales 13104/18104 quedaron en cero. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
+
+## 2026-10-27 · Claude · claude/pdf-linea-base · Viento cruzado con ERA5 (ampliación de ADR-038)
+
+**Qué entró (sobre master f2c50f1):**
+- `PvgisConnector.era5_wind`: viento a 10 m de ERA5 desde la serie horaria `seriescalc`.
+  - Un año por consulta, con un tope global de seis a la vez (~17 s por punto en lugar de ~110 s).
+  - Caché sin vencimiento por año; un año con menos del 90 % de horas válidas se omite.
+- `era5_series`: el viento corre en segundo plano con espera de 45 s, como CHIRPS. Si no termina, la brecha «ERA5 · viento horario (PVGIS)» dice «descargándose» y temperatura y radiación siguen contrastadas.
+- `ERA5_VARIABLES` suma WS10M. `variable_discoveries` marca el nivel del viento desde 30 % de diferencia.
+- La pestaña Viento de Clima y Energía dibuja ERA5 sin cambios de frontend. Sin cambios de contrato.
+
+**Resultado real:**
+- El viento medio difiere 55 % en Moquegua (MERRA-2 3.88, ERA5 1.76 m/s) y 41 % en Arequipa.
+- La bajada de viento que MERRA-2 marca como significativa en el período completo no se sostiene en 2005–2023.
+- Primera ejecución de Clima con los dos puntos: 43 s; la siguiente, 11 s.
+
+**Verificación:**
+- 199/199 pruebas; 3 nuevas en `test_era5.py`. `conftest.py` aísla el viento de la red y limpia las descargas en curso.
+- API real dos veces (descarga y caché).
+- QA visual de la pestaña Viento en 1440 y 390, sin errores ni desbordamiento.
+
+**Para Codex:** agregar a la ficha PVGIS-ERA5 de `DATA_SOURCES.md` el endpoint `seriescalc`:
+- variable `WS10m` en m/s, horaria y en UTC;
+- un año por consulta;
+- ~750 KB por año.
+
+Fusionar con la puerta común; push solo con aprobación de Christian.

@@ -41,6 +41,9 @@ class FlatEra5:
                           irradiance=[Observation(timestamp=datetime(year, 7, 1).date(), value=6.0 + wobble(year)) for year in years],
                           provenance=Provenance.CACHED, downloaded_at=datetime(2026, 10, 27, tzinfo=timezone.utc))
 
+    async def era5_wind(self, latitude, longitude):
+        return [Observation(timestamp=datetime(year, 7, 1).date(), value=2.0 + ((year * 7) % 5 - 2) * 0.01) for year in range(2005, 2024)]
+
 
 class EmptyLandslides:
     """Deslizamientos de NASA sin registros en el área: las tres consultas responden, ninguna inventa un valor."""
@@ -71,5 +74,7 @@ def offline_chirps(monkeypatch):
     monkeypatch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
     monkeypatch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
     rainfall_crosscheck._inflight.clear()
+    era5_crosscheck._inflight.clear()
     yield
     rainfall_crosscheck._inflight.clear()
+    era5_crosscheck._inflight.clear()

@@ -7,10 +7,13 @@ import httpx
 import pytest
 
 from backend.app.connectors.jrc import pvgis
-from backend.app.connectors.jrc.pvgis import Era5Annual, PvgisError, annual_from_monthly
+from backend.app.connectors.jrc.pvgis import Era5Annual, PvgisError, annual_from_monthly, annual_wind
 from backend.app.core.config import Settings
+from backend.app.orchestration import era5_crosscheck
 from backend.app.orchestration.discoveries import variable_discoveries
-from backend.app.orchestration.era5_crosscheck import ERA5_SOURCE, Era5Result, attach_era5
+from backend.app.orchestration.era5_crosscheck import ERA5_SOURCE, Era5Result, attach_era5, era5_gaps, era5_series
+from backend.app.schemas.analysis import Point
+from backend.tests.conftest import FlatEra5
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.pipeline import Agreement, AnnualObservation, VariableSummary
 from backend.app.schemas.screening import DiscoveryKind
@@ -81,6 +84,38 @@ def test_pvgis_retries_a_503_and_then_serves_from_cache(tmp_path, monkeypatch):
     assert first.provenance == Provenance.REAL and [o.timestamp.year for o in first.temperature] == [2005, 2006]
     again = asyncio.run(pvgis.PvgisConnector(settings=settings, transport=httpx.MockTransport(lambda r: httpx.Response(500))).era5_annual(-17.19, -70.93))
     assert again.provenance == Provenance.CACHED and again.downloaded_at == first.downloaded_at
+
+
+def test_hourly_wind_needs_most_of_the_year_and_skips_impossible_values():
+    full = [{"WS10m": 2.0}] * 8000 + [{"WS10m": None}] * 760
+    assert annual_wind(2010, full).value == 2.0
+    assert annual_wind(2011, [{"WS10m": 2.0}] * 7000 + [{"WS10m": -9999}] * 1760) is None   # < 90 % de horas válidas: sin año
+
+
+def test_wind_is_fetched_one_year_per_request_and_cached(tmp_path):
+    years_asked = []
+
+    def handler(request):
+        assert request.url.path.endswith("/seriescalc")
+        year = int(request.url.params["startyear"])
+        years_asked.append(year)
+        return httpx.Response(200, json={"outputs": {"hourly": [{"time": f"{year}0101:0030", "WS10m": 1.5 + (year - 2005) * 0.01}] * 8760}})
+    settings = Settings(_env_file=None, cache_dir=tmp_path)
+    wind = asyncio.run(pvgis.PvgisConnector(settings=settings, transport=httpx.MockTransport(handler)).era5_wind(-17.19, -70.93))
+    assert sorted(years_asked) == list(range(2005, 2024)) and wind[0].value == 1.5 and wind[-1].value == pytest.approx(1.68)
+    again = asyncio.run(pvgis.PvgisConnector(settings=settings, transport=httpx.MockTransport(lambda r: httpx.Response(500))).era5_wind(-17.19, -70.93))
+    assert [item.value for item in again] == [item.value for item in wind]          # todo desde caché, sin consultar
+
+
+def test_slow_wind_is_declared_downloading_while_temperature_still_arrives(monkeypatch):
+    class SlowWind(FlatEra5):
+        async def era5_wind(self, latitude, longitude):
+            await asyncio.sleep(5)
+            return await super().era5_wind(latitude, longitude)
+    monkeypatch.setattr(era5_crosscheck, "PvgisConnector", SlowWind)
+    result = asyncio.run(era5_series([("Moquegua", Point(latitude=-17.193, longitude=-70.934))], wait=0.05))
+    assert result.pending == ["Moquegua"] and result.series[0].temperature and result.series[0].wind == []
+    assert era5_gaps(result)[0].dataset == "ERA5 · viento horario (PVGIS)"
 
 
 def test_rising_temperature_confirmed_in_common_years_and_solar_level_compared():

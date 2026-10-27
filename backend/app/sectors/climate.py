@@ -283,7 +283,7 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     if era5_checks:
         counts = {value: sum(1 for check in era5_checks if check.agreement == value) for value in Agreement}
         evaluation_evidence.append(StageEvidence(
-            label="Contraste ERA5 (temperatura y radiación)",
+            label="Contraste ERA5 (temperatura, radiación y viento)",
             value=f"coinciden {counts[Agreement.COINCIDE]} · sin respaldo {counts[Agreement.SIN_RESPALDO]} · solo ERA5 {counts[Agreement.SOLO_CONTRASTE]} · "
                   f"contradicen {counts[Agreement.CONTRADICE]} · sin tendencia {counts[Agreement.SIN_TENDENCIA]} · {era5_checks[0].period}",
             provenance=Provenance.MODEL,

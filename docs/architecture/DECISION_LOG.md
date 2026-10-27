@@ -428,3 +428,16 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
 - API real: Clima y Energía con descubrimientos ERA5; el PDF solar lleva descubrimientos y la cita.
 - QA `climate_ui` y `release_ui` (siete módulos) en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas. El gráfico anual dibuja ERA5 con raya y punto.
 - Build de Next.js correcto.
+
+**Ampliación del 27-oct: viento a 10 m.** Con esto, las cuatro variables de NASA POWER tienen contraste: la lluvia en los extremos (IMERG y CHIRPS) y las otras tres con ERA5.
+- **Fuente:** PVGIS solo entrega el viento en la serie horaria `seriescalc` (`WS10m`, m/s).
+  - La serie completa de una vez pesa 14 MB y tarda ~110 s.
+  - Un año por consulta, seis a la vez con un tope global, tarda ~17 s por punto, con valores idénticos.
+  - Cada año queda en caché sin vencimiento; un año con menos del 90 % de horas válidas se omite.
+- **Espera:** igual que CHIRPS, la descarga corre en segundo plano y el análisis espera 45 s. Si no termina, se declara «ERA5 · viento horario» como descargándose, mientras temperatura y radiación siguen contrastadas.
+- **Nivel:** el viento medio se marca desde 30 % de diferencia (dos reanálisis de celda gruesa difieren a menudo).
+- **Resultado real:**
+  - el viento medio difiere 55 % en Moquegua (MERRA-2 3.88, ERA5 1.76 m/s) y 41 % en Arequipa (3.13 frente a 1.83 m/s);
+  - la bajada de viento que MERRA-2 marca como significativa en 2001–2025 no se sostiene en 2005–2023 en ninguna de las dos fuentes.
+  - Primera ejecución con los dos puntos: 43 s; la siguiente, 11 s.
+- **Verificación:** 199/199 pruebas (umbral de horas, un año por consulta con caché, viento pendiente declarado). QA `climate_ui` con la pestaña Viento, sin errores ni desbordamiento.

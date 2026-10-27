@@ -4,12 +4,16 @@ Sobre el Perú, PVGIS solo ofrece la base PVGIS-ERA5 (SARAH-3 no cubre esa longi
 5.3; verificado el 27-oct-2026). `MRcalc` devuelve por mes la irradiación global horizontal `H(h)_m` en kWh/m²/mes y
 la temperatura media a 2 m `T2m` en °C, de 2005 a 2023. ERA5 es un reanálisis independiente de MERRA-2 (temperatura
 de NASA POWER) y de CERES (radiación de NASA POWER). Es un archivo cerrado: la caché no vence.
+
+El viento a 10 m (`WS10m`, m/s) solo sale de la serie horaria `seriescalc`; se promedia por año y se compara con
+WS10M de MERRA-2.
 """
 
 import asyncio
 import json
+import weakref
 from calendar import monthrange
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date, datetime
 
 import httpx
@@ -19,7 +23,13 @@ from ...schemas.analysis import Observation, Provenance
 from ..cache import RawPayloadCache
 
 API = "https://re.jrc.ec.europa.eu/api/v5_3/MRcalc"
+HOURLY_API = "https://re.jrc.ec.europa.eu/api/v5_3/seriescalc"
 TIMEOUT = httpx.Timeout(connect=20, read=60, write=20, pool=20)
+HOURLY_TIMEOUT = httpx.Timeout(connect=20, read=120, write=20, pool=120)
+# Viento: solo existe horario (seriescalc, ~750 KB por año). La serie completa de una vez tarda ~110 s; un año por
+# consulta, seis a la vez, ~17 s por punto (medido el 27-oct-2026 en Moquegua, con valores idénticos).
+HOURLY_CONCURRENCY = 6
+MIN_HOURS = 8760 * 0.9
 ATTEMPTS = 2
 RETRY_SECONDS = 3.0
 DATABASE = "PVGIS-ERA5"
@@ -38,6 +48,26 @@ class Era5Annual:
     irradiance: list[Observation]
     provenance: Provenance
     downloaded_at: datetime
+    wind: list[Observation] = field(default_factory=list)   # m/s, media de las horas del año; vacío si no llegó
+
+
+_semaphores: "weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, asyncio.Semaphore]" = weakref.WeakKeyDictionary()
+
+
+def _hourly_limit() -> asyncio.Semaphore:
+    """Tope de consultas horarias simultáneas para todo el proceso (por bucle de eventos)."""
+    loop = asyncio.get_running_loop()
+    if loop not in _semaphores:
+        _semaphores[loop] = asyncio.Semaphore(HOURLY_CONCURRENCY)
+    return _semaphores[loop]
+
+
+def annual_wind(year: int, hourly: list[dict]) -> Observation | None:
+    """Media anual del viento a 10 m; un año con menos del 90 % de las horas válidas se omite."""
+    values = [row["WS10m"] for row in hourly if isinstance(row.get("WS10m"), (int, float)) and 0 <= row["WS10m"] < 100]
+    if len(values) < MIN_HOURS:
+        return None
+    return Observation(timestamp=date(year, 7, 1), value=round(sum(values) / len(values), 4))
 
 
 def annual_from_monthly(monthly: list[dict]) -> tuple[list[Observation], list[Observation]]:
@@ -84,11 +114,32 @@ class PvgisConnector:
             raise PvgisError("PVGIS no devolvió ningún año completo de ERA5.")
         return Era5Annual(temperature=temperature, irradiance=irradiance, provenance=provenance, downloaded_at=stamp)
 
-    async def _fetch(self, params: dict[str, str]) -> dict:
-        async with httpx.AsyncClient(timeout=TIMEOUT, transport=self.transport) as client:
+    async def era5_wind(self, latitude: float, longitude: float) -> list[Observation]:
+        """Viento a 10 m de ERA5, media anual 2005–2023 a partir de la serie horaria; un año por consulta, con caché sin vencimiento."""
+        async def one(year: int) -> Observation | None:
+            params = {"lat": f"{latitude:.4f}", "lon": f"{longitude:.4f}", "startyear": str(year), "endyear": str(year),
+                      "raddatabase": DATABASE, "components": "0", "outputformat": "json"}
+            key = self.cache.request_key({"url": HOURLY_API, "params": params, "v": 1})
+            cached = self.cache.get(key, max_age=None)
+            if cached:
+                payload = json.loads(cached.content)
+            else:
+                async with _hourly_limit():
+                    payload = await self._fetch(params, url=HOURLY_API, timeout=HOURLY_TIMEOUT)
+                self.cache.put(key, json.dumps(payload).encode(), suffix=".json")
+            return annual_wind(year, payload.get("outputs", {}).get("hourly") or [])
+
+        years = await asyncio.gather(*(one(year) for year in range(FIRST_YEAR, LAST_YEAR + 1)))
+        wind = [item for item in years if item is not None]
+        if not wind:
+            raise PvgisError("PVGIS no devolvió ningún año completo de viento ERA5.")
+        return wind
+
+    async def _fetch(self, params: dict[str, str], *, url: str = API, timeout: httpx.Timeout = TIMEOUT) -> dict:
+        async with httpx.AsyncClient(timeout=timeout, transport=self.transport) as client:
             for attempt in range(1, ATTEMPTS + 1):
                 try:
-                    response = await client.get(API, params=params)
+                    response = await client.get(url, params=params)
                 except httpx.TransportError as exc:
                     if attempt == ATTEMPTS:
                         raise PvgisError(f"PVGIS no respondió: {exc}") from exc

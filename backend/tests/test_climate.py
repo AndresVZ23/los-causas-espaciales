@@ -46,11 +46,11 @@ def test_climate_response_conforms_and_carries_extremes(response):
 
 def test_temperature_and_radiation_carry_era5_in_the_common_years(response):
     by_code = {item.variable: item for item in response.sites[0].variables}
-    for code in ("T2M", "ALLSKY_SFC_SW_DWN"):
+    for code in ("T2M", "ALLSKY_SFC_SW_DWN", "WS10M"):
         check = by_code[code].counterchecks[0]
         assert check.source.startswith("ERA5") and check.period == "2010–2023" and check.valid_years == 14
-    assert by_code["WS10M"].counterchecks == [] and by_code["PRECTOTCORR"].counterchecks == []   # ERA5 no se usa donde no se pidió
-    assert any(note.startswith("Contraste de temperatura y radiación: ERA5") for note in response.method_notes)
+    assert by_code["PRECTOTCORR"].counterchecks == []        # la lluvia se contrasta en los extremos (IMERG y CHIRPS), no con ERA5
+    assert any(note.startswith("Contraste de temperatura, radiación y viento: ERA5") for note in response.method_notes)
     evaluation = next(stage for stage in response.pipeline if stage.key == "evaluation")
     assert any(item.label.startswith("Contraste ERA5") for item in evaluation.evidence)
 
