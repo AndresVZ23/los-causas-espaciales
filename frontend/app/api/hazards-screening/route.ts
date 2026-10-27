@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 const BACKEND_API = process.env.BACKEND_API_URL || "http://localhost:8000";
 
-// Módulo 3 · amenazas naturales: lluvia y extremos con contrastes IMERG y CHIRPS, relieve y capas de riesgo.
+// Módulo 3 · amenazas naturales: lluvia y extremos con contrastes IMERG y CHIRPS, relieve, capas de riesgo y deslizamientos de NASA.
 export async function POST(request: Request) {
   try {
     const body = await request.text();

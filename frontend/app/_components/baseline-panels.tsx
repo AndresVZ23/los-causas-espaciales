@@ -10,7 +10,7 @@ export type BaselineModule = "environment" | "social" | "hazards";
 const MODULE_SOURCES: Record<BaselineModule, string> = {
   environment: "MODIS anual (vegetación y cobertura), relieve NASADEM y capas de ANA, MINAM y SERNANP, ordenados como la línea base de un EIA.",
   social: "Cultura (SIGDA): patrimonio registrado y declarado, CIRA, diagnósticos arqueológicos, Qhapaq Ñan, paisajes culturales y consulta previa.",
-  hazards: "Lluvia y extremos ETCCDI desde 2001 cruzados con GPM IMERG y CHIRPS, relieve NASADEM, riesgo por distrito de CENEPRED y puntos críticos de la ANA.",
+  hazards: "Lluvia y extremos ETCCDI desde 2001 cruzados con GPM IMERG y CHIRPS, relieve NASADEM, riesgo por distrito de CENEPRED, deslizamientos de NASA cruzados con CENEPRED y puntos críticos de la ANA.",
 };
 const signed = (value: number, digits: number) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatNumber(Math.abs(value), digits)}`;
 const withRecords = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status === "READY" && (layer.intersection_count ?? 0) > 0);
@@ -35,7 +35,7 @@ const HEADINGS: Record<BaselineResult["sector"], string> = { environment: "Lectu
 const NOTES: Record<BaselineResult["sector"], string> = {
   environment: "Indicadores satelitales indirectos para preparar la línea base; no sustituyen el trabajo de campo ni el EIA.",
   heritage: "Registros oficiales del Ministerio de Cultura. Cero registros no prueba ausencia de patrimonio; nada de esto es opinión legal.",
-  hazards: "Lluvia en el punto representativo (NASA POWER, contrastes IMERG y CHIRPS) y riesgo por distrito (CENEPRED). No es un mapa de amenaza a escala de proyecto.",
+  hazards: "Lluvia en el punto representativo (NASA POWER, contrastes IMERG y CHIRPS), riesgo por distrito (CENEPRED) y deslizamientos (NASA frente a CENEPRED). No es un mapa de amenaza a escala de proyecto.",
 };
 
 export function BaselineReading({ result, headingId }: { result: BaselineResult; headingId: string }) {

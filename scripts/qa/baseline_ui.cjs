@@ -55,6 +55,7 @@ async function run(viewport, tag) {
   out.hazardsAtypical = await page.locator(".siteResult small.atypical").allInnerTexts();
   out.hazardsDiscoveries = await page.locator(".discoveriesPanel .discovery h4").allInnerTexts();
   out.hazardsLayers = await page.locator(".baselineLayers tbody tr").count();
+  out.hazardsNasaLayers = (await page.locator(".baselineLayers tbody tr", { hasText: "NASA" }).allInnerTexts()).map((row) => row.replace(/\s+/g, " ").slice(0, 220));
   out.hazardsChartPoints = await page.locator(".recharts-line path, .recharts-line-dot").count();
   out.hazardsOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   await page.screenshot({ path: path.join(OUT, `amenazas-${tag}.png`), fullPage: true });

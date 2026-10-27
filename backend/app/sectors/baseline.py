@@ -2,7 +2,7 @@
 
 Los tres comparten las áreas de estudio y el orden de una línea base de EIA peruana. El ambiental suma
 vegetación MODIS con tendencia, relieve NASADEM y capas del ANA, MINAM y SERNANP; el de amenazas suma lluvia y
-extremos ETCCDI con contraste IMERG, relieve y capas de riesgo de CENEPRED y ANA; el patrimonial consulta las
+extremos ETCCDI con contraste IMERG y CHIRPS, relieve, capas de riesgo de CENEPRED y ANA y deslizamientos de NASA; el patrimonial consulta las
 capas del Ministerio de Cultura y no mide cambios en el tiempo, por lo que declara las preguntas de tendencia
 como evidencia insuficiente en lugar de forzarlas.
 """
@@ -19,12 +19,13 @@ from uuid import uuid4
 
 from shapely.geometry import shape
 
+from ..connectors.nasa.landslides import BASE as NASA_LANDSLIDES, NasaLandslidesConnector
 from ..connectors.peru.admin_boundaries import PeruTerritoryCatalog, TerritoryCatalogError
 from ..connectors.peru.identify_layers import CENEPRED_FEN, INGEMMET_BASE, IdentifyLayersConnector
 from ..connectors.peru.territory import LAYERS, TerritoryConnector, TerritoryConnectorError
 from ..geospatial.buffers import buffer_km, window_km
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
-from ..orchestration.discoveries import layer_discoveries, rainfall_discoveries, record_in_pipeline
+from ..orchestration.discoveries import landslide_discoveries, layer_discoveries, rainfall_discoveries, record_in_pipeline
 from ..orchestration.extraction import elapsed_ms, extract_terrain, max_separation_km
 from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, chirps_gaps
 from ..orchestration.nasa_questions import INSUFFICIENT, SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, join_es
@@ -32,7 +33,7 @@ from ..orchestration.stages import analysis_stage, assemble_pipeline, export_sta
 from ..schemas.analysis import Point, Provenance
 from ..schemas.baseline import BaselineLayer, BaselineRequest, BaselineScreeningResponse, Component, SubjectBaseline
 from ..schemas.climate import Agreement
-from ..schemas.data_sources import TerritorialQueryRequest
+from ..schemas.data_sources import TerritorialQueryRequest, TerritorialSourceResult
 from ..schemas.pipeline import VariableSummary
 from ..schemas.screening import DataGap, NasaQuestionAnswer, PipelineStatus, QuestionStatus, Sector, StageEvidence, StudySubject, SubjectKind
 from ..statistics.multiple_testing import benjamini_hochberg
@@ -40,7 +41,7 @@ from ..statistics.trends import decision_p_value
 from ..statistics.extremes import METHOD_NOTES as EXTREME_METHOD_NOTES
 from .baseline_hazards import START as RAINFALL_START
 from .baseline_hazards import rainfall_extremes
-from .baseline_layers import COMPONENT_SOURCES, summarize_layer
+from .baseline_layers import COMPONENT_SOURCES, NASA_LANDSLIDE_SOURCES, summarize_layer
 from .baseline_vegetation import VEGETATION_VARIABLES, subject_vegetation
 from .climate import CLIMATE_READINGS, CLIMATE_STABLE_NOTES, COUNTERCHECK_NOTE, LEVEL_SUFFIX, countercheck_summary
 
@@ -77,10 +78,16 @@ DISCLAIMERS = {
     ),
     Sector.HAZARDS: (
         "Screening de amenazas: tendencias de lluvia y de sus extremos (NASA POWER, cruzada con GPM IMERG y CHIRPS) en el punto representativo de "
-        "cada área, relieve NASADEM y capas oficiales de riesgo por distrito. No es un mapa de amenaza a escala de proyecto ni sustituye "
+        "cada área, relieve NASADEM, capas oficiales de riesgo por distrito y deslizamientos de NASA (susceptibilidad global, LHASA y reportes COOLR) "
+        "cruzados con CENEPRED. No es un mapa de amenaza a escala de proyecto ni sustituye "
         "estudios hidrológicos o geotécnicos ni la evaluación de riesgo de desastres; una capa sin registros o caída no equivale a riesgo cero."
     ),
 }
+LANDSLIDE_NOTE = (
+    "Deslizamientos: la susceptibilidad de CENEPRED y la global de NASA (Stanley y Kirschbaum 2017, ~1 km) se leen en los mismos puntos y "
+    "coinciden en un punto si difieren a lo sumo en una clase de cinco, y en el área si coinciden en dos tercios de los puntos; los reportes NASA COOLR (deslizamientos ocurridos, con su precisión de "
+    "ubicación) confirman o contradicen ambos mapas. LHASA 2 del día se informa sin clasificar: NASA no publica umbrales para su probabilidad."
+)
 SENACE_GAP = DataGap(
     dataset="SENACE · instrumentos ambientales aprobados",
     impact="No se listan los EIA ni otros instrumentos ya aprobados en el área: el servidor de mapas de SENACE presenta un certificado TLS inválido (verificado el 24-oct-2026).",
@@ -110,9 +117,6 @@ STATIC_GAPS = {
                 next_action="Tramitar el CIRA o el procedimiento que corresponda ante el Ministerio de Cultura."),
     ],
     Sector.HAZARDS: [
-        DataGap(dataset="NASA LHASA · susceptibilidad y pronóstico de deslizamientos",
-                impact="Sin la capa global de deslizamientos de NASA: la ruta oficial está confirmada, pero el conector y la lectura de sus valores siguen pendientes.",
-                next_action="Integrar LHASA declarando su resolución y su propósito (alerta, no mapa de amenaza local)."),
         DataGap(dataset="Inventario histórico de emergencias (INDECI · SINPAD)",
                 impact="No se listan emergencias ocurridas en el área: no se verificó un servicio geográfico consultable.",
                 next_action="Consultar SINPAD o el reporte de emergencias del distrito."),
@@ -197,7 +201,8 @@ def _host_limits() -> dict[str, asyncio.Semaphore]:
     return defaultdict(lambda: asyncio.Semaphore(PER_HOST))
 
 
-IDENTIFY_HOSTS = {"cenepred-susceptibility": urlparse(CENEPRED_FEN).hostname or "", "ingemmet-volcanic-hazards": urlparse(INGEMMET_BASE).hostname or ""}
+IDENTIFY_HOSTS = {"cenepred-susceptibility": urlparse(CENEPRED_FEN).hostname or "", "ingemmet-volcanic-hazards": urlparse(INGEMMET_BASE).hostname or "",
+                  **{source_id: urlparse(NASA_LANDSLIDES).hostname or "" for source_id in NASA_LANDSLIDE_SOURCES}}
 
 
 def _host(source_id: str) -> str:
@@ -205,11 +210,17 @@ def _host(source_id: str) -> str:
 
 
 async def _query_source(connector: TerritoryConnector, area: StudyArea, source_id: str):
+    point = area.subject.representative_point
     if source_id == "cenepred-susceptibility":
-        point = area.subject.representative_point
         return await IdentifyLayersConnector().cenepred_susceptibility(area.subject.geometry, (point.longitude, point.latitude))
     if source_id == "ingemmet-volcanic-hazards":
         return await IdentifyLayersConnector().volcanic_hazards(area.subject.geometry)
+    if source_id == "nasa-landslide-susceptibility":
+        return await NasaLandslidesConnector().susceptibility(area.subject.geometry, (point.longitude, point.latitude))
+    if source_id == "nasa-lhasa-nowcast":
+        return await NasaLandslidesConnector().nowcast(area.subject.geometry, (point.longitude, point.latitude))
+    if source_id == "nasa-coolr-reports":
+        return await NasaLandslidesConnector().reports(area.subject.geometry)
     return (await connector.query(TerritorialQueryRequest(geometry=area.subject.geometry, source_ids=[source_id]))).sources[0]
 
 
@@ -226,14 +237,16 @@ async def _one_layer(connector: TerritoryConnector, area: StudyArea, source_id: 
     return result
 
 
-async def _layers(area: StudyArea, components: Sequence[Component], limits: dict[str, asyncio.Semaphore]) -> tuple[list[BaselineLayer], str | None]:
+async def _layers(area: StudyArea, components: Sequence[Component], limits: dict[str, asyncio.Semaphore]
+                  ) -> tuple[list[BaselineLayer], str | None, dict[str, TerritorialSourceResult]]:
+    """Capas resumidas para el contrato y, aparte, los resultados crudos: los descubrimientos cruzan fuentes punto por punto."""
     component_of = {source: component for component in components for source in COMPONENT_SOURCES[component]}
     connector = TerritoryConnector()
     try:
         results = await asyncio.gather(*(_one_layer(connector, area, source_id, limits[_host(source_id)]) for source_id in component_of))
     except TerritoryConnectorError as exc:
-        return [], f"Consulta de capas oficiales: {exc}"
-    return [summarize_layer(result, component_of[result.source_id]) for result in results], None
+        return [], f"Consulta de capas oficiales: {exc}", {}
+    return [summarize_layer(result, component_of[result.source_id]) for result in results], None, {result.source_id: result for result in results}
 
 
 def _adjust_by_variable(summaries: Sequence[VariableSummary]) -> None:
@@ -310,6 +323,12 @@ def _extraction_stage(sector: Sector, baselines: Sequence[SubjectBaseline], dura
             StageEvidence(label="Series desde caché", value=f"{cached} de {len(summaries)}", provenance=Provenance.CACHED if cached else Provenance.REAL),
         ]
         provenance += [item.source.provenance for item in summaries]
+        landslides = [layer for layer in layers if layer.source_id in NASA_LANDSLIDE_SOURCES]
+        answered = sum(1 for layer in landslides if layer.status == "READY")
+        reports = sum(layer.intersection_count or 0 for layer in landslides if layer.source_id == "nasa-coolr-reports")
+        evidence.append(StageEvidence(label="Deslizamientos NASA (susceptibilidad, LHASA, COOLR)",
+                                      value=f"{answered} de {len(landslides)} consultas respondieron · {reports} reporte(s) COOLR en las áreas",
+                                      provenance=Provenance.REAL if answered else Provenance.UNAVAILABLE))
     if errors:
         evidence.append(StageEvidence(label="Fuentes con error", value=" · ".join(errors)[:300], provenance=Provenance.UNAVAILABLE))
     status = PipelineStatus.PARTIAL if errors or ready < len(layers) else PipelineStatus.COMPLETED
@@ -397,7 +416,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
 
     baselines: list[SubjectBaseline] = []
     for index, area in enumerate(areas):
-        layers, layer_error = layer_results[index]
+        layers, layer_error, _ = layer_results[index]
         veg = vegetation[index] if vegetation else None
         rain = rainfall.areas[index] if rainfall else None
         baselines.append(SubjectBaseline(
@@ -424,6 +443,8 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
     if rainfall and rainfall.chirps:
         gaps[:0] = chirps_gaps(rainfall.chirps)
     discoveries = rainfall_discoveries([(b.subject, b.extremes) for b in baselines]) + layer_discoveries(baselines, terrain)
+    if is_hazards:
+        discoveries += [item for b, (_, _, raw) in zip(baselines, layer_results, strict=True) for item in landslide_discoveries(b.subject, raw)]
     for baseline in baselines:
         for layer in baseline.layers:
             if layer.status == "DATA_UNAVAILABLE" and all(gap.dataset != layer.dataset for gap in gaps):
@@ -454,7 +475,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
     label = SECTOR_LABELS[sector]
     indicators = {
         Sector.ENVIRONMENT: "MODIS MOD44B, MOD17A3HGF, MCD12Q1 y NASADEM",
-        Sector.HAZARDS: f"NASA POWER PRECTOTCORR y GPM IMERG desde {RAINFALL_START.year} (índices ETCCDI) y NASADEM",
+        Sector.HAZARDS: f"NASA POWER PRECTOTCORR y GPM IMERG desde {RAINFALL_START.year} (índices ETCCDI), NASADEM, susceptibilidad global, LHASA y COOLR",
     }.get(sector, "No aplica: registros oficiales")
     configuration = stage("configuration", PipelineStatus.COMPLETED, f"{label}: {', '.join(COMPONENT_LABELS[c].lower() for c in components)}.", [Provenance.ASSUMPTION], [
         StageEvidence(label="Sector", value=label),
@@ -501,6 +522,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
             "Lluvia y extremos en el punto representativo de cada área (celda NASA POWER que lo contiene); para el promedio areal por celdas, use el módulo Clima.",
             *EXTREME_METHOD_NOTES, COUNTERCHECK_NOTE, CHIRPS_NOTE,
             "CENEPRED publica niveles de riesgo, peligro y vulnerabilidad por distrito para el escenario El Niño; no son probabilidades a escala de predio.",
+            LANDSLIDE_NOTE,
         ]
     return BaselineScreeningResponse(
         analysis_id=uuid4().hex[:16], generated_at=datetime.now(timezone.utc), sector=sector, sector_label=label,
