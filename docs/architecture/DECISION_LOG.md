@@ -350,3 +350,35 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
 - Un `conftest.py` común aísla CHIRPS de la red.
 - QA `baseline_ui`, `climate_ui` y `release_ui` en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas.
 - Build de Next.js correcto; audit con 0 vulnerabilidades.
+
+## ADR-037 — Deslizamientos: tres fuentes de NASA cruzadas con CENEPRED
+
+**Motivo.** El principio de ADR-036 aplicado a los deslizamientos. CENEPRED publica la susceptibilidad a movimientos en masa del Perú; sin una segunda fuente, no hay forma de saber dónde ese mapa coincide con otro ni si lo ocurrido lo respalda. La carpeta `Landslides` de NASA Earthdata GIS trae tres fuentes independientes en un mismo servidor.
+
+**Fuentes (`connectors/nasa/landslides.py`).** Verificadas en vivo el 27-oct-2026:
+- **Susceptibilidad global** (`Global_Landslide_Susceptibility`, Stanley y Kirschbaum 2017, Natural Hazards 87:145–164):
+  - ráster de 30″ (~1 km), clases 1–5 = Very Low … Very High (cortes difusos 0.11 / 0.49 / 0.67 / 0.75), nodata 127;
+  - el servicio devuelve 0 en agua, océano y llano desértico (Titicaca, frente a Lima, desierto de Ica). El artículo no define el 0: se trata como «sin clase», nunca como susceptibilidad baja.
+- **LHASA 2 del día** (`LHASA_Hazard_Today`): probabilidad 0–1 de un modelo de aprendizaje automático; nodata −9999.
+  - NASA no publica umbrales ni la fecha del ráster en el servicio: se informa el orden de magnitud y la hora de consulta, sin clasificarlo como alerta.
+  - `LHASA_Hazard_Tomorrow` devolvió valores idénticos a Hoy en cinco puntos: no se usa hasta entender esa diferencia.
+- **COOLR** (`COOLR_Reports_Points`, Global Landslide Catalog y Landslide Reporter): deslizamientos ocurridos, con fecha, tipo, detonante, fallecidos, precisión de ubicación y enlace a la fuente.
+  - En el Perú: 80 reportes de 1974 a 2020; precisión de 1 a 250 km. `COOLR_Events_Points` no tiene registros del Perú.
+
+**Muestreo.** `sample_points` y el polígono ArcGIS pasan a `geospatial/sampling.py`: CENEPRED (`identify`) y NASA (`getSamples`) se leen en los mismos puntos, sin interpolar ninguna de las dos. Caché: 30 días para la susceptibilidad, 3 horas para LHASA y 7 días para COOLR; una consulta caída es `DATA_UNAVAILABLE` y activa el reintento de la línea base.
+
+**Contrato.** Sin cambios: las tres fuentes entran como capas `nasa-landslide-susceptibility`, `nasa-coolr-reports` y `nasa-lhasa-nowcast` del medio «Amenazas y riesgo». La brecha estática de LHASA desaparece.
+
+**Descubrimientos nuevos (`landslide_discoveries`).**
+- **Mapa nacional frente a global:** en cada punto, CENEPRED y NASA coinciden si difieren a lo sumo en una clase de cinco. En el área, «coinciden» si lo hacen en al menos dos tercios de los puntos; si no, «discrepan», con cuántos puntos marca más alto cada fuente. Con la mitad no basta: en Moquegua, 4 de 7 puntos se leían como coincidencia aunque CENEPRED marcaba alto donde NASA marcaba baja.
+- **Lo ocurrido frente a los mapas:** reportes COOLR en el área donde algún mapa marca alta o muy alta → «confirmado»; donde ninguno lo hace → «contradicción», con la precisión de ubicación del reporte.
+
+**Resultado real del 27-oct-2026 (distritos IGN):**
+- **Lurigancho-Chosica:** coinciden en 7 de 9 puntos; COOLR registra 6 deslizamientos entre 2009 y 2017 (Chosica, Huachipa) y ambos mapas marcan alta o muy alta: lo ocurrido respalda el mapa.
+- **Ilo:** discrepan; solo 3 de 7 puntos coinciden y CENEPRED marca más alto en los otros 4. El mapa nacional tiene más detalle; la diferencia se resuelve en campo.
+- LHASA del día: máximo 0.0027 en Lurigancho y 0.0025 en Ilo; puntos sin valor del servicio en ambos distritos, declarados y nunca leídos como cero.
+
+**Verificación:**
+- 189/189 pruebas; 7 nuevas en `test_landslides.py` (clases y 0 sin clase, nodata de LHASA, traducción de COOLR, servicio caído, coincidencia, discrepancia con la regla de dos tercios, confirmación por reportes). `conftest.py` aísla los deslizamientos de la red.
+- API real en Docker: Amenazas para Lurigancho e Ilo en 47 s, con 6 de 6 consultas a NASA respondidas; el PDF lleva descubrimientos, nota de método y la cita de NASA en el pie.
+- QA `baseline_ui` en 1440, 768 y 390: 0 errores y 0 desbordamientos; las tres capas de NASA y sus descubrimientos aparecen en pantalla. Build de Next.js correcto; audit con 0 vulnerabilidades.

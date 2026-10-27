@@ -18,11 +18,10 @@ from typing import Any
 import certifi
 import httpx
 from pyproj import Transformer
-from shapely.geometry import Point as ShapelyPoint
 from shapely.geometry import box, shape
-from shapely.prepared import prep
 
 from ...core.config import Settings, get_settings
+from ...geospatial.sampling import esri_polygon, sample_points
 from ...schemas.analysis import Provenance
 from ...schemas.data_sources import TerritorialFeature, TerritorialSourceResult
 from ..cache import RawPayloadCache
@@ -30,8 +29,6 @@ from .territory import PUBLIC_LICENSE_NOTE
 
 TIMEOUT = httpx.Timeout(connect=20, read=60, write=20, pool=20)
 CACHE_TTL = timedelta(days=7)
-SAMPLE_GRID = 4          # 4 × 4 puntos sobre la caja del área, más el punto representativo
-MAX_VERTICES = 200
 CERT_DIR = Path(__file__).parent / "certs"
 
 CENEPRED_FEN = "https://sigrid.cenepred.gob.pe/arcgis/rest/services/FEN/ER_NINO2027_BD/MapServer"
@@ -58,32 +55,6 @@ def _ingemmet_context() -> ssl.SSLContext:
     context = ssl.create_default_context(cafile=certifi.where())
     context.load_verify_locations(cafile=str(CERT_DIR / "sectigo-ov-r36.pem"))
     return context
-
-
-def sample_points(geometry: dict[str, Any], representative: tuple[float, float]) -> list[tuple[float, float]]:
-    """Punto representativo más una grilla regular dentro del área (longitud, latitud)."""
-    area = shape(geometry)
-    inside = prep(area)
-    xmin, ymin, xmax, ymax = area.bounds
-    points = [representative]
-    for i in range(SAMPLE_GRID):
-        for j in range(SAMPLE_GRID):
-            x = xmin + (i + 0.5) * (xmax - xmin) / SAMPLE_GRID
-            y = ymin + (j + 0.5) * (ymax - ymin) / SAMPLE_GRID
-            if inside.contains(ShapelyPoint(x, y)):
-                points.append((round(x, 5), round(y, 5)))
-    return list(dict.fromkeys(points))
-
-
-def _rings(geometry: dict[str, Any]) -> dict[str, Any]:
-    area = shape(geometry)
-    tolerance = 0.0005
-    while sum(len(polygon.exterior.coords) for polygon in getattr(area, "geoms", [area])) > MAX_VERTICES and tolerance < 0.05:
-        area = shape(geometry).simplify(tolerance, preserve_topology=True)
-        tolerance *= 2
-    polygons = getattr(area, "geoms", [area])
-    # 5 decimales ≈ 1 m: suficiente para cruzar con mapas de peligro y mantiene corta la solicitud.
-    return {"rings": [[[round(x, 5), round(y, 5)] for x, y in polygon.exterior.coords] for polygon in polygons], "spatialReference": {"wkid": 4326}}
 
 
 class IdentifyLayersConnector:
@@ -154,7 +125,7 @@ class IdentifyLayersConnector:
                 consulted.append(volcano)
                 xmin, ymin, xmax, ymax = area.bounds
                 payload, provenance, stamp = await self._identify(f"{INGEMMET_BASE}/{service}/MapServer", {
-                    "geometry": json.dumps(_rings(geometry), separators=(",", ":")), "geometryType": "esriGeometryPolygon", "sr": "4326",
+                    "geometry": json.dumps(esri_polygon(geometry), separators=(",", ":")), "geometryType": "esriGeometryPolygon", "sr": "4326",
                     "layers": "all:" + ",".join(map(str, layers)), "tolerance": "0", "mapExtent": f"{xmin},{ymin},{xmax},{ymax}",
                     "imageDisplay": "800,600,96", "returnGeometry": "false"}, verify=_ingemmet_context())
                 provenances.append(provenance)

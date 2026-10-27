@@ -18,11 +18,14 @@ COMPONENT_SOURCES: dict[Component, list[str]] = {
         "cultura-archaeology", "cultura-archaeology-declared", "cultura-ciras", "cultura-das", "cultura-qhapaq-nan",
         "cultura-cultural-landscape", "cultura-world-heritage", "cultura-prior-consultation", "cultura-citizen-records",
     ],
-    "amenazas": ["cenepred-flood-risk", "cenepred-mass-movement-risk", "cenepred-susceptibility", "ana-critical-points", "ana-imminent-danger",
+    "amenazas": ["cenepred-flood-risk", "cenepred-mass-movement-risk", "cenepred-susceptibility", "nasa-landslide-susceptibility",
+                 "nasa-coolr-reports", "nasa-lhasa-nowcast", "ana-critical-points", "ana-imminent-danger",
                  "ingemmet-volcanic-hazards", "ingemmet-geohazards"],
 }
 # Fuentes que no se consultan por intersección de área sino con `identify` (connectors/peru/identify_layers.py).
 IDENTIFY_SOURCES = {"cenepred-susceptibility", "ingemmet-volcanic-hazards"}
+# Deslizamientos de NASA (connectors/nasa/landslides.py): muestreo por puntos y consulta de reportes COOLR.
+NASA_LANDSLIDE_SOURCES = {"nasa-landslide-susceptibility", "nasa-coolr-reports", "nasa-lhasa-nowcast"}
 MAX_HIGHLIGHTS = 12
 
 
@@ -88,6 +91,12 @@ READERS: dict[str, Reader] = {
     # Agrupa los puntos de muestreo por capa y nivel: «Susceptibilidad por inundaciones: alto ×3».
     "cenepred-susceptibility": lambda a, _: (f"{_text(a.get('capa'))}: {_text(a.get('nivel')).lower()}", "puntos de muestreo con este nivel", None),
     "ingemmet-volcanic-hazards": lambda a, _: (f"Volcán {_text(a.get('volcan'))}: {_text(a.get('zona')).lower()}", _text(a.get("descripcion"))[:160] or None, None),
+    "nasa-landslide-susceptibility": lambda a, _: (f"Susceptibilidad NASA: {_text(a.get('nivel')).lower()}", "puntos de muestreo con este nivel", None),
+    "nasa-lhasa-nowcast": lambda a, _: (f"Probabilidad LHASA {_text(a.get('rango'))}", "puntos de muestreo en este rango", None),
+    "nasa-coolr-reports": lambda a, _: (_text(a.get("titulo")) or "Reporte sin título",
+                                        _join(_day(a.get("fecha")), a.get("categoria"), a.get("detonante"),
+                                              f"{int(a['fallecidos'])} fallecido(s)" if a.get("fallecidos") else "",
+                                              f"precisión {_text(a.get('precision'))}" if a.get("precision") else ""), _link(a.get("enlace"))),
 }
 
 

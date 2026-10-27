@@ -226,7 +226,9 @@ def test_hazards_module_reads_rainfall_extremes_and_risk_levels(patched, monkeyp
     assert all(item.countercheck is not None for item in area.extremes)               # contraste IMERG adjunto
     flood = next(layer for layer in area.layers if layer.source_id == "cenepred-flood-risk")
     assert flood.highlights[0].label == "Ilo (Ilo)" and flood.highlights[0].detail == "riesgo alto · susceptibilidad medio · vulnerabilidad alto"
-    assert any(gap.dataset.startswith("NASA LHASA") for gap in result.data_gaps)
+    assert not any("LHASA" in gap.dataset for gap in result.data_gaps)                 # LHASA ya no es brecha: entra como capa
+    nasa = {layer.source_id: layer for layer in area.layers if layer.source_id.startswith("nasa-")}
+    assert set(nasa) == {"nasa-landslide-susceptibility", "nasa-lhasa-nowcast", "nasa-coolr-reports"} and all(l.status == "READY" for l in nasa.values())
     susceptibility = next(layer for layer in area.layers if layer.source_id == "cenepred-susceptibility")
     assert {h.label for h in susceptibility.highlights} == {"Susceptibilidad a movimientos en masa: alto", "Susceptibilidad a movimientos en masa: muy alto"}
     volcanic = next(layer for layer in area.layers if layer.source_id == "ingemmet-volcanic-hazards")

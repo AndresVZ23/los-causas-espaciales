@@ -4,12 +4,14 @@ Reglas explícitas y deterministas; ninguna consulta externa. Un descubrimiento 
 artefacto probable, una tendencia confirmada o sin respaldo, o una coincidencia entre instituciones distintas.
 """
 
-from collections import defaultdict
-from collections.abc import Sequence
+from collections import Counter, defaultdict
+from collections.abc import Mapping, Sequence
+from datetime import datetime, timezone
 
 from ..schemas.analysis import Provenance
 from ..schemas.baseline import BaselineLayer, SubjectBaseline
 from ..schemas.climate import Agreement, ExtremeIndexSummary
+from ..schemas.data_sources import TerritorialSourceResult
 from ..schemas.screening import Discovery, DiscoveryKind, PipelineStage, StageEvidence
 from ..schemas.terrain import TerrainResponse
 
@@ -18,6 +20,14 @@ ARTIFACT_RATIO = 5.0         # el reanálisis supera al menos 5 veces a cada fue
 STEEP_SLOPE_DEGREES = 15.0
 HIGH_LEVELS = ("riesgo alto", "riesgo muy alto")
 GROWING_COVER = {"Pastizal", "Matorral abierto", "Matorral cerrado", "Sabana", "Sabana arbolada", "Humedal permanente"}
+# Susceptibilidad a deslizamientos en la misma escala 1–5: CENEPRED (capa 2 del servicio FEN) y NASA (Stanley y Kirschbaum 2017).
+CENEPRED_CLASS = {"Muy bajo": 1, "Bajo": 2, "Medio": 3, "Alto": 4, "Muy alto": 5}
+CENEPRED_MASS_MOVEMENT_LAYER = 2
+NASA_NAMES = {1: "muy baja", 2: "baja", 3: "moderada", 4: "alta", 5: "muy alta"}
+CENEPRED_NAMES = {value: name.lower() for name, value in CENEPRED_CLASS.items()}
+HIGH_CLASS = 4
+CLOSE_CLASSES = 1            # dos fuentes «coinciden» en un punto si difieren a lo sumo en una clase,
+                             # y en el área si coinciden en al menos dos tercios de los puntos
 
 
 def short(source: str) -> str:
@@ -151,5 +161,71 @@ def layer_discoveries(baselines: Sequence[SubjectBaseline], terrain: TerrainResp
                 detail=f"MOD44B: vegetación no arbórea {greening.trend.slope_per_year:+.2f} puntos/año (p BH {greening.adjusted_p_value:.3f}). "
                        f"MCD12Q1 {cover.first_year}→{cover.last_year}: " + ", ".join(f"{c.label.lower()} {c.first_percent:.1f} → {c.last_percent:.1f} %" for c in gained) + f".{context}",
                 subjects=[baseline.subject], sources=["MODIS MOD44B", "MODIS MCD12Q1", *(["MINAM"] if context else [])],
+            ))
+    return out
+
+
+def _ready(results: Mapping[str, TerritorialSourceResult], source_id: str) -> TerritorialSourceResult | None:
+    result = results.get(source_id)
+    return result if result is not None and result.status == "READY" else None
+
+
+def _tally(classes: Mapping[tuple[float, float], int], keys: Sequence[tuple[float, float]], names: Mapping[int, str]) -> str:
+    counts = Counter(classes[key] for key in keys)
+    return ", ".join(f"{names[value]} ×{count}" for value, count in sorted(counts.items(), reverse=True))
+
+
+def _year(value: object) -> int | None:
+    return datetime.fromtimestamp(value / 1000, tz=timezone.utc).year if isinstance(value, (int, float)) else None
+
+
+def landslide_discoveries(subject: str, results: Mapping[str, TerritorialSourceResult]) -> list[Discovery]:
+    """Deslizamientos: el mapa nacional (CENEPRED) frente al global (NASA) en los mismos puntos, y los reportes COOLR
+    de deslizamientos ocurridos frente a ambos mapas."""
+    out: list[Discovery] = []
+    cenepred, nasa, coolr = (_ready(results, key) for key in ("cenepred-susceptibility", "nasa-landslide-susceptibility", "nasa-coolr-reports"))
+    national = {(f.attributes["lon"], f.attributes["lat"]): CENEPRED_CLASS[f.attributes["nivel"]] for f in (cenepred.features if cenepred else [])
+                if f.layer_id == CENEPRED_MASS_MOVEMENT_LAYER and f.attributes.get("nivel") in CENEPRED_CLASS and "lon" in f.attributes}
+    global_ = {(f.attributes["lon"], f.attributes["lat"]): int(f.attributes["clase"]) for f in (nasa.features if nasa else []) if "clase" in f.attributes}
+    shared = [key for key in national if key in global_]
+    if shared:
+        close = [key for key in shared if abs(national[key] - global_[key]) <= CLOSE_CLASSES]
+        both_high = sum(1 for key in shared if national[key] >= HIGH_CLASS and global_[key] >= HIGH_CLASS)
+        levels = f"CENEPRED: {_tally(national, shared, CENEPRED_NAMES)}. NASA: {_tally(global_, shared, NASA_NAMES)}."
+        if len(close) * 3 >= len(shared) * 2:
+            out.append(Discovery(
+                kind=DiscoveryKind.AGREEMENT, title=f"{subject}: CENEPRED y NASA coinciden en la susceptibilidad a deslizamientos",
+                detail=f"En {len(close)} de {len(shared)} puntos de muestreo los niveles difieren a lo sumo en una clase; "
+                       f"{f'en {both_high}' if both_high else 'en ninguno'} ambos marcan alta o muy alta. {levels}",
+                subjects=[subject], sources=["CENEPRED", "NASA susceptibilidad global"],
+            ))
+        else:
+            national_higher = sum(1 for key in shared if national[key] - global_[key] > CLOSE_CLASSES)
+            out.append(Discovery(
+                kind=DiscoveryKind.CONTRADICTION, title=f"{subject}: CENEPRED y NASA discrepan en la susceptibilidad a deslizamientos",
+                detail=f"Solo {len(close)} de {len(shared)} puntos coinciden (±1 clase): CENEPRED marca más alto en {national_higher} y NASA en "
+                       f"{len(shared) - len(close) - national_higher}. {levels} El mapa nacional tiene más detalle; la diferencia se resuelve en campo.",
+                subjects=[subject], sources=["CENEPRED", "NASA susceptibilidad global"],
+            ))
+    if coolr and coolr.features:
+        reports = coolr.features
+        years = sorted(year for year in (_year(f.attributes.get("fecha")) for f in reports) if year)
+        span = (f" entre {years[0]} y {years[-1]}" if years[0] != years[-1] else f" en {years[0]}") if years else ""
+        examples = "; ".join(str(f.attributes.get("titulo")) for f in reports[:2] if f.attributes.get("titulo"))
+        said = f"NASA COOLR registra {len(reports)} deslizamiento(s) reportado(s){span}" + (f" ({examples})" if examples else "") + "."
+        high = [name for name, classes in (("CENEPRED", national), ("NASA", global_)) if any(value >= HIGH_CLASS for value in classes.values())]
+        if high:
+            out.append(Discovery(
+                kind=DiscoveryKind.CONFIRMED, title=f"{subject}: deslizamientos reportados donde los mapas marcan susceptibilidad alta",
+                detail=f"{said} {' y '.join(high)} {'marcan' if len(high) > 1 else 'marca'} susceptibilidad alta o muy alta en el área: lo ocurrido respalda el mapa.",
+                subjects=[subject], sources=["NASA COOLR", *high],
+            ))
+        elif national or global_:
+            precision = ", ".join(sorted({str(f.attributes.get("precision")) for f in reports if f.attributes.get("precision")}))
+            out.append(Discovery(
+                kind=DiscoveryKind.CONTRADICTION, title=f"{subject}: deslizamientos reportados donde los mapas no marcan susceptibilidad alta",
+                detail=f"{said} Ningún punto de muestreo llega a alta en {' ni en '.join(n for n, c in (('CENEPRED', national), ('NASA', global_)) if c)}. "
+                       f"La ubicación del reporte tiene precisión de {precision or 'valor no declarado'}: puede caer en una quebrada vecina; no descartar la amenaza.",
+                subjects=[subject], sources=["NASA COOLR", *(n for n, c in (("CENEPRED", national), ("NASA", global_)) if c)],
             ))
     return out

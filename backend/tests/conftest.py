@@ -1,4 +1,4 @@
-"""Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV)."""
+"""Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV) ni por los deslizamientos de NASA."""
 
 from datetime import datetime, timedelta, timezone
 
@@ -6,6 +6,8 @@ import pytest
 
 from backend.app.orchestration import rainfall_crosscheck
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
+from backend.app.schemas.data_sources import TerritorialSourceResult
+from backend.app.sectors import baseline
 
 
 class FlatChirps:
@@ -24,9 +26,33 @@ class FlatChirps:
         return observations, source
 
 
+class EmptyLandslides:
+    """Deslizamientos de NASA sin registros en el área: las tres consultas responden, ninguna inventa un valor."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    @staticmethod
+    def _empty(source_id: str) -> TerritorialSourceResult:
+        return TerritorialSourceResult(source_id=source_id, organization="NASA · Earthdata GIS", dataset=f"Capa {source_id}", status="READY",
+                                       intersection_count=0, provenance=Provenance.CACHED, downloaded_at=datetime(2026, 10, 27, tzinfo=timezone.utc),
+                                       source_url="https://example.org", crs="EPSG:4326", coverage="Global", scale_or_resolution="—", license="—",
+                                       limitations=["Sin registros en la prueba."])
+
+    async def susceptibility(self, geometry, representative):
+        return self._empty("nasa-landslide-susceptibility")
+
+    async def nowcast(self, geometry, representative):
+        return self._empty("nasa-lhasa-nowcast")
+
+    async def reports(self, geometry):
+        return self._empty("nasa-coolr-reports")
+
+
 @pytest.fixture(autouse=True)
 def offline_chirps(monkeypatch):
     monkeypatch.setattr(rainfall_crosscheck, "ChirpsConnector", FlatChirps)
+    monkeypatch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
     rainfall_crosscheck._inflight.clear()
     yield
     rainfall_crosscheck._inflight.clear()

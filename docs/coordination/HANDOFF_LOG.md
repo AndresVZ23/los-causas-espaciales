@@ -832,3 +832,34 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **Operación:** los listeners temporales 13102/18102 quedaron en cero. No se levantó ni modificó el stack 3100/8000.
 
 **Publicación:** no se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
+## 2026-10-27 · Claude · claude/pdf-linea-base · Deslizamientos de NASA cruzados con CENEPRED (ADR-037)
+
+**Qué entró (sobre 7d78c21):**
+- `connectors/nasa/landslides.py`: tres fuentes de la carpeta `Landslides` de NASA Earthdata GIS:
+  - susceptibilidad global (Stanley y Kirschbaum 2017);
+  - LHASA 2 del día;
+  - reportes COOLR (Global Landslide Catalog).
+- Entran como capas `nasa-landslide-susceptibility`, `nasa-coolr-reports` y `nasa-lhasa-nowcast` del medio «Amenazas y riesgo». **Sin cambios de contrato.** La brecha estática de LHASA se retira.
+- `geospatial/sampling.py`: `sample_points` y el polígono ArcGIS salen de `identify_layers.py` (archivo de Codex: solo cambia la importación) para que CENEPRED y NASA se lean en los mismos puntos.
+- `landslide_discoveries`:
+  - mapa nacional frente a global, punto por punto (±1 clase; coinciden en el área con dos tercios de los puntos);
+  - reportes COOLR que confirman o contradicen ambos mapas.
+- Extracción: evidencia «Deslizamientos NASA». Pie del PDF con la cita de NASA. Nota de método y textos de pantalla, API y asistente actualizados.
+
+**Semántica verificada en vivo (27-oct):**
+- Susceptibilidad: clases 1–5; el 0 del servicio (agua, océano, llano desértico) se trata como «sin clase»; nodata 127.
+- LHASA: probabilidad 0–1, nodata −9999, sin umbrales publicados ni fecha del ráster. Se muestra el orden de magnitud y la hora de consulta.
+- `LHASA_Hazard_Tomorrow` dio valores idénticos a Hoy y no se usa.
+- COOLR Perú: 80 reportes de 1974 a 2020, precisión de 1 a 250 km.
+
+**Resultado real:**
+- Lurigancho: coinciden en 7 de 9 puntos; 6 deslizamientos reportados entre 2009 y 2017 respaldan el mapa.
+- Ilo: discrepan; CENEPRED marca más alto en 4 de 7 puntos.
+
+**Verificación:**
+- 189/189 pruebas, 7 nuevas en `test_landslides.py`; `conftest.py` aísla los deslizamientos de la red.
+- API real en Docker: Lurigancho + Ilo en 47 s, 6 de 6 consultas NASA respondidas; PDF con descubrimientos y cita.
+- QA `baseline_ui` en 1440, 768 y 390: 0 errores, 0 desbordamientos, las tres capas de NASA y sus descubrimientos visibles.
+- Build correcto; audit con 0 vulnerabilidades.
+
+**Para Codex:** registrar en `DATA_SOURCES.md` las tres fuentes con la semántica de arriba, y cerrar `in-lhasa` / K1b-LHASA. El DOP ya quedó actualizado en esta rama. Fusionar con la puerta común; push solo con aprobación de Christian.

@@ -150,7 +150,8 @@ def baseline_sections(result: BaselineScreeningResponse, styles: dict[str, Parag
     lede = {
         "environment": "Indicadores satelitales indirectos (MODIS) y capas oficiales ordenados como la línea base de un EIA. "
                        "Una capa sin registros no prueba ausencia; una capa que no respondió se informa como no disponible.",
-        "hazards": "Extremos de lluvia ETCCDI con NASA POWER (MERRA-2) contrastados con GPM IMERG y CHIRPS, y capas oficiales de riesgo por distrito. "
+        "hazards": "Extremos de lluvia ETCCDI con NASA POWER (MERRA-2) contrastados con GPM IMERG y CHIRPS, capas oficiales de riesgo por distrito "
+                   "y deslizamientos de NASA cruzados con CENEPRED. "
                    "Una capa sin registros o caída no equivale a riesgo cero.",
     }.get(result.sector, "Registros del Ministerio de Cultura en palabras de la fuente. Cero registros no prueba ausencia de patrimonio; "
                          "nada de esto es opinión legal ni sustituye el CIRA.")
@@ -178,7 +179,8 @@ def baseline_sections(result: BaselineScreeningResponse, styles: dict[str, Parag
 
 def baseline_sources(result: BaselineScreeningResponse) -> list[str]:
     """Fuentes para el pie del reporte: las que de verdad se consultaron, no NASA POWER."""
-    organizations = sorted({layer.organization for item in result.baselines for layer in item.layers})
+    organizations = sorted({layer.organization for item in result.baselines for layer in item.layers if not layer.organization.startswith("NASA")})
+    landslides = {layer.source_id for item in result.baselines for layer in item.layers if layer.source_id.startswith("nasa-") and layer.status == "READY"}
     sources = []
     if any(item.vegetation or item.land_cover for item in result.baselines):
         sources.append("NASA ORNL DAAC · MODIS Web Service (https://modis.ornl.gov/rst/api/v1/): MOD44B, MOD17A3HGF y MCD12Q1, productos anuales.")
@@ -188,6 +190,10 @@ def baseline_sources(result: BaselineScreeningResponse) -> list[str]:
     if any(check.source.startswith("CHIRPS") for item in result.baselines for index in item.extremes for check in index.counterchecks):
         sources.append("CHIRPS v2.0 (Climate Hazards Center, UCSB) servido por NASA SERVIR ClimateSERV (https://climateserv.servirglobal.net/): "
                        "precipitación diaria a 0.05°, promediada sobre el área.")
+    if landslides:
+        sources.append("NASA Earthdata GIS, carpeta Landslides (https://gis.earthdata.nasa.gov/portal/rest/services/Landslides): susceptibilidad global "
+                       "(Stanley y Kirschbaum 2017, Natural Hazards 87:145–164), LHASA 2 del día y reportes COOLR / Global Landslide Catalog "
+                       "(Kirschbaum et al. 2015, Geomorphology 249:4–15).")
     if organizations:
         sources.append(f"Capas oficiales consultadas por intersección espacial: {', '.join(organizations)}.")
     return sources
