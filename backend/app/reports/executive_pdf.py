@@ -435,6 +435,9 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
     if envelope.terrain:
         dois = sorted({granule.doi_url for site in envelope.terrain.sites for granule in site.granules})
         sources.append(f"{envelope.terrain.dataset}: {', '.join(dois)}.")
+        if any(site.crosscheck for site in envelope.terrain.sites):
+            sources.append("Copernicus DEM GLO-30 (ESA, producido por Airbus a partir de TanDEM-X) vía AWS Open Data "
+                           "(https://registry.opendata.aws/copernicus-dem/), 1 arc-second, como contraste de NASADEM.")
     used = sorted({value for stage in envelope.pipeline for value in stage.provenance} | {value for question in envelope.nasa_questions for value in question.provenance})
     provenance_lines = [f"<font name='{MONO}' size='7'>{value}</font>: {_text(PROVENANCE_TEXT.get(Provenance(value), value))}" for value in used]
     story += [

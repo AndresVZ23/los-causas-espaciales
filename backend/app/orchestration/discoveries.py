@@ -19,6 +19,9 @@ from ..schemas.terrain import TerrainResponse
 PRIMARY = "NASA POWER (MERRA-2)"
 ARTIFACT_RATIO = 5.0         # el reanálisis supera al menos 5 veces a cada fuente de observación
 STEEP_SLOPE_DEGREES = 15.0
+# Relieve: NASADEM y Copernicus GLO-30 «coinciden» si la elevación difiere menos de 50 m y la pendiente menos de 5°.
+ELEVATION_APART_M = 50.0
+SLOPE_APART_DEGREES = 5.0
 HIGH_LEVELS = ("riesgo alto", "riesgo muy alto")
 GROWING_COVER = {"Pastizal", "Matorral abierto", "Matorral cerrado", "Sabana", "Sabana arbolada", "Humedal permanente"}
 # Susceptibilidad a deslizamientos en la misma escala 1–5: CENEPRED (capa 2 del servicio FEN) y NASA (Stanley y Kirschbaum 2017).
@@ -185,6 +188,37 @@ def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]])
     return out
 
 
+def terrain_discoveries(terrain: TerrainResponse | None) -> list[Discovery]:
+    """Relieve en el punto representativo: NASADEM (SRTM) frente a Copernicus GLO-30 (TanDEM-X)."""
+    out: list[Discovery] = []
+    for site in terrain.sites if terrain else []:
+        check, metrics, label = site.crosscheck, site.metrics, site.location.label or "Sitio"
+        if check is None or metrics.elevation_m is None or check.elevation_m is None:
+            continue
+        sources = ["NASADEM", "Copernicus GLO-30"]
+        elevation_gap = check.elevation_m - metrics.elevation_m
+        both_slopes = metrics.slope_degrees is not None and check.slope_degrees is not None
+        slope_text = (f"; pendiente NASADEM {metrics.slope_degrees:.1f}°, Copernicus {check.slope_degrees:.1f}°" if both_slopes else "")
+        gap_m = round(elevation_gap)
+        said = (f"Elevación NASADEM {metrics.elevation_m:,.0f} m, Copernicus {check.elevation_m:,.0f} m "
+                f"({'sin diferencia' if gap_m == 0 else f'{gap_m:+d} m'}){slope_text}.")
+        steep = both_slopes and (metrics.slope_degrees >= STEEP_SLOPE_DEGREES) != (check.slope_degrees >= STEEP_SLOPE_DEGREES)
+        slope_apart = both_slopes and abs(check.slope_degrees - metrics.slope_degrees) >= SLOPE_APART_DEGREES
+        if steep:
+            out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{label}: la pendiente cruza el umbral de {STEEP_SLOPE_DEGREES:.0f}° según el modelo de elevación",
+                                 detail=f"{said} Un modelo la da como pendiente fuerte y el otro no: el costo de montaje y la lectura de movimientos en masa "
+                                        f"dependen de esto; verificar con topografía.", subjects=[label], sources=sources))
+        elif slope_apart or abs(elevation_gap) >= ELEVATION_APART_M:
+            out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{label}: NASADEM y Copernicus difieren en el relieve",
+                                 detail=f"{said} Diferencias así aparecen en quebradas, laderas o zonas con vacíos de SRTM; a escala de proyecto manda la topografía.",
+                                 subjects=[label], sources=sources))
+        else:
+            out.append(Discovery(kind=DiscoveryKind.AGREEMENT, title=f"{label}: NASADEM y Copernicus coinciden en el relieve",
+                                 detail=f"{said} Dos misiones de radar independientes (SRTM y TanDEM-X) dan el mismo relieve dentro de ±{ELEVATION_APART_M:.0f} m "
+                                        f"y ±{SLOPE_APART_DEGREES:.0f}°.", subjects=[label], sources=sources))
+    return out
+
+
 def record_in_pipeline(pipeline: list[PipelineStage], discoveries: Sequence[Discovery]) -> None:
     """Los descubrimientos entran a la etapa «Resultados» del pipeline como evidencia propia."""
     results = next((item for item in pipeline if item.key == "results"), None)
@@ -214,6 +248,8 @@ def _high(layer: BaselineLayer | None) -> list[str]:
 def layer_discoveries(baselines: Sequence[SubjectBaseline], terrain: TerrainResponse | None) -> list[Discovery]:
     out: list[Discovery] = []
     slopes = {site.location.label: site.metrics.slope_degrees for site in (terrain.sites if terrain else []) if site.metrics.slope_degrees is not None}
+    second = {site.location.label: site.crosscheck.slope_degrees for site in (terrain.sites if terrain else [])
+              if site.crosscheck is not None and site.crosscheck.slope_degrees is not None}
     for baseline in baselines:
         flood_high = _high(_layer(baseline, "cenepred-flood-risk"))
         critical = _layer(baseline, "ana-critical-points")
@@ -229,7 +265,8 @@ def layer_discoveries(baselines: Sequence[SubjectBaseline], terrain: TerrainResp
         if mass_high and slope is not None and slope >= STEEP_SLOPE_DEGREES:
             out.append(Discovery(
                 kind=DiscoveryKind.AGREEMENT, title=f"{baseline.subject}: riesgo de movimientos en masa y pendiente fuerte",
-                detail=f"CENEPRED: {'; '.join(mass_high[:2])}. NASADEM mide {slope:.1f}° de pendiente en el punto representativo (umbral {STEEP_SLOPE_DEGREES:.0f}°).",
+                detail=f"CENEPRED: {'; '.join(mass_high[:2])}. NASADEM mide {slope:.1f}° de pendiente en el punto representativo (umbral {STEEP_SLOPE_DEGREES:.0f}°)"
+                       + (f"; Copernicus GLO-30, {second[baseline.subject]:.1f}°." if baseline.subject in second else "."),
                 subjects=[baseline.subject], sources=["CENEPRED", "NASADEM"],
             ))
         greening = next((v for v in baseline.vegetation if v.variable == "VCF_NONTREE" and v.significant_after_bh and (v.trend.slope_per_year or 0) > 0), None)

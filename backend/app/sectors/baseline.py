@@ -25,7 +25,7 @@ from ..connectors.peru.identify_layers import CENEPRED_FEN, INGEMMET_BASE, Ident
 from ..connectors.peru.territory import LAYERS, TerritoryConnector, TerritoryConnectorError
 from ..geospatial.buffers import buffer_km, window_km
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
-from ..orchestration.discoveries import landslide_discoveries, layer_discoveries, rainfall_discoveries, record_in_pipeline
+from ..orchestration.discoveries import landslide_discoveries, layer_discoveries, rainfall_discoveries, record_in_pipeline, terrain_discoveries
 from ..orchestration.extraction import elapsed_ms, extract_terrain, max_separation_km
 from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, chirps_gaps
 from ..orchestration.nasa_questions import INSUFFICIENT, SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, join_es
@@ -442,7 +442,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         gaps.insert(0, DataGap(dataset="GPM IMERG", impact=f"Sin contraste satelital de los extremos: {rainfall.countercheck_error}", next_action="Reintentar la consulta IMERG_PRECTOT en NASA POWER."))
     if rainfall and rainfall.chirps:
         gaps[:0] = chirps_gaps(rainfall.chirps)
-    discoveries = rainfall_discoveries([(b.subject, b.extremes) for b in baselines]) + layer_discoveries(baselines, terrain)
+    discoveries = rainfall_discoveries([(b.subject, b.extremes) for b in baselines]) + layer_discoveries(baselines, terrain) + terrain_discoveries(terrain)
     if is_hazards:
         discoveries += [item for b, (_, _, raw) in zip(baselines, layer_results, strict=True) for item in landslide_discoveries(b.subject, raw)]
     for baseline in baselines:

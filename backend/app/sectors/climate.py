@@ -10,7 +10,7 @@ from time import perf_counter
 from ..connectors.nasa.power import PowerConnectorError
 from ..orchestration.analysis import analyze_extremes, analyze_subjects, attach_countercheck
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
-from ..orchestration.discoveries import rainfall_discoveries, record_in_pipeline, variable_discoveries
+from ..orchestration.discoveries import rainfall_discoveries, record_in_pipeline, terrain_discoveries, variable_discoveries
 from ..orchestration.era5_crosscheck import ERA5_NOTE, ERA5_SOURCE, attach_era5, era5_gaps, era5_series
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings
 from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, CHIRPS_SOURCE, attach_chirps, chirps_extremes, chirps_gaps
@@ -233,7 +233,8 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     trend_findings = collect_trend_findings(labelled)
     gaps = _data_gaps(terrain, countercheck_error) + chirps_gaps(chirps) + era5_gaps(era5)
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
-    discoveries = rainfall_discoveries([(site.location.label, site.extremes) for site in sites]) + variable_discoveries([(site.location.label, site.variables) for site in sites])
+    discoveries = rainfall_discoveries([(site.location.label, site.extremes) for site in sites]) + variable_discoveries([(site.location.label, site.variables) for site in sites]) \
+        + terrain_discoveries(terrain)
     nasa_questions = answer_nasa_questions(
         labelled, trend_findings,
         {subject.label: (subject.representative_point.latitude, subject.representative_point.longitude) for subject in subjects},

@@ -943,3 +943,31 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - ~750 KB por año.
 
 Fusionar con la puerta común; push solo con aprobación de Christian.
+## 2026-10-27 · Claude · claude/pdf-linea-base · Relieve cruzado con Copernicus GLO-30 (ADR-039)
+
+**Qué entró (sobre cbc0ffc):**
+- `connectors/copernicus/dem.py`: Copernicus DEM GLO-30 (TanDEM-X) en AWS Open Data, sin cuenta y sin GDAL. Lee por rango el encabezado y el bloque del punto (~2.5 MB) y deshace DEFLATE + predictor 3 con `zlib` y `numpy`; pendiente de Horn 3 × 3; caché sin vencimiento.
+- `extract_terrain` (común a todos los módulos con relieve) consulta Copernicus en paralelo con NASADEM.
+- `TerrainSiteResult.crosscheck` (aditivo). Si Copernicus falla, queda en las limitaciones del sitio, nunca como ceros.
+- `terrain_discoveries` en Clima, Energía y la línea base:
+  - coinciden si Δelevación < 50 m y Δpendiente < 5°;
+  - el cruce del umbral de 15° según el modelo se marca aparte.
+- La coincidencia CENEPRED + pendiente cita además Copernicus.
+- Panel de relieve con la línea «Contraste Copernicus GLO-30» y cita en el PDF. Sin dependencias nuevas.
+
+**Resultado real:**
+- Moquegua, Arequipa e Ilo coinciden (Δ ≤ 7 m, ≤ 1.5°).
+- Lurigancho-Chosica difiere en pendiente: 32.2° frente a 23.0°, ambos > 15°.
+
+**Verificación:**
+- 203/203 pruebas, 4 nuevas con un COG sintético completo.
+- API real en Energía y Amenazas.
+- QA `release_ui` en 1440, 768 y 390 limpio, y capturas del panel de relieve.
+- Build correcto.
+
+**Para Codex:** registrar Copernicus GLO-30 en `DATA_SOURCES.md`:
+- bucket `copernicus-dem-30m`, nombre de tesela `Copernicus_DSM_COG_10_{S|N}lat_00_{W|E}lon_00_DEM`;
+- float32, EGM2008, 1 arc-second;
+- licencia Copernicus DEM (uso libre con atribución «© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved»), a verificar en la página oficial.
+
+Fusionar con la puerta común; push solo con aprobación de Christian.

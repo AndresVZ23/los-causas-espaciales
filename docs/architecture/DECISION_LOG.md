@@ -441,3 +441,37 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
   - la bajada de viento que MERRA-2 marca como significativa en 2001–2025 no se sostiene en 2005–2023 en ninguna de las dos fuentes.
   - Primera ejecución con los dos puntos: 43 s; la siguiente, 11 s.
 - **Verificación:** 199/199 pruebas (umbral de horas, un año por consulta con caché, viento pendiente declarado). QA `climate_ui` con la pestaña Viento, sin errores ni desbordamiento.
+
+## ADR-039 — Relieve cruzado con Copernicus GLO-30
+
+**Motivo.** La elevación y la pendiente venían solo de NASADEM, que es SRTM reprocesado. La pendiente alimenta el puntaje solar y la coincidencia «riesgo de movimientos en masa + pendiente ≥ 15°» con CENEPRED. Las teselas de terreno de AWS (Terrarium) no sirven como contraste: en el Perú también provienen de SRTM.
+
+**Fuente (`connectors/copernicus/dem.py`).** Copernicus DEM GLO-30 (ESA · Airbus, TanDEM-X) en AWS Open Data, sin cuenta.
+- **Formato:** cada tesela de 1° es un COG de 3600 × 3600 px en float32, con DEFLATE, predictor de punto flotante (TIFF 3) y bloques de 1024 × 1024 (verificado el 27-oct-2026).
+- **Lectura sin GDAL:** no se agrega `rasterio`. Se lee el encabezado (64 KB) y solo el bloque del punto (~2.5 MB) por rango HTTP; `zlib` y `numpy` deshacen la compresión y el predictor.
+- **Formato TIFF:** los arreglos que caben en 4 bytes van dentro de la propia entrada; la prueba con un COG sintético lo detectó y quedó corregido.
+- **Pendiente:** método de Horn en la ventana 3 × 3. En el borde de una tesela, o junto a un vacío, queda sin pendiente (no se rellena).
+- **Datum:** EGM2008, frente a EGM96 de NASADEM. La diferencia es submétrica a efectos de screening.
+- **Caché:** encabezado y bloques sin vencimiento.
+
+**Integración.**
+- `extract_terrain` consulta NASADEM y Copernicus en paralelo para todos los módulos con relieve.
+- `TerrainSiteResult.crosscheck` es aditivo. Si Copernicus falla, se anota en las limitaciones del sitio.
+- El panel de relieve muestra la línea «Contraste Copernicus GLO-30», y el PDF cita la fuente.
+
+**Descubrimientos (`terrain_discoveries`).**
+- Coinciden si la elevación difiere menos de 50 m y la pendiente menos de 5°.
+- Si no, difieren; y se marca aparte cuando la pendiente cruza el umbral de 15° según el modelo.
+- La coincidencia CENEPRED + pendiente cita además la pendiente de Copernicus.
+
+**Resultado real del 27-oct-2026:**
+- **Moquegua:** 1,420 frente a 1,413 m y 5.5° frente a 6.0° → coinciden.
+- **Arequipa:** 2,316 frente a 2,320 m y 3.7° frente a 3.3° → coinciden.
+- **Ilo:** 509 m en ambos y 7.3° frente a 8.8° → coinciden.
+- **Lurigancho-Chosica:** 32.2° frente a 23.0° → difieren. Ambos superan los 15°, así que la coincidencia con el riesgo de CENEPRED se mantiene; en la ladera, el valor exacto depende del modelo.
+
+**Verificación:**
+- 203/203 pruebas; 4 nuevas en `test_copernicus_dem.py`: decodificador inverso exacto, COG sintético completo con caché, borde y tesela inexistente, descubrimientos. `conftest.py` aísla Copernicus de la red.
+- API real en Energía y Amenazas.
+- QA `release_ui` en 1440, 768 y 390 limpio, y captura del panel de relieve en 1440 y 390.
+- Build correcto.

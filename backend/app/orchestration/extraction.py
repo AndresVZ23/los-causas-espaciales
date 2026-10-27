@@ -10,6 +10,8 @@ from datetime import date, timedelta
 from itertools import combinations
 from time import perf_counter
 
+from ..connectors.copernicus.dem import SOURCE as COPERNICUS_SOURCE
+from ..connectors.copernicus.dem import CopernicusDemConnector, CopernicusDemError
 from ..connectors.nasa.nasadem import NasademConnector, NasademConnectorError
 from ..connectors.nasa.power import PowerConnector, PowerConnectorError
 from ..connectors.nasa.power_scale import (
@@ -23,7 +25,7 @@ from ..connectors.nasa.power_scale import (
 )
 from ..geospatial.geometry import GEOD
 from ..schemas.analysis import Observation, Point, SourceMetadata
-from ..schemas.terrain import TerrainResponse
+from ..schemas.terrain import TerrainCrosscheck, TerrainResponse
 
 TERRAIN_TIMEOUT_SECONDS = 45
 
@@ -79,15 +81,41 @@ async def _verify_precipitation_scale(connector: PowerConnector, point: Point, d
     raise PowerConnectorError("La escala de precipitación no pudo clasificarse.")
 
 
-async def extract_terrain(points: Sequence[Point]) -> tuple[TerrainResponse | None, str | None, float]:
-    start = perf_counter()
+async def _copernicus(point: Point) -> TerrainCrosscheck | str:
+    """El mismo punto en Copernicus GLO-30; un fallo vuelve como texto para declararlo, nunca como ceros."""
     try:
-        terrain = await asyncio.wait_for(NasademConnector().points(list(points)), timeout=TERRAIN_TIMEOUT_SECONDS)
-        return terrain, None, elapsed_ms(start)
-    except NasademConnectorError as exc:
-        return None, str(exc), elapsed_ms(start)
+        item = await asyncio.wait_for(CopernicusDemConnector().point(point.latitude, point.longitude), timeout=TERRAIN_TIMEOUT_SECONDS)
+    except CopernicusDemError as exc:
+        return str(exc)
     except TimeoutError:
+        return f"Copernicus DEM no respondió en {TERRAIN_TIMEOUT_SECONDS} s."
+    return TerrainCrosscheck(source=COPERNICUS_SOURCE, elevation_m=item.elevation_m, slope_degrees=item.slope_degrees, tile_url=item.tile_url,
+                             provenance=item.provenance, downloaded_at=item.downloaded_at, limitations=item.limitations)
+
+
+async def extract_terrain(points: Sequence[Point]) -> tuple[TerrainResponse | None, str | None, float]:
+    """NASADEM en cada punto y, en paralelo, Copernicus GLO-30 como segundo modelo de elevación."""
+    start = perf_counter()
+
+    async def nasadem():
+        return await asyncio.wait_for(NasademConnector().points(list(points)), timeout=TERRAIN_TIMEOUT_SECONDS)
+    outcome, *copernicus = await asyncio.gather(nasadem(), *(_copernicus(point) for point in points), return_exceptions=True)
+    if isinstance(outcome, NasademConnectorError):
+        return None, str(outcome), elapsed_ms(start)
+    if isinstance(outcome, TimeoutError):
         return None, f"NASADEM no respondió en {TERRAIN_TIMEOUT_SECONDS} s.", elapsed_ms(start)
+    if isinstance(outcome, BaseException):
+        raise outcome
+    if len(outcome.sites) != len(copernicus):     # el contraste se asocia por posición: si no calza, no se adjunta
+        return outcome, None, elapsed_ms(start)
+    for site, check in zip(outcome.sites, copernicus, strict=True):
+        if isinstance(check, TerrainCrosscheck):
+            site.crosscheck = check
+        elif isinstance(check, str):
+            site.limitations.append(f"Sin contraste Copernicus GLO-30: {check}")
+        elif isinstance(check, BaseException):
+            raise check
+    return outcome, None, elapsed_ms(start)
 
 
 def max_separation_km(points: Sequence[Point]) -> float | None:

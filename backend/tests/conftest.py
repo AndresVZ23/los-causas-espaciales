@@ -1,12 +1,13 @@
 """Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV), por los deslizamientos de NASA
-ni por ERA5 (PVGIS)."""
+ni por ERA5 (PVGIS) ni por Copernicus DEM."""
 
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
+from backend.app.connectors.copernicus.dem import DemPoint
 from backend.app.connectors.jrc.pvgis import Era5Annual
-from backend.app.orchestration import era5_crosscheck, rainfall_crosscheck
+from backend.app.orchestration import era5_crosscheck, extraction, rainfall_crosscheck
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.data_sources import TerritorialSourceResult
 from backend.app.sectors import baseline
@@ -45,6 +46,17 @@ class FlatEra5:
         return [Observation(timestamp=datetime(year, 7, 1).date(), value=2.0 + ((year * 7) % 5 - 2) * 0.01) for year in range(2005, 2024)]
 
 
+class FixedCopernicus:
+    """Copernicus GLO-30 sintético: 1,400 m y 5° en cualquier punto, sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def point(self, latitude, longitude):
+        return DemPoint(elevation_m=1400.0, slope_degrees=5.0, tile_url="https://example.org/cop.tif", provenance=Provenance.CACHED,
+                        downloaded_at=datetime(2026, 10, 27, tzinfo=timezone.utc), limitations=[])
+
+
 class EmptyLandslides:
     """Deslizamientos de NASA sin registros en el área: las tres consultas responden, ninguna inventa un valor."""
 
@@ -73,6 +85,7 @@ def offline_chirps(monkeypatch):
     monkeypatch.setattr(rainfall_crosscheck, "ChirpsConnector", FlatChirps)
     monkeypatch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
     monkeypatch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
+    monkeypatch.setattr(extraction, "CopernicusDemConnector", FixedCopernicus)
     rainfall_crosscheck._inflight.clear()
     era5_crosscheck._inflight.clear()
     yield

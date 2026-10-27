@@ -14,7 +14,7 @@ from ..finance.sensitivity import Driver, break_even_item, tornado
 from ..schemas.scoring import Criterion, Direction, Scorecard, ScorecardRequest, SubjectValues
 from ..scoring.multicriteria import build_scorecard
 from ..orchestration.analysis import analyze_subjects
-from ..orchestration.discoveries import record_in_pipeline, variable_discoveries
+from ..orchestration.discoveries import record_in_pipeline, terrain_discoveries, variable_discoveries
 from ..orchestration.era5_crosscheck import attach_era5, era5_gaps, era5_series
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
@@ -381,7 +381,8 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
     trend_findings = collect_trend_findings(labelled)
     gaps = _data_gaps(terrain) + era5_gaps(era5)
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
-    discoveries = variable_discoveries([(subject.label, summaries) for subject, summaries in zip(subjects, summaries_by_site, strict=True)])
+    discoveries = variable_discoveries([(subject.label, summaries) for subject, summaries in zip(subjects, summaries_by_site, strict=True)]) \
+        + terrain_discoveries(terrain)
     npvs = [result.finance.npv_usd for result in site_results]
     adverse = [_scenario(item, "adverso") for item in sensitivities]
     dominant = {item.tornado[0].label for item in sensitivities if item.tornado}

@@ -547,6 +547,9 @@ export default function Workspace() {
                   </dl> : site.status === "PENDING"
                     ? <p className="terrainPending"><b>Descargando tesela</b><span>NASADEM se descarga en segundo plano; vuelva a ejecutar en unos minutos.</span></p>
                     : <p><b>Metadatos verificados</b><span>Raster protegido: configure Earthdata Login para calcular métricas.</span></p>}
+                  {site.crosscheck && <small className="terrainCheck">
+                    Contraste Copernicus GLO-30 · {site.crosscheck.elevation_m === null ? "N/D" : `${formatNumber(site.crosscheck.elevation_m, 0)} m`} · {site.crosscheck.slope_degrees === null ? "pendiente N/D" : `${formatNumber(site.crosscheck.slope_degrees, 2)}°`} · {site.crosscheck.provenance}
+                  </small>}
                 </div>)}
                 <p className="terrainProvenance">
                   <a href={terrain.sites[0]?.granules.find((item) => item.short_name === "NASADEM_HGT")?.doi_url} target="_blank" rel="noreferrer">NASADEM_HGT.001</a>

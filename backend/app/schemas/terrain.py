@@ -35,6 +35,19 @@ class TerrainMetrics(BaseModel):
     vertical_datum: str = "EGM96 geoid"
 
 
+class TerrainCrosscheck(BaseModel):
+    """El mismo punto en un modelo de elevación independiente de NASADEM (Copernicus GLO-30, TanDEM-X)."""
+
+    source: str
+    elevation_m: float | None
+    slope_degrees: float | None = Field(description="Pendiente de Horn sobre la ventana 3 × 3 alrededor del punto.")
+    vertical_datum: str = "EGM2008 geoid"
+    tile_url: str
+    provenance: Provenance
+    downloaded_at: datetime
+    limitations: list[str] = Field(default_factory=list)
+
+
 class TerrainSiteResult(BaseModel):
     location: Point
     status: Literal["READY", "PENDING", "METADATA_ONLY", "PARTIAL"]
@@ -42,6 +55,7 @@ class TerrainSiteResult(BaseModel):
     granules: list[TerrainGranule]
     provenance: Provenance
     limitations: list[str]
+    crosscheck: TerrainCrosscheck | None = Field(default=None, description="Contraste con Copernicus GLO-30; None si no se pudo leer, nunca ceros.")
 
 
 class TerrainResponse(BaseModel):

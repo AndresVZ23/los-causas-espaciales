@@ -181,7 +181,8 @@ export const seriesSubjects = (result: AnyResult | null): SeriesSubject[] => {
   return result.sites;
 };
 export type TerrainGranule = { short_name: "NASADEM_HGT" | "NASADEM_SC"; version: string; granule_id: string; title: string; tile_id: string; bounding_box: [number, number, number, number]; updated_at: string; data_url: string; preview_url: string | null; doi_url: string; catalogue_url: string; access: string };
-export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL" | "PENDING"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[] };
+export type TerrainSite = { location: Point; status: "READY" | "METADATA_ONLY" | "PARTIAL" | "PENDING"; metrics: { elevation_m: number | null; slope_degrees: number | null; aspect_degrees: number | null; aspect_cardinal: string | null; vertical_datum: string }; granules: TerrainGranule[]; provenance: string; limitations: string[];
+  crosscheck?: { source: string; elevation_m: number | null; slope_degrees: number | null; vertical_datum: string; tile_url: string; provenance: string; downloaded_at: string; limitations: string[] } | null };
 export type TerrainResult = { generated_at: string; dataset: string; crs: string; spatial_resolution: string; sites: TerrainSite[]; note: string };
 // Capas visuales NASA GIBS (GET /api/v1/map/layers): solo visualización, nunca entran en el cálculo.
 export type MapLayer = {
