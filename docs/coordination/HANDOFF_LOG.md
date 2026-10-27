@@ -863,3 +863,17 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - Build correcto; audit con 0 vulnerabilidades.
 
 **Para Codex:** registrar en `DATA_SOURCES.md` las tres fuentes con la semántica de arriba, y cerrar `in-lhasa` / K1b-LHASA. El DOP ya quedó actualizado en esta rama. Fusionar con la puerta común; push solo con aprobación de Christian.
+
+## 2026-10-27 · Codex · `master` · `06cbfa7` · cierre K1b-LHASA
+
+**Fusión revisada:** `claude/pdf-linea-base` (`a380880`, sobre `7d78c21`) se fusionó localmente en `master` mediante `06cbfa7`, sin conflictos y sin cambios al contrato C2. La revisión confirmó que CENEPRED y las tres fuentes NASA usan los mismos puntos desde `geospatial/sampling.py`, y que los descubrimientos aplican la regla determinista de coincidencia de 2/3 con tolerancia de ±1 clase.
+
+**Catálogo y semántica:** `DATA_SOURCES.md` registra Global Landslide Susceptibility, LHASA Hazard Today y COOLR Reports Points con procedencia, acceso, cobertura, CRS, resolución o precisión, nodata y limitaciones. Se corrigió la cobertura de susceptibilidad global a 60°S–72°N según el metadato oficial. El valor 0 de susceptibilidad queda como «sin clase», LHASA se comunica como probabilidad 0–1 sin umbrales ni fecha de ráster publicados, y la ausencia de reportes COOLR no se interpreta como ausencia de eventos. La brecha LHASA se retiró y `K1b-LHASA` queda cerrado; la unidad paraguas K1b permanece `EN_CURSO` por otras fuentes peruanas pendientes.
+
+**Contraprueba independiente en vivo:** sin usar 3100/8000, el conector respondió para Lurigancho con 9 valores de susceptibilidad, 8 valores LHASA (máximo 0.002736652; 1 nodata) y 6 reportes COOLR; para Ilo, 7 valores de susceptibilidad, 5 valores LHASA (máximo 0.002548698; 2 nodata) y 0 reportes COOLR. Todas las respuestas utilizables conservaron `REAL_DATA`.
+
+**Puerta común:** 189/189 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; sintaxis DOP/QA válida y `git diff --check` limpio. El escaneo no encontró credenciales incorporadas.
+
+**QA visual independiente:** servicios temporales en 13103/18103. En Amenazas, Arequipa + Lurigancho terminó con 6/6 consultas NASA, evidenció susceptibilidad, LHASA y COOLR, y produjo coincidencias CENEPRED/NASA y una confirmación histórica COOLR. En 1440×900 y 390×844 hubo desbordamiento horizontal 0, resultados accesibles y cero mensajes de consola. Evidencia local: `qa-evidence/landslides-desktop.png` y `qa-evidence/landslides-mobile.png` fuera del repositorio.
+
+**Operación y publicación:** los servicios temporales se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.

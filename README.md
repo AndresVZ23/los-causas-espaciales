@@ -17,9 +17,10 @@ Plataforma de inteligencia territorial para convertir datos de observación de l
 - Descargar el resultado completo en JSON.
 - Crear tareas asíncronas AppEEARS para MOD13Q1.061 (NDVI/EVI + QA) y MOD44W.061 (agua + QA), consultar su estado, listar el bundle y descargar archivos con verificación SHA-256.
 - Consultar intersecciones de punto, corredor o polígono en CENEPRED, SERNANP, Osinergmin y Cultura, conservando CRS, procedencia y límites de interpretación.
+- Cruzar la susceptibilidad a deslizamientos de CENEPRED con la susceptibilidad global de NASA, el nowcast LHASA 2 y los reportes COOLR, sin convertir nodata ni ausencia de reportes en riesgo cero.
 - Obtener generación mensual real de COES para Rubí, Intipampa, Moquegua FV, Majes, Repartición y Panamericana como etiquetas `in-coes`.
 
-La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY`. AppEEARS requiere `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`: el token temporal permanece en memoria, se renueva al vencer y se revoca al terminar. Las fuentes activas y sus cautelas de licencia están en `docs/nasa-submission/DATA_SOURCES.md`. GPM IMERG directo, LHASA, ANA, SENACE, Defensoría y comunidades siguen pendientes; INGEMMET queda `DATA_UNAVAILABLE` mientras su cadena TLS no sea verificable.
+La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY`. AppEEARS requiere `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`: el token temporal permanece en memoria, se renueva al vencer y se revoca al terminar. Las fuentes activas y sus cautelas de licencia están en `docs/nasa-submission/DATA_SOURCES.md`. LHASA 2, ANA e INGEMMET volcánico ya están integrados; SINPAD, SERV_PERUALERTA, SENACE, Defensoría y comunidades continúan como brechas explícitas.
 
 ## Ejecución con Docker
 
