@@ -971,3 +971,19 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 - licencia Copernicus DEM (uso libre con atribución «© DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved»), a verificar en la página oficial.
 
 Fusionar con la puerta común; push solo con aprobación de Christian.
+
+## 2026-10-27 · Codex · `master` · `4883765` · integración y QA de viento ERA5 + Copernicus GLO-30
+
+**Fusión aprobada:** `claude/pdf-linea-base` avanzó `master` desde `f2c50f1` hasta `4883765` por fast-forward, sin conflictos. Entraron `seriescalc` para viento horario ERA5 y el contraste aditivo `TerrainSiteResult.crosscheck` con Copernicus DEM GLO-30. No se modificó el contrato común fuera de los campos aditivos ya documentados por Claude.
+
+**Catálogo y cumplimiento:** `DATA_SOURCES.md` amplía PVGIS-ERA5 con `seriescalc`, `WS10m` en m/s, timestamps UTC, un año por consulta, límite global de seis, umbral de 90 % de horas válidas, espera de 45 s y caché cerrada sin vencimiento. La ficha Copernicus registra el bucket público `copernicus-dem-30m`, patrón de nombres, GLO-30 2021, COG float32, 1 arc-second, WGS84/EGM2008, lectura por rango, semántica DSM y la atribución oficial para datos adaptados. La licencia fue contrastada con la página oficial de Copernicus; redistribuir rásteres derivados completos permanece como verificación de cumplimiento separada.
+
+**Corrección de QA:** el doble común de Copernicus estaba en un fixture `function-scope`, pero `test_assistant` construye sobres en `module-scope`; en una máquina sin caché previa intentaba crear la caché real antes del mock. `backend/tests/conftest.py` instala ahora los conectores sin red a nivel de sesión y mantiene la limpieza de tareas en curso por prueba. La suite deja de depender del estado local o de acceso de escritura al caché de producción.
+
+**Contraprueba independiente en vivo:** una descarga directa de PVGIS 5.3 `seriescalc` para Moquegua/2023 devolvió 8,760 valores válidos y media 1.7791 m/s; una media independiente y `annual_wind()` coincidieron a cuatro decimales. La lectura pública GLO-30 seleccionó `Copernicus_DSM_COG_10_S18_00_W071_00_DEM` y produjo 1,413.3 m / 6.04°, con `REAL_DATA`, coherente con el contraste NASADEM documentado.
+
+**Puerta común:** 203/203 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --audit-level=high` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. Las únicas advertencias de pytest son deprecaciones de terceros en ReportLab y Starlette.
+
+**QA visual independiente:** servicios temporales en `localhost:13105` y `127.0.0.1:18105`. Energía completó para Moquegua/Arequipa; la pestaña Viento mostró MERRA-2 continua y ERA5 discontinua, y el panel de relieve mostró 1,413 m/6.04° y 2,320 m/3.27° para Copernicus. El flujo publicó las diferencias de viento de 55 % y 41 % y las coincidencias NASADEM/Copernicus. En escritorio y 390×844 hubo desbordamiento horizontal 0, sin overlay ni mensajes de consola.
+
+**Operación y publicación:** los listeners temporales 13105/18105 se apagaron. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.

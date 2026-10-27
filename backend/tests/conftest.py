@@ -80,12 +80,21 @@ class EmptyLandslides:
         return self._empty("nasa-coolr-reports")
 
 
+@pytest.fixture(scope="session", autouse=True)
+def offline_connectors():
+    """Instala los dobles antes de cualquier fixture de módulo que construya sobres completos."""
+    patch = pytest.MonkeyPatch()
+    patch.setattr(rainfall_crosscheck, "ChirpsConnector", FlatChirps)
+    patch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
+    patch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
+    patch.setattr(extraction, "CopernicusDemConnector", FixedCopernicus)
+    yield
+    patch.undo()
+
+
 @pytest.fixture(autouse=True)
-def offline_chirps(monkeypatch):
-    monkeypatch.setattr(rainfall_crosscheck, "ChirpsConnector", FlatChirps)
-    monkeypatch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
-    monkeypatch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
-    monkeypatch.setattr(extraction, "CopernicusDemConnector", FixedCopernicus)
+def clear_background_tasks():
+    """Evita que una descarga simulada de una prueba contamine la siguiente."""
     rainfall_crosscheck._inflight.clear()
     era5_crosscheck._inflight.clear()
     yield
