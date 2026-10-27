@@ -818,3 +818,17 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - 182/182 pruebas; build correcto.
 - QA `baseline_ui`, `climate_ui` y `release_ui` en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas.
 - Una corrida de `release_ui` en 390 registró dos teselas de GIBS Blue Marble sin cabecera CORS (fallo pasajero del servidor de NASA). Al repetir, quedó en 0.
+
+## 2026-10-27 · Codex · `master` · `c667c94` · integración del gráfico MERRA-2 / IMERG / CHIRPS
+
+**Fusión aprobada:** `claude/pdf-linea-base` (`7d78c21`) se revisó y fusionó en `master` mediante `c667c94`, sobre `965db90`. El cambio no agrega dependencias ni modifica el contrato C2: reutiliza `counterchecks[].annual_series` y conserva los valores ausentes como ausentes, sin convertirlos en cero.
+
+**Revisión técnica:** las pestañas ETCCDI de Clima y Amenazas generan una serie continua MERRA-2 y dos contrastes con el mismo color del sitio: IMERG `5 3` y CHIRPS `1 3`. La leyenda identifica las tres fuentes, se adapta en móvil y el dominio del eje considera todas las series disponibles. La etapa Extracción de Amenazas declara por separado la evidencia CHIRPS y mantiene `DATA_UNAVAILABLE` cuando aún está descargándose.
+
+**Puerta común:** 182/182 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; sintaxis DOP/QA válida; `git diff --check` limpio. El escaneo no encontró credenciales incorporadas: solo ejemplos `your-key`, lecturas de entorno y referencias documentales.
+
+**QA visual independiente:** sin usar 3100/8000, se levantaron servicios temporales en 13102/18102. En Clima y Amenazas, RX1DAY mostró los tres trazos (`continua`, `5 3`, `1 3`) y la leyenda MERRA-2 / IMERG / CHIRPS. Amenazas mostró además «Lluvia diaria CHIRPS (NASA SERVIR)» en Extracción. En 1440 y 390 px hubo desbordamiento horizontal 0 y cero errores o advertencias de consola. La comprobación usó la caché CHIRPS validada del volumen `los-causas-espaciales_power-cache`, copiada a la caché local temporal; el volumen se montó en solo lectura.
+
+**Operación:** los listeners temporales 13102/18102 quedaron en cero. No se levantó ni modificó el stack 3100/8000.
+
+**Publicación:** no se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
