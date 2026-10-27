@@ -819,6 +819,19 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - QA `baseline_ui`, `climate_ui` y `release_ui` en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas.
 - Una corrida de `release_ui` en 390 registró dos teselas de GIBS Blue Marble sin cabecera CORS (fallo pasajero del servidor de NASA). Al repetir, quedó en 0.
 
+## 2026-10-27 · Codex · `master` · `c667c94` · integración del gráfico MERRA-2 / IMERG / CHIRPS
+
+**Fusión aprobada:** `claude/pdf-linea-base` (`7d78c21`) se revisó y fusionó en `master` mediante `c667c94`, sobre `965db90`. El cambio no agrega dependencias ni modifica el contrato C2: reutiliza `counterchecks[].annual_series` y conserva los valores ausentes como ausentes, sin convertirlos en cero.
+
+**Revisión técnica:** las pestañas ETCCDI de Clima y Amenazas generan una serie continua MERRA-2 y dos contrastes con el mismo color del sitio: IMERG `5 3` y CHIRPS `1 3`. La leyenda identifica las tres fuentes, se adapta en móvil y el dominio del eje considera todas las series disponibles. La etapa Extracción de Amenazas declara por separado la evidencia CHIRPS y mantiene `DATA_UNAVAILABLE` cuando aún está descargándose.
+
+**Puerta común:** 182/182 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; sintaxis DOP/QA válida; `git diff --check` limpio. El escaneo no encontró credenciales incorporadas: solo ejemplos `your-key`, lecturas de entorno y referencias documentales.
+
+**QA visual independiente:** sin usar 3100/8000, se levantaron servicios temporales en 13102/18102. En Clima y Amenazas, RX1DAY mostró los tres trazos (`continua`, `5 3`, `1 3`) y la leyenda MERRA-2 / IMERG / CHIRPS. Amenazas mostró además «Lluvia diaria CHIRPS (NASA SERVIR)» en Extracción. En 1440 y 390 px hubo desbordamiento horizontal 0 y cero errores o advertencias de consola. La comprobación usó la caché CHIRPS validada del volumen `los-causas-espaciales_power-cache`, copiada a la caché local temporal; el volumen se montó en solo lectura.
+
+**Operación:** los listeners temporales 13102/18102 quedaron en cero. No se levantó ni modificó el stack 3100/8000.
+
+**Publicación:** no se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
 ## 2026-10-27 · Claude · claude/pdf-linea-base · Deslizamientos de NASA cruzados con CENEPRED (ADR-037)
 
 **Qué entró (sobre 7d78c21):**
@@ -876,3 +889,16 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - Build correcto.
 
 **Para Codex:** registrar PVGIS-ERA5 en `DATA_SOURCES.md` (MRcalc, `raddatabase=PVGIS-ERA5`, 2005–2023, unidades y conversión de arriba, licencia del JRC con atribución). Fusionar con la puerta común; push solo con aprobación de Christian.
+## 2026-10-27 · Codex · `master` · `06cbfa7` · cierre K1b-LHASA
+
+**Fusión revisada:** `claude/pdf-linea-base` (`a380880`, sobre `7d78c21`) se fusionó localmente en `master` mediante `06cbfa7`, sin conflictos y sin cambios al contrato C2. La revisión confirmó que CENEPRED y las tres fuentes NASA usan los mismos puntos desde `geospatial/sampling.py`, y que los descubrimientos aplican la regla determinista de coincidencia de 2/3 con tolerancia de ±1 clase.
+
+**Catálogo y semántica:** `DATA_SOURCES.md` registra Global Landslide Susceptibility, LHASA Hazard Today y COOLR Reports Points con procedencia, acceso, cobertura, CRS, resolución o precisión, nodata y limitaciones. Se corrigió la cobertura de susceptibilidad global a 60°S–72°N según el metadato oficial. El valor 0 de susceptibilidad queda como «sin clase», LHASA se comunica como probabilidad 0–1 sin umbrales ni fecha de ráster publicados, y la ausencia de reportes COOLR no se interpreta como ausencia de eventos. La brecha LHASA se retiró y `K1b-LHASA` queda cerrado; la unidad paraguas K1b permanece `EN_CURSO` por otras fuentes peruanas pendientes.
+
+**Contraprueba independiente en vivo:** sin usar 3100/8000, el conector respondió para Lurigancho con 9 valores de susceptibilidad, 8 valores LHASA (máximo 0.002736652; 1 nodata) y 6 reportes COOLR; para Ilo, 7 valores de susceptibilidad, 5 valores LHASA (máximo 0.002548698; 2 nodata) y 0 reportes COOLR. Todas las respuestas utilizables conservaron `REAL_DATA`.
+
+**Puerta común:** 189/189 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias; sintaxis DOP/QA válida y `git diff --check` limpio. El escaneo no encontró credenciales incorporadas.
+
+**QA visual independiente:** servicios temporales en 13103/18103. En Amenazas, Arequipa + Lurigancho terminó con 6/6 consultas NASA, evidenció susceptibilidad, LHASA y COOLR, y produjo coincidencias CENEPRED/NASA y una confirmación histórica COOLR. En 1440×900 y 390×844 hubo desbordamiento horizontal 0, resultados accesibles y cero mensajes de consola. Evidencia local: `qa-evidence/landslides-desktop.png` y `qa-evidence/landslides-mobile.png` fuera del repositorio.
+
+**Operación y publicación:** los servicios temporales se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.

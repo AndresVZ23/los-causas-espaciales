@@ -105,7 +105,7 @@ class NasaLandslidesConnector:
         points = sample_points(geometry, representative)
         common = dict(source_id="nasa-landslide-susceptibility", organization="NASA · Earthdata GIS",
                       dataset="Susceptibilidad global a deslizamientos (NASA, muestreo por puntos)", source_url=SUSCEPTIBILITY_URL,
-                      crs="EPSG:4326", coverage="Global, 56°S a 72°N", scale_or_resolution="30″ (~1 km); clase leída en cada punto de muestreo", license=LICENSE)
+                      crs="EPSG:4326", coverage="Global, 60°S a 72°N", scale_or_resolution="30″ (~1 km); clase leída en cada punto de muestreo", license=LICENSE)
         limitations = [f"Muestreo de {len(points)} punto(s) dentro del área, los mismos que CENEPRED: describe la distribución, no el área completa.",
                        "Mapa global heurístico (Stanley y Kirschbaum 2017): pendiente, geología, fallas, pérdida de bosque y vías. "
                        "Susceptibilidad no es probabilidad; a escala local manda el mapa nacional."]
