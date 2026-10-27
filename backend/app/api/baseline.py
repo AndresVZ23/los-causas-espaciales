@@ -22,7 +22,7 @@ async def environment_screening(request: BaselineRequest) -> BaselineScreeningRe
 
 @router.post("/hazards-screening", response_model=BaselineScreeningResponse)
 async def hazards_screening(request: BaselineRequest) -> BaselineScreeningResponse:
-    """Módulo 3: amenazas naturales con extremos de lluvia (NASA POWER + GPM IMERG), relieve y capas de riesgo de CENEPRED y ANA."""
+    """Módulo 3: amenazas naturales con extremos de lluvia (NASA POWER, GPM IMERG y CHIRPS), relieve y capas de riesgo de CENEPRED y ANA."""
     return await _run(request, Sector.HAZARDS)
 
 

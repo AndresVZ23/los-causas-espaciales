@@ -4,7 +4,8 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { formatNumber } from "./format";
 
 type TemporalPoint = { year: number } & Record<string, number>;
-type Series = { key: string; label: string; color: string };
+// `dash`: series de contraste (otra fuente para el mismo índice), punteadas y sin puntos para no competir con la principal.
+type Series = { key: string; label: string; color: string; dash?: string };
 
 function niceStep(raw: number) {
   const power = 10 ** Math.floor(Math.log10(raw));
@@ -60,7 +61,9 @@ export default function TemporalChart({ data, series, unit }: { data: TemporalPo
           cursor={{ stroke: "#38d9c3", strokeWidth: 1 }}
         />
         {series.map((item) => (
-          <Line key={item.key} type="monotone" dataKey={item.key} name={item.label} stroke={item.color} strokeWidth={1.6} dot={{ r: 2, fill: item.color, strokeWidth: 0 }} activeDot={{ r: 4, stroke: "#080c0d", strokeWidth: 2 }} isAnimationActive={false} connectNulls={false} />
+          <Line key={item.key} type="monotone" dataKey={item.key} name={item.label} stroke={item.color} strokeWidth={item.dash ? 1.2 : 1.6} strokeDasharray={item.dash}
+            strokeOpacity={item.dash ? 0.85 : 1} dot={item.dash ? false : { r: 2, fill: item.color, strokeWidth: 0 }} activeDot={{ r: item.dash ? 3 : 4, stroke: "#080c0d", strokeWidth: 2 }}
+            isAnimationActive={false} connectNulls={false} />
         ))}
       </LineChart>
     </ResponsiveContainer>

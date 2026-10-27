@@ -10,7 +10,7 @@ export type BaselineModule = "environment" | "social" | "hazards";
 const MODULE_SOURCES: Record<BaselineModule, string> = {
   environment: "MODIS anual (vegetación y cobertura), relieve NASADEM y capas de ANA, MINAM y SERNANP, ordenados como la línea base de un EIA.",
   social: "Cultura (SIGDA): patrimonio registrado y declarado, CIRA, diagnósticos arqueológicos, Qhapaq Ñan, paisajes culturales y consulta previa.",
-  hazards: "Lluvia y extremos ETCCDI desde 2001 con contraste GPM IMERG, relieve NASADEM, riesgo por distrito de CENEPRED y puntos críticos de la ANA.",
+  hazards: "Lluvia y extremos ETCCDI desde 2001 cruzados con GPM IMERG y CHIRPS, relieve NASADEM, riesgo por distrito de CENEPRED y puntos críticos de la ANA.",
 };
 const signed = (value: number, digits: number) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatNumber(Math.abs(value), digits)}`;
 const withRecords = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status === "READY" && (layer.intersection_count ?? 0) > 0);

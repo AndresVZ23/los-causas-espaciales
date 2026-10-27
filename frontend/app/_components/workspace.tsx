@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import AssistantPanel from "./assistant-panel";
 import { BASELINE_HINT, BaselineEvidence, BaselineOptions, BaselineReading } from "./baseline-panels";
 import type { BaselineModule } from "./baseline-panels";
-import { ClimateEvidence, ClimateReading } from "./climate-panels";
+import { CHECK_SOURCES, ClimateEvidence, ClimateReading, checksOf, shortSource } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
@@ -97,6 +97,12 @@ function seriesFor(site: SeriesSubject, code: string) {
   const extreme = site.extremes?.find((item) => item.variable === code);
   if (extreme) return { annual_series: extreme.annual_series, display_unit: extreme.display_unit, source: getVariable(site, "PRECTOTCORR").source };
   return site.variables.find((item) => item.variable === code) ?? null;
+}
+
+/** Series del mismo índice ETCCDI en las fuentes de contraste (IMERG, CHIRPS); vacío fuera de los extremos. */
+function checkSeriesFor(site: SeriesSubject, code: string) {
+  const extreme = site.extremes?.find((item) => item.variable === code);
+  return extreme ? checksOf(extreme).map((check) => ({ key: shortSource(check.source), annual_series: check.annual_series })) : [];
 }
 
 export default function Workspace() {
@@ -232,10 +238,23 @@ export default function Workspace() {
       subjectsList.forEach((site, index) => {
         const value = seriesFor(site, activeVariable)?.annual_series.find((item) => item.year === year)?.value;
         if (value !== undefined) point[`site${index}`] = value;
+        checkSeriesFor(site, activeVariable).forEach((check) => {
+          const other = check.annual_series.find((item) => item.year === year)?.value;
+          if (other !== undefined) point[`site${index}_${check.key}`] = other;
+        });
       });
       return point;
     });
   }, [result, subjectsList, activeVariable]);
+  // En los extremos de lluvia, cada sitio lleva además sus contrastes: mismo color, línea punteada por fuente.
+  const chartSeries = useMemo(() => subjectsList.flatMap((site, index) => [
+    { key: `site${index}`, label: site.location.label, color: siteColor(index) },
+    ...checkSeriesFor(site, activeVariable).map((check) => ({
+      key: `site${index}_${check.key}`, label: `${site.location.label} · ${check.key}`, color: siteColor(index),
+      dash: CHECK_SOURCES.find((item) => item.key === check.key)?.dash ?? "2 2",
+    })),
+  ]), [subjectsList, activeVariable]);
+  const checkKeys = CHECK_SOURCES.filter((source) => chartSeries.some((item) => item.key.endsWith(`_${source.key}`)));
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
@@ -560,9 +579,11 @@ export default function Workspace() {
           <div className="trendHeader">
             <span>Serie temporal anual</span>
             <div role="group" aria-label="Variable NASA POWER">{tabs.map((variable) => <button key={variable.id} className={activeVariable === variable.id ? "active" : ""} aria-pressed={activeVariable === variable.id} onClick={() => setActiveVariable(variable.id)}>{variable.short}</button>)}</div>
-            <p className="seriesKey">{subjectsList.map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}<b>{selectedUnit}</b></p>
+            <p className="seriesKey">{subjectsList.map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}
+              {checkKeys.length > 0 && <span className="checkKey"><em>MERRA-2 continua</em>{checkKeys.map((source) => <span key={source.key}><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke="currentColor" strokeWidth="1.4" strokeDasharray={source.dash} /></svg>{source.key}</span>)}</span>}
+              <b>{selectedUnit}</b></p>
           </div>
-          <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={subjectsList.map((site, index) => ({ key: `site${index}`, label: site.location.label, color: siteColor(index) }))} /></div>
+          <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={chartSeries} /></div>
           <div className="chartFoot"><span title={result ? `${sourceSummary} · ${result.period}` : sourceSummary}>{result ? `${sourceSummary} · ${result.period}` : sourceSummary}</span><span>{baselineResult?.sector === "environment" ? "Valor anual MODIS · promedio de los píxeles dentro del área" : `Años completos · ${["RX1DAY", "RX5DAY", "CDD"].includes(activeVariable) ? "índice ETCCDI anual" : "media anual de observaciones diarias"}`} · eje ajustado al rango observado</span></div>
         </section>
 

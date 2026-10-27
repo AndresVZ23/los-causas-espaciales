@@ -800,3 +800,21 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **QA en Browser integrado:** puertos temporales 13101/18101. En 1440 px, Amenazas completó con el descubrimiento del artefacto 2022, procedencia y brechas visibles, sin errores de consola, overlay ni desbordamiento. En 390 px, el panel siguió accesible, el ancho documental tuvo desbordamiento 0 y `Más → Ambiente` cambió de módulo. Ambos puertos quedaron en cero listeners.
 
 **Publicación:** no se hizo push porque no existe aprobación explícita de Christian en esta instrucción. No se creó `v0.1.0`.
+
+## 2026-10-26 · Claude · claude/pdf-linea-base · Las tres fuentes en el gráfico anual
+
+**Qué entró (sobre master 965db90):**
+- En las pestañas de extremos, de Clima y de Amenazas, el gráfico anual dibuja para cada sitio:
+  - MERRA-2 con línea continua;
+  - IMERG con rayas;
+  - CHIRPS con puntos.
+- Todas comparten el color del sitio y llevan su leyenda; en móvil la leyenda va en una fila propia.
+- El pico de 2022 en Moquegua se ve como exclusivo del reanálisis.
+- La etapa «Extracción» de Amenazas suma la evidencia «Lluvia diaria CHIRPS (NASA SERVIR)». Los textos que solo nombraban IMERG ahora nombran ambos contrastes.
+
+**Stack:** Docker Compose levantado desde `los-causas-claude`. La caché CHIRPS de Moquegua, Ilo y Arequipa se copió al volumen `power-cache`. En caliente, Amenazas tarda 5 s y Clima 9 s.
+
+**Verificación:**
+- 182/182 pruebas; build correcto.
+- QA `baseline_ui`, `climate_ui` y `release_ui` en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas.
+- Una corrida de `release_ui` en 390 registró dos teselas de GIBS Blue Marble sin cabecera CORS (fallo pasajero del servidor de NASA). Al repetir, quedó en 0.
