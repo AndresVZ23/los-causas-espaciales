@@ -429,6 +429,9 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
         if any(source.startswith("CHIRPS") for source in checks):
             sources.append("CHIRPS v2.0 (Climate Hazards Center, UCSB) servido por NASA SERVIR ClimateSERV (https://climateserv.servirglobal.net/), "
                            "precipitación diaria a 0.05°, como contraste de los extremos.")
+        if any(check.source.startswith("ERA5") for site in getattr(envelope, "sites", []) for item in getattr(site, "variables", []) for check in item.counterchecks):
+            sources.append("ERA5 (ECMWF) servido por PVGIS 5.3 del JRC de la Comisión Europea (https://re.jrc.ec.europa.eu/api/v5_3/MRcalc), "
+                           "temperatura a 2 m e irradiación global horizontal mensuales 2005–2023, como contraste de MERRA-2 y CERES.")
     if envelope.terrain:
         dois = sorted({granule.doi_url for site in envelope.terrain.sites for granule in site.granules})
         sources.append(f"{envelope.terrain.dataset}: {', '.join(dois)}.")

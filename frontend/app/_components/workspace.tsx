@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import AssistantPanel from "./assistant-panel";
 import { BASELINE_HINT, BaselineEvidence, BaselineOptions, BaselineReading } from "./baseline-panels";
 import type { BaselineModule } from "./baseline-panels";
-import { CHECK_SOURCES, ClimateEvidence, ClimateReading, checksOf, shortSource } from "./climate-panels";
+import { ClimateEvidence, ClimateReading, SERIES_SOURCES, checksOf, shortSource } from "./climate-panels";
 import { formatMoney, formatNumber, siteColor } from "./format";
 import { Icon } from "./icons";
 import NasaQuestions from "./nasa-questions";
@@ -31,8 +31,8 @@ const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, lo
 const ComparisonChart = dynamic(() => import("./comparison-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando comparación…</div> });
 
 const modules: Module[] = [
-  { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER, extremos de lluvia ETCCDI y año en curso hasta hoy." },
-  { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con observaciones NASA POWER." },
+  { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER cruzadas con ERA5, extremos de lluvia ETCCDI con IMERG y CHIRPS, y año en curso hasta hoy." },
+  { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con NASA POWER; recurso y temperatura cruzados con ERA5." },
   { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Funcional", ready: true, description: "Extremos de lluvia cruzados con IMERG y CHIRPS, relieve NASADEM, riesgo y susceptibilidad de CENEPRED cruzada con los deslizamientos de NASA (susceptibilidad global, LHASA y reportes COOLR), puntos críticos de la ANA y mapas volcánicos de INGEMMET; el inventario de peligros geológicos sigue pendiente." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "Línea base funcional", ready: true, description: "Insumos para la línea base de un EIA: vegetación MODIS con tendencia, cobertura, agua (ANA), ecosistemas y lomas (MINAM), áreas protegidas y relieve." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Patrimonio funcional", ready: true, description: "Patrimonio arqueológico registrado y declarado, CIRA, diagnósticos previos, Qhapaq Ñan y consulta previa (Ministerio de Cultura); comunidades y conflictos siguen pendientes." },
@@ -99,11 +99,14 @@ function seriesFor(site: SeriesSubject, code: string) {
   return site.variables.find((item) => item.variable === code) ?? null;
 }
 
-/** Series del mismo índice ETCCDI en las fuentes de contraste (IMERG, CHIRPS); vacío fuera de los extremos. */
+/** La misma serie en las fuentes de contraste: IMERG y CHIRPS en los extremos, ERA5 en temperatura y radiación. */
 function checkSeriesFor(site: SeriesSubject, code: string) {
   const extreme = site.extremes?.find((item) => item.variable === code);
-  return extreme ? checksOf(extreme).map((check) => ({ key: shortSource(check.source), annual_series: check.annual_series })) : [];
+  const checks = extreme ? checksOf(extreme) : site.variables.find((item) => item.variable === code)?.counterchecks ?? [];
+  return checks.map((check) => ({ key: shortSource(check.source), annual_series: check.annual_series }));
 }
+// Nombre de la serie principal de NASA POWER en la leyenda: la radiación viene de CERES; lo demás, de MERRA-2.
+const primaryName = (code: string) => (code === "ALLSKY_SFC_SW_DWN" ? "CERES" : "MERRA-2");
 
 export default function Workspace() {
   const [activeModule, setActiveModule] = useState("solar");
@@ -246,15 +249,15 @@ export default function Workspace() {
       return point;
     });
   }, [result, subjectsList, activeVariable]);
-  // En los extremos de lluvia, cada sitio lleva además sus contrastes: mismo color, línea punteada por fuente.
+  // Cada sitio lleva además sus contrastes (extremos: IMERG y CHIRPS; temperatura y radiación: ERA5): mismo color, línea punteada por fuente.
   const chartSeries = useMemo(() => subjectsList.flatMap((site, index) => [
     { key: `site${index}`, label: site.location.label, color: siteColor(index) },
     ...checkSeriesFor(site, activeVariable).map((check) => ({
       key: `site${index}_${check.key}`, label: `${site.location.label} · ${check.key}`, color: siteColor(index),
-      dash: CHECK_SOURCES.find((item) => item.key === check.key)?.dash ?? "2 2",
+      dash: SERIES_SOURCES.find((item) => item.key === check.key)?.dash ?? "2 2",
     })),
   ]), [subjectsList, activeVariable]);
-  const checkKeys = CHECK_SOURCES.filter((source) => chartSeries.some((item) => item.key.endsWith(`_${source.key}`)));
+  const checkKeys = SERIES_SOURCES.filter((source) => chartSeries.some((item) => item.key.endsWith(`_${source.key}`)));
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 900px)");
@@ -580,7 +583,7 @@ export default function Workspace() {
             <span>Serie temporal anual</span>
             <div role="group" aria-label="Variable NASA POWER">{tabs.map((variable) => <button key={variable.id} className={activeVariable === variable.id ? "active" : ""} aria-pressed={activeVariable === variable.id} onClick={() => setActiveVariable(variable.id)}>{variable.short}</button>)}</div>
             <p className="seriesKey">{subjectsList.map((site, index) => <span key={site.location.label}><i style={{ background: siteColor(index) }} />{site.location.label}</span>)}
-              {checkKeys.length > 0 && <span className="checkKey"><em>MERRA-2 continua</em>{checkKeys.map((source) => <span key={source.key}><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke="currentColor" strokeWidth="1.4" strokeDasharray={source.dash} /></svg>{source.key}</span>)}</span>}
+              {checkKeys.length > 0 && <span className="checkKey"><em>{primaryName(activeVariable)} continua</em>{checkKeys.map((source) => <span key={source.key}><svg width="18" height="6" aria-hidden="true"><line x1="0" y1="3" x2="18" y2="3" stroke="currentColor" strokeWidth="1.4" strokeDasharray={source.dash} /></svg>{source.key}</span>)}</span>}
               <b>{selectedUnit}</b></p>
           </div>
           <div className="trendChart"><TemporalChart unit={selectedUnit} data={temporalSeries} series={chartSeries} /></div>

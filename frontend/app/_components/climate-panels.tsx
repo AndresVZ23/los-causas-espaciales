@@ -81,7 +81,9 @@ const AGREEMENT_TEXT: Record<Exclude<Agreement, "solo_contraste">, string> = {
 };
 // Contrastes independientes de la serie principal (NASA POWER · MERRA-2), en el orden en que se muestran.
 export const CHECK_SOURCES = [{ key: "IMERG", label: "GPM IMERG", dash: "5 3" }, { key: "CHIRPS", label: "CHIRPS", dash: "1 3" }];
-export const shortSource = (source: string) => CHECK_SOURCES.find((item) => source.includes(item.key))?.key ?? source;
+// Contraste de temperatura y radiación (ERA5): no es columna de la tabla de extremos, solo línea en el gráfico anual.
+export const SERIES_SOURCES = [...CHECK_SOURCES, { key: "ERA5", label: "ERA5", dash: "8 3 2 3" }];
+export const shortSource = (source: string) => SERIES_SOURCES.find((item) => source.includes(item.key))?.key ?? source;
 export const checksOf = (item: ExtremeIndex) => item.counterchecks?.length ? item.counterchecks : item.countercheck ? [item.countercheck] : [];
 
 /** Valor de cada contraste en un año atípico; los resultados anteriores a CHIRPS solo traen el de IMERG. */

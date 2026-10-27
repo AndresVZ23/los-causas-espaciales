@@ -14,6 +14,8 @@ from ..finance.sensitivity import Driver, break_even_item, tornado
 from ..schemas.scoring import Criterion, Direction, Scorecard, ScorecardRequest, SubjectValues
 from ..scoring.multicriteria import build_scorecard
 from ..orchestration.analysis import analyze_subjects
+from ..orchestration.discoveries import record_in_pipeline, variable_discoveries
+from ..orchestration.era5_crosscheck import attach_era5, era5_gaps, era5_series
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
 from ..orchestration.stages import (
@@ -339,13 +341,15 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
     timings = StageTimings()
     subjects = _subjects(request)
     points = [subject.representative_point for subject in subjects]
-    (datasets, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms) = await asyncio.gather(
-        extract_power(points, SOLAR_VARIABLES, request.start_date, request.end_date), extract_terrain(points)
+    (datasets, timings.extraction_ms), (terrain, terrain_error, timings.terrain_ms), era5 = await asyncio.gather(
+        extract_power(points, SOLAR_VARIABLES, request.start_date, request.end_date), extract_terrain(points),
+        era5_series([(subject.label, subject.representative_point) for subject in subjects]),
     )
     expected_days = (request.end_date - request.start_date).days + 1
 
     analysis_start = perf_counter()
     summaries_by_site = analyze_subjects(datasets, SOLAR_VARIABLES, expected_days)
+    attach_era5(summaries_by_site, era5)
     timings.analysis_ms = elapsed_ms(analysis_start)
 
     irradiance_means = [next(item for item in summaries if item.variable == IRRADIANCE).mean for summaries in summaries_by_site]
@@ -375,8 +379,9 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
 
     labelled = [SubjectSummaries(label=subject.label, summaries=summaries) for subject, summaries in zip(subjects, summaries_by_site, strict=True)]
     trend_findings = collect_trend_findings(labelled)
-    gaps = _data_gaps(terrain)
+    gaps = _data_gaps(terrain) + era5_gaps(era5)
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
+    discoveries = variable_discoveries([(subject.label, summaries) for subject, summaries in zip(subjects, summaries_by_site, strict=True)])
     npvs = [result.finance.npv_usd for result in site_results]
     adverse = [_scenario(item, "adverso") for item in sensitivities]
     dominant = {item.tornado[0].label for item in sensitivities if item.tornado}
@@ -422,6 +427,7 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
         results_stage(trend_findings, gaps, all_provenance),
         export_stage(all_provenance),
     ])
+    record_in_pipeline(pipeline, discoveries)
     fingerprint = hashlib.sha256(json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()[:16]
     return SolarScreeningResponse(
         analysis_id=fingerprint,
@@ -440,5 +446,6 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
         assumption_items=_assumption_items(request.assumptions),
         financial_sensitivity=sensitivities,
         scorecard=scorecard,
+        discoveries=discoveries,
         disclaimer="Screening preliminar basado en datos NASA y supuestos del usuario. No sustituye estudios de recurso, conexión, ingeniería, impacto ambiental, patrimonio, debida diligencia legal ni factibilidad financiera.",
     )

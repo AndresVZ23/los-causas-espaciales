@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from ..reports.executive_pdf import render_executive_pdf
 from ..schemas.baseline import BaselineScreeningResponse
 from ..schemas.climate import ClimateScreeningResponse
+from ..schemas.pipeline import SolarScreeningResponse
 from ..schemas.screening import ScreeningEnvelope, Sector
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
@@ -17,6 +18,7 @@ MAX_FINDINGS = 400
 SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {
     Sector.ENVIRONMENT: BaselineScreeningResponse, Sector.HERITAGE: BaselineScreeningResponse, Sector.HAZARDS: BaselineScreeningResponse,
     Sector.CLIMATE: ClimateScreeningResponse,   # sus extremos dicen si CHIRPS entró como fuente
+    Sector.SOLAR: SolarScreeningResponse,       # sus variables dicen si ERA5 entró como contraste
 }
 
 

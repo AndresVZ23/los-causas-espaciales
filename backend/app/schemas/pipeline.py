@@ -1,4 +1,5 @@
 from datetime import date
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -68,6 +69,29 @@ class CurrentPeriod(BaseModel):
     years_compared: int
 
 
+class Agreement(StrEnum):
+    COINCIDE = "coincide"           # ambas fuentes significativas, misma dirección
+    CONTRADICE = "contradice"       # ambas significativas, direcciones opuestas
+    SIN_RESPALDO = "sin_respaldo"   # solo la fuente principal es significativa
+    SOLO_CONTRASTE = "solo_contraste"
+    SIN_TENDENCIA = "sin_tendencia"
+
+
+class ExtremeCountercheck(BaseModel):
+    """La misma serie (índice ETCCDI o variable anual) calculada con una segunda fuente independiente y su acuerdo con la principal."""
+
+    source: str
+    valid_years: int
+    direction: str
+    slope_per_year: float | None
+    adjusted_p_value: float | None
+    significant_after_bh: bool
+    agreement: Agreement
+    annual_series: list[AnnualObservation]
+    period: str | None = Field(default=None, description="Años comparados cuando no son los de la serie principal (p. ej. 2005–2023 en ERA5).")
+    primary_slope_per_year: float | None = Field(default=None, description="Pendiente de la fuente principal recalculada en esos mismos años.")
+
+
 class VariableSummary(BaseModel):
     variable: str
     label: str
@@ -86,6 +110,7 @@ class VariableSummary(BaseModel):
     annual_series: list[AnnualObservation]
     last_valid_date: date | None = Field(default=None, description="Último día con dato publicado por la fuente (latencia del proveedor).")
     current_period: CurrentPeriod | None = None
+    counterchecks: list[ExtremeCountercheck] = Field(default_factory=list, description="Contrastes independientes de la serie anual (ERA5 para temperatura y radiación).")
 
 
 class SolarFinancialProjection(BaseModel):

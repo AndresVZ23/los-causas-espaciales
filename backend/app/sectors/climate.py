@@ -10,7 +10,8 @@ from time import perf_counter
 from ..connectors.nasa.power import PowerConnectorError
 from ..orchestration.analysis import analyze_extremes, analyze_subjects, attach_countercheck
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
-from ..orchestration.discoveries import rainfall_discoveries, record_in_pipeline
+from ..orchestration.discoveries import rainfall_discoveries, record_in_pipeline, variable_discoveries
+from ..orchestration.era5_crosscheck import ERA5_NOTE, ERA5_SOURCE, attach_era5, era5_gaps, era5_series
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings
 from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, CHIRPS_SOURCE, attach_chirps, chirps_extremes, chirps_gaps
 from ..orchestration.stages import (
@@ -195,8 +196,9 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     extraction_start = perf_counter()
     # CHIRPS va en paralelo con NASA POWER: sitios por la celda del punto, territorios por su polígono.
     chirps_subjects = [(s.label, s.geometry if s.kind == SubjectKind.POLYGON else None, s.representative_point) for s in subjects]
-    ((datasets, territories), (terrain, terrain_error, timings.terrain_ms), chirps) = await asyncio.gather(
-        _extract(request), extract_terrain(points), chirps_extremes(chirps_subjects, request.start_date, request.end_date))
+    ((datasets, territories), (terrain, terrain_error, timings.terrain_ms), chirps, era5) = await asyncio.gather(
+        _extract(request), extract_terrain(points), chirps_extremes(chirps_subjects, request.start_date, request.end_date),
+        era5_series([(s.label, s.representative_point) for s in subjects]))
     timings.extraction_ms = elapsed_ms(extraction_start)
     expected_days = (request.end_date - request.start_date).days + 1
 
@@ -210,6 +212,7 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     except PowerConnectorError as exc:
         countercheck_error = str(exc)
     attach_chirps(extremes_by_site, chirps)
+    attach_era5(variables_by_site, era5)
     timings.analysis_ms = elapsed_ms(analysis_start)
 
     extra = {len(request.sites) + index: territory for index, territory in enumerate(territories)}
@@ -228,9 +231,9 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
     ]
     variables_only = [SubjectSummaries(label=subject.label, summaries=variables) for subject, variables in zip(subjects, variables_by_site, strict=True)]
     trend_findings = collect_trend_findings(labelled)
-    gaps = _data_gaps(terrain, countercheck_error) + chirps_gaps(chirps)
+    gaps = _data_gaps(terrain, countercheck_error) + chirps_gaps(chirps) + era5_gaps(era5)
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)
-    discoveries = rainfall_discoveries([(site.location.label, site.extremes) for site in sites])
+    discoveries = rainfall_discoveries([(site.location.label, site.extremes) for site in sites]) + variable_discoveries([(site.location.label, site.variables) for site in sites])
     nasa_questions = answer_nasa_questions(
         labelled, trend_findings,
         {subject.label: (subject.representative_point.latitude, subject.representative_point.longitude) for subject in subjects},
@@ -276,6 +279,15 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
             value=f"coinciden {counts[Agreement.COINCIDE]} · sin respaldo {counts[Agreement.SIN_RESPALDO]} · solo CHIRPS {counts[Agreement.SOLO_CONTRASTE]} · "
                   f"contradicen {counts[Agreement.CONTRADICE]}", provenance=Provenance.MODEL,
         ))
+    era5_checks = [check for site in sites for item in site.variables for check in item.counterchecks if check.source == ERA5_SOURCE]
+    if era5_checks:
+        counts = {value: sum(1 for check in era5_checks if check.agreement == value) for value in Agreement}
+        evaluation_evidence.append(StageEvidence(
+            label="Contraste ERA5 (temperatura y radiación)",
+            value=f"coinciden {counts[Agreement.COINCIDE]} · sin respaldo {counts[Agreement.SIN_RESPALDO]} · solo ERA5 {counts[Agreement.SOLO_CONTRASTE]} · "
+                  f"contradicen {counts[Agreement.CONTRADICE]} · sin tendencia {counts[Agreement.SIN_TENDENCIA]} · {era5_checks[0].period}",
+            provenance=Provenance.MODEL,
+        ))
     evaluation = stage("evaluation", PipelineStatus.COMPLETED, "Extremos de precipitación comparados entre sitios con índices ETCCDI y la misma prueba de tendencia.",
                        source_provenance + [Provenance.MODEL], evaluation_evidence, answers=["so_what"])
     finance = stage("finance", PipelineStatus.UNAVAILABLE, "No aplica: el módulo climático no usa supuestos financieros.",
@@ -309,5 +321,6 @@ async def run_climate_screening(request: ClimateScreeningRequest) -> ClimateScre
         discoveries=discoveries,
         sites=sites,
         method_notes=[*METHOD_NOTES, *([COUNTERCHECK_NOTE] if countercheck_error is None else []), *([CHIRPS_NOTE] if chirps_checks else []),
+                      *([ERA5_NOTE] if era5_checks else []),
                       *([TERRITORY_NOTE] if territories else [])],
     )

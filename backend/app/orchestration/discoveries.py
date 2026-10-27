@@ -12,6 +12,7 @@ from ..schemas.analysis import Provenance
 from ..schemas.baseline import BaselineLayer, SubjectBaseline
 from ..schemas.climate import Agreement, ExtremeIndexSummary
 from ..schemas.data_sources import TerritorialSourceResult
+from ..schemas.pipeline import VariableSummary
 from ..schemas.screening import Discovery, DiscoveryKind, PipelineStage, StageEvidence
 from ..schemas.terrain import TerrainResponse
 
@@ -26,12 +27,18 @@ CENEPRED_MASS_MOVEMENT_LAYER = 2
 NASA_NAMES = {1: "muy baja", 2: "baja", 3: "moderada", 4: "alta", 5: "muy alta"}
 CENEPRED_NAMES = {value: name.lower() for name, value in CENEPRED_CLASS.items()}
 HIGH_CLASS = 4
+# Recurso solar: CERES y ERA5 «coinciden» si difieren menos de 5 % en la media común; desde 10 % la diferencia mueve el VAN.
+SOLAR_CLOSE_PERCENT = 5.0
+SOLAR_APART_PERCENT = 10.0
+# Temperatura: desde 2 °C de diferencia en la media común, el nivel de una de las dos fuentes no representa el sitio.
+TEMPERATURE_APART_DEGREES = 2.0
+PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES"}
 CLOSE_CLASSES = 1            # dos fuentes «coinciden» en un punto si difieren a lo sumo en una clase,
                              # y en el área si coinciden en al menos dos tercios de los puntos
 
 
 def short(source: str) -> str:
-    return "IMERG" if "IMERG" in source else "CHIRPS" if "CHIRPS" in source else source
+    return "IMERG" if "IMERG" in source else "CHIRPS" if "CHIRPS" in source else "ERA5" if "ERA5" in source else source
 
 
 def _order(name: str) -> int:
@@ -100,6 +107,73 @@ def rainfall_discoveries(sites: Sequence[tuple[str, Sequence[ExtremeIndexSummary
                           else "Una sola fuente lo ve: es una pista para contrastar con estaciones, no una tendencia establecida."),
                 subjects=[label], sources=[PRIMARY, *names],
             ))
+    return out
+
+
+def _signed(value: float | None, unit: str) -> str:
+    return "sin pendiente" if value is None else f"{value:+.3f} {unit}/año"
+
+
+def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]]) -> list[Discovery]:
+    """Temperatura y radiación frente a una segunda fuente (ERA5): tendencia en los años comunes y, en la radiación, nivel del recurso."""
+    out: list[Discovery] = []
+    for label, variables in sites:
+        for item in variables:
+            primary = PRIMARY_BY_VARIABLE.get(item.variable, "NASA POWER")
+            for check in item.counterchecks:
+                other, unit, years = short(check.source), item.display_unit, check.period or f"{check.valid_years} años"
+                change = f"{label}: {item.label.lower()}"
+                p = f", p BH {check.adjusted_p_value:.3f}" if check.adjusted_p_value is not None else ""
+                slopes = f"En {years}: {primary} {_signed(check.primary_slope_per_year, unit)}; {other} {_signed(check.slope_per_year, unit)}{p}."
+                sources = [f"NASA POWER ({primary})", other]
+                if check.agreement == Agreement.COINCIDE:
+                    out.append(Discovery(kind=DiscoveryKind.CONFIRMED, title=f"{change}: la tendencia se confirma con {other}",
+                                         detail=f"{slopes} Dos reanálisis independientes coinciden en significancia y dirección.", subjects=[label], sources=sources))
+                elif check.agreement == Agreement.CONTRADICE:
+                    out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{change}: tendencia de signo opuesto en {other}",
+                                         detail=f"{slopes} Ninguna de las dos se usa sola: hace falta una estación.", subjects=[label], sources=sources))
+                elif check.agreement == Agreement.SIN_RESPALDO:
+                    same_sign = (check.slope_per_year or 0) * (check.primary_slope_per_year or 0) > 0
+                    out.append(Discovery(
+                        kind=DiscoveryKind.UNBACKED,
+                        title=f"{change}: {other} apunta igual que {primary} pero sin significancia" if same_sign
+                              else f"{change}: la tendencia de {primary} no se repite en {other}",
+                        detail=f"{slopes} " + ("Misma dirección, sin llegar a la significancia tras BH: respaldo débil, no confirmación." if same_sign
+                                               else "Se lee como indicio, no como cambio establecido."),
+                        subjects=[label], sources=sources))
+                elif check.agreement == Agreement.SOLO_CONTRASTE:
+                    out.append(Discovery(kind=DiscoveryKind.UNBACKED, title=f"{change}: cambio según {other}, no según {primary}",
+                                         detail=f"{slopes} Una sola fuente lo ve: es una pista para contrastar con estaciones.", subjects=[label], sources=sources))
+                elif item.significant_after_bh:
+                    out.append(Discovery(kind=DiscoveryKind.UNBACKED, title=f"{change}: la tendencia de {primary} no se sostiene en {years}",
+                                         detail=f"{slopes} Ni {primary} ni {other} son significativas en esos años: la tendencia del período completo "
+                                                f"depende de los años fuera de esa ventana.", subjects=[label], sources=sources))
+                primary_by_year = {point.year: point.value for point in item.annual_series}
+                pairs = [(primary_by_year[point.year], point.value) for point in check.annual_series if point.year in primary_by_year]
+                if not pairs:
+                    continue
+                mine, theirs = sum(a for a, _ in pairs) / len(pairs), sum(b for _, b in pairs) / len(pairs)
+                if item.variable == "T2M" and abs(theirs - mine) >= TEMPERATURE_APART_DEGREES:
+                    # Una celda de MERRA-2 (0.5° × 0.625°) en los Andes mezcla altitudes muy distintas; ERA5 tiene celdas de 0.25°.
+                    out.append(Discovery(
+                        kind=DiscoveryKind.CONTRADICTION, title=f"{label}: la temperatura media difiere {abs(theirs - mine):.1f} °C entre {primary} y {other}",
+                        detail=f"Media {years}: {primary} {mine:.1f} °C; {other} {theirs:.1f} °C. Las tendencias pueden coincidir aunque el nivel no: "
+                               f"las celdas de cada reanálisis representan altitudes distintas. Para pérdidas térmicas, confort o heladas, "
+                               f"el nivel absoluto se toma de una estación cercana o se mide en sitio.",
+                        subjects=[label], sources=sources))
+                if item.variable != "ALLSKY_SFC_SW_DWN":
+                    continue
+                # Nivel del recurso solar en los mismos años: la energía y el VAN se mueven en la misma proporción.
+                gap = (theirs - mine) / mine * 100 if mine else 0.0
+                levels = f"Media {years}: CERES (NASA POWER) {mine:.2f} {unit}; {other} {theirs:.2f} {unit} ({gap:+.1f} %)."
+                if abs(gap) >= SOLAR_APART_PERCENT:
+                    out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{label}: el recurso solar difiere {abs(gap):.0f} % entre CERES y {other}",
+                                         detail=f"{levels} La energía estimada y el VAN cambian en la misma proporción: medir el recurso en sitio antes de comprometer.",
+                                         subjects=[label], sources=["NASA POWER (CERES)", other]))
+                elif abs(gap) < SOLAR_CLOSE_PERCENT:
+                    out.append(Discovery(kind=DiscoveryKind.AGREEMENT, title=f"{label}: CERES y {other} coinciden en el recurso solar",
+                                         detail=f"{levels} Dos fuentes independientes dan el mismo recurso dentro de ±{SOLAR_CLOSE_PERCENT:.0f} %.",
+                                         subjects=[label], sources=["NASA POWER (CERES)", other]))
     return out
 
 

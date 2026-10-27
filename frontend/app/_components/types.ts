@@ -38,6 +38,7 @@ export type VariableSummary = {
   trend: Trend; adjusted_p_value: number | null; significant_after_bh: boolean;
   annual_series: { year: number; value: number }[]; source: SourceMetadata;
   last_valid_date?: string | null; current_period?: CurrentPeriod | null;
+  counterchecks?: ExtremeCountercheck[];
 };
 export type CurrentPeriod = {
   year: number; through: string; days: number; value: number; baseline_mean: number; baseline_years: string;
@@ -76,6 +77,7 @@ export type Agreement = "coincide" | "contradice" | "sin_respaldo" | "solo_contr
 export type ExtremeCountercheck = {
   source: string; valid_years: number; direction: string; slope_per_year: number | null; adjusted_p_value: number | null;
   significant_after_bh: boolean; agreement: Agreement; annual_series: { year: number; value: number }[];
+  period?: string | null; primary_slope_per_year?: number | null;
 };
 // Territorios oficiales (IGN · COD-AB vía API de Codex) y su análisis por celdas NASA POWER.
 export type TerritoryLevel = "department" | "province" | "district";

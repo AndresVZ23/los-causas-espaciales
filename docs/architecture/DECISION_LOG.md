@@ -382,3 +382,49 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
 - 189/189 pruebas; 7 nuevas en `test_landslides.py` (clases y 0 sin clase, nodata de LHASA, traducción de COOLR, servicio caído, coincidencia, discrepancia con la regla de dos tercios, confirmación por reportes). `conftest.py` aísla los deslizamientos de la red.
 - API real en Docker: Amenazas para Lurigancho e Ilo en 47 s, con 6 de 6 consultas a NASA respondidas; el PDF lleva descubrimientos, nota de método y la cita de NASA en el pie.
 - QA `baseline_ui` en 1440, 768 y 390: 0 errores y 0 desbordamientos; las tres capas de NASA y sus descubrimientos aparecen en pantalla. Build de Next.js correcto; audit con 0 vulnerabilidades.
+
+## ADR-038 — Temperatura y radiación cruzadas con ERA5 (PVGIS)
+
+**Motivo.** Clima y Energía leían la temperatura (MERRA-2) y la radiación (CERES) de una sola fuente, y la radiación mueve directamente la energía estimada y el VAN. ClimateSERV solo ofrece pronósticos CFSv2 de temperatura, no observaciones.
+
+**Fuente (`connectors/jrc/pvgis.py`).** PVGIS 5.3 del JRC (`MRcalc`, público, sin clave):
+- Sobre el Perú solo existe la base PVGIS-ERA5: SARAH-3 responde «fuera de cobertura» y NSRDB no se ofrece en la API 5.3 (verificado el 27-oct-2026).
+- Devuelve por mes la irradiación global horizontal (kWh/m²/mes) y la temperatura media a 2 m, de 2005 a 2023.
+- Se convierte a las unidades de NASA POWER: temperatura media ponderada por días y kWh/m²/día. Un año sin sus 12 meses se omite.
+- Dos intentos ante 429/5xx; un 4xx no se reintenta. Es un archivo cerrado: la caché no vence.
+
+**Contrato (aditivo).**
+- `Agreement` y `ExtremeCountercheck` pasan a `schemas/pipeline.py`; `schemas/climate.py` los reexporta, así que las importaciones existentes siguen funcionando.
+- `VariableSummary.counterchecks`.
+- `ExtremeCountercheck.period` y `primary_slope_per_year`, opcionales.
+
+**Comparación (`orchestration/era5_crosscheck.py`).**
+- Las tendencias se comparan solo en los años comunes (2005–2023): la pendiente de NASA POWER se recalcula en esos años y Benjamini–Hochberg ajusta cada fuente entre sitios.
+- Si una tendencia significativa del período completo deja de serlo en los años comunes, se declara.
+- ERA5 se pide en el punto representativo; un territorio que en NASA POWER es promedio de celdas se compara con ese punto.
+
+**Descubrimientos (`variable_discoveries`).**
+- **Tendencia:** confirmada; de signo opuesto; «apunta igual pero sin significancia» (misma dirección, p BH ≥ 0.05); solo en ERA5; o no se sostiene en los años comunes.
+- **Nivel del recurso solar:** coinciden con menos de 5 % de diferencia; desde 10 % la diferencia mueve el VAN y se marca como contradicción.
+- **Nivel de temperatura:** desde 2 °C se marca. La celda de MERRA-2 (0.5° × 0.625°) mezcla altitudes andinas muy distintas.
+
+**Resultado real del 27-oct-2026:**
+- **Moquegua:**
+  - la subida de temperatura se confirma (MERRA-2 +0.039, ERA5 +0.042 °C/año en 2005–2023);
+  - el nivel difiere 10.6 °C (MERRA-2 7.4 °C, ERA5 18.0 °C);
+  - el recurso solar coincide (+1.6 %).
+- **Arequipa:**
+  - ERA5 apunta igual (+0.039 °C/año) sin significancia (p BH 0.059);
+  - el nivel difiere 3.4 °C;
+  - el recurso solar coincide (−4.0 %).
+- **Lectura:** las tendencias de temperatura de NASA POWER son sólidas, pero su nivel absoluto en los valles andinos no representa el sitio. El criterio de temperatura del puntaje solar hereda ese sesgo y queda visible como descubrimiento.
+
+**Ajustes en el camino:**
+- **Energía:** ahora publica descubrimientos y su PDF usa el esquema solar, con la cita de PVGIS en el pie.
+- **CHIRPS:** si solo falla el año en curso (que nunca entra en los índices), la serie sigue con los años cerrados y lo anota. ClimateSERV devolvió 503 para 2026 durante la verificación.
+
+**Verificación:**
+- 196/196 pruebas: 5 nuevas en `test_era5.py`, 1 de integración en Clima y 1 de CHIRPS con el año en curso caído.
+- API real: Clima y Energía con descubrimientos ERA5; el PDF solar lleva descubrimientos y la cita.
+- QA `climate_ui` y `release_ui` (siete módulos) en 1440, 768 y 390: 0 errores, 0 recortes, 0 desbordamientos y teclado sin problemas. El gráfico anual dibuja ERA5 con raya y punto.
+- Build de Next.js correcto.

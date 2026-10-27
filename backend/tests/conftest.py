@@ -1,10 +1,12 @@
-"""Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV) ni por los deslizamientos de NASA."""
+"""Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV), por los deslizamientos de NASA
+ni por ERA5 (PVGIS)."""
 
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from backend.app.orchestration import rainfall_crosscheck
+from backend.app.connectors.jrc.pvgis import Era5Annual
+from backend.app.orchestration import era5_crosscheck, rainfall_crosscheck
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.data_sources import TerritorialSourceResult
 from backend.app.sectors import baseline
@@ -24,6 +26,20 @@ class FlatChirps:
                                 temporal_resolution="Diaria", spatial_resolution="0.05°", downloaded_at=datetime(2026, 10, 26, tzinfo=timezone.utc),
                                 source_url="https://example.org", provenance=Provenance.CACHED)
         return observations, source
+
+
+class FlatEra5:
+    """ERA5 sintético: 2005–2023 sin tendencia (18 °C y 6.0 kWh/m²/día), sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def era5_annual(self, latitude, longitude):
+        years = range(2005, 2024)
+        wobble = lambda year: ((year * 7) % 5 - 2) * 0.01   # noqa: E731 — variación sin tendencia para que Mann–Kendall no empate
+        return Era5Annual(temperature=[Observation(timestamp=datetime(year, 7, 1).date(), value=18.0 + wobble(year)) for year in years],
+                          irradiance=[Observation(timestamp=datetime(year, 7, 1).date(), value=6.0 + wobble(year)) for year in years],
+                          provenance=Provenance.CACHED, downloaded_at=datetime(2026, 10, 27, tzinfo=timezone.utc))
 
 
 class EmptyLandslides:
@@ -53,6 +69,7 @@ class EmptyLandslides:
 def offline_chirps(monkeypatch):
     monkeypatch.setattr(rainfall_crosscheck, "ChirpsConnector", FlatChirps)
     monkeypatch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
+    monkeypatch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
     rainfall_crosscheck._inflight.clear()
     yield
     rainfall_crosscheck._inflight.clear()

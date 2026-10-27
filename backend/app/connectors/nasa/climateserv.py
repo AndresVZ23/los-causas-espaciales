@@ -110,11 +110,21 @@ class ChirpsConnector:
     async def daily(self, geometry: dict[str, Any] | None, longitude: float, latitude: float, start: date, end: date) -> tuple[list[Observation], SourceMetadata]:
         """Lluvia diaria (mm/día) promediada sobre el área o la celda del punto; los días sin dato se omiten, no se rellenan."""
         polygon = request_geometry(geometry, longitude, latitude)
-        try:
-            async with httpx.AsyncClient(timeout=TIMEOUT, transport=self.transport) as client:
-                years = await asyncio.gather(*(self._year(client, polygon, year, end) for year in range(start.year, end.year + 1)))
-        except (httpx.HTTPError, ValueError, KeyError) as exc:
-            raise ClimateServError(f"CHIRPS (NASA SERVIR ClimateSERV) no respondió: {exc}") from exc
+        span = range(start.year, end.year + 1)
+        async with httpx.AsyncClient(timeout=TIMEOUT, transport=self.transport) as client:
+            outcomes = await asyncio.gather(*(self._year(client, polygon, year, end) for year in span), return_exceptions=True)
+        failed = {year: outcome for year, outcome in zip(span, outcomes, strict=True) if isinstance(outcome, BaseException)}
+        for outcome in failed.values():
+            if not isinstance(outcome, (httpx.HTTPError, ValueError, KeyError, ClimateServError)):
+                raise outcome
+        # El año en curso nunca entra en los índices (está incompleto): si solo él falla, la serie sigue con los años cerrados.
+        open_year = date.today().year
+        if any(year != open_year for year in failed):
+            first = min(failed)
+            raise ClimateServError(f"CHIRPS (NASA SERVIR ClimateSERV) no respondió: {failed[first]}") from failed[first]
+        years = [outcome for outcome in outcomes if not isinstance(outcome, BaseException)]
+        if not years:
+            raise ClimateServError(f"CHIRPS (NASA SERVIR ClimateSERV) no respondió: {next(iter(failed.values()))}")
         observations = []
         for rows, _, _ in years:
             for row in rows:
@@ -134,6 +144,7 @@ class ChirpsConnector:
             downloaded_at=max(stamp for _, _, stamp in years).astimezone(timezone.utc), source_url=f"{API}/submitDataRequest/",
             provenance=Provenance.CACHED if all(p == Provenance.CACHED for p in provenances) else Provenance.REAL,
             quality_notes=["Satélite infrarrojo + climatología + estaciones; suaviza extremos y pierde la garúa costera.",
-                           f"Último día publicado: {observations[-1].timestamp.isoformat()} (latencia de unas semanas)."],
+                           f"Último día publicado: {observations[-1].timestamp.isoformat()} (latencia de unas semanas).",
+                           *([f"El año {open_year} no respondió ({failed[open_year]}); los índices usan solo años completos y no cambian."] if failed else [])],
         )
         return observations, source

@@ -66,6 +66,28 @@ def test_climateserv_does_not_retry_a_client_error(monkeypatch, tmp_path):
     assert calls["submit"] == 1
 
 
+def test_climateserv_down_only_for_the_open_year_keeps_the_closed_years(monkeypatch, tmp_path):
+    monkeypatch.setattr(climateserv, "POLL_SECONDS", 0)
+    monkeypatch.setattr(climateserv, "RETRY_SECONDS", 0)
+    this_year = date.today().year
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/submitDataRequest/"):
+            open_year = f"/{this_year}" in request.content.decode().replace("%2F", "/")
+            return httpx.Response(503, json={"error": "busy"}) if open_year else httpx.Response(200, json=["job-1"])
+        if request.url.path.endswith("/getDataRequestProgress/"):
+            return httpx.Response(200, json=[100])
+        return httpx.Response(200, json={"data": [{"year": this_year - 1, "month": 3, "day": 1, "value": {"avg": 7.0}}]})
+    connector = climateserv.ChirpsConnector(settings=Settings(_env_file=None, cache_dir=tmp_path), transport=httpx.MockTransport(handler))
+    observations, source = asyncio.run(connector.daily(None, ICA.longitude, ICA.latitude, date(this_year - 1, 1, 1), date.today()))
+    assert [(item.timestamp, item.value) for item in observations] == [(date(this_year - 1, 3, 1), 7.0)]
+    assert any(note.startswith(f"El año {this_year} no respondió") for note in source.quality_notes)
+    with pytest.raises(climateserv.ClimateServError):           # si falla un año cerrado, la serie sí se declara caída
+        asyncio.run(climateserv.ChirpsConnector(settings=Settings(_env_file=None, cache_dir=tmp_path / "otra"),
+                                                transport=httpx.MockTransport(lambda r: httpx.Response(503))).daily(
+            None, ICA.longitude, ICA.latitude, date(this_year - 1, 1, 1), date.today()))
+
+
 def test_subject_without_wet_days_does_not_drop_the_others(monkeypatch):
     monkeypatch.setattr(rc, "ChirpsConnector", DesertForOne)
     result = asyncio.run(rc.chirps_extremes([("Lima", None, LIMA), ("Ica", None, ICA)], START, END))

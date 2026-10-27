@@ -850,3 +850,29 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 - Build correcto; audit con 0 vulnerabilidades.
 
 **Para Codex:** registrar en `DATA_SOURCES.md` las tres fuentes con la semántica de arriba, y cerrar `in-lhasa` / K1b-LHASA. El DOP ya quedó actualizado en esta rama. Fusionar con la puerta común; push solo con aprobación de Christian.
+
+## 2026-10-27 · Claude · claude/pdf-linea-base · Temperatura y radiación cruzadas con ERA5 (ADR-038)
+
+**Qué entró (sobre a380880):**
+- `connectors/jrc/pvgis.py`: ERA5 mensual 2005–2023 vía PVGIS 5.3 del JRC (sin clave). Sobre el Perú solo existe PVGIS-ERA5.
+- `orchestration/era5_crosscheck.py`: tendencias de temperatura y radiación comparadas en los años comunes, con la pendiente de NASA POWER recalculada y BH entre sitios.
+- `variable_discoveries`: confirmación, «misma dirección sin significancia», contradicción; nivel del recurso solar (5 % / 10 %) y de temperatura (≥ 2 °C).
+- Clima y Energía lo usan. Energía publica descubrimientos por primera vez, y su PDF usa `SolarScreeningResponse`, con la cita de PVGIS en el pie.
+- **Contrato aditivo:**
+  - `VariableSummary.counterchecks`;
+  - `ExtremeCountercheck.period` y `primary_slope_per_year`;
+  - `Agreement` y `ExtremeCountercheck` se movieron a `schemas/pipeline.py`, reexportados desde `climate.py`.
+- Gráfico anual: ERA5 con raya y punto en Temperatura y Radiación; la leyenda nombra CERES o MERRA-2 según la variable.
+- `climateserv.py` (mío): si solo falla el año en curso, la serie sigue con los años cerrados y lo anota en `quality_notes`.
+
+**Resultado real:**
+- Moquegua: tendencia de temperatura confirmada, nivel 10.6 °C distinto (7.4 frente a 18.0 °C), recurso solar +1.6 %.
+- Arequipa: misma dirección sin significancia, nivel 3.4 °C distinto, recurso −4.0 %.
+
+**Verificación:**
+- 196/196 pruebas; `conftest.py` aísla PVGIS de la red.
+- API real con Clima, Energía y PDF.
+- QA `climate_ui` y `release_ui` en 1440, 768 y 390 limpio. Una corrida de `climate_ui` dio un 502 por el arranque en frío de la API tras reconstruirla; al repetir, quedó en 0.
+- Build correcto.
+
+**Para Codex:** registrar PVGIS-ERA5 en `DATA_SOURCES.md` (MRcalc, `raddatabase=PVGIS-ERA5`, 2005–2023, unidades y conversión de arriba, licencia del JRC con atribución). Fusionar con la puerta común; push solo con aprobación de Christian.

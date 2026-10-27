@@ -1,14 +1,14 @@
 """Contratos del módulo de inteligencia climática (sector `climate` del sobre C2)."""
 
 from datetime import date
-from enum import StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field, model_validator
 
 from .analysis import Point, TrendResult
 from .territory import TerritoryLevel
-from .pipeline import VariableSummary
+# Acuerdo y contraste viven en pipeline.py (también los usan las variables anuales); se reexportan aquí.
+from .pipeline import Agreement, ExtremeCountercheck, VariableSummary  # noqa: F401
 from .screening import AnnualObservation, ScreeningEnvelope, Sector
 
 
@@ -20,27 +20,6 @@ class AtypicalYear(BaseModel):
     robust_z: float
     countercheck_value: float | None = Field(default=None, description="Mismo índice y año según la fuente de contraste (GPM IMERG).")
     countercheck_values: dict[str, float] = Field(default_factory=dict, description="Mismo índice y año en cada fuente de contraste (IMERG, CHIRPS…).")
-
-
-class Agreement(StrEnum):
-    COINCIDE = "coincide"           # ambas fuentes significativas, misma dirección
-    CONTRADICE = "contradice"       # ambas significativas, direcciones opuestas
-    SIN_RESPALDO = "sin_respaldo"   # solo la fuente principal es significativa
-    SOLO_CONTRASTE = "solo_contraste"
-    SIN_TENDENCIA = "sin_tendencia"
-
-
-class ExtremeCountercheck(BaseModel):
-    """El mismo índice ETCCDI calculado con una segunda fuente independiente y su acuerdo con la principal."""
-
-    source: str
-    valid_years: int
-    direction: str
-    slope_per_year: float | None
-    adjusted_p_value: float | None
-    significant_after_bh: bool
-    agreement: Agreement
-    annual_series: list[AnnualObservation]
 
 
 class ExtremeIndexSummary(BaseModel):

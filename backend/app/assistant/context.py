@@ -57,6 +57,7 @@ def build_context(envelope: dict[str, Any]) -> dict[str, Any]:
         entry["variables"] = [{
             **_pick(v, "label", "mean", "display_unit", "annual_variability_percent", "last_valid_date"),
             "año_en_curso": _pick(v.get("current_period") or {}, "year", "through", "anomaly", "anomaly_percent", "rank", "years_compared"),
+            "contrastes": [_pick(c, "source", "agreement", "period", "slope_per_year", "primary_slope_per_year", "adjusted_p_value") for c in v.get("counterchecks", [])],
         } for v in site.get("variables", [])]
         if site.get("extremes"):
             entry["extremos_etccdi"] = [{
@@ -101,7 +102,7 @@ RULES: list[tuple[tuple[str, ...], str]] = [
     (("tramo", "corredor", "carretera", "via ", "vial", "interrup"), "tramos"),
     (("terreno", "lote", "inmobiliar", "parcela", "area de analisis"), "terrenos"),
     (("imerg", "chirps", "atipic", "artefacto", "contraste", "satelit", "descubr", "cruzar fuentes", "coinciden",
-      "deslizamiento", "lhasa", "coolr", "susceptib", "movimientos en masa", "discrepan"), "contraste"),
+      "deslizamiento", "lhasa", "coolr", "susceptib", "movimientos en masa", "discrepan", "era5", "pvgis", "ceres", "reanalisis"), "contraste"),
     (("extrem", "lluvia max", "lluvias max", "huaico", "rx1day", "rx5day", "racha seca", "sequia"), "extremos"),
     (("brecha", "falta", "pendiente", "no se sabe", "limitacion"), "brechas"),
     (("donde",), "where"),
