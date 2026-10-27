@@ -902,3 +902,17 @@ Esto reemplaza la entrada anterior («Entrega adelantada al 29-oct»): **no hay 
 **QA visual independiente:** servicios temporales en 13103/18103. En Amenazas, Arequipa + Lurigancho terminó con 6/6 consultas NASA, evidenció susceptibilidad, LHASA y COOLR, y produjo coincidencias CENEPRED/NASA y una confirmación histórica COOLR. En 1440×900 y 390×844 hubo desbordamiento horizontal 0, resultados accesibles y cero mensajes de consola. Evidencia local: `qa-evidence/landslides-desktop.png` y `qa-evidence/landslides-mobile.png` fuera del repositorio.
 
 **Operación y publicación:** los servicios temporales se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
+
+## 2026-10-27 · Codex · `master` · `975e6df` · integración y QA de PVGIS-ERA5 (ADR-038)
+
+**Fusión aprobada:** `claude/pdf-linea-base` (`975e6df`, cambio funcional `4b0848b`) avanzó `master` desde `26505c2` sin conflictos. El contrato C2 cambia solo de forma aditiva: `VariableSummary.counterchecks`, `ExtremeCountercheck.period` y `primary_slope_per_year`; `Agreement` y `ExtremeCountercheck` conservan compatibilidad mediante reexportación desde `schemas/climate.py`.
+
+**Fuente y semántica:** `DATA_SOURCES.md` registra JRC PVGIS 5.3 `MRcalc`, `raddatabase=PVGIS-ERA5`, 2005–2023, resolución aproximada de 31 km, condiciones de uso y atribución. `H(h)_m` se conserva como kWh/m²/mes y se convierte a kWh/m²/día dividiendo la suma anual entre los días del año; `T2m` se pondera por días del mes. Solo entran años con los doce meses. ERA5 es un contraste de reanálisis, no medición in situ ni promedio territorial.
+
+**Contraprueba independiente:** una consulta oficial para Moquegua devolvió 19 años completos, temperatura media 18.026 °C e irradiación horizontal media 6.719 kWh/m²/día, con `REAL_DATA` y timestamp UTC. Una implementación independiente por mediana de todas las pendientes por pares reprodujo +0.042114 °C/año, coherente con ADR-038. La documentación oficial confirmó PVGIS 5.3, `MRcalc`, salida JSON, los parámetros de temperatura/radiación, el límite de 30 llamadas/s y uso libre con atribución.
+
+**Puerta común:** 196/196 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit --omit=dev` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. Las únicas advertencias de pytest son deprecaciones de terceros en ReportLab y Starlette.
+
+**QA visual independiente:** servicios temporales en `localhost:13104` y `127.0.0.1:18104`. Energía y Clima completaron para Moquegua/Arequipa. Los gráficos mostraron ERA5 junto a CERES/MERRA-2; Energía publicó la coincidencia solar (+1.6 % / −4.0 %), la confirmación térmica de Moquegua, el respaldo débil de Arequipa y las diferencias de nivel de 10.6/3.4 °C. En 1440×900 y 390×844 hubo desbordamiento horizontal 0 y cero errores o advertencias de consola. Evidencia fuera del repositorio: `qa-evidence/pvgis-era5-desktop.jpg`, `pvgis-era5-mobile.jpg` y `pvgis-era5-climate-desktop.jpg`.
+
+**Operación y publicación:** los listeners temporales 13104/18104 quedaron en cero. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
