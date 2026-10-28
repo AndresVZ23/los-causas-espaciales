@@ -475,3 +475,38 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
 - API real en Energía y Amenazas.
 - QA `release_ui` en 1440, 768 y 390 limpio, y captura del panel de relieve en 1440 y 390.
 - Build correcto.
+
+## ADR-040 — Cobertura del suelo cruzada con ESA WorldCover
+
+**Motivo.** La vegetación se cruzaba entre dos productos del mismo sensor (MOD44B y MCD12Q1). ESA WorldCover (Sentinel-1 y Sentinel-2, 10 m) es independiente de MODIS. Con esto, todos los datos satelitales que usa la plataforma tienen contraste.
+
+**Lector común de COG (`connectors/cog.py`).** El encabezado TIFF, todos los niveles (resolución completa y overviews), los bloques DEFLATE con predictor 1, 2 o 3 y la caché sin vencimiento quedan en un solo módulo, sin GDAL. Copernicus DEM pasa a usarlo; su lectura real sigue en 1,413.3 m y 6.04° en Moquegua.
+
+**Fuente (`connectors/esa/worldcover.py`).**
+- **Formato:** teselas de 3° nombradas por su esquina suroeste. COG uint8 con DEFLATE sin predictor, bloques de 1024 y seis overviews (verificado el 28-oct-2026).
+- **Lectura:** se usa el nivel más detallado que quepa en 16 bloques por tesela y se cuentan las clases en los centros de píxel dentro del área, con `shapely.contains_xy` y un muestreo regular de hasta 250,000 puntos. La clase 0 (sin dato) no se cuenta.
+- **Tesela vecina:** un área cuyo borde norte o este cae justo en el límite de una tesela no pide la tesela vecina. La prueba con un COG sintético encontró ese conteo doble.
+- **Años:** solo existen 2020 y 2021, así que se compara el nivel, no la tendencia.
+
+**Comparación (`orchestration/cover_crosscheck.py`).**
+- En la misma ventana del análisis MODIS (±km alrededor del punto) y en 2021.
+- Grupos: árboles (10, 95) frente a `VCF_TREE`; vegetación no arbórea (20, 30, 40, 90, 100) frente a `VCF_NONTREE`; sin vegetación (50, 60, 70) frente a `VCF_BARE`. El agua (80) queda fuera en ambos.
+- Coinciden si cada grupo difiere menos de 10 puntos; difieren desde 20. En la franja intermedia no hay descubrimiento, pero la tabla muestra los valores.
+- La diferencia es esperable en vegetación rala, porque WorldCover da la clase dominante a 10 m y MOD44B la fracción a 250 m. Se declara.
+
+**Contrato (aditivo).** `SubjectBaseline.land_cover_check` con clases, grupos, píxeles, resolución y procedencia. Si falla, queda una nota en `vegetation_notes`, nunca ceros.
+
+**Pantalla y PDF.**
+- Tabla «Contraste de cobertura 2021» en cada área de Ambiente.
+- Las tablas de tres columnas (también la de IGBP) dejan de exigir 780 px y caben en 390.
+- El PDF lleva la tabla y la cita (Zanaga et al. 2022, CC BY 4.0).
+
+**Resultado real del 28-oct-2026:**
+- **Ilo (ventana de ±10 km):** coinciden. Vegetación no arbórea 21.8 frente a 18.7 % y sin vegetación 77.6 frente a 81.3 %.
+- **Moquegua (círculo de 1 km sobre la ciudad):** 13–15 puntos de diferencia, en la franja intermedia. A 10 m domina la ciudad; MOD44B atribuye a 250 m la fracción de jardines y árboles urbanos.
+
+**Verificación:**
+- 208/208 pruebas; 5 nuevas en `test_worldcover.py`: COG uint8 sintético con overview, nodata, caída al overview, tesela inexistente, grupos sin agua y descubrimientos. Más la integración ambiental.
+- API real con PDF.
+- QA `baseline_ui` y `release_ui` en 1440, 768 y 390 limpio, y capturas de la tabla.
+- Build correcto; audit con 0 vulnerabilidades.

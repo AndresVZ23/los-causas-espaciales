@@ -10,6 +10,7 @@ import httpx
 import numpy as np
 import pytest
 
+from backend.app.connectors.cog import CogLevel, decode_tile
 from backend.app.connectors.copernicus import dem
 from backend.app.core.config import Settings
 from backend.app.orchestration.discoveries import terrain_discoveries
@@ -32,7 +33,7 @@ def _encode(values: np.ndarray) -> bytes:
 
 def _cog(values: np.ndarray) -> bytes:
     block = _encode(values)
-    entries = [(256, 3, 1, SIZE), (257, 3, 1, SIZE), (259, 3, 1, 8), (317, 3, 1, 3), (322, 3, 1, SIZE), (323, 3, 1, SIZE),
+    entries = [(256, 3, 1, SIZE), (257, 3, 1, SIZE), (258, 3, 1, 32), (259, 3, 1, 8), (317, 3, 1, 3), (322, 3, 1, SIZE), (323, 3, 1, SIZE),
                (324, 4, 1, None), (325, 4, 1, len(block)), (339, 3, 1, 3), (33550, 12, 3, None), (33922, 12, 6, None)]
     ifd_size = 2 + 12 * len(entries) + 4
     scale_at = 8 + ifd_size
@@ -61,7 +62,8 @@ def _surface() -> np.ndarray:
 
 def test_decoder_inverts_the_floating_point_predictor():
     values = np.random.default_rng(7).uniform(-50, 6000, size=(SIZE, SIZE)).astype(np.float32)
-    assert np.array_equal(dem.decode_block(_encode(values), SIZE, SIZE), values.astype(np.float64))
+    level = CogLevel(width=SIZE, height=SIZE, tile_width=SIZE, tile_height=SIZE, bits=32, compression=8, predictor=3, sample_format=3, offsets=(0,), counts=(0,))
+    assert np.array_equal(decode_tile(_encode(values), level), values.astype(np.float64))
 
 
 def test_point_reads_elevation_and_horn_slope_from_one_block(tmp_path):

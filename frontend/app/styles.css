@@ -435,6 +435,8 @@ td.agreement.sin_tendencia { color: var(--muted); }
 /* Las etiquetas .srOnly son absolutas: sin un ancestro posicionado se ubican respecto de la página y, dentro de una
    tabla con scroll, la desbordan en móvil (116 px con un solo terreno). */
 .tableScroll { position: relative; }
+/* Tablas de tres columnas (cobertura y su contraste): caben en móvil sin el ancho mínimo general. */
+table.compactTable { min-width: 0; }
 /* Línea base (módulos 4 y 5): capas por medio con los registros citados por cada fuente. */
 .baselineLayers th:first-child { width: 32%; }.baselineLayers td:last-child, .baselineLayers thead th:last-child { text-align: left; vertical-align: top; }.baselineLayers td { vertical-align: top; }
 .layerHighlights { margin: 0; padding: 0; list-style: none; display: grid; gap: 5px; }

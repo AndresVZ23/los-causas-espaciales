@@ -99,16 +99,26 @@ def _extremes(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable: 
 
 
 def _land_cover(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable: float) -> list:
+    out = []
     cover = item.land_cover
-    if cover is None:
-        return []
-    rows = [[Paragraph(h, styles["cellHead"]) for h in ("Cobertura IGBP (MCD12Q1)", str(cover.first_year), str(cover.last_year))]]
-    rows += [[Paragraph(_text(entry.label), styles["cell"]), Paragraph(f"{entry.first_percent:.1f} %", styles["mono"]), Paragraph(f"{entry.last_percent:.1f} %", styles["mono"])]
-             for entry in cover.classes[:6]]
-    return [
-        _table(rows, [usable - 50 * mm, 25 * mm, 25 * mm]),
-        Paragraph(_text(f"Cambió de clase el {cover.changed_percent:.1f} % de {cover.pixels} píxeles de 500 m. {cover.limitations[0]}"), styles["cellMuted"]),
-    ]
+    if cover is not None:
+        rows = [[Paragraph(h, styles["cellHead"]) for h in ("Cobertura IGBP (MCD12Q1)", str(cover.first_year), str(cover.last_year))]]
+        rows += [[Paragraph(_text(entry.label), styles["cell"]), Paragraph(f"{entry.first_percent:.1f} %", styles["mono"]), Paragraph(f"{entry.last_percent:.1f} %", styles["mono"])]
+                 for entry in cover.classes[:6]]
+        out += [
+            _table(rows, [usable - 50 * mm, 25 * mm, 25 * mm]),
+            Paragraph(_text(f"Cambió de clase el {cover.changed_percent:.1f} % de {cover.pixels} píxeles de 500 m. {cover.limitations[0]}"), styles["cellMuted"]),
+        ]
+    check = item.land_cover_check
+    if check is not None:
+        rows = [[Paragraph(h, styles["cellHead"]) for h in (f"Contraste de cobertura {check.year}", "MOD44B", "ESA WorldCover")]]
+        rows += [[Paragraph(_text(group.label), styles["cell"]), Paragraph("N/D" if group.modis_percent is None else f"{group.modis_percent:.1f} %", styles["mono"]),
+                  Paragraph(f"{group.worldcover_percent:.1f} %", styles["mono"])] for group in check.groups]
+        out += [
+            _table(rows, [usable - 56 * mm, 25 * mm, 31 * mm]),
+            Paragraph(_text(f"WorldCover (Sentinel-1/2, 10 m): {check.pixels:,} píxeles en la ventana MODIS, sin el agua. {check.limitations[0]}"), styles["cellMuted"]),
+        ]
+    return out
 
 
 def _layer_cell(layer: BaselineLayer, styles: dict[str, ParagraphStyle]) -> Paragraph:
@@ -184,6 +194,9 @@ def baseline_sources(result: BaselineScreeningResponse) -> list[str]:
     sources = []
     if any(item.vegetation or item.land_cover for item in result.baselines):
         sources.append("NASA ORNL DAAC · MODIS Web Service (https://modis.ornl.gov/rst/api/v1/): MOD44B, MOD17A3HGF y MCD12Q1, productos anuales.")
+    if any(item.land_cover_check for item in result.baselines):
+        sources.append("ESA WorldCover 10 m 2021 v200 (Zanaga et al. 2022, doi:10.5281/zenodo.7254221) vía AWS Open Data "
+                       "(https://registry.opendata.aws/esa-worldcover/), CC BY 4.0, como contraste de la cobertura MODIS.")
     if any(item.climate or item.extremes for item in result.baselines):
         sources.append("NASA POWER, API Daily Point (https://power.larc.nasa.gov/docs/services/api/): PRECTOTCORR (MERRA-2) e IMERG_PRECTOT (GPM IMERG), "
                        "estimaciones en grilla que no sustituyen pluviómetros.")

@@ -124,7 +124,7 @@ function AreaArticle({ item, components }: { item: SubjectBaseline; components: 
       )}
       {item.land_cover && (
         <div className="tableScroll">
-          <table>
+          <table className="compactTable">
             <caption className="srOnly">Cobertura del suelo MODIS de {item.subject}</caption>
             <thead><tr><th>Cobertura IGBP (MCD12Q1)</th><th>{item.land_cover.first_year}</th><th>{item.land_cover.last_year}</th></tr></thead>
             <tbody>{item.land_cover.classes.slice(0, 6).map((entry) => (
@@ -132,6 +132,24 @@ function AreaArticle({ item, components }: { item: SubjectBaseline; components: 
             ))}</tbody>
           </table>
           <p className="verdictNote">Cambió de clase el {formatNumber(item.land_cover.changed_percent, 1)} % de {item.land_cover.pixels} píxeles de 500 m. {item.land_cover.limitations[0]}</p>
+        </div>
+      )}
+      {item.land_cover_check && (
+        <div className="tableScroll">
+          <table className="compactTable">
+            <caption className="srOnly">Contraste de cobertura MODIS y ESA WorldCover de {item.subject}</caption>
+            <thead><tr><th>Contraste de cobertura {item.land_cover_check.year}</th><th>MOD44B</th><th>ESA WorldCover</th></tr></thead>
+            <tbody>{item.land_cover_check.groups.map((group) => (
+              <tr key={group.variable}>
+                <th>{group.label}</th>
+                <td className="figure">{group.modis_percent == null ? "N/D" : `${formatNumber(group.modis_percent, 1)} %`}</td>
+                <td className="figure">{formatNumber(group.worldcover_percent, 1)} %</td>
+              </tr>
+            ))}</tbody>
+          </table>
+          <p className="verdictNote">
+            WorldCover (Sentinel-1/2, 10 m) · {formatNumber(item.land_cover_check.pixels, 0)} píxeles en la ventana MODIS, sin el agua · {item.land_cover_check.provenance}. {item.land_cover_check.limitations[0]}
+          </p>
         </div>
       )}
       {item.extremes && item.extremes.length > 0 && <>

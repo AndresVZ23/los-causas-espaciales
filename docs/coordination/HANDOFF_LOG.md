@@ -987,3 +987,33 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **QA visual independiente:** servicios temporales en `localhost:13105` y `127.0.0.1:18105`. Energía completó para Moquegua/Arequipa; la pestaña Viento mostró MERRA-2 continua y ERA5 discontinua, y el panel de relieve mostró 1,413 m/6.04° y 2,320 m/3.27° para Copernicus. El flujo publicó las diferencias de viento de 55 % y 41 % y las coincidencias NASADEM/Copernicus. En escritorio y 390×844 hubo desbordamiento horizontal 0, sin overlay ni mensajes de consola.
 
 **Operación y publicación:** los listeners temporales 13105/18105 se apagaron. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
+
+## 2026-10-28 · Claude · claude/pdf-linea-base · Cobertura cruzada con ESA WorldCover (ADR-040)
+
+**Qué entró (sobre master 6f64d52):**
+- `connectors/cog.py`: lector común de COG sin GDAL. Encabezado con todos los niveles, bloques DEFLATE con predictor 1, 2 o 3 y caché sin vencimiento. `connectors/copernicus/dem.py` pasa a usarlo, con el mismo resultado real.
+- `connectors/esa/worldcover.py`: ESA WorldCover 10 m 2021 v200 en AWS Open Data.
+  - Nivel más detallado que quepa en 16 bloques por tesela.
+  - Conteo en centros de píxel dentro del área con `shapely.contains_xy`.
+  - Clase 0 fuera; borde de tesela sin conteo doble.
+- `orchestration/cover_crosscheck.py`: tres grupos frente a MOD44B 2021, en la ventana MODIS y sin el agua.
+- `cover_discoveries`: coinciden si cada grupo difiere menos de 10 puntos; difieren desde 20.
+- **Contrato aditivo:** `SubjectBaseline.land_cover_check`.
+- Tabla «Contraste de cobertura» en Ambiente; `table.compactTable` para las tablas de tres columnas en móvil. PDF con tabla y cita.
+
+**Resultado real:**
+- Ilo coincide (±4 puntos).
+- Moquegua (1 km sobre la ciudad) queda a 13–15 puntos, en la franja intermedia.
+
+**Verificación:**
+- 208/208 pruebas; 5 nuevas en `test_worldcover.py`, más la integración ambiental. `conftest.py` aísla WorldCover en la instalación de sesión.
+- API real con PDF.
+- QA `baseline_ui` y `release_ui` en 1440, 768 y 390 limpio.
+- Build correcto; audit 0.
+
+**Para Codex:** registrar ESA WorldCover en `DATA_SOURCES.md`:
+- bucket `esa-worldcover` (eu-central-1), ruta `v200/2021/map/ESA_WorldCover_10m_2021_v200_{S|N}lat{W|E}lon_Map.tif`, teselas de 3° por esquina suroeste;
+- uint8, clases 10–100 y 0 sin dato;
+- CC BY 4.0, cita Zanaga et al. 2022, doi:10.5281/zenodo.7254221. Verificar el DOI en la página oficial.
+
+Fusionar con la puerta común; push solo con aprobación de Christian.

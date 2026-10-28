@@ -84,6 +84,36 @@ class LandCoverChange(BaseModel):
     limitations: list[str]
 
 
+class LandCoverShare(BaseModel):
+    code: int
+    label: str
+    percent: float
+
+
+class CoverGroupCheck(BaseModel):
+    """Un grupo de cobertura comparable entre MOD44B (fracción por píxel) y WorldCover (clase dominante por píxel)."""
+
+    variable: Literal["VCF_TREE", "VCF_NONTREE", "VCF_BARE"]
+    label: str
+    modis_percent: float | None = Field(description="MOD44B del mismo año, promedio del área; None si ese año no tiene dato.")
+    worldcover_percent: float
+
+
+class LandCoverCrosscheck(BaseModel):
+    """ESA WorldCover (10 m) sobre la misma ventana del análisis MODIS, como fuente independiente de cobertura."""
+
+    source: str
+    year: int
+    pixels: int
+    resolution_m: float
+    classes: list[LandCoverShare]
+    groups: list[CoverGroupCheck]
+    provenance: Provenance
+    downloaded_at: datetime
+    source_urls: list[str]
+    limitations: list[str]
+
+
 class SubjectBaseline(BaseModel):
     subject: str
     origin: str = Field(description="Cómo se definió el área: sitio con radio, territorio IGN o geometría del usuario.")
@@ -94,6 +124,7 @@ class SubjectBaseline(BaseModel):
     vegetation: list[VariableSummary] = Field(default_factory=list)
     vegetation_notes: list[str] = Field(default_factory=list)
     land_cover: LandCoverChange | None = None
+    land_cover_check: LandCoverCrosscheck | None = Field(default=None, description="Contraste ESA WorldCover; None si no se pudo leer, nunca ceros.")
     climate: list[VariableSummary] = Field(default_factory=list, description="Módulo 3: lluvia anual NASA POWER en el punto representativo.")
     extremes: list[ExtremeIndexSummary] = Field(default_factory=list, description="Módulo 3: índices ETCCDI con contrastes GPM IMERG y CHIRPS.")
     wet_day_p95_mm: float | None = None

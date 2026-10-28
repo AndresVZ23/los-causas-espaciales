@@ -1,13 +1,15 @@
-"""Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV), por los deslizamientos de NASA
-ni por ERA5 (PVGIS) ni por Copernicus DEM."""
+"""Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV), por los deslizamientos de NASA,
+por ERA5 (PVGIS), por Copernicus DEM ni por ESA WorldCover."""
 
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from backend.app.connectors.copernicus.dem import DemPoint
+from backend.app.connectors.esa.worldcover import Composition
 from backend.app.connectors.jrc.pvgis import Era5Annual
-from backend.app.orchestration import era5_crosscheck, extraction, rainfall_crosscheck
+from backend.app.orchestration import cover_crosscheck, era5_crosscheck, extraction, rainfall_crosscheck
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.data_sources import TerritorialSourceResult
 from backend.app.sectors import baseline
@@ -57,6 +59,17 @@ class FixedCopernicus:
                         downloaded_at=datetime(2026, 10, 27, tzinfo=timezone.utc), limitations=[])
 
 
+class DesertWorldCover:
+    """WorldCover sintético: 80 % suelo desnudo y 20 % pastizal en tierra, más algo de agua que no cuenta, sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def composition(self, geometry):
+        return Composition(counts=Counter({60: 800, 30: 200, 80: 50}), resolution_m=9.3, urls=["https://example.org/wc.tif"],
+                           provenance=Provenance.CACHED, downloaded_at=datetime(2026, 10, 28, tzinfo=timezone.utc))
+
+
 class EmptyLandslides:
     """Deslizamientos de NASA sin registros en el área: las tres consultas responden, ninguna inventa un valor."""
 
@@ -88,6 +101,7 @@ def offline_connectors():
     patch.setattr(baseline, "NasaLandslidesConnector", EmptyLandslides)
     patch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
     patch.setattr(extraction, "CopernicusDemConnector", FixedCopernicus)
+    patch.setattr(cover_crosscheck, "WorldCoverConnector", DesertWorldCover)
     yield
     patch.undo()
 

@@ -102,7 +102,7 @@ RULES: list[tuple[tuple[str, ...], str]] = [
     (("tramo", "corredor", "carretera", "via ", "vial", "interrup"), "tramos"),
     (("terreno", "lote", "inmobiliar", "parcela", "area de analisis"), "terrenos"),
     (("imerg", "chirps", "atipic", "artefacto", "contraste", "satelit", "descubr", "cruzar fuentes", "coinciden",
-      "deslizamiento", "lhasa", "coolr", "susceptib", "movimientos en masa", "discrepan", "era5", "pvgis", "ceres", "reanalisis"), "contraste"),
+      "deslizamiento", "lhasa", "coolr", "susceptib", "movimientos en masa", "discrepan", "era5", "pvgis", "ceres", "reanalisis", "worldcover", "copernicus", "cobertura"), "contraste"),
     (("extrem", "lluvia max", "lluvias max", "huaico", "rx1day", "rx5day", "racha seca", "sequia"), "extremos"),
     (("brecha", "falta", "pendiente", "no se sabe", "limitacion"), "brechas"),
     (("donde",), "where"),

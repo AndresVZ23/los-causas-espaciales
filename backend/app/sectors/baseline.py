@@ -25,7 +25,15 @@ from ..connectors.peru.identify_layers import CENEPRED_FEN, INGEMMET_BASE, Ident
 from ..connectors.peru.territory import LAYERS, TerritoryConnector, TerritoryConnectorError
 from ..geospatial.buffers import buffer_km, window_km
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
-from ..orchestration.discoveries import landslide_discoveries, layer_discoveries, rainfall_discoveries, record_in_pipeline, terrain_discoveries
+from ..orchestration.cover_crosscheck import COVER_NOTE, build_crosscheck, worldcover_composition
+from ..orchestration.discoveries import (
+    cover_discoveries,
+    landslide_discoveries,
+    layer_discoveries,
+    rainfall_discoveries,
+    record_in_pipeline,
+    terrain_discoveries,
+)
 from ..orchestration.extraction import elapsed_ms, extract_terrain, max_separation_km
 from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, chirps_gaps
 from ..orchestration.nasa_questions import INSUFFICIENT, SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, join_es
@@ -405,11 +413,12 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
     is_environment = sector == Sector.ENVIRONMENT
     is_hazards = sector == Sector.HAZARDS
     limits = _host_limits()   # compartidos entre áreas: el tope es por servidor, no por área
-    layer_results, vegetation, terrain_result, rainfall = await asyncio.gather(
+    layer_results, vegetation, terrain_result, rainfall, covers = await asyncio.gather(
         asyncio.gather(*(_layers(area, components, limits) for area in areas)),
         asyncio.gather(*(subject_vegetation(area.subject.representative_point, area.subject.geometry, area.window_km, area.area_km2) for area in areas)) if is_environment else nothing(),
         extract_terrain(points) if sector in TERRAIN_SECTORS else nothing(),
         rainfall_extremes([(a.subject.label, a.subject.geometry, a.subject.representative_point) for a in areas]) if is_hazards else nothing(),
+        asyncio.gather(*(worldcover_composition(a.subject.geometry, a.subject.representative_point, a.window_km) for a in areas)) if is_environment else nothing(),
     )
     extraction_ms = elapsed_ms(started)
     terrain, terrain_error, terrain_ms = terrain_result if terrain_result else (None, None, 0.0)
@@ -419,11 +428,14 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         layers, layer_error, _ = layer_results[index]
         veg = vegetation[index] if vegetation else None
         rain = rainfall.areas[index] if rainfall else None
+        cover = covers[index] if covers else None
+        cover_note = [cover] if isinstance(cover, str) else []
         baselines.append(SubjectBaseline(
             subject=area.subject.label, origin=area.origin, area_km2=area.area_km2, study_area=area.subject.geometry,
             modis_window_km=area.window_km if is_environment else None, modis_pixels=veg.pixels if veg else {},
-            vegetation=veg.summaries if veg else [], vegetation_notes=veg.notes if veg else [],
+            vegetation=veg.summaries if veg else [], vegetation_notes=[*(veg.notes if veg else []), *cover_note],
             land_cover=veg.land_cover if veg else None,
+            land_cover_check=build_crosscheck(cover, veg.summaries if veg else []) if cover is not None and not isinstance(cover, str) else None,
             climate=rain.climate if rain else [], extremes=rain.extremes if rain else [], wet_day_p95_mm=rain.wet_day_p95_mm if rain else None,
             layers=layers, errors=[e for e in [layer_error, *(veg.errors if veg else [])] if e],
         ))
@@ -442,7 +454,8 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
         gaps.insert(0, DataGap(dataset="GPM IMERG", impact=f"Sin contraste satelital de los extremos: {rainfall.countercheck_error}", next_action="Reintentar la consulta IMERG_PRECTOT en NASA POWER."))
     if rainfall and rainfall.chirps:
         gaps[:0] = chirps_gaps(rainfall.chirps)
-    discoveries = rainfall_discoveries([(b.subject, b.extremes) for b in baselines]) + layer_discoveries(baselines, terrain) + terrain_discoveries(terrain)
+    discoveries = rainfall_discoveries([(b.subject, b.extremes) for b in baselines]) + layer_discoveries(baselines, terrain) + terrain_discoveries(terrain) \
+        + cover_discoveries(baselines)
     if is_hazards:
         discoveries += [item for b, (_, _, raw) in zip(baselines, layer_results, strict=True) for item in landslide_discoveries(b.subject, raw)]
     for baseline in baselines:
@@ -516,6 +529,7 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
             "MODIS anual (servicio ORNL DAAC): promedio de los píxeles con centro dentro del área; un año entra si al menos la mitad de esos píxeles es válida.",
             "Tendencia de cada indicador con Mann–Kendall corregido por Hamed–Rao y pendiente de Sen; Benjamini–Hochberg por indicador entre áreas.",
             "Cobertura del suelo MCD12Q1 (IGBP): composición del primer y del último año publicados y porcentaje de píxeles que cambiaron de clase.",
+            *([COVER_NOTE] if any(b.land_cover_check for b in baselines) else []),
         ]
     if is_hazards:
         method_notes += [

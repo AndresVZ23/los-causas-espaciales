@@ -21,6 +21,9 @@ ARTIFACT_RATIO = 5.0         # el reanálisis supera al menos 5 veces a cada fue
 STEEP_SLOPE_DEGREES = 15.0
 # Relieve: NASADEM y Copernicus GLO-30 «coinciden» si la elevación difiere menos de 50 m y la pendiente menos de 5°.
 ELEVATION_APART_M = 50.0
+# Cobertura: MOD44B y WorldCover «coinciden» si cada grupo difiere menos de 10 puntos; desde 20, difieren.
+COVER_CLOSE_POINTS = 10.0
+COVER_APART_POINTS = 20.0
 SLOPE_APART_DEGREES = 5.0
 HIGH_LEVELS = ("riesgo alto", "riesgo muy alto")
 GROWING_COVER = {"Pastizal", "Matorral abierto", "Matorral cerrado", "Sabana", "Sabana arbolada", "Humedal permanente"}
@@ -185,6 +188,33 @@ def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]])
                     out.append(Discovery(kind=DiscoveryKind.AGREEMENT, title=f"{label}: CERES y {other} coinciden en el recurso solar",
                                          detail=f"{levels} Dos fuentes independientes dan el mismo recurso dentro de ±{SOLAR_CLOSE_PERCENT:.0f} %.",
                                          subjects=[label], sources=["NASA POWER (CERES)", other]))
+    return out
+
+
+def cover_discoveries(baselines: Sequence[SubjectBaseline]) -> list[Discovery]:
+    """Cobertura: MOD44B frente a ESA WorldCover en el mismo año y la misma ventana, por grupo."""
+    out: list[Discovery] = []
+    for baseline in baselines:
+        check = baseline.land_cover_check
+        pairs = [group for group in (check.groups if check else []) if group.modis_percent is not None]
+        if not check or not pairs:
+            continue
+        gaps = {group.variable: group.worldcover_percent - group.modis_percent for group in pairs}
+        worst = max(pairs, key=lambda group: abs(gaps[group.variable]))
+        said = "; ".join(f"{group.label.lower()}: MOD44B {group.modis_percent:.1f} %, WorldCover {group.worldcover_percent:.1f} %" for group in pairs)
+        sources = ["MODIS MOD44B", "ESA WorldCover"]
+        if abs(gaps[worst.variable]) >= COVER_APART_POINTS:
+            out.append(Discovery(
+                kind=DiscoveryKind.CONTRADICTION, title=f"{baseline.subject}: MODIS y ESA WorldCover difieren en la cobertura",
+                detail=f"{check.year}, {said}. La mayor diferencia está en {worst.label.lower()} ({gaps[worst.variable]:+.0f} puntos). "
+                       "WorldCover asigna la clase dominante a 10 m y MOD44B estima la fracción a 250 m: en vegetación rala o lomas "
+                       "la diferencia es esperable; la línea base de flora se define en campo.",
+                subjects=[baseline.subject], sources=sources))
+        elif abs(gaps[worst.variable]) < COVER_CLOSE_POINTS:
+            out.append(Discovery(
+                kind=DiscoveryKind.AGREEMENT, title=f"{baseline.subject}: MODIS y ESA WorldCover coinciden en la cobertura",
+                detail=f"{check.year}, {said}. Dos sensores independientes (MODIS a 250 m y Sentinel a 10 m) coinciden dentro de ±{COVER_CLOSE_POINTS:.0f} puntos.",
+                subjects=[baseline.subject], sources=sources))
     return out
 
 

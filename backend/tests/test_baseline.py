@@ -158,6 +158,9 @@ def test_environment_baseline_detects_vegetation_loss_and_conforms(patched):
     assert all(item.variable != "NPP" for item in site.vegetation)          # relleno MODIS: no se inventa una serie
     assert any("ningún año" in note for note in site.vegetation_notes)
     assert site.land_cover.changed_percent == 100.0 and site.land_cover.classes[0].label.startswith("Suelo desnudo")
+    groups = {group.variable: group for group in site.land_cover_check.groups}            # WorldCover sintético: 80 % desnudo, 20 % pastizal
+    assert (groups["VCF_BARE"].modis_percent, groups["VCF_BARE"].worldcover_percent) == (80.0, 80.0)
+    assert any(d.title == "Moquegua (radio 1 km): MODIS y ESA WorldCover coinciden en la cobertura" for d in result.discoveries)
     corridor = result.subjects[1]
     assert corridor.geometry["type"] == "Polygon"                            # la línea se amplía con el buffer
     assert result.nasa_questions[0].status == QuestionStatus.ANSWERED

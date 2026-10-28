@@ -151,9 +151,15 @@ export type LandCoverChange = {
   product: string; first_year: number; last_year: number; pixels: number; changed_percent: number;
   classes: { code: number; label: string; first_percent: number; last_percent: number }[]; provenance: string; source_url: string; limitations: string[];
 };
+export type LandCoverCrosscheck = {
+  source: string; year: number; pixels: number; resolution_m: number; classes: { code: number; label: string; percent: number }[];
+  groups: { variable: string; label: string; modis_percent: number | null; worldcover_percent: number }[];
+  provenance: string; downloaded_at: string; source_urls: string[]; limitations: string[];
+};
 export type SubjectBaseline = {
   subject: string; origin: string; area_km2: number; study_area: GeoJSON.Geometry; modis_window_km: number | null; modis_pixels: Record<string, number>;
-  vegetation: VariableSummary[]; vegetation_notes: string[]; land_cover: LandCoverChange | null; layers: BaselineLayer[]; errors: string[];
+  vegetation: VariableSummary[]; vegetation_notes: string[]; land_cover: LandCoverChange | null; land_cover_check?: LandCoverCrosscheck | null;
+  layers: BaselineLayer[]; errors: string[];
   climate?: VariableSummary[]; extremes?: ExtremeIndex[]; wet_day_p95_mm?: number | null;
 };
 export type BaselineResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
