@@ -6,13 +6,13 @@ grupos (el agua queda fuera en ambos) y se comparan en 2021. En vegetación rala
 difieren por definición: un píxel de matorral abierto cuenta entero como matorral en WorldCover.
 """
 
-import math
 from collections.abc import Sequence
 from typing import Any
 
-from shapely.geometry import box, mapping, shape
+from shapely.geometry import mapping, shape
 
 from ..connectors.esa.worldcover import CLASSES, SOURCE, YEAR, Composition, WorldCoverConnector, WorldCoverError
+from ..geospatial.buffers import square_window_km
 from ..schemas.analysis import Point
 from ..schemas.baseline import CoverGroupCheck, LandCoverCrosscheck, LandCoverShare
 from ..schemas.pipeline import VariableSummary
@@ -20,7 +20,6 @@ from ..schemas.pipeline import VariableSummary
 WATER = 80
 GROUPS = {"VCF_TREE": ("Árboles", {10, 95}), "VCF_NONTREE": ("Vegetación no arbórea", {20, 30, 40, 90, 100}),
           "VCF_BARE": ("Sin vegetación (suelo desnudo, construido, nieve)", {50, 60, 70})}
-KM_PER_DEGREE = 111.32
 COVER_NOTE = (
     "Cobertura: MOD44B (fracción por píxel de 250 m) frente a ESA WorldCover 2021 (clase dominante por píxel de 10 m, Sentinel-1/2), "
     "en la misma ventana MODIS y sin el agua. En vegetación rala difieren por definición; el acuerdo pesa más en zonas de cobertura densa o nula."
@@ -29,9 +28,8 @@ COVER_NOTE = (
 
 def modis_window(geometry: dict[str, Any], point: Point, km: int) -> dict[str, Any]:
     """El área recortada a la ventana ±km del servicio MODIS, para comparar la misma superficie."""
-    dlat = km / KM_PER_DEGREE
-    dlon = km / (KM_PER_DEGREE * max(math.cos(math.radians(point.latitude)), 1e-6))
-    clipped = shape(geometry).intersection(box(point.longitude - dlon, point.latitude - dlat, point.longitude + dlon, point.latitude + dlat))
+    window = shape(square_window_km(point.longitude, point.latitude, km))
+    clipped = shape(geometry).intersection(window)
     return mapping(clipped) if not clipped.is_empty else geometry
 
 

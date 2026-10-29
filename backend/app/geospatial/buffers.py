@@ -4,7 +4,7 @@ from math import ceil
 from typing import Any
 
 from pyproj import CRS, Transformer
-from shapely.geometry import mapping, shape
+from shapely.geometry import box, mapping, shape
 from shapely.ops import transform
 
 from .geometry import GEOD
@@ -24,6 +24,18 @@ def buffer_km(geometry: dict[str, Any], km: float) -> dict[str, Any]:
     to_local, to_wgs84 = _local_aeqd(center.x, center.y)
     buffered = transform(to_local.transform, geom).buffer(km * 1000, quad_segs=16)
     return mapping(transform(to_wgs84.transform, buffered))
+
+
+def square_window_km(longitude: float, latitude: float, km: float) -> dict[str, Any]:
+    """Ventana cuadrada de ±km alrededor de un punto, construida en metros y devuelta como GeoJSON WGS84.
+
+    Replica el contrato ``kmAboveBelow``/``kmLeftRight`` de ORNL sin aproximar kilómetros mediante grados.
+    """
+    to_local, to_wgs84 = _local_aeqd(longitude, latitude)
+    center_x, center_y = to_local.transform(longitude, latitude)
+    half_width_m = km * 1000
+    window = box(center_x - half_width_m, center_y - half_width_m, center_x + half_width_m, center_y + half_width_m)
+    return mapping(transform(to_wgs84.transform, window))
 
 
 def window_km(geometry: dict[str, Any], longitude: float, latitude: float, *, minimum: int = 1, maximum: int = 10) -> int:

@@ -9,11 +9,14 @@ from datetime import datetime, timezone
 import httpx
 import numpy as np
 import pytest
-from shapely.geometry import box, mapping
+from shapely.geometry import Point as ShapelyPoint
+from shapely.geometry import box, mapping, shape
 
 from backend.app.connectors.esa import worldcover
 from backend.app.connectors.esa.worldcover import Composition, WorldCoverError
 from backend.app.core.config import Settings
+from backend.app.geospatial.buffers import square_window_km
+from backend.app.geospatial.geometry import GEOD
 from backend.app.orchestration.cover_crosscheck import build_crosscheck
 from backend.app.orchestration.discoveries import cover_discoveries
 from backend.app.schemas.analysis import Provenance
@@ -88,6 +91,15 @@ def _transport(blob: bytes | None):
 
 
 AREA = mapping(box(ORIGIN[0], ORIGIN[1] - 16 * SCALE, ORIGIN[0] + 16 * SCALE, ORIGIN[1]))   # las 16 × 16 celdas
+
+
+def test_modis_square_window_uses_metres_not_degree_approximation():
+    window = shape(square_window_km(-70.934, -17.193, 1.0))
+    for azimuth in (0, 90, 180, 270):
+        inside_lon, inside_lat, _ = GEOD.fwd(-70.934, -17.193, azimuth, 990)
+        outside_lon, outside_lat, _ = GEOD.fwd(-70.934, -17.193, azimuth, 1010)
+        assert window.contains(ShapelyPoint(inside_lon, inside_lat))
+        assert not window.contains(ShapelyPoint(outside_lon, outside_lat))
 
 
 def test_composition_counts_classes_inside_the_area_and_skips_nodata(tmp_path):

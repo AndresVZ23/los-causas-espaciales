@@ -1017,3 +1017,19 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 - CC BY 4.0, cita Zanaga et al. 2022, doi:10.5281/zenodo.7254221. Verificar el DOI en la página oficial.
 
 Fusionar con la puerta común; push solo con aprobación de Christian.
+
+## 2026-10-28 · Codex · `master` · `1b6bc54` · integración y QA de ESA WorldCover (ADR-040)
+
+**Fusión aprobada:** `claude/pdf-linea-base` avanzó `master` desde `6f64d52` hasta `1b6bc54` por fast-forward, sin conflictos. Entraron el lector COG común, ESA WorldCover 2021 v200, el contraste de cobertura con MOD44B y el campo aditivo `SubjectBaseline.land_cover_check`.
+
+**Catálogo y cumplimiento:** `DATA_SOURCES.md` registra el bucket público `esa-worldcover` en `eu-central-1`, la ruta `v200/2021/map`, el patrón oficial de teselas de 3°, EPSG:4326, COG uint8, clases 10–100 y 0 como nodata. También documenta CC BY 4.0, la atribución oficial y Zanaga et al. (2022), DOI `10.5281/zenodo.7254221`. La ficha advierte que la exactitud global publicada es 76.7 %, que clase dominante a 10 m y fracción MOD44B a 250 m no son magnitudes idénticas y que 2020 v100/2021 v200 no deben interpretarse como cambio sin armonizar algoritmos.
+
+**Corrección geoespacial:** la ventana cuadrada de contraste ya no convierte kilómetros a grados mediante constantes. `square_window_km()` construye la geometría en una proyección AEQD local, mide en metros y devuelve WGS84; la prueba geodésica independiente verifica inclusión a 990 m y exclusión a 1,010 m en los cuatro rumbos cardinales.
+
+**Contraprueba independiente en vivo:** una consulta WorldCover para un círculo geodésico de 1 km en Moquegua leyó 38,380 píxeles efectivos de 9.3 m de la tesela `ESA_WorldCover_10m_2021_v200_S18W072_Map.tif`, con `REAL_DATA`: construido 66.33 %, suelo desnudo/vegetación escasa 26.70 %, matorral 3.58 %, árboles 2.31 %, pastizal 0.98 %, cultivo 0.09 % y agua 0.01 %. El lector COG compartido conservó el resultado independiente de Copernicus DEM: 1,413.3 m y 6.04° para Moquegua.
+
+**Puerta común:** 209/209 pruebas backend; build Next.js 16.4.2 con 17 rutas; `npm audit` = 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. Las únicas advertencias de pytest son deprecaciones de terceros en ReportLab y Starlette.
+
+**QA visual independiente:** servicios temporales en `localhost:13106` y `127.0.0.1:18106`. Ambiente completó para Moquegua/Arequipa, mostró el encabezado «Contraste de cobertura 2021», la contradicción MODIS/WorldCover de Arequipa y procedencia explícita. En 1440×900 y 390×844 hubo desbordamiento horizontal 0. El único evento de consola fue un 404 no funcional de `favicon.ico`, que queda como incidencia visual para Claude; no afectó el análisis ni los resultados.
+
+**Operación y publicación:** los servicios temporales y Edge headless se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
