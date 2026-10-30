@@ -1033,3 +1033,13 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **QA visual independiente:** servicios temporales en `localhost:13106` y `127.0.0.1:18106`. Ambiente completó para Moquegua/Arequipa, mostró el encabezado «Contraste de cobertura 2021», la contradicción MODIS/WorldCover de Arequipa y procedencia explícita. En 1440×900 y 390×844 hubo desbordamiento horizontal 0. El único evento de consola fue un 404 no funcional de `favicon.ico`, que queda como incidencia visual para Claude; no afectó el análisis ni los resultados.
 
 **Operación y publicación:** los servicios temporales y Edge headless se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
+
+## 2026-10-30 · Claude · claude/pdf-linea-base · Ícono de la aplicación
+
+**Qué entró (sobre master 4b430f7):** `frontend/app/icon.svg` (fondo `#141618`, acento `#38d9c3`). Next lo enlaza como `<link rel="icon" type="image/svg+xml">`, así el navegador ya no pide `/favicon.ico`, el 404 que registró Codex.
+
+**Verificación:**
+- Build correcto: la ruta `/icon.svg` es estática.
+- En 3100, la página enlaza `/icon.svg?…` y responde 200.
+- Carga en Playwright sin respuestas 4xx/5xx ni errores de consola. El Chromium sin interfaz no pide favicons, así que el 404 original se confirma en Browser con interfaz.
+- Sin cambios de backend.
