@@ -1043,3 +1043,13 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 - En 3100, la página enlaza `/icon.svg?…` y responde 200.
 - Carga en Playwright sin respuestas 4xx/5xx ni errores de consola. El Chromium sin interfaz no pide favicons, así que el 404 original se confirma en Browser con interfaz.
 - Sin cambios de backend.
+
+## 2026-10-30 · Codex · `master` · `50f5db3` · integración y QA del ícono de aplicación
+
+**Fusión aprobada:** `claude/pdf-linea-base` avanzó `master` desde `4b430f7` hasta `50f5db3` por fast-forward, sin conflictos. El único cambio funcional es `frontend/app/icon.svg`; no cambió backend, contrato ni dependencias.
+
+**Puerta común:** 209/209 pruebas backend; build Next.js 16.4.2 con 18 rutas, incluida `/icon.svg` estática; `npm audit --omit=dev` = 0 vulnerabilidades. El script `scripts/audit_project.py` exigido por la Skill ya no existe en este repositorio, por lo que esa comprobación queda no aplicable y no se reporta como ejecutada.
+
+**QA en navegador con interfaz:** como el plugin Browser no está disponible y el repositorio no incluye Playwright, se abrió Edge real sin `--headless` sobre `http://127.0.0.1:13107/` y se inspeccionó la recarga mediante DevTools. El documento publicó exactamente un `<link rel="icon" type="image/svg+xml">`; `/icon.svg?…` respondió 200 con `image/svg+xml`; hubo 0 solicitudes a `/favicon.ico`, 0 respuestas 4xx/5xx, 0 errores/advertencias de consola, 0 overlay y 0 px de desbordamiento horizontal.
+
+**Operación y publicación:** el servidor temporal 13107 y Edge/DevTools 19230 se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
