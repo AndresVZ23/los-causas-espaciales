@@ -510,3 +510,67 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
 - API real con PDF.
 - QA `baseline_ui` y `release_ui` en 1440, 768 y 390 limpio, y capturas de la tabla.
 - Build correcto; audit con 0 vulnerabilidades.
+
+## ADR-041 — Piloto eólico: forma horaria de NASA POWER, nivel del Atlas Eólico Global
+
+**Motivo.** El anteproyecto promete eólica e hidroeléctrica. La eólica entra como segunda tecnología del módulo Energía, con el mismo contrato C2 que la solar (`Sector.WIND`, aditivo).
+
+**Fuentes.**
+- **NASA POWER horario (`connectors/nasa/power_hourly.py`):** WS50M y WS10M de MERRA-2, los diez últimos años completos del período. Un año por consulta (~300 KB, ~3 s medido el 30-oct-2026), cuatro a la vez, caché sin vencimiento. Un año con menos de 90 % de horas válidas no entra; el −999 se descarta.
+- **NASA POWER diario:** WS50M (nueva en el catálogo), WS10M, T2M y PRECTOTCORR para las tendencias, con ERA5 como contraste del viento a 10 m y de la temperatura (ADR-038).
+- **Global Wind Atlas 4.0 (`connectors/gwa/wind_atlas.py`):** DTU con ESMAP del Banco Mundial, publicado en junio de 2025; velocidad media de largo plazo a 50 y 100 m con 250 m de resolución, CC BY 4.0. El archivo del Perú es BigTIFF en bloques de 512, ZSTD con predictor 3 y nodata NaN. El lector común `connectors/cog.py` ahora lee BigTIFF y ZSTD, con la dependencia `zstandard==0.23.0` (BSD).
+
+**Energía (`sectors/wind_energy.py`, funciones puras).**
+- **Altura del buje:** cada hora de 50 m se lleva al buje con la ley potencial. El exponente sale de las medias de 10 y 50 m de las mismas horas, acotado a [0, 0.5].
+- **Densidad del aire:** atmósfera estándar a la elevación del sitio (NASADEM, o Copernicus si NASADEM no tiene métrica) y a la T2M media. Se aplica como velocidad equivalente (IEC 61400-12-1). Sin elevación se declara y la energía queda sobrestimada.
+- **Curva de potencia genérica:** arranque 3, nominal 12 y parada 25 m/s, rampa cúbica. Es un supuesto editable; la curva del fabricante figura como brecha.
+- **Energía y VAN:** energía = MW × 8,760 × factor de planta bruto × (1 − pérdidas), con VAN del motor común.
+
+**Decisión: nivel del atlas en el caso base.** La celda de MERRA-2 (~55 km) subestima el viento donde el relieve o la costa lo aceleran. El caso base escala cada hora de NASA POWER por la razón entre medias al buje (atlas ÷ NASA POWER). Así conserva la forma horaria, la variación entre años y la tendencia de NASA, y toma el nivel del atlas. El nivel propio de NASA POWER queda como extremo adverso del recurso en el tornado («Nivel del recurso (Atlas Eólico ↔ NASA POWER)»). Si el atlas no responde, se usa el nivel de NASA POWER y se declara.
+
+**Validación con producción real (30-oct-2026).** Con los XLSX oficiales de COES 2024, hoja PRODUCCIÓN DIARIA, tipo EÓLICA, y las potencias publicadas:
+
+| Central | Producción 2024 | Potencia | Factor de planta real |
+|---|---|---|---|
+| Tres Hermanas | 481,842 MWh | 97.15 MW | 56.5 % |
+| Marcona | 162,580 MWh | 32.1 MW | 57.7 % |
+| San Juan | 614,927 MWh | 135.7 MW | 51.6 % |
+
+En Marcona, el modelo da 46.7 % neto con el nivel del atlas y 14.0 % con el de MERRA-2. El nivel de NASA POWER solo habría descartado el mejor sitio eólico del país.
+
+**Descubrimientos.** El viento al buje de NASA POWER frente al atlas: coinciden bajo 10 %; difieren desde 20 % (contradicción, con el factor de planta en ambos niveles). Se suman los de ERA5 y relieve ya existentes.
+
+**Puntaje (pesos editables).**
+
+| Criterio | Peso |
+|---|---|
+| Viento al buje | 0.25 |
+| Estabilidad interanual del factor de planta | 0.10 |
+| Deriva del viento a 50 m (solo si es significativa tras BH) | 0.10 |
+| Confianza del recurso (\|Δ\| NASA–atlas) | 0.15 |
+| Pendiente NASADEM | 0.10 |
+| VAN / CAPEX | 0.30 |
+
+**Brechas declaradas:**
+- medición en sitio (torre o LiDAR, al menos un año);
+- curva del fabricante;
+- red eléctrica;
+- restricciones ambientales y sociales, incluida la avifauna;
+- elevación o atlas ausentes.
+
+**Pantalla y PDF.**
+- Selector «Tecnología» en Energía; Marcona y Moquegua son los sitios de ejemplo de eólica.
+- Lectura con el viento al buje y el factor de planta.
+- Pestañas Viento 50 m y 10 m.
+- Tabla NASA POWER frente al atlas por sitio, puntaje, sensibilidad y método.
+- El PDF cita NASA POWER Hourly y el Global Wind Atlas 4.0.
+
+**Resultado real del 30-oct-2026 (Marcona frente a Moquegua, 2001 a hoy).**
+- **Marcona:** 6.39 m/s al buje en NASA POWER y 9.74 m/s en el atlas (+52 %). Factor de planta 46.7 % neto, 204,355 MWh/año y VAN +USD 21.1 M con los supuestos por defecto (50 MW, USD 65 M, 55 USD/MWh, 10 %, 25 años). Precio de equilibrio 43.6 USD/MWh.
+- **Moquegua:** 2.28 m/s en el atlas y factor de planta 0.3 %.
+- **Puntaje:** 67 frente a 17.
+
+**Verificación:**
+- 16 pruebas nuevas en `test_wind.py`: curva, densidad, cizalladura, factor de planta, fórmula, años horarios, parseo horario, BigTIFF/ZSTD sintético ida y vuelta, atlas con nodata y fuera de archivo, sobre C2 con y sin atlas, PDF y descubrimientos.
+- Conftest sin red para el horario y el atlas.
+- QA `wind_shots` en 1440 y 390: 0 errores de consola, 0 desbordamiento, PDF de 6 páginas con las fuentes.

@@ -15,6 +15,7 @@ from ..schemas.data_sources import TerritorialSourceResult
 from ..schemas.pipeline import VariableSummary
 from ..schemas.screening import Discovery, DiscoveryKind, PipelineStage, StageEvidence
 from ..schemas.terrain import TerrainResponse
+from ..schemas.wind import WindAtlasCheck, WindResource
 
 PRIMARY = "NASA POWER (MERRA-2)"
 ARTIFACT_RATIO = 5.0         # el reanálisis supera al menos 5 veces a cada fuente de observación
@@ -40,7 +41,11 @@ SOLAR_APART_PERCENT = 10.0
 TEMPERATURE_APART_DEGREES = 2.0
 # Viento: dos reanálisis de celda gruesa difieren a menudo; desde 30 % en la media común, el nivel no sirve para diseño.
 WIND_APART_PERCENT = 30.0
-PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2"}
+PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2", "WS50M": "MERRA-2"}
+# Recurso eólico al buje: NASA POWER y el Atlas Eólico Global «coinciden» bajo 10 %; desde 20 % la energía cambia
+# del orden de 40 % o más (la potencia crece con el cubo del viento en la rampa de la curva).
+ATLAS_CLOSE_PERCENT = 10.0
+ATLAS_APART_PERCENT = 20.0
 CLOSE_CLASSES = 1            # dos fuentes «coinciden» en un punto si difieren a lo sumo en una clase,
                              # y en el área si coinciden en al menos dos tercios de los puntos
 
@@ -188,6 +193,35 @@ def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]])
                     out.append(Discovery(kind=DiscoveryKind.AGREEMENT, title=f"{label}: CERES y {other} coinciden en el recurso solar",
                                          detail=f"{levels} Dos fuentes independientes dan el mismo recurso dentro de ±{SOLAR_CLOSE_PERCENT:.0f} %.",
                                          subjects=[label], sources=["NASA POWER (CERES)", other]))
+    return out
+
+
+def wind_atlas_discoveries(sites: Sequence[tuple[str, WindResource, WindAtlasCheck | None]]) -> list[Discovery]:
+    """Nivel del viento al buje: la celda de MERRA-2 (NASA POWER) frente al Atlas Eólico Global a 250 m."""
+    out: list[Discovery] = []
+    for label, resource, check in sites:
+        if check is None or check.gap_percent_hub is None or check.speed_hub is None:
+            continue
+        gap = check.gap_percent_hub
+        hub = f"{resource.hub_height_m:g} m"
+        said = (f"Al buje ({hub}): NASA POWER {resource.mean_speed_hub:.2f} m/s; atlas {check.speed_hub:.2f} m/s ({gap:+.0f} %). "
+                f"A 50 m: {resource.mean_speed_50m:.2f} frente a {check.speed_50m:.2f} m/s." if check.speed_50m is not None
+                else f"Al buje ({hub}): NASA POWER {resource.mean_speed_hub:.2f} m/s; atlas {check.speed_hub:.2f} m/s ({gap:+.0f} %).")
+        sources = ["NASA POWER (MERRA-2)", "Global Wind Atlas"]
+        if abs(gap) >= ATLAS_APART_PERCENT:
+            energy = (f" El caso base usa el nivel del atlas (factor de planta bruto {check.capacity_factor_gross_at_atlas * 100:.1f} %); "
+                      f"con el de NASA POWER sería {resource.capacity_factor_gross_nasa_level * 100:.1f} %, y queda como escenario de recurso adverso."
+                      if check.capacity_factor_gross_at_atlas is not None else "")
+            out.append(Discovery(
+                kind=DiscoveryKind.CONTRADICTION, title=f"{label}: el recurso eólico difiere {abs(gap):.0f} % entre NASA POWER y el Atlas Eólico Global",
+                detail=f"{said}{energy} Una celda de reanálisis de ~55 km no ve la aceleración del viento en lomas, mesetas o costa; el atlas la modela a 250 m "
+                       f"pero no la mide. El nivel se resuelve con una torre o LiDAR en el sitio.",
+                subjects=[label], sources=sources))
+        elif abs(gap) < ATLAS_CLOSE_PERCENT:
+            out.append(Discovery(
+                kind=DiscoveryKind.AGREEMENT, title=f"{label}: NASA POWER y el Atlas Eólico Global coinciden en el recurso",
+                detail=f"{said} Dos productos independientes (reanálisis de NASA y modelo de microescala) dan el mismo nivel dentro de ±{ATLAS_CLOSE_PERCENT:.0f} %.",
+                subjects=[label], sources=sources))
     return out
 
 

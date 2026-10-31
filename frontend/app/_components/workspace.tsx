@@ -23,8 +23,10 @@ import SensitivityPanel from "./sensitivity-panel";
 import TerritoryPicker from "./territory-picker";
 import { useStudyGeometries } from "./use-study-geometries";
 import SiteVerdict from "./site-verdict";
-import { isBaseline, isClimate, isRealEstate, isRoad, seriesSubjects } from "./types";
-import type { AnyResult, Assumptions, Module, Point, QuestionKey, RealEstateAssumptions, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState } from "./types";
+import { isBaseline, isClimate, isRealEstate, isRoad, isWind, seriesSubjects } from "./types";
+import type { AnyResult, Assumptions, Module, Point, QuestionKey, RealEstateAssumptions, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState, WindAssumptions } from "./types";
+import { DEFAULT_WIND_ASSUMPTIONS, EnergyTechControls, WIND_SITES, WindAssumptionFields, WindEvidence, WindReading, windTabs } from "./wind-panels";
+import type { EnergyTech } from "./wind-panels";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -32,7 +34,7 @@ const ComparisonChart = dynamic(() => import("./comparison-chart"), { ssr: false
 
 const modules: Module[] = [
   { id: "climate", short: "Clima", name: "Inteligencia climática", icon: "climate", status: "Funcional", ready: true, description: "Tendencias NASA POWER cruzadas con ERA5, extremos de lluvia ETCCDI con IMERG y CHIRPS, y año en curso hasta hoy." },
-  { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Piloto funcional", ready: true, description: "Screening solar comparativo con NASA POWER; recurso y temperatura cruzados con ERA5." },
+  { id: "solar", short: "Energía", name: "Energía renovable", icon: "solar", status: "Solar y eólico funcionales", ready: true, description: "Solar y eólica: irradiancia NASA POWER cruzada con ERA5; viento horario NASA POWER con el nivel del Atlas Eólico Global, energía, VAN y puntaje. Hidroeléctrica en desarrollo." },
   { id: "hazards", short: "Amenazas", name: "Amenazas naturales", icon: "hazard", status: "Funcional", ready: true, description: "Extremos de lluvia cruzados con IMERG y CHIRPS, relieve NASADEM, riesgo y susceptibilidad de CENEPRED cruzada con los deslizamientos de NASA (susceptibilidad global, LHASA y reportes COOLR), puntos críticos de la ANA y mapas volcánicos de INGEMMET; el inventario de peligros geológicos sigue pendiente." },
   { id: "environment", short: "Ambiente", name: "Inteligencia ambiental", icon: "environment", status: "Línea base funcional", ready: true, description: "Insumos para la línea base de un EIA: vegetación MODIS con tendencia, cobertura cruzada con ESA WorldCover, agua (ANA), ecosistemas y lomas (MINAM), áreas protegidas y relieve." },
   { id: "social", short: "Territorio", name: "Dimensión social y arqueológica", icon: "social", status: "Patrimonio funcional", ready: true, description: "Patrimonio arqueológico registrado y declarado, CIRA, diagnósticos previos, Qhapaq Ñan y consulta previa (Ministerio de Cultura); comunidades y conflictos siguen pendientes." },
@@ -121,6 +123,8 @@ export default function Workspace() {
   const [endDate, setEndDate] = useState("");
   useEffect(() => { setEndDate(new Date().toLocaleDateString("en-CA")); }, []);
   const [assumptions, setAssumptions] = useState<Assumptions>(initialAssumptions);
+  const [energyTech, setEnergyTech] = useState<EnergyTech>("solar");
+  const [windAssumptions, setWindAssumptions] = useState<WindAssumptions>(DEFAULT_WIND_ASSUMPTIONS);
   const [result, setResult] = useState<AnyResult | null>(null);
   const [terrainVisible, setTerrainVisible] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -163,8 +167,10 @@ export default function Workspace() {
   const roadResult = isRoad(result) ? result : null;
   const realEstateResult = isRealEstate(result) ? result : null;
   const baselineResult = isBaseline(result) ? result : null;
-  const solarResult = result && !isClimate(result) && !isRoad(result) && !isRealEstate(result) && !isBaseline(result) ? result : null;
+  const windResult = isWind(result) ? result : null;
+  const solarResult = result && !isClimate(result) && !isRoad(result) && !isRealEstate(result) && !isBaseline(result) && !isWind(result) ? result : null;
   const isClimateModule = activeModule === "climate";
+  const isWindTech = activeModule === "solar" && energyTech === "wind";
   const isBaselineModule = BASELINE_MODULES.includes(activeModule);
   const isHeritageModule = activeModule === "social";
   // Clima y la línea base aceptan territorios IGN; la línea base además suma polígonos y corredores propios.
@@ -179,7 +185,7 @@ export default function Workspace() {
   const cellLayer = useMemo(() => cellsFor(climateResult, cellVariable), [climateResult, cellVariable]);
   const isRoadModule = activeModule === "infrastructure";
   const isRealEstateModule = activeModule === "investment";
-  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : activeModule === "environment" ? environmentTabs : activeModule === "hazards" ? hazardTabs : isHeritageModule ? [] : solarTabs;
+  const tabs = isClimateModule ? climateTabs : isRoadModule || isRealEstateModule ? roadTabs : activeModule === "environment" ? environmentTabs : activeModule === "hazards" ? hazardTabs : isHeritageModule ? [] : isWindTech ? windTabs : solarTabs;
   const comparisonData = useMemo(() => solarResult?.sites.map((site) => ({ name: site.location.label, irradiancia: +getVariable(site, "ALLSKY_SFC_SW_DWN").mean.toFixed(3) })) ?? [], [solarResult]);
   const subjectsList = useMemo(() => seriesSubjects(result), [result]);
   const selectedVariable = subjectsList[0] ? seriesFor(subjectsList[0], activeVariable) : null;
@@ -189,11 +195,12 @@ export default function Workspace() {
     if (!result) return null;
     const latest = (codes: string[]) => subjectsList.flatMap((site) => site.variables.filter((v) => codes.includes(v.variable) && v.last_valid_date).map((v) => v.last_valid_date as string)).sort()[0];
     const fmt = (iso?: string) => iso ? new Date(`${iso}T12:00:00`).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric" }) : null;
-    const meteo = fmt(latest(["T2M", "PRECTOTCORR", "WS10M"]));
+    const meteo = fmt(latest(["T2M", "PRECTOTCORR", "WS10M", "WS50M"]));
     const solar = fmt(latest(["ALLSKY_SFC_SW_DWN"]));
     return [meteo && `Datos NASA hasta ${meteo}`, solar && solar !== meteo && `radiación hasta ${solar}`].filter(Boolean).join(" · ");
   }, [result, subjectsList]);
   const staleAssumptions = (solarResult !== null && JSON.stringify(solarResult.assumptions) !== JSON.stringify(assumptions))
+    || (windResult !== null && JSON.stringify(windResult.assumptions) !== JSON.stringify(windAssumptions))
     || (roadResult !== null && JSON.stringify(roadResult.assumptions) !== JSON.stringify(roadAssumptions))
     || (realEstateResult !== null && JSON.stringify(realEstateResult.assumptions) !== JSON.stringify(realEstateAssumptions));
   const myCorridors = study.geometries.filter((item) => item.kind === "segment" && item.status === "valida");
@@ -282,11 +289,21 @@ export default function Workspace() {
   function updateAssumption(key: keyof Assumptions, value: string) { setAssumptions((current) => ({ ...current, [key]: +value })); }
   function removeSite(index: number) { setSites((current) => current.filter((_, position) => position !== index)); }
   function selectModule(id: string) {
-    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : id === "environment" ? "VCF_BARE" : id === "hazards" ? "RX1DAY" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
+    if (id !== activeModule) { setResult(null); setError(""); setExportedAt(null); setSelectedStep(1); setActiveVariable(id === "climate" ? "T2M" : id === "infrastructure" || id === "investment" ? "PRECTOTCORR" : id === "environment" ? "VCF_BARE" : id === "hazards" ? "RX1DAY" : energyTech === "wind" ? "WS50M" : "ALLSKY_SFC_SW_DWN"); study.cancelDraft(); }
     // Clima y la línea base aceptan territorios o un único sitio; el piloto solar compara al menos dos sitios.
-    if (id !== "climate" && !BASELINE_MODULES.includes(id) && sites.length < 2) setSites(initialSites);
+    if (id !== "climate" && !BASELINE_MODULES.includes(id) && sites.length < 2) setSites(id === "solar" && energyTech === "wind" ? WIND_SITES : initialSites);
     setActiveModule(id); setMobileNavOpen(false);
     if (id === "investment") setRealEstateOpen(true);
+  }
+  function selectTech(tech: EnergyTech) {
+    if (tech === energyTech) return;
+    setResult(null); setError(""); setExportedAt(null); setSelectedStep(1);
+    setActiveVariable(tech === "wind" ? "WS50M" : "ALLSKY_SFC_SW_DWN");
+    // Los sitios de ejemplo cambian con la tecnología; los que el usuario editó se conservan.
+    const same = (a: Point[], b: Point[]) => JSON.stringify(a) === JSON.stringify(b);
+    if (tech === "wind" && same(sites, initialSites)) setSites(WIND_SITES);
+    if (tech === "solar" && same(sites, WIND_SITES)) setSites(initialSites);
+    setEnergyTech(tech);
   }
   function goToStage(step: number) {
     setSelectedStep(step);
@@ -325,6 +342,8 @@ export default function Workspace() {
         ? { url: BASELINE_ENDPOINTS[activeModule], body: {
             sites, territories: territories.map(({ level, ubigeo }) => ({ level, ubigeo })), buffer_km: bufferKm,
             geometries: baselineGeometries.map((item) => ({ id: item.id, label: item.name, geometry: item.geometry })) } }
+        : isWindTech
+        ? { url: "/api/wind-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions: windAssumptions } }
         : { url: "/api/solar-screening", body: { sites, start_date: startDate, end_date: endDate, assumptions } };
       const response = await fetch(request.url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(request.body) });
       const data = await response.json();
@@ -403,6 +422,7 @@ export default function Workspace() {
               : baselineResult ? <BaselineReading result={baselineResult} headingId="lectura-movil" />
               : roadResult ? <RoadReading result={roadResult} headingId="lectura-movil" />
               : realEstateResult ? <RealEstateReading result={realEstateResult} headingId="lectura-movil" />
+              : windResult ? <WindReading result={windResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />
               : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-movil" />}
           </div>
         )}
@@ -481,6 +501,7 @@ export default function Workspace() {
                 </button>
               </div>
             </> : geometryHint ? <GeometryPanel state={study} hint={geometryHint} /> : <>
+            {activeModule === "solar" && <EnergyTechControls tech={energyTech} onTech={selectTech} />}
             <div className="siteEditor">
               {sites.map((site, index) => (
                 <div className="siteRow" key={index}>
@@ -517,7 +538,7 @@ export default function Workspace() {
                 <GeometryPanel state={study} hint={BASELINE_HINT} />
               </details>
             </>}
-            <div className="actionRow"><button onClick={() => setSites(initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} aria-busy={loading} disabled={loading || !selectedModule.ready || !endDate || subjectCount === 0}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
+            <div className="actionRow"><button onClick={() => setSites(isWindTech ? WIND_SITES : initialSites)}>Restablecer</button><button className="runAnalysis" onClick={runScreening} aria-busy={loading} disabled={loading || !selectedModule.ready || !endDate || subjectCount === 0}>{loading ? "Consultando NASA…" : selectedModule.ready ? "Ejecutar análisis" : "Módulo pendiente"}</button></div>
             </>}
             {error && <p className="errorMessage" role="alert">{error}</p>}
             {result ? (
@@ -526,6 +547,7 @@ export default function Workspace() {
                 : baselineResult ? <BaselineReading result={baselineResult} headingId="lectura-escritorio" />
                 : roadResult ? <RoadReading result={roadResult} headingId="lectura-escritorio" />
                 : realEstateResult ? <RealEstateReading result={realEstateResult} headingId="lectura-escritorio" />
+                : windResult ? <WindReading result={windResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />
                 : solarResult && <SiteVerdict result={solarResult} staleAssumptions={staleAssumptions} onEditAssumptions={openAssumptions} headingId="lectura-escritorio" />)
             ) : (
               <div className="emptyReading"><span><i /><i /></span><div><strong>LISTO PARA CONSULTAR</strong><p>{selectedModule.description}</p></div></div>
@@ -559,7 +581,11 @@ export default function Workspace() {
               </div>}
               {!loading && !terrain && !terrainError && <p className="terrainState">Se consultará junto con el análisis; no se muestran métricas sin una respuesta oficial.</p>}
             </section>}
-            {activeModule === "solar" && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
+            {isWindTech && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
+              <summary>Supuestos eólicos y financieros <span>USER_ASSUMPTION</span></summary>
+              <WindAssumptionFields assumptions={windAssumptions} onChange={(key, value) => setWindAssumptions((current) => ({ ...current, [key]: value }))} />
+            </details>}
+            {activeModule === "solar" && !isWindTech && <details className="assumptionPanel" ref={assumptionPanelRef} open={assumptionsOpen} onToggle={(event) => setAssumptionsOpen(event.currentTarget.open)}>
               <summary>Supuestos financieros <span>USER_ASSUMPTION</span></summary>
               <div className="assumptionFields">
                 <label>Capacidad MW<input type="number" value={assumptions.capacity_mw} onChange={(event) => updateAssumption("capacity_mw", event.target.value)} /></label>
@@ -612,6 +638,12 @@ export default function Workspace() {
             {realEstateResult.scorecard ? <ScorecardPanel initial={realEstateResult.scorecard} /> : null}
             {realEstateResult.financial_sensitivity?.length ? <SensitivityPanel items={realEstateResult.financial_sensitivity} stale={staleAssumptions} /> : null}
             <RealEstateEvidence result={realEstateResult} />
+          </>}
+          {windResult && <>
+            <div className="findingsPanel"><h3>Lectura comparativa</h3>{windResult.comparative_findings.map((finding, index) => <p key={index}><span>{index + 1}</span>{finding}</p>)}</div>
+            {windResult.scorecard ? <ScorecardPanel initial={windResult.scorecard} /> : null}
+            {windResult.financial_sensitivity?.length ? <SensitivityPanel items={windResult.financial_sensitivity} stale={staleAssumptions} /> : null}
+            <WindEvidence result={windResult} />
           </>}
           {roadResult && <>
             {roadResult.scorecard ? <ScorecardPanel initial={roadResult.scorecard} /> : null}

@@ -51,6 +51,11 @@ from ..schemas.screening import (
     SubjectSensitivity,
 )
 from ..schemas.terrain import TerrainResponse
+from .energy_common import BREAK_EVEN_SPAN
+from .energy_common import break_even_note as _break_even_note
+from .energy_common import fmt_value as _fmt
+from .energy_common import lower_first as _lower_first
+from .energy_common import scenario_npv as _scenario
 
 SOLAR_VARIABLES = ["ALLSKY_SFC_SW_DWN", "T2M", "WS10M", "PRECTOTCORR"]
 IRRADIANCE = "ALLSKY_SFC_SW_DWN"
@@ -80,7 +85,6 @@ ASSUMPTION_LABELS = {
 }
 # Percentiles de las medias anuales observadas que definen el año de recurso bajo y alto.
 RESOURCE_LOW_PERCENTILE, RESOURCE_HIGH_PERCENTILE = 10, 90
-BREAK_EVEN_SPAN = 20  # el equilibrio se busca entre 0 y 20 veces el supuesto
 # Los escenarios mueven recurso y factores comerciales; performance ratio y tasa solo aparecen en el tornado.
 ADVERSE_KEYS = {"irradiance", "energy_price_usd_mwh", "initial_capex_usd", "annual_opex_usd"}
 
@@ -146,26 +150,6 @@ def solar_sensitivity(label: str, solar: VariableSummary, assumptions: SolarAssu
                         lambda value: _irradiance_note(value, observed, solar.display_unit)),
     ]
     return SubjectSensitivity(subject=label, base_npv=scenarios[0].npv, scenarios=scenarios, tornado=tornado(model, base, drivers), break_evens=break_evens)
-
-
-def _fmt(value: float, unit: str) -> str:
-    if unit == "USD" or unit == "USD/año":
-        amount = f"USD {value / 1e6:,.2f} M" if abs(value) >= 1e6 else f"USD {value:,.0f}"
-        return amount + ("/año" if unit == "USD/año" else "")
-    if unit == "fracción":
-        return f"{value * 100:.1f} %"
-    return f"{value:,.2f} {unit}".strip()
-
-
-def _break_even_note(value: float | None, assumed: float, unit: str, name: str, *, higher_is_better: bool) -> str:
-    if value is None:
-        return f"El VAN no cruza cero entre 0 y {BREAK_EVEN_SPAN} veces el supuesto."
-    if value == 0:
-        return f"El VAN es positivo incluso con {name} cero."
-    margin = (assumed - value) / value
-    position = "por encima" if margin >= 0 else "por debajo"
-    reading = "holgura" if (margin >= 0) == higher_is_better else "déficit"
-    return f"{name[:1].upper() + name[1:]} para VAN ≥ 0: {_fmt(value, unit)}; el supuesto está {abs(margin) * 100:.0f} % {position} ({reading})."
 
 
 def _irradiance_note(value: float | None, observed: list[float], unit: str) -> str:
@@ -304,15 +288,6 @@ def solar_scorecard(subjects: list[StudySubject], results: list[SolarSiteResult]
     if missing:
         notes.append(f"Sin pendiente NASADEM para {', '.join(missing)}: ese criterio queda fuera y su peso se reparte (ver cobertura).")
     return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
-
-
-def _lower_first(text: str) -> str:
-    """Minúscula inicial para usar una etiqueta dentro de una frase, salvo siglas (CAPEX, OPEX)."""
-    return text if text[:2].isupper() else text[:1].lower() + text[1:]
-
-
-def _scenario(sensitivity: SubjectSensitivity, key: str) -> float:
-    return next(item.npv for item in sensitivity.scenarios if item.key == key)
 
 
 def _evaluation_and_finance_stages(results: list[SolarSiteResult], sensitivities: list[SubjectSensitivity], source_provenance: list[Provenance], finance_ms: float):

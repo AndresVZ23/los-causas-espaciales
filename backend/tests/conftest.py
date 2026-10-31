@@ -1,18 +1,21 @@
 """Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV), por los deslizamientos de NASA,
-por ERA5 (PVGIS), por Copernicus DEM ni por ESA WorldCover."""
+por ERA5 (PVGIS), por Copernicus DEM, por ESA WorldCover, por NASA POWER horario ni por el Atlas Eólico Global."""
 
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 
+import numpy as np
 import pytest
 
 from backend.app.connectors.copernicus.dem import DemPoint
 from backend.app.connectors.esa.worldcover import Composition
+from backend.app.connectors.gwa.wind_atlas import AtlasPoint
+from backend.app.connectors.nasa.power_hourly import HourlyWind
 from backend.app.connectors.jrc.pvgis import Era5Annual
 from backend.app.orchestration import cover_crosscheck, era5_crosscheck, extraction, rainfall_crosscheck
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.data_sources import TerritorialSourceResult
-from backend.app.sectors import baseline
+from backend.app.sectors import baseline, wind
 
 
 class FlatChirps:
@@ -93,6 +96,30 @@ class EmptyLandslides:
         return self._empty("nasa-coolr-reports")
 
 
+class SteadyHourlyWind:
+    """NASA POWER horario sintético: un ciclo diario de 3 a 11 m/s a 50 m (10 m = 80 %), igual todos los años, sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def wind(self, latitude, longitude, years):
+        hours = np.arange(8760)
+        high = 7.0 + 4.0 * np.sin(2 * np.pi * hours / 24)
+        return HourlyWind(by_year={year: (high, high * 0.8) for year in years}, provenance=Provenance.CACHED,
+                          downloaded_at=datetime(2026, 10, 30, tzinfo=timezone.utc), version="prueba")
+
+
+class FixedWindAtlas:
+    """Atlas Eólico Global sintético de costa: 10.0 m/s a 50 m y 11.0 m/s a 100 m en cualquier punto, sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def point(self, latitude, longitude):
+        return AtlasPoint(speeds={50: 10.0, 100: 11.0}, urls=["https://example.org/gwa.tif"], provenance=Provenance.CACHED,
+                          downloaded_at=datetime(2026, 10, 30, tzinfo=timezone.utc), limitations=[])
+
+
 @pytest.fixture(scope="session", autouse=True)
 def offline_connectors():
     """Instala los dobles antes de cualquier fixture de módulo que construya sobres completos."""
@@ -102,6 +129,8 @@ def offline_connectors():
     patch.setattr(era5_crosscheck, "PvgisConnector", FlatEra5)
     patch.setattr(extraction, "CopernicusDemConnector", FixedCopernicus)
     patch.setattr(cover_crosscheck, "WorldCoverConnector", DesertWorldCover)
+    patch.setattr(wind, "PowerHourlyConnector", SteadyHourlyWind)
+    patch.setattr(wind, "WindAtlasConnector", FixedWindAtlas)
     yield
     patch.undo()
 
