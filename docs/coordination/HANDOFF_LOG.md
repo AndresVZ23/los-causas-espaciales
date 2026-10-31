@@ -1053,3 +1053,13 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **QA en navegador con interfaz:** como el plugin Browser no está disponible y el repositorio no incluye Playwright, se abrió Edge real sin `--headless` sobre `http://127.0.0.1:13107/` y se inspeccionó la recarga mediante DevTools. El documento publicó exactamente un `<link rel="icon" type="image/svg+xml">`; `/icon.svg?…` respondió 200 con `image/svg+xml`; hubo 0 solicitudes a `/favicon.ico`, 0 respuestas 4xx/5xx, 0 errores/advertencias de consola, 0 overlay y 0 px de desbordamiento horizontal.
 
 **Operación y publicación:** el servidor temporal 13107 y Edge/DevTools 19230 se apagaron al terminar. No se levantó ni modificó el stack 3100/8000. No se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0`.
+
+## 2026-10-30 · Codex · `master` · `29ad776` · integración del anteproyecto final
+
+**Fusión aprobada:** `claude/pdf-linea-base` (`ccca9ec`) se integró en `master` mediante merge commit `29ad776`, conservando el QA del favicon de `56030e5`. Los tres commits nuevos (`0e1e28b`, `450ed38`, `ccca9ec`) modifican exclusivamente el PPTX y el PDF de `docs/nasa-submission/anteproyecto`; no cambian código, contratos ni dependencias.
+
+**QA documental:** la versión final contiene una diapositiva/página A4. El PPTX pasó la inspección estructural OOXML con 0 hallazgos y la validación de geometría, ajuste de títulos y viñetas con 0 hallazgos/advertencias. Se renderizaron ambos formatos completos: PPTX 636×900 y PDF 637×901; la comparación visual confirmó el mismo contenido, sin recortes, solapamientos, glifos rotos ni texto ilegible. `pdfinfo` confirmó 1 página A4, PDF 1.7, sin cifrado, formularios ni JavaScript.
+
+**Puerta común:** 209/209 pruebas backend; build Next.js 16.4.2 con 18 rutas; `npm audit --omit=dev` = 0 vulnerabilidades. Las únicas advertencias de pytest son deprecaciones de terceros en ReportLab y Starlette.
+
+**Publicación:** no se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0` y no se modificó el stack 3100/8000.
