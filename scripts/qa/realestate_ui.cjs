@@ -38,6 +38,8 @@ async function run(viewport, tag, withTerritory) {
   await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `mapa-ejemplo-${tag}.png`) });
   out.panels = { scorecard: await page.locator(".scorecardPanel").count(), sensitivity: await page.locator(".sensitivityPanel").count(), questions: await page.locator(".question").count() };
   out.parcelsTable = (await page.locator(".siteResult").first().innerText()).slice(0, 450);
+  // Relieve del punto representativo de cada terreno: NASADEM frente a Copernicus GLO-30.
+  out.discoveries = await page.locator(".discoveriesPanel .discovery").evaluateAll((items) => items.map((item) => `${item.querySelector(".discoveryKind")?.textContent} · ${item.querySelector("h4")?.textContent}`));
   await page.locator(".assistantPanel").scrollIntoViewIfNeeded();
   const before = await page.locator(".assistantLog article").count();
   await page.locator(".assistantSuggestions button").nth(1).click();

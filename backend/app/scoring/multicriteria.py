@@ -20,8 +20,10 @@ STABLE_SHARE = 0.75
 METHOD = (
     "Suma ponderada de puntajes 0–100. Cada criterio se lleva a 0–100 con una escala de referencia declarada "
     "(peor valor = 0, mejor valor = 100, con recorte fuera del rango). Sin dato, el criterio sale y su peso se reparte "
-    f"entre los demás. Estabilidad: {STABILITY_DRAWS:,} combinaciones de pesos Dirichlet centradas en los pesos elegidos."
-).replace(",", " ")
+    f"entre los demás. Estabilidad: {STABILITY_DRAWS:,} combinaciones de pesos Dirichlet centradas en los pesos elegidos. "
+    f"Empate práctico: menos de {TIE_POINTS:g} puntos entre el primero y el segundo, o un primero que gana en menos del "
+    f"{STABLE_SHARE * 100:.0f} % de las combinaciones."
+)
 
 
 def criterion_score(criterion: Criterion, value: float | None) -> float | None:

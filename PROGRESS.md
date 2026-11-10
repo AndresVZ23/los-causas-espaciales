@@ -224,9 +224,10 @@ Los siete módulos funcionan sobre el contrato común C2, y cada dato satelital 
 | 3 · Amenazas | Funcional | Deslizamientos de NASA frente a CENEPRED; IMERG y CHIRPS | ADR-034 a ADR-037 |
 | 4 · Ambiente | Funcional | ESA WorldCover frente a MODIS | ADR-032, ADR-040 |
 | 5 · Territorio | Patrimonio funcional | Sin segunda fuente; comunidades y conflictos siguen como brecha | ADR-032 |
-| 6 · Infraestructura | Piloto vial funcional | Copernicus para el relieve | K2 |
-| 7 · Inversión | Piloto inmobiliario funcional | Copernicus para el relieve | K3 |
+| 6 · Infraestructura | Piloto vial funcional | Copernicus para el relieve, en los descubrimientos y en el puntaje | K2, ADR-043 |
+| 7 · Inversión | Piloto inmobiliario funcional | Copernicus para el relieve, en los descubrimientos y en el puntaje | K3, ADR-043 |
 
-- **Puerta al 10-nov:** 250 pruebas backend, build de Next.js con 20 rutas, `npm audit` en 0 y QA en navegador a 1440, 768 y 390 px.
+- **Puerta al 10-nov:** 260 pruebas backend, build de Next.js con 20 rutas, `npm audit` en 0 y QA en navegador a 1440, 768 y 390 px.
+- **El puntaje dice si depende del modelo de elevación:** solar, eólica, vial e inmobiliario lo recalculan con la pendiente de Copernicus y declaran si cambia el primer lugar (ADR-043).
 - **Lo que falta para la entrega del 15-nov:** escenarios de demo, video, pitch y textos, QA de usuario y la puerta final con la etiqueta `v0.1.0`. El detalle y las ideas para sumar están en `docs/equipo/pipeline.html`.
 - **Brechas que siguen declaradas:** aforos y mediciones en sitio, comunidades y conflictos, emergencias viales reales, distancia a la red eléctrica, persistencia de ejecuciones.

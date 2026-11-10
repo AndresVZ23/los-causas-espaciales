@@ -666,3 +666,27 @@ Por eso se consulta una malla de 5 × 5 puntos cada 0.02° (±4.4 km) y se toma 
 - Conftest sin red para GloFAS y GEOGLOWS.
 - Build con 20 rutas.
 - QA `hydro_shots` en 1440 y 390: 0 errores de consola, 0 desbordamiento, PDF de 6 páginas.
+
+## ADR-043 — El relieve cruzado llega a los pilotos vial e inmobiliario y al puntaje
+
+**Motivo.** Los pilotos vial e inmobiliario ya recibían la pendiente de Copernicus GLO-30 junto a la de NASADEM (ADR-039), pero no la usaban: eran los dos únicos sectores sin descubrimientos. Además, cuatro puntajes (solar, eólico, vial e inmobiliario) puntúan la pendiente de NASADEM en un solo punto y no decían qué pasa si el otro modelo tiene razón.
+
+**Decisión.**
+- **Descubrimientos:** `terrain_discoveries` se aplica también a vial e inmobiliario y queda en la etapa «Resultados». Si ningún punto tiene contraste, la etapa dice «Sin contraste del relieve», no «ninguno»: una lista vacía ahí significa que no hubo con qué cruzar.
+- **Puntaje (`orchestration/slope_check.py`):** se recalcula con la pendiente de Copernicus en lugar de la de NASADEM y una nota dice si el primer lugar cambia y con qué puntajes. La nota usa los pesos iniciales y lo declara, porque el usuario puede editarlos después.
+- **Cuándo no se compara:** si a algún sujeto con pendiente le falta el contraste (no se mezclan modelos) o si hay menos de dos sujetos con puntaje.
+- **Texto del método del puntaje:** ahora declara la regla de empate práctico (menos de 5 puntos o un primero que gana en menos del 75 % de las combinaciones). Un reemplazo de comas le había quitado la puntuación; quedó corregido.
+
+**Resultado real del 10-nov-2026.**
+
+| Sector | Primer lugar con NASADEM | Con la pendiente de Copernicus |
+|---|---|---|
+| Vial (corredor Moquegua–Ilo) | Tramo 5 (48.5) frente a Tramo 2 (38.7) | No cambia: Tramo 5 (44.4) frente a Tramo 4 (37.1) |
+| Solar (Moquegua y Arequipa) | Arequipa, empate práctico | No cambia: Arequipa (66.9) frente a Moquegua (65.6) |
+| Eólico (Marcona y Moquegua) | Marcona por 50 puntos | No cambia: Marcona (67.4) frente a Moquegua (16.3) |
+| Inmobiliario (tres áreas de ejemplo) | Cerro Colorado, empate práctico | No cambia: Cerro Colorado (78.7) frente a Moquegua (74.5) |
+
+- **El hallazgo del corredor:** el Tramo 5 lidera por su pendiente, 17.9° en NASADEM. Copernicus da 12.5° en el mismo punto: sigue siendo el más empinado (los demás tramos van de 1.2° a 4.2°), pero ya no supera el umbral de 15° de pendiente fuerte. El orden se sostiene; la magnitud debe confirmarse con topografía.
+- En los cinco tramos NASADEM da entre 2.0° y 5.5° más de pendiente que Copernicus, con la elevación a 6 m o menos. En los puntos de solar, eólica e inmobiliario la diferencia es menor de 2° y va en ambos sentidos. La causa de ese sesgo sobre el corredor no se ha investigado.
+
+**Verificación.** 10 pruebas nuevas (260 en total): seis en `test_slope_check.py` con puntajes calculados a mano y dos en cada piloto. Regresión en navegador de vial e inmobiliario en 1440/768/390 sin errores ni desbordes.

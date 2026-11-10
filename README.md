@@ -25,6 +25,7 @@ En todos los módulos:
 - Respuestas a las cinco preguntas del reto «Be An Earth System Trend Detective!».
 - «Descubrimientos»: lo que aparece al cruzar fuentes (confirmaciones, contradicciones y artefactos probables).
 - Supuestos financieros editables, escenarios base, adverso y favorable, tornado y puntos de equilibrio.
+- En energía, infraestructura e inversión, un puntaje multicriterio con escalas y pesos a la vista y su estabilidad ante 2,000 combinaciones de pesos; donde puntúa la pendiente, dice si el primer lugar cambia con el segundo modelo de elevación.
 - Brechas declaradas: lo que falta para una decisión de factibilidad, nunca convertido en cero.
 - Reporte ejecutivo en PDF con huella SHA-256, exportación JSON y un asistente que explica el resultado.
 

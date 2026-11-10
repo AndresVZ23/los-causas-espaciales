@@ -29,6 +29,7 @@ from ..orchestration.discoveries import record_in_pipeline, terrain_discoveries,
 from ..orchestration.era5_crosscheck import attach_era5, era5_gaps, era5_series
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
+from ..orchestration.slope_check import scorecard_with_slope_check
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -48,7 +49,6 @@ from ..schemas.scoring import Criterion, Direction, Scorecard, ScorecardRequest,
 from ..schemas.screening import AssumptionItem, FinanceScenario, PipelineStatus, StageEvidence, StudySubject, SubjectKind, SubjectSensitivity
 from ..schemas.terrain import TerrainResponse
 from ..schemas.wind import WindAssumptions, WindAtlasCheck, WindResource, WindScreeningRequest, WindScreeningResponse, WindSiteResult
-from ..scoring.multicriteria import build_scorecard
 from .energy_common import BREAK_EVEN_SPAN, break_even_note, fmt_value, lower_first, scenario_npv
 from .wind_energy import (
     SHEAR_LIMITS,
@@ -331,7 +331,7 @@ def wind_scorecard(subjects: list[StudySubject], results: list[WindSiteResult], 
         missing = [row.subject for row in rows if row.values[key] is None]
         if missing:
             notes.append(f"Sin {name} para {', '.join(missing)}: ese criterio queda fuera y su peso se reparte (ver cobertura).")
-    return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    return scorecard_with_slope_check(ScorecardRequest(criteria=criteria, subjects=rows), notes, terrain)
 
 
 def _data_gaps(terrain: TerrainResponse | None, atlas_errors: list[str]) -> list[DataGap]:

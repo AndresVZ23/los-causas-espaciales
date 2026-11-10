@@ -10,6 +10,7 @@ from shapely.geometry import shape
 
 from backend.app.main import app
 from backend.app.orchestration.conformance import envelope_violations
+from backend.app.orchestration.discoveries import NO_TERRAIN_CHECK
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.real_estate import (
     RealEstateAssumptions,
@@ -20,7 +21,8 @@ from backend.app.schemas.real_estate import (
     RealEstateTerritorialSourceSummary,
     RealEstateTerritoryReference,
 )
-from backend.app.schemas.terrain import TerrainMetrics, TerrainResponse, TerrainSiteResult
+from backend.app.schemas.screening import DiscoveryKind
+from backend.app.schemas.terrain import TerrainCrosscheck, TerrainMetrics, TerrainResponse, TerrainSiteResult
 from backend.app.sectors import real_estate
 
 GEOD = Geod(ellps="WGS84")
@@ -284,6 +286,44 @@ def test_large_ign_territory_is_analysis_area_and_single_subject_is_not_comparis
     assert response.scorecard.margin is None
     assert response.scorecard.tie is False
     assert any("no existe comparación" in note for note in response.scorecard.notes)
+
+
+def test_second_elevation_model_becomes_discoveries_in_results_stage(monkeypatch):
+    async def checked_terrain(points):
+        terrain, error, elapsed = await _terrain(points)
+        for index, site in enumerate(terrain.sites):
+            site.crosscheck = TerrainCrosscheck(
+                source="Copernicus GLO-30",
+                elevation_m=site.metrics.elevation_m + 2,
+                slope_degrees=site.metrics.slope_degrees + (14 if index == 0 else 0.4),
+                tile_url="https://example.invalid/Copernicus_DSM_COG_10.tif",
+                provenance=Provenance.CACHED,
+                downloaded_at=datetime(2026, 10, 23, tzinfo=timezone.utc),
+            )
+        return terrain, error, elapsed
+
+    monkeypatch.setattr(real_estate, "extract_power", _power)
+    monkeypatch.setattr(real_estate, "extract_terrain", checked_terrain)
+    monkeypatch.setattr(real_estate, "_spatial_exposures", _spatial)
+    monkeypatch.setattr(real_estate, "_territorial_evidence", _territory)
+    response = asyncio.run(real_estate.run_real_estate_screening(_request()))
+
+    assert envelope_violations(response) == []
+    assert [item.subjects for item in response.discoveries] == [["Terreno A"], ["Terreno B"]]
+    # Terreno A: 3° en NASADEM y 17° en Copernicus, a ambos lados del umbral de pendiente fuerte.
+    assert response.discoveries[0].kind == DiscoveryKind.CONTRADICTION
+    assert "cruza el umbral" in response.discoveries[0].title
+    assert response.discoveries[1].kind == DiscoveryKind.AGREEMENT
+    results = next(item for item in response.pipeline if item.key == "results")
+    recorded = next(item for item in results.evidence if item.label == "Descubrimientos al cruzar fuentes")
+    assert recorded.value == "1 contradicciones · 1 coincidencias"
+
+
+def test_no_second_elevation_model_is_declared_not_read_as_agreement(estate_response):
+    assert estate_response.discoveries == []
+    results = next(item for item in estate_response.pipeline if item.key == "results")
+    recorded = next(item for item in results.evidence if item.label == "Descubrimientos al cruzar fuentes")
+    assert recorded.value == NO_TERRAIN_CHECK
 
 
 def test_real_estate_endpoint_rejects_non_polygon_before_external_io():

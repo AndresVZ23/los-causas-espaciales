@@ -1125,3 +1125,19 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Verificación:** 250 pruebas backend (25 nuevas), build con 20 rutas, `npm audit` en 0, auditor científico `ok: true`, QA en navegador 1440/768/390 (puerta de cierre y pantalla hidroeléctrica) sin errores de consola ni desbordes. Detalle en ADR-042.
 
 **Bloqueos:** ninguno. No se hace push ni se crea `v0.1.0` sin la aprobación de Christian.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · El relieve cruzado en vial, inmobiliario y el puntaje (ADR-043)
+
+**Qué entró (sobre el commit hidroeléctrico `a33f782`):**
+- **Descubrimientos en vial e inmobiliario:** `sectors/road.py` y `sectors/real_estate.py` registran el contraste NASADEM ↔ Copernicus que `extract_terrain` ya traía. Tres líneas por sector; el resto del cálculo de K2 y K3 no cambia.
+- **Puntaje recalculado con el segundo modelo (`orchestration/slope_check.py`):** solar, eólico, vial e inmobiliario agregan una nota que dice si el primer lugar cambia con la pendiente de Copernicus. `_scorecard` de vial e inmobiliario recibe `terrain` como parámetro opcional.
+- **`record_in_pipeline(..., empty=)`:** en vial e inmobiliario, una lista vacía se declara como «Sin contraste del relieve».
+- **Texto del método del puntaje:** declara la regla de empate práctico y recupera las comas que un `replace` le quitaba. En pantalla, el empate ya no dice «solo en 99 %».
+
+**Resultado real:** en el corredor Moquegua–Ilo, el Tramo 5 tiene 17.9° en NASADEM y 12.5° en Copernicus; sigue primero (44.4 frente a 37.1). En solar, eólico e inmobiliario el primer lugar tampoco cambia. Detalle en ADR-043.
+
+**Regresión funcional de los módulos existentes (10-nov, stack 3100/8000):** `pipeline`, `climate_ui`, `baseline_ui`, `road_ui`, `realestate_ui`, `scorecard_ui`, `sensitivity_ui`, `assistant_ui`, `territory_ui`, `layers_ui`, `geometry_ui`, `pdf_e2e`, `release_ui` y `energy_ui`, cada uno en 1440/768/390 donde aplica: sin errores de consola, sin desbordes y sin recortes.
+
+**Para Codex:** sin fuentes ni dependencias nuevas. `road.py` y `real_estate.py` son tuyos: revisa el cambio antes de fusionar.
+
+**Verificación:** 260 pruebas backend (10 nuevas), build con 20 rutas, `npm audit` en 0.

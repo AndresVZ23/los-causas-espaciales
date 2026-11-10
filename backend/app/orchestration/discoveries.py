@@ -341,7 +341,7 @@ def terrain_discoveries(terrain: TerrainResponse | None) -> list[Discovery]:
         slope_apart = both_slopes and abs(check.slope_degrees - metrics.slope_degrees) >= SLOPE_APART_DEGREES
         if steep:
             out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{label}: la pendiente cruza el umbral de {STEEP_SLOPE_DEGREES:.0f}° según el modelo de elevación",
-                                 detail=f"{said} Un modelo la da como pendiente fuerte y el otro no: el costo de montaje y la lectura de movimientos en masa "
+                                 detail=f"{said} Un modelo la da como pendiente fuerte y el otro no: el costo de la obra y la lectura de movimientos en masa "
                                         f"dependen de esto; verificar con topografía.", subjects=[label], sources=sources))
         elif slope_apart or abs(elevation_gap) >= ELEVATION_APART_M:
             out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{label}: NASADEM y Copernicus difieren en el relieve",
@@ -354,7 +354,12 @@ def terrain_discoveries(terrain: TerrainResponse | None) -> list[Discovery]:
     return out
 
 
-def record_in_pipeline(pipeline: list[PipelineStage], discoveries: Sequence[Discovery]) -> None:
+NOTHING_NOTABLE = "Ninguno: las fuentes cruzadas no muestran discrepancias ni coincidencias destacables"
+# Donde el único contraste es el relieve, una lista vacía significa que no hubo con qué cruzar, no que todo coincida.
+NO_TERRAIN_CHECK = "Sin contraste del relieve: NASADEM o Copernicus GLO-30 no estuvieron disponibles en los puntos representativos"
+
+
+def record_in_pipeline(pipeline: list[PipelineStage], discoveries: Sequence[Discovery], empty: str = NOTHING_NOTABLE) -> None:
     """Los descubrimientos entran a la etapa «Resultados» del pipeline como evidencia propia."""
     results = next((item for item in pipeline if item.key == "results"), None)
     if results is None:
@@ -364,7 +369,7 @@ def record_in_pipeline(pipeline: list[PipelineStage], discoveries: Sequence[Disc
         by_kind[item.kind] += 1
     labels = {DiscoveryKind.PROBABLE_ARTIFACT: "artefactos probables", DiscoveryKind.CONFIRMED: "confirmados", DiscoveryKind.UNBACKED: "sin respaldo",
               DiscoveryKind.AGREEMENT: "coincidencias", DiscoveryKind.CONTRADICTION: "contradicciones"}
-    value = " · ".join(f"{count} {labels[kind]}" for kind, count in by_kind.items()) or "Ninguno: las fuentes cruzadas no muestran discrepancias ni coincidencias destacables"
+    value = " · ".join(f"{count} {labels[kind]}" for kind, count in by_kind.items()) or empty
     results.evidence.append(StageEvidence(label="Descubrimientos al cruzar fuentes", value=value, provenance=Provenance.MODEL))
     if discoveries:
         results.summary = f"{results.summary} {len(discoveries)} descubrimiento(s) al cruzar fuentes independientes."
