@@ -1,6 +1,8 @@
 # Los Causas Espaciales
 
-Plataforma de inteligencia territorial para convertir datos de observación de la Tierra en decisiones de inversión trazables. Esta primera versión operativa implementa un screening solar comparativo para Moquegua y Arequipa con datos reales de NASA POWER.
+Plataforma de inteligencia territorial para convertir datos de observación de la Tierra en decisiones de inversión trazables. Tiene siete módulos: clima, energía (solar y eólica), amenazas, ambiente, patrimonio, infraestructura vial e inversión inmobiliaria. Cada dato se contrasta con una segunda fuente independiente.
+
+**¿Eres del equipo?** Empieza por [`docs/equipo/EMPEZAR_AQUI.md`](docs/equipo/EMPEZAR_AQUI.md), con la puesta en marcha, la forma de trabajo y las reglas. Lo hecho, lo que falta y las ideas para agregar están en [`docs/equipo/PIPELINE.md`](docs/equipo/PIPELINE.md).
 
 ## Qué puede hacer hoy
 
@@ -27,7 +29,8 @@ La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; si
 El proyecto está aislado de MyFix. Usa `localhost:3100` para la web y `localhost:8000` para la API; no utiliza el puerto 3000.
 
 ```powershell
-cd "C:\Users\USUARIO\Desktop\Codex\Nasa Space Apps Challenge"
+git clone https://github.com/ChristianVenegas7/los-causas-espaciales.git
+cd los-causas-espaciales
 Copy-Item .env.example .env
 docker compose -p los-causas-espaciales up -d --build
 ```
@@ -43,8 +46,9 @@ Los documentos internos de seguimiento no forman parte de la aplicación; se abr
 
 ## Ejecución local sin Docker
 
+Desde la carpeta del repositorio:
+
 ```powershell
-cd "C:\Users\USUARIO\Desktop\Codex\Nasa Space Apps Challenge"
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --port 8000
@@ -53,7 +57,7 @@ python -m venv .venv
 En otra terminal:
 
 ```powershell
-cd "C:\Users\USUARIO\Desktop\Codex\Nasa Space Apps Challenge\frontend"
+cd frontend
 npm.cmd install
 npm.cmd run dev
 ```
