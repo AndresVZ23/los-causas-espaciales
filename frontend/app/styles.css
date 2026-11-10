@@ -176,6 +176,31 @@ td.agreement small { display: block; margin-top: 2px; color: var(--subtle); font
 td.agreement.coincide { color: var(--positive); }td.agreement.contradice, td.agreement.sin_respaldo { color: var(--warning); }
 td.agreement.sin_tendencia { color: var(--muted); }
 .siteNotes { display: grid; gap: 4px; margin: 10px 0; }.siteNotes p { margin: 0; color: var(--muted); font-size: 12px; }
+/* Piloto hidroeléctrico: cada aprovechamiento tiene dos puntos (toma y casa de máquinas). */
+.hydroEditor { display: grid; gap: 8px; }
+.hydroSite { display: grid; gap: 7px; padding: 9px; border: 1px solid var(--border); border-radius: 2px; }
+.hydroSite label { min-width: 0; display: grid; gap: 3px; color: var(--muted); font: 10px/1.2 var(--font-data-mono), monospace; }
+.hydroSiteHead { display: grid; grid-template-columns: 20px 1fr auto; gap: 7px; align-items: end; }
+.hydroSiteHead > span { height: 31px; display: grid; place-items: center; border: 1px solid var(--border); color: var(--accent); font: 10px var(--font-data-mono), monospace; }
+.hydroPoint { margin: 0; padding: 0; border: 0; min-width: 0; display: grid; grid-template-columns: 1fr 1fr auto; gap: 7px; align-items: end; }
+.hydroPoint legend { padding: 0 0 3px; color: var(--text); font-size: 11px; font-weight: 600; }
+.hydroEditor button { min-height: 31px; padding: 0 9px; border: 1px solid #465058; border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.hydroEditor button:hover { border-color: var(--accent); color: var(--text); }
+.hydroEditor button[aria-pressed="true"] { border-color: var(--accent); background: rgba(56,217,195,.12); color: var(--accent); }
+.hydroAdd { justify-self: start; }
+.hydroDetail { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 8px 28px; align-items: start; }
+.hydroDetail .siteNotes { margin-top: 18px; }
+@media (max-width: 900px) { .hydroDetail { grid-template-columns: 1fr; }.hydroDetail .siteNotes { margin-top: 4px; } }
+.durationCurve { margin: 14px 0 6px; }
+.durationCurve svg { display: block; width: 100%; max-width: 620px; height: auto; }
+.durationCurve figcaption { margin-top: 4px; color: var(--subtle); font: 10px/1.4 var(--font-data-mono), monospace; }
+.curveGrid { stroke: var(--rule); stroke-width: 1; }
+.curveTick { fill: var(--muted); font: 10px var(--font-data-mono), monospace; }
+.curveLabel { fill: var(--text); font: 10px var(--font-data-mono), monospace; }
+.curveDesign { stroke: var(--muted); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.curveEco { stroke: var(--subtle); stroke-width: 1; }
+.compactTable td small { display: block; margin-top: 2px; color: var(--subtle); font: 400 10px/1.2 var(--font-data-mono), monospace; }
+@media (max-width: 560px) { .hydroPoint { grid-template-columns: 1fr 1fr; }.hydroPoint button { grid-column: 1 / -1; min-height: 44px; }.hydroSiteHead button, .hydroAdd { min-height: 44px; } }
 .methodPanel { margin-top: 14px; }.methodPanel p { color: var(--muted); font-size: 12px; }
 .verdictAssumptions { padding: 7px 0 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); }
 .verdictAssumptions p { min-width: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; }

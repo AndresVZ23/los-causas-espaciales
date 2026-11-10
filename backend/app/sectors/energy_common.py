@@ -1,4 +1,4 @@
-"""Piezas comunes de los pilotos de energía (solar y eólico): formato de factores, notas de equilibrio y escenarios."""
+"""Piezas comunes de los pilotos de energía (solar, eólico e hidroeléctrico): formato de factores, notas de equilibrio y escenarios."""
 
 from ..schemas.screening import SubjectSensitivity
 
@@ -9,6 +9,8 @@ def fmt_value(value: float, unit: str) -> str:
     if unit == "USD" or unit == "USD/año":
         amount = f"USD {value / 1e6:,.2f} M" if abs(value) >= 1e6 else f"USD {value:,.0f}"
         return amount + ("/año" if unit == "USD/año" else "")
+    if unit == "USD/MW":
+        return f"USD {value / 1e6:,.2f} M por MW"
     if unit == "fracción":
         return f"{value * 100:.1f} %"
     return f"{value:,.2f} {unit}".strip()

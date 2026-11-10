@@ -1097,3 +1097,31 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Docker:** `docker compose build api` no pudo ejecutarse porque el motor Linux de Docker Desktop no estaba activo (`dockerDesktopLinuxEngine` inexistente). No se inició Docker Desktop para evitar levantar o alterar los stacks reservados en 3100/8000. La imagen queda como única verificación operativa pendiente; las pruebas usan la misma versión fijada y el import de Zstandard quedó validado en `.venv`.
 
 **Publicación:** Christian autorizó subir `master` a `origin`. No se crea `v0.1.0`. El SHA remoto exacto se verificará después del push; por definición no puede autorreferenciarse dentro del commit que contiene esta entrada.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · Guía del equipo y piloto hidroeléctrico (ADR-042)
+
+**Qué entró (sobre master `dd09f34`):**
+- **Documentos del equipo:** `docs/equipo/EMPEZAR_AQUI.md`, `docs/equipo/pipeline.html` (red del proyecto, lee `docs/interno/dop-datos.js`) y `CLAUDE.md`. Solo documentación.
+- **Hidroeléctrica de pasada:** tercera tecnología de Energía, con `POST /api/v1/projects/hydro-screening` y `Sector.HYDRO` (C2 aditivo).
+  - Caudal diario GloFAS v4 vía Open-Meteo, con una regla declarada para hallar la celda del cauce.
+  - Segunda opinión del caudal con GEOGLOWS v2, buscada en una malla de ±4.4 km, en segundo plano y con 40 s de espera.
+  - Salto con NASADEM entre toma y casa de máquinas, contrastado con Copernicus; sin token de Earthdata funciona con Copernicus.
+  - Energía día por día, curva de duración, potencia como resultado, VAN con tornado, puntaje, descubrimientos y PDF.
+- **Piezas comunes tocadas (sin cambiar el comportamiento de los otros sectores):**
+  - `orchestration/annual_crosscheck.py` reúne el contraste anual que antes vivía en `era5_crosscheck.py`.
+  - `extraction_stage(..., provider=)` y `SectorLens.location_note`, ambos con el valor anterior por defecto.
+  - `discoveries.short()` reconoce GEOGLOWS; nuevas constantes de caudal y salto.
+
+**Validación:** producción COES 2024 de la C.H. Machupicchu (1,252,221 MWh; 192.45 MW; factor de planta 74.1 %). El modelo da entre 64.7 % y 77.1 % según el caudal ecológico que se suponga, y 163 MW de potencia. Detalle y límites en ADR-042.
+
+**Para Codex:**
+- **DATA_SOURCES.md:** faltan dos fichas.
+  - GloFAS v4 (Copernicus EMS) vía Open-Meteo Flood API: `https://flood-api.open-meteo.com/v1/flood`, variable `river_discharge`, 0.05°, válido desde 1997-01-01 en esa API. Anotar la licencia de Copernicus y que el uso gratuito de Open-Meteo es solo no comercial y con cuota.
+  - GEOGLOWS River Forecast System v2: `https://geoglows.ecmwf.int/api/v2/` (`getriverid`, `annualaverages`), CC BY 4.0, simulación histórica forzada con ERA5.
+- **Sin dependencias nuevas.**
+- **Docker:** la imagen de la API se reconstruyó aquí y el stack 3100/8000 corre con este commit. La caché del contenedor es un volumen aparte de la del `.venv`.
+- **Cuidado con las cuotas al probar:** una serie nueva de GloFAS pesa ~76 llamadas de Open-Meteo (tope 600 por minuto) y GEOGLOWS corta las ráfagas de más de unas pocas conexiones.
+
+**Verificación:** 250 pruebas backend (25 nuevas), build con 20 rutas, `npm audit` en 0, auditor científico `ok: true`, QA en navegador 1440/768/390 (puerta de cierre y pantalla hidroeléctrica) sin errores de consola ni desbordes. Detalle en ADR-042.
+
+**Bloqueos:** ninguno. No se hace push ni se crea `v0.1.0` sin la aprobación de Christian.

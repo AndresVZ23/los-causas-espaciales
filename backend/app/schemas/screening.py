@@ -24,6 +24,7 @@ class Sector(StrEnum):
     CLIMATE = "climate"
     SOLAR = "solar"
     WIND = "wind"                  # energía eólica: módulo Energía, segunda tecnología
+    HYDRO = "hydro"                # energía hidroeléctrica de pasada: módulo Energía, tercera tecnología
     ROAD = "road"
     REAL_ESTATE = "real_estate"
     ENVIRONMENT = "environment"    # módulo 4: línea base ambiental (medios físico y biológico)

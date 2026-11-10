@@ -11,6 +11,8 @@ POWER_VARIABLE_LABELS: dict[str, str] = {
     "WS50M": "Velocidad del viento a 50 m",
     "PRECTOTCORR": "Precipitación corregida",
     "IMERG_PRECTOT": "Precipitación satelital GPM IMERG",
+    # No es de NASA POWER: caudal diario de GloFAS (piloto hidroeléctrico). Comparte el catálogo para no duplicar etiquetas.
+    "RIVER_DISCHARGE": "Caudal del río",
 }
 
 

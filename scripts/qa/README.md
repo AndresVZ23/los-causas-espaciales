@@ -13,5 +13,9 @@ Instalación única: `cd scripts\qa` y luego `npm.cmd install` (Playwright 1.61.
 | `bench_power.py` | Tiempo de extracción NASA POWER (fría y con caché) y parseo | `.venv\Scripts\python.exe scripts\qa\bench_power.py` |
 | `token_check.py` | Fechas del token Earthdata y lectura autenticada de 1 byte, sin imprimir el token | `.venv\Scripts\python.exe scripts\qa\token_check.py` |
 | `hr_real.py` | Contraste de Hamed–Rao con `pymannkendall` sobre una respuesta real (requiere instalar esa librería aparte) | `python scripts\qa\hr_real.py .claude-qa\datos\screening.json` |
+| `release_ui.cjs` | Puerta visual de cierre a 1440/768/390: recortes, desborde, teclado y estados de carga y error | `node scripts\qa\release_ui.cjs` |
+| `energy_ui.cjs` | Energía eólica e hidroeléctrica en el navegador: ejecución real, lectura, gráfico, evidencia, recortes y PDF | `node scripts\qa\energy_ui.cjs` |
+| `coes_production.py` | Producción real por central del COES en un año, para validar los pilotos de energía (ADR-041, ADR-042) | `.venv\Scripts\python.exe scripts\qa\coes_production.py 2024 --tipo EOL` |
+| `validate_hydro.py` | Modelo hidroeléctrico frente a la producción real de la C.H. Machupicchu (ADR-042) | `.venv\Scripts\python.exe scripts\qa\validate_hydro.py` |
 
 Variable `QA_BASE_URL`: URL de la consola (por defecto `http://localhost:3100`).

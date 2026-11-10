@@ -21,7 +21,7 @@ export const windTabs = [
 
 const atlasLevel = (site: WindSite) => site.resource.level_factor !== 1;
 
-export type EnergyTech = "solar" | "wind";
+export type EnergyTech = "solar" | "wind" | "hydro";
 
 export function EnergyTechControls({ tech, onTech }: { tech: EnergyTech; onTech: (tech: EnergyTech) => void }) {
   return (
@@ -31,6 +31,8 @@ export function EnergyTechControls({ tech, onTech }: { tech: EnergyTech; onTech:
         <span>Solar fotovoltaica<small>Irradiancia NASA POWER (CERES) cruzada con ERA5</small></span></label>
       <label className="layerOption"><input type="radio" name="tecnologia" checked={tech === "wind"} onChange={() => onTech("wind")} />
         <span>Eólica<small>Viento horario NASA POWER a 50 m, nivel del Atlas Eólico Global y contraste ERA5</small></span></label>
+      <label className="layerOption"><input type="radio" name="tecnologia" checked={tech === "hydro"} onChange={() => onTech("hydro")} />
+        <span>Hidroeléctrica de pasada<small>Caudal diario GloFAS cruzado con GEOGLOWS y salto NASADEM cruzado con Copernicus</small></span></label>
     </section>
   );
 }

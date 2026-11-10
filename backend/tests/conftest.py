@@ -1,21 +1,25 @@
 """Aislamiento común: ninguna prueba sale a la red por CHIRPS (NASA SERVIR ClimateSERV), por los deslizamientos de NASA,
-por ERA5 (PVGIS), por Copernicus DEM, por ESA WorldCover, por NASA POWER horario ni por el Atlas Eólico Global."""
+por ERA5 (PVGIS), por Copernicus DEM, por ESA WorldCover, por NASA POWER horario, por el Atlas Eólico Global ni por el
+caudal de GloFAS y GEOGLOWS."""
 
+import math
 from collections import Counter
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import numpy as np
 import pytest
 
 from backend.app.connectors.copernicus.dem import DemPoint
+from backend.app.connectors.copernicus.glofas import FlowCell, GlofasSeries
 from backend.app.connectors.esa.worldcover import Composition
+from backend.app.connectors.geoglows.streamflow import RiverChoice
 from backend.app.connectors.gwa.wind_atlas import AtlasPoint
 from backend.app.connectors.nasa.power_hourly import HourlyWind
 from backend.app.connectors.jrc.pvgis import Era5Annual
 from backend.app.orchestration import cover_crosscheck, era5_crosscheck, extraction, rainfall_crosscheck
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.data_sources import TerritorialSourceResult
-from backend.app.sectors import baseline, wind
+from backend.app.sectors import baseline, hydro, wind
 
 
 class FlatChirps:
@@ -120,6 +124,37 @@ class FixedWindAtlas:
                           downloaded_at=datetime(2026, 10, 30, tzinfo=timezone.utc), limitations=[])
 
 
+def seasonal_flow(day: date, mean: float = 30.0) -> float:
+    """Caudal sintético: ciclo anual (máximo a mediados de febrero) y un vaivén sin tendencia entre años."""
+    return mean + mean * 2 / 3 * math.cos(2 * math.pi * (day.timetuple().tm_yday - 45) / 365.25) + ((day.year * 7) % 5 - 2) * 0.2
+
+
+class SeasonalGlofas:
+    """GloFAS sintético: 30 m³/s de media con ciclo anual, igual todos los años, en la celda del punto. Sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def discharge(self, latitude, longitude, start, end):
+        observations = [Observation(timestamp=start + timedelta(days=offset), value=seasonal_flow(start + timedelta(days=offset)))
+                        for offset in range((end - start).days + 1)]
+        cell = FlowCell(latitude=round(latitude, 3), longitude=round(longitude, 3), distance_km=1.2, moved=False, point_cell_mean=30.0,
+                        used_cell_mean=30.0, neighborhood_max=31.0, scan_year=end.year - 1)
+        return GlofasSeries(observations=observations, cell=cell, provenance=Provenance.CACHED, downloaded_at=datetime(2026, 11, 10, tzinfo=timezone.utc))
+
+
+class NearbyGeoglows:
+    """GEOGLOWS sintético: el mismo río con 10 % más de caudal medio y sin tendencia. Sin red."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    async def river_near(self, latitude, longitude):
+        annual = [Observation(timestamp=date(year, 7, 1), value=33.0 + ((year * 7) % 5 - 2) * 0.2) for year in range(1990, 2025)]
+        return RiverChoice(river_id=670000001, nearest_river_id=670000001, candidates=1, annual=annual, nearest_mean=33.0,
+                           provenance=Provenance.CACHED, downloaded_at=datetime(2026, 11, 10, tzinfo=timezone.utc))
+
+
 @pytest.fixture(scope="session", autouse=True)
 def offline_connectors():
     """Instala los dobles antes de cualquier fixture de módulo que construya sobres completos."""
@@ -131,6 +166,8 @@ def offline_connectors():
     patch.setattr(cover_crosscheck, "WorldCoverConnector", DesertWorldCover)
     patch.setattr(wind, "PowerHourlyConnector", SteadyHourlyWind)
     patch.setattr(wind, "WindAtlasConnector", FixedWindAtlas)
+    patch.setattr(hydro, "GlofasConnector", SeasonalGlofas)
+    patch.setattr(hydro, "GeoglowsConnector", NearbyGeoglows)
     yield
     patch.undo()
 
@@ -138,8 +175,8 @@ def offline_connectors():
 @pytest.fixture(autouse=True)
 def clear_background_tasks():
     """Evita que una descarga simulada de una prueba contamine la siguiente."""
-    rainfall_crosscheck._inflight.clear()
-    era5_crosscheck._inflight.clear()
+    for pending in (rainfall_crosscheck._inflight, era5_crosscheck._inflight, hydro._inflight):
+        pending.clear()
     yield
-    rainfall_crosscheck._inflight.clear()
-    era5_crosscheck._inflight.clear()
+    for pending in (rainfall_crosscheck._inflight, era5_crosscheck._inflight, hydro._inflight):
+        pending.clear()

@@ -432,7 +432,15 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
         if any(check.source.startswith("ERA5") for site in getattr(envelope, "sites", []) for item in getattr(site, "variables", []) for check in item.counterchecks):
             sources.append("ERA5 (ECMWF) servido por PVGIS 5.3 del JRC de la Comisión Europea (https://re.jrc.ec.europa.eu/api/v5_3/MRcalc), "
                            "temperatura a 2 m e irradiación global horizontal mensuales 2005–2023, como contraste de MERRA-2 y CERES.")
-        wind_sites = [site for site in getattr(envelope, "sites", []) if getattr(site, "resource", None) is not None]
+        # El recurso eólico trae horas; el hidroeléctrico, salto: así se distinguen sin depender del sector.
+        wind_sites = [site for site in getattr(envelope, "sites", []) if getattr(getattr(site, "resource", None), "hours", None) is not None]
+        hydro_sites = [site for site in getattr(envelope, "sites", []) if getattr(site, "head", None) is not None]
+        if hydro_sites:
+            sources.append("GloFAS v4 (Copernicus Emergency Management Service, ECMWF) servido por la Flood API de Open-Meteo "
+                           "(https://open-meteo.com/en/docs/flood-api), caudal diario simulado en celdas de 0.05°, para la curva de duración y la energía.")
+        if any(getattr(site, "flow_check", None) for site in hydro_sites):
+            sources.append("GEOGLOWS River Forecast System v2 (https://geoglows.ecmwf.int), caudal medio anual simulado desde 1940, CC BY 4.0, "
+                           "como segunda opinión del caudal.")
         if wind_sites:
             sources.append(f"NASA POWER, API Hourly Point (https://power.larc.nasa.gov/api/temporal/hourly/point), viento a 10 y 50 m de MERRA-2 "
                            f"{wind_sites[0].resource.years}, para la energía hora por hora con una curva de potencia genérica.")

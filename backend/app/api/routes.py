@@ -22,7 +22,10 @@ from ..schemas.analysis import (
 )
 from ..schemas.pipeline import SolarScreeningRequest, SolarScreeningResponse
 from ..schemas.terrain import TerrainRequest, TerrainResponse
+from ..connectors.copernicus.glofas import GlofasError
+from ..schemas.hydro import HydroScreeningRequest, HydroScreeningResponse
 from ..schemas.wind import WindScreeningRequest, WindScreeningResponse
+from ..sectors.hydro import HydroDataError, HydroSiteError, run_hydro_screening
 from ..sectors.solar import run_solar_screening
 from ..sectors.wind import run_wind_screening
 from ..statistics.trends import analyze_trend, decision_p_value
@@ -44,6 +47,8 @@ def sources():
         {"id": "nasadem-sc", "name": "NASADEM Slope and Curvature V001", "status": "metadata_integrated_raster_requires_auth", "access": "CMR público; raster con Earthdata Login", "url": "https://doi.org/10.5067/MEaSUREs/NASADEM/NASADEM_SC.001"},
         {"id": "nasa-power-hourly", "name": "NASA POWER Hourly (WS50M, WS10M)", "status": "integrated", "access": "public API", "url": "https://power.larc.nasa.gov/api/temporal/hourly/point"},
         {"id": "global-wind-atlas", "name": "Global Wind Atlas 4.0 (DTU · World Bank)", "status": "integrated_crosscheck", "access": "public country GeoTIFF by HTTP range, CC BY 4.0", "url": "https://globalwindatlas.info"},
+        {"id": "glofas-openmeteo", "name": "GloFAS v4 river discharge (Copernicus EMS) via Open-Meteo Flood API", "status": "integrated", "access": "public API; free tier is non-commercial", "url": "https://open-meteo.com/en/docs/flood-api"},
+        {"id": "geoglows", "name": "GEOGLOWS River Forecast System v2", "status": "integrated_crosscheck", "access": "public REST API, CC BY 4.0", "url": "https://geoglows.ecmwf.int"},
         {"id": "nasa-gpm-imerg", "name": "NASA GPM IMERG V07", "status": "catalogued_not_integrated", "access": "Earthdata/PPS; authentication may apply", "url": "https://gpm.nasa.gov/data/imerg"},
         {"id": "appeears", "name": "NASA AppEEARS", "status": "integrated_async", "access": "Earthdata Login; token kept in memory and revoked after each operation", "url": "https://appeears.earthdatacloud.nasa.gov/api/"},
         {"id": "cenepred-sigrid", "name": "CENEPRED SIGRID", "status": "integrated_with_license_caveat", "access": "public ArcGIS REST", "url": "https://sigrid.cenepred.gob.pe/sigridv3/"},
@@ -76,6 +81,16 @@ async def wind_screening(request: WindScreeningRequest):
     try:
         return await run_wind_screening(request)
     except PowerConnectorError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.post("/projects/hydro-screening", response_model=HydroScreeningResponse)
+async def hydro_screening(request: HydroScreeningRequest):
+    try:
+        return await run_hydro_screening(request)
+    except HydroSiteError as exc:       # los puntos no permiten una central: el usuario debe corregirlos
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except (PowerConnectorError, GlofasError, HydroDataError) as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 

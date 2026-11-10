@@ -574,3 +574,95 @@ En Marcona, el modelo da 46.7 % neto con el nivel del atlas y 14.0 % con el de M
 - 16 pruebas nuevas en `test_wind.py`: curva, densidad, cizalladura, factor de planta, fórmula, años horarios, parseo horario, BigTIFF/ZSTD sintético ida y vuelta, atlas con nodata y fuera de archivo, sobre C2 con y sin atlas, PDF y descubrimientos.
 - Conftest sin red para el horario y el atlas.
 - QA `wind_shots` en 1440 y 390: 0 errores de consola, 0 desbordamiento, PDF de 6 páginas con las fuentes.
+
+## ADR-042 — Piloto hidroeléctrico de pasada: caudal GloFAS con GEOGLOWS, salto NASADEM con Copernicus
+
+**Motivo.** Es la tercera tecnología del módulo Energía y cierra lo que promete el anteproyecto. Usa el mismo contrato C2 (`Sector.HYDRO`, aditivo) y `POST /api/v1/projects/hydro-screening`. Cada sitio es una toma sobre el río y una casa de máquinas aguas abajo.
+
+**Fuentes.**
+- **Caudal (`connectors/copernicus/glofas.py`):** GloFAS v4 (Copernicus EMS, ECMWF; LISFLOOD forzado con ERA5, celdas de 0.05°) servido por la Flood API de Open-Meteo. Medido el 10-nov-2026: serie diaria válida desde 1997-01-01 (nula antes) hasta hoy, en m³/s.
+- **Cuota de Open-Meteo:** cada consulta pesa días ÷ 14 ÷ 10 llamadas y el tope es 600 por minuto. La historia cerrada (1997 al año pasado, ~76 llamadas) se pide una vez por celda y queda en caché sin vencimiento; el año en curso, 24 h. El uso gratuito de esa API es solo no comercial: un producto comercial debe leer GloFAS del servicio de Copernicus o contratar el plan de pago.
+- **Segunda opinión del caudal (`connectors/geoglows/streamflow.py`):** GEOGLOWS River Forecast System v2 (GEO con ECMWF, NASA, NOAA y BYU; CC BY 4.0), medias anuales desde 1940. También se fuerza con ERA5: cambia el modelo de tránsito (RAPID) y la red de ríos (TDX-Hydro). Es una segunda opinión de modelo, no una medición.
+- **Salto:** elevación de la toma menos la de la casa de máquinas en NASADEM, contrastada con Copernicus GLO-30 (ADR-039). Sin token de Earthdata el salto sale de Copernicus y se declara.
+- **Contexto:** precipitación y temperatura de NASA POWER en la toma, con Mann–Kendall corregido como en los demás sectores.
+
+**Regla del cauce de GloFAS.** El cauce del modelo no siempre pasa por la celda del punto: el río Tambo en El Fiscal da 0.00 m³/s en su celda y 39.2 m³/s (1997–2025) en la vecina. Regla declarada, que no mira otra fuente:
+1. Se lee el caudal medio del último año completo en el vecindario 3 × 3.
+2. Si la celda del punto lleva al menos el 20 % del máximo vecino, se usa.
+3. Si no, se usa la más cercana entre las que llevan al menos el 50 %, y se declara la distancia.
+4. Si ninguna llega a 0.05 m³/s, no hay cauce modelado: error 422 con el motivo, nunca un cero.
+
+**Regla de búsqueda de GEOGLOWS.** `getriverid` no devuelve el tramo cuya línea pasa por el punto. Con el punto exacto del cauce según OpenStreetMap:
+
+| Punto | Tramo que devuelve en el punto | Cauce principal en la malla |
+|---|---|---|
+| Tambo, El Fiscal | 0.00 m³/s | 73.3 m³/s |
+| Tambo alto (Moquegua) | 0.28 m³/s | 50.7–52.2 m³/s |
+| Majes, Corire | 0.64 m³/s | 156.9 m³/s |
+
+Por eso se consulta una malla de 5 × 5 puntos cada 0.02° (±4.4 km) y se toma el tramo de mayor caudal medio. El servicio corta las ráfagas (con seis conexiones cerró la sesión): se usan tres, con reintentos. Un punto nuevo tarda cerca de un minuto, así que la búsqueda corre en segundo plano con 40 s de espera; si no llega, el resultado lo declara «en consulta» y la siguiente ejecución lo trae de caché (30 días).
+
+**Comparación de fuentes (constantes en `orchestration/discoveries.py`).**
+- **Caudal:** coinciden bajo 25 % en la media de los años comunes; difieren desde 50 %. Si una fuente lleva más de diez veces el caudal de la otra, no se comparan: se registra que no ubican el mismo río y no entra al tornado.
+- **Salto:** coinciden bajo 5 %; difieren desde 10 %.
+- **Tendencia del caudal:** se contrasta en los años comunes con BH entre sitios (`orchestration/annual_crosscheck.py`, la misma pieza que ahora usa ERA5).
+
+**Energía (`sectors/hydro_energy.py`, funciones puras).**
+- Caudal ecológico: fracción declarada del caudal medio (10 % por defecto), que se deja siempre en el río.
+- Caudal de diseño: el aprovechable excedido el 30 % del tiempo, o el que el usuario declare para el sitio.
+- Cada día se turbina el caudal aprovechable con tope en el de diseño; bajo el mínimo técnico (20 % del de diseño) la central para.
+- Potencia = ρ · g · Q · salto neto · eficiencia; la potencia instalada es un resultado, no un supuesto, y el CAPEX se declara por MW.
+- Solo entran años con al menos el 90 % de sus días. Es una central sin embalse.
+
+**Decisión: GloFAS en el caso base.** GEOGLOWS da entre 49 % y 64 % más caudal que GloFAS en los dos sitios de ejemplo, en los años comunes 2001–2024. La producción real respalda a GloFAS (ver validación), así que GEOGLOWS queda como el otro extremo del factor «Caudal (GloFAS ↔ GEOGLOWS)» en el tornado. Con el salto ocurre lo mismo: Copernicus es el otro extremo de «Salto (NASADEM ↔ Copernicus)».
+
+**Validación con producción real (10-nov-2026).** Central Machupicchu, río Vilcanota: 192.45 MW y 61 m³/s de diseño. Represa y casa de máquinas tomadas de OpenStreetMap. El COES registra 1,252,221 MWh en 2024.
+
+| | Factor de planta 2024 | Potencia |
+|---|---|---|
+| Central real (COES) | 74.1 % | 192.45 MW |
+| Modelo, ecológico 10 % (por defecto) | 64.7 % | 163.2 MW |
+| Modelo, ecológico 5 % | 71.8 % | 163.2 MW |
+| Modelo, sin caudal ecológico | 77.1 % | 163.2 MW |
+
+- El valor real cae dentro del rango que abre el supuesto de caudal ecológico: el régimen del río de GloFAS es consistente con la operación de la central. En estiaje GloFAS da unos 29 m³/s, por debajo de los 61 de diseño.
+- La potencia queda 15 % por debajo porque el salto se lee sobre el terreno (330 m entre los dos puntos del mapa), no en el eje de la turbina.
+- Con los supuestos por defecto, la energía de 2024 queda 26 % por debajo de la real: el modelo es prudente.
+- La validación se reproduce con dos guiones fuera del producto: `scripts/qa/coes_production.py 2024 MACHUPICCHU` (producción real) y `scripts/qa/validate_hydro.py` (modelo). El primero también reproduce la validación eólica de ADR-041 con `--tipo EOL`.
+
+**Puntaje (pesos editables).**
+
+| Criterio | Peso |
+|---|---|
+| Factor de planta | 0.20 |
+| Caudal firme en estiaje (Q95 ÷ diseño) | 0.10 |
+| Deriva del caudal (solo si es significativa tras BH) | 0.10 |
+| Confianza del caudal (\|Δ\| GloFAS–GEOGLOWS) | 0.15 |
+| Confianza del salto (\|Δ\| NASADEM–Copernicus) | 0.10 |
+| VAN / CAPEX | 0.35 |
+
+**Brechas declaradas:** aforo en la toma; disponibilidad hídrica y caudal ecológico de la ANA; topografía, geología y sedimentos; red eléctrica; restricciones ambientales y sociales.
+
+**Contrato y piezas comunes (aditivo).** `Sector.HYDRO`; `SectorLens.location_note`; `extraction_stage(..., provider=)`; unidad `m3/s` y variable `RIVER_DISCHARGE` en los catálogos.
+
+**Pantalla y PDF.**
+- Tercera opción en «Tecnología», con editor de toma y casa de máquinas por sitio y botón «Elegir en el mapa».
+- Lectura con potencia, energía y VAN; pestaña Caudal con GloFAS continua y GEOGLOWS punteada.
+- Por sitio: tabla caso base frente a segunda fuente y curva de duración con la línea de plena carga.
+- El PDF cita GloFAS y GEOGLOWS.
+
+**Resultado real del 10-nov-2026 (2001 a hoy).**
+
+| Sitio | Caudal medio | Salto | Potencia | Energía | Segunda opinión del caudal |
+|---|---|---|---|---|---|
+| Machupicchu (río Vilcanota) | 156 m³/s | 330 m | 163 MW | 970 GWh/año | +49 % (intermedia) |
+| Tambo alto (Moquegua) | 32 m³/s | 146 m | 28 MW | 115 GWh/año | +64 % (difieren) |
+
+- En el Tambo, el salto difiere 23 m entre NASADEM (146 m) y Copernicus (169 m).
+- En Machupicchu, GloFAS muestra una tendencia creciente del caudal que GEOGLOWS no repite.
+
+**Verificación:**
+- 25 pruebas nuevas en `test_hydro.py` (250 en total): energía, regla del cauce, conectores con transporte simulado, búsqueda de GEOGLOWS, sobre C2 con y sin segunda fuente, fuente lenta, río no comparable, salto solo con Copernicus, puntos invertidos (422), un solo sitio, PDF.
+- Conftest sin red para GloFAS y GEOGLOWS.
+- Build con 20 rutas.
+- QA `hydro_shots` en 1440 y 390: 0 errores de consola, 0 desbordamiento, PDF de 6 páginas.

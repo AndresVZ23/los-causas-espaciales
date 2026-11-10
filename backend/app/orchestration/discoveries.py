@@ -12,6 +12,7 @@ from ..schemas.analysis import Provenance
 from ..schemas.baseline import BaselineLayer, SubjectBaseline
 from ..schemas.climate import Agreement, ExtremeIndexSummary
 from ..schemas.data_sources import TerritorialSourceResult
+from ..schemas.hydro import HydroSiteResult
 from ..schemas.pipeline import VariableSummary
 from ..schemas.screening import Discovery, DiscoveryKind, PipelineStage, StageEvidence
 from ..schemas.terrain import TerrainResponse
@@ -41,7 +42,18 @@ SOLAR_APART_PERCENT = 10.0
 TEMPERATURE_APART_DEGREES = 2.0
 # Viento: dos reanálisis de celda gruesa difieren a menudo; desde 30 % en la media común, el nivel no sirve para diseño.
 WIND_APART_PERCENT = 30.0
-PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2", "WS50M": "MERRA-2"}
+PRIMARY_BY_VARIABLE = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2", "WS50M": "MERRA-2", "RIVER_DISCHARGE": "GloFAS"}
+# Variables cuya fuente principal no es NASA POWER: cómo se cita y qué significa que la segunda fuente la confirme.
+PRIMARY_SOURCE_LABEL = {"RIVER_DISCHARGE": "GloFAS (Copernicus)"}
+CONFIRMED_NOTE = {"RIVER_DISCHARGE": "Dos modelos hidrológicos con redes de ríos distintas coinciden en significancia y dirección; ambos usan la lluvia de ERA5."}
+# Caudal: GloFAS y GEOGLOWS «coinciden» bajo 25 % en la media común; desde 50 %, difieren. Si uno lleva más de diez
+# veces el caudal del otro no se comparan: los dos modelos no ubican el mismo río en ese punto.
+FLOW_CLOSE_PERCENT = 25.0
+FLOW_APART_PERCENT = 50.0
+FLOW_COMPARABLE_RATIO = 10.0
+# Salto: NASADEM y Copernicus «coinciden» bajo 5 %; desde 10 % la energía cambia en esa misma proporción.
+HEAD_CLOSE_PERCENT = 5.0
+HEAD_APART_PERCENT = 10.0
 # Recurso eólico al buje: NASA POWER y el Atlas Eólico Global «coinciden» bajo 10 %; desde 20 % la energía cambia
 # del orden de 40 % o más (la potencia crece con el cubo del viento en la rampa de la curva).
 ATLAS_CLOSE_PERCENT = 10.0
@@ -51,7 +63,10 @@ CLOSE_CLASSES = 1            # dos fuentes «coinciden» en un punto si difieren
 
 
 def short(source: str) -> str:
-    return "IMERG" if "IMERG" in source else "CHIRPS" if "CHIRPS" in source else "ERA5" if "ERA5" in source else source
+    for name in ("IMERG", "CHIRPS", "ERA5", "GEOGLOWS"):
+        if name in source:
+            return name
+    return source
 
 
 def _order(name: str) -> int:
@@ -138,10 +153,11 @@ def variable_discoveries(sites: Sequence[tuple[str, Sequence[VariableSummary]]])
                 change = f"{label}: {item.label.lower()}"
                 p = f", p BH {check.adjusted_p_value:.3f}" if check.adjusted_p_value is not None else ""
                 slopes = f"En {years}: {primary} {_signed(check.primary_slope_per_year, unit)}; {other} {_signed(check.slope_per_year, unit)}{p}."
-                sources = [f"NASA POWER ({primary})", other]
+                sources = [PRIMARY_SOURCE_LABEL.get(item.variable, f"NASA POWER ({primary})"), other]
                 if check.agreement == Agreement.COINCIDE:
+                    confirmed = CONFIRMED_NOTE.get(item.variable, "Dos reanálisis independientes coinciden en significancia y dirección.")
                     out.append(Discovery(kind=DiscoveryKind.CONFIRMED, title=f"{change}: la tendencia se confirma con {other}",
-                                         detail=f"{slopes} Dos reanálisis independientes coinciden en significancia y dirección.", subjects=[label], sources=sources))
+                                         detail=f"{slopes} {confirmed}", subjects=[label], sources=sources))
                 elif check.agreement == Agreement.CONTRADICE:
                     out.append(Discovery(kind=DiscoveryKind.CONTRADICTION, title=f"{change}: tendencia de signo opuesto en {other}",
                                          detail=f"{slopes} Ninguna de las dos se usa sola: hace falta una estación.", subjects=[label], sources=sources))
@@ -222,6 +238,61 @@ def wind_atlas_discoveries(sites: Sequence[tuple[str, WindResource, WindAtlasChe
                 kind=DiscoveryKind.AGREEMENT, title=f"{label}: NASA POWER y el Atlas Eólico Global coinciden en el recurso",
                 detail=f"{said} Dos productos independientes (reanálisis de NASA y modelo de microescala) dan el mismo nivel dentro de ±{ATLAS_CLOSE_PERCENT:.0f} %.",
                 subjects=[label], sources=sources))
+    return out
+
+
+def flow_verdict(ratio: float | None) -> str:
+    """Cómo se lee el caudal de la segunda fuente frente al de GloFAS (`ratio` = segunda ÷ GloFAS)."""
+    if ratio is None or not (1 / FLOW_COMPARABLE_RATIO <= ratio <= FLOW_COMPARABLE_RATIO):
+        return "no_comparable"
+    gap = abs(ratio - 1) * 100
+    return "coinciden" if gap < FLOW_CLOSE_PERCENT else "difieren" if gap >= FLOW_APART_PERCENT else "intermedio"
+
+
+def hydro_discoveries(sites: Sequence[HydroSiteResult]) -> list[Discovery]:
+    """Caudal (GloFAS frente a GEOGLOWS) y salto (NASADEM frente a Copernicus) de cada aprovechamiento."""
+    out: list[Discovery] = []
+    for site in sites:
+        label, check, head, resource = site.location.label or "Sitio", site.flow_check, site.head, site.resource
+        if check is not None:
+            sources = ["GloFAS (Copernicus)", "GEOGLOWS"]
+            if check.verdict == "no_comparable":
+                out.append(Discovery(
+                    kind=DiscoveryKind.CONTRADICTION, title=f"{label}: GloFAS y GEOGLOWS no ubican el mismo río en la toma",
+                    detail=f"Media {check.period}: GloFAS {check.primary_mean_m3s:,.1f} m³/s en su celda (a {resource.cell.distance_km:.1f} km de la toma); "
+                           f"el mayor de los {check.candidates} tramo(s) que GEOGLOWS devuelve a menos de ~4 km lleva {check.mean_m3s:,.2f} m³/s. "
+                           f"Los dos modelos usan redes de ríos distintas y aquí no hablan del mismo cauce. Confirme que la toma está sobre el río "
+                           f"y contraste con un aforo; esta diferencia no se usa como escenario de caudal.",
+                    subjects=[label], sources=sources))
+            elif check.verdict == "difieren":
+                energy = (f" Con el caudal de GEOGLOWS el factor de planta pasaría de {resource.plant_factor * 100:.0f} % a "
+                          f"{check.plant_factor_at_second * 100:.0f} %." if check.plant_factor_at_second is not None else "")
+                out.append(Discovery(
+                    kind=DiscoveryKind.CONTRADICTION, title=f"{label}: el caudal medio difiere {abs(check.gap_percent):.0f} % entre GloFAS y GEOGLOWS",
+                    detail=f"Media {check.period}: GloFAS {check.primary_mean_m3s:,.1f} m³/s; GEOGLOWS {check.mean_m3s:,.1f} m³/s ({check.gap_percent:+.0f} %).{energy} "
+                           f"Los dos modelos parten de la lluvia de ERA5 y aun así no coinciden: el caudal se resuelve con un aforo en la toma.",
+                    subjects=[label], sources=sources))
+            elif check.verdict == "coinciden":
+                out.append(Discovery(
+                    kind=DiscoveryKind.AGREEMENT, title=f"{label}: GloFAS y GEOGLOWS coinciden en el caudal",
+                    detail=f"Media {check.period}: GloFAS {check.primary_mean_m3s:,.1f} m³/s; GEOGLOWS {check.mean_m3s:,.1f} m³/s ({check.gap_percent:+.0f} %). "
+                           f"Dos modelos hidrológicos con redes de ríos distintas dan el mismo caudal dentro de ±{FLOW_CLOSE_PERCENT:.0f} %; "
+                           f"comparten la lluvia de ERA5, así que no reemplazan un aforo.",
+                    subjects=[label], sources=sources))
+        if head.second_gross_head_m is not None and head.gap_percent is not None and head.second_source:
+            said = (f"Salto bruto: {head.source} {head.gross_head_m:,.0f} m; {head.second_source} {head.second_gross_head_m:,.0f} m "
+                    f"({head.gap_percent:+.1f} %).")
+            sources = [head.source, head.second_source]
+            if abs(head.gap_percent) >= HEAD_APART_PERCENT:
+                out.append(Discovery(
+                    kind=DiscoveryKind.CONTRADICTION, title=f"{label}: el salto difiere {abs(head.gap_m):,.0f} m según el modelo de elevación",
+                    detail=f"{said} La potencia y la energía cambian en la misma proporción: a escala de proyecto manda la topografía.",
+                    subjects=[label], sources=sources))
+            elif abs(head.gap_percent) < HEAD_CLOSE_PERCENT:
+                out.append(Discovery(
+                    kind=DiscoveryKind.AGREEMENT, title=f"{label}: NASADEM y Copernicus coinciden en el salto",
+                    detail=f"{said} Dos misiones de radar independientes (SRTM y TanDEM-X) dan el mismo salto dentro de ±{HEAD_CLOSE_PERCENT:.0f} %.",
+                    subjects=[label], sources=sources))
     return out
 
 
