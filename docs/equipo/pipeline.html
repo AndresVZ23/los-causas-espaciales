@@ -42,9 +42,9 @@
     .netScroll { overflow-x: auto; overflow-y: hidden; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background:
       radial-gradient(1200px 500px at 15% 50%, rgba(56, 217, 195, .06), transparent 60%),
       radial-gradient(900px 500px at 90% 40%, rgba(179, 156, 255, .05), transparent 60%); }
-    .netBox { position: relative; min-width: 900px; }
+    .netBox { position: relative; min-width: 1400px; }
     .layers { display: grid; grid-template-columns: repeat(6, 1fr); }
-    .layer { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 6px 10px; color: var(--muted); font-size: 13px; transition: color .2s; }
+    .layer { display: flex; align-items: center; gap: 8px; padding: 16px 12px 6px; color: var(--muted); font-size: 14px; font-weight: 500; transition: color .2s; text-align: left; }
     .layer:hover, .layer[aria-pressed="true"] { color: var(--text); }
     .layer[aria-pressed="true"] svg { color: var(--signal); }
     .layer.team svg { color: var(--task); }
@@ -59,7 +59,7 @@
     .node .core { fill: var(--c); transition: r .25s; }
     .node .halo { fill: var(--c); opacity: .12; }
     .node.task .core { fill: var(--night); stroke: var(--c); stroke-width: 1.5; stroke-dasharray: 2 2; }
-    .node .lbl { fill: var(--muted); font: 500 11px var(--sans); opacity: 0; pointer-events: none; transition: opacity .2s; paint-order: stroke; stroke: var(--night); stroke-width: 4px; stroke-linejoin: round; }
+    .node .lbl { fill: #b4bec5; font: 500 12px var(--sans); opacity: 0; pointer-events: none; transition: opacity .2s; paint-order: stroke; stroke: var(--night); stroke-width: 4px; stroke-linejoin: round; }
     .node.on .lbl, .node.picked .lbl { fill: var(--text); }
     .names .node .lbl, .node.on .lbl, .node:hover .lbl, .node.picked .lbl { opacity: 1; }
     .node:hover .core, .node.picked .core { r: 7; }
@@ -230,7 +230,7 @@
   <div class="netScroll" id="netScroll">
     <div class="netBox" id="netBox">
       <div class="layers" id="layers"></div>
-      <svg id="net" role="img" aria-label="Red de piezas del proyecto"></svg>
+      <svg id="net" class="names" role="img" aria-label="Red de piezas del proyecto"></svg>
       <div class="tip" id="tip"></div>
     </div>
   </div>
@@ -450,33 +450,57 @@
     // Red en SVG.
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.getElementById("net"), box = document.getElementById("netBox"), tip = document.getElementById("tip");
-    const ROW = 23, PAD = 18;
+    const ROW = 34, PAD = 22, MIN_WIDTH = 1400;
     const tallest = Math.max(...columns.map((c) => c.length));
     const height = PAD * 2 + tallest * ROW;
     const geo = {};
     let paths = [], nodeEls = {};
+    // Nombre completo en una o dos líneas; solo si no cabe en dos se corta con «…».
+    function wrapName(name, max) {
+      const lines = [""];
+      for (const word of name.split(" ")) {
+        const last = lines.length - 1, joined = `${lines[last]} ${word}`.trim();
+        if (joined.length <= max || !lines[last]) lines[last] = joined;
+        else if (lines.length < 2) lines.push(word);
+        else lines[last] = joined;
+      }
+      if (lines[1] && lines[1].length > max) lines[1] = lines[1].slice(0, max - 1) + "…";
+      return lines;
+    }
+    const esc = (text) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;");
     function draw() {
-      const width = Math.max(900, box.clientWidth), colW = width / COLUMNS.length;
+      const width = Math.max(MIN_WIDTH, box.clientWidth), colW = width / COLUMNS.length;
       svg.setAttribute("viewBox", `0 0 ${width} ${height}`); svg.setAttribute("height", height);
       columns.forEach((col, c) => {
         const offset = PAD + ((tallest - col.length) * ROW) / 2;
-        col.forEach((n, i) => { geo[n.id] = { x: colW * (c + 0.5), y: offset + i * ROW + ROW / 2, c }; });
+        col.forEach((n, i) => { geo[n.id] = { x: colW * c + 18, y: offset + i * ROW + ROW / 2, c }; });
       });
-      const curve = (a, b) => { const dx = (b.x - a.x) / 2; return `M${a.x},${a.y} C${a.x + dx},${a.y} ${b.x - dx},${b.y} ${b.x},${b.y}`; };
-      const edgeSvg = links.map((l, i) => `<path class="edge${l.type === "E" ? " enrich" : ""}${l.type === "T" ? " task" : ""}" data-i="${i}" d="${curve(geo[l.source], geo[l.target])}"/>`).join("");
-      const labelW = colW / 2 - 16;
+      const maxChars = Math.floor((colW - 58) / 6.6);
       const nodeSvg = nodes.map((n) => {
         const g = geo[n.id], r = n.kind === "task" ? 5 : 3.6 + Math.min(3, Math.sqrt(preds[n.id].length + succs[n.id].length) * 0.7);
+        g.r = r;
         const name = (n.kind === "task" ? `${n.id} · ` : "") + n.name.replace(/\s*\(.*\)$/, "");
-        const maxChars = Math.floor(labelW / 6.2), short = name.length > maxChars ? name.slice(0, maxChars - 1) + "…" : name;
-        return `<g class="node${n.kind === "task" ? " task" : ""}" data-id="${n.id}" tabindex="0" role="button" aria-label="${name}, ${statusName(n.status)}"
+        const lines = wrapName(name, maxChars);
+        const text = lines.length === 1
+          ? `<tspan x="${r + 8}" y="4">${esc(lines[0])}</tspan>`
+          : `<tspan x="${r + 8}" y="-3">${esc(lines[0])}</tspan><tspan x="${r + 8}" y="11">${esc(lines[1])}</tspan>`;
+        return `<g class="node${n.kind === "task" ? " task" : ""}" data-id="${n.id}" tabindex="0" role="button" aria-label="${esc(name)}, ${statusName(n.status)}"
           style="--c:${statusColor(n.status)};--d:${(g.c * 0.18 + Math.random() * 0.25).toFixed(2)}s" transform="translate(${g.x},${g.y})">
-          <circle class="halo" r="${r + 5}"/><circle class="core" r="${r}"/><text class="lbl" x="${r + 7}" y="4">${short}</text></g>`;
+          <circle class="halo" r="${r + 5}"/><circle class="core" r="${r}"/><text class="lbl">${text}</text></g>`;
       }).join("");
       svg.innerHTML = `<defs><filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
-        <g>${edgeSvg}</g><g id="signals"></g><g>${nodeSvg}</g>`;
-      paths = [...svg.querySelectorAll("path.edge")];
+        <g id="edgeLayer"></g><g id="signals"></g><g>${nodeSvg}</g>`;
       nodeEls = Object.fromEntries([...svg.querySelectorAll(".node")].map((el) => [el.dataset.id, el]));
+      // Las sinapsis entran por el punto y salen por el final del nombre, para no taparlo.
+      nodes.forEach((n) => { const g = geo[n.id]; g.out = g.x + g.r + 8 + nodeEls[n.id].querySelector("text").getBBox().width + 6; });
+      const curve = (a, b) => { const dx = (b.x - a.x) / 2; return `M${a.x},${a.y} C${a.x + dx},${a.y} ${b.x - dx},${b.y} ${b.x},${b.y}`; };
+      svg.querySelector("#edgeLayer").innerHTML = links.map((l, i) => {
+        const s = geo[l.source], t = geo[l.target];
+        const from = l.type === "T" ? { x: s.x - s.r - 4, y: s.y } : { x: s.out, y: s.y };
+        const to = l.type === "T" ? { x: t.out, y: t.y } : { x: t.x - t.r - 4, y: t.y };
+        return `<path class="edge${l.type === "E" ? " enrich" : ""}${l.type === "T" ? " task" : ""}" data-i="${i}" d="${curve(from, to)}"/>`;
+      }).join("");
+      paths = [...svg.querySelectorAll("path.edge")];
       signals.length = 0;
       applyFocus();
     }
@@ -576,7 +600,7 @@
     nodes.forEach((n) => { statusCounts[n.status] = (statusCounts[n.status] || 0) + 1; });
     controls.innerHTML = ["VERIFICADO", "EN_CURSO", "PENDIENTE", "BLOQUEADO", "TAREA"].filter((s) => statusCounts[s]).map((s) =>
       `<button class="chip" data-status="${s}" aria-pressed="false" style="--c:${statusColor(s)}"><i></i>${statusName(s)} <b>${statusCounts[s]}</b></button>`).join("")
-      + `<button class="chip toggle" data-names aria-pressed="false">Mostrar nombres</button>`;
+      + `<button class="chip toggle" data-names aria-pressed="true">Ocultar nombres</button>`;
     function syncChips() { controls.querySelectorAll("[data-status]").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.status === statusFocus))); }
     controls.addEventListener("click", (e) => {
       const c = e.target.closest(".chip"); if (!c) return;
