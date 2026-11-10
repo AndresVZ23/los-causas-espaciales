@@ -129,5 +129,5 @@ def summarize_layer(result: TerritorialSourceResult, component: Component) -> Ba
         status=result.status, intersection_count=result.intersection_count,
         truncated=any("superó 100 objetos" in note for note in result.limitations),
         highlights=highlights, provenance=result.provenance, downloaded_at=result.downloaded_at,
-        source_url=result.source_url, limitations=_readable(result.limitations),
+        source_url=result.source_url, limitations=_readable(result.limitations), stale_note=result.stale_note,
     )

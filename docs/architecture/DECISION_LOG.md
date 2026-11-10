@@ -574,3 +574,164 @@ En Marcona, el modelo da 46.7 % neto con el nivel del atlas y 14.0 % con el de M
 - 16 pruebas nuevas en `test_wind.py`: curva, densidad, cizalladura, factor de planta, fórmula, años horarios, parseo horario, BigTIFF/ZSTD sintético ida y vuelta, atlas con nodata y fuera de archivo, sobre C2 con y sin atlas, PDF y descubrimientos.
 - Conftest sin red para el horario y el atlas.
 - QA `wind_shots` en 1440 y 390: 0 errores de consola, 0 desbordamiento, PDF de 6 páginas con las fuentes.
+
+## ADR-042 — Piloto hidroeléctrico de pasada: caudal GloFAS con GEOGLOWS, salto NASADEM con Copernicus
+
+**Motivo.** Es la tercera tecnología del módulo Energía y cierra lo que promete el anteproyecto. Usa el mismo contrato C2 (`Sector.HYDRO`, aditivo) y `POST /api/v1/projects/hydro-screening`. Cada sitio es una toma sobre el río y una casa de máquinas aguas abajo.
+
+**Fuentes.**
+- **Caudal (`connectors/copernicus/glofas.py`):** GloFAS v4 (Copernicus EMS, ECMWF; LISFLOOD forzado con ERA5, celdas de 0.05°) servido por la Flood API de Open-Meteo. Medido el 10-nov-2026: serie diaria válida desde 1997-01-01 (nula antes) hasta hoy, en m³/s.
+- **Cuota de Open-Meteo:** cada consulta pesa días ÷ 14 ÷ 10 llamadas y el tope es 600 por minuto. La historia cerrada (1997 al año pasado, ~76 llamadas) se pide una vez por celda y queda en caché sin vencimiento; el año en curso, 24 h. El uso gratuito de esa API es solo no comercial: un producto comercial debe leer GloFAS del servicio de Copernicus o contratar el plan de pago.
+- **Segunda opinión del caudal (`connectors/geoglows/streamflow.py`):** GEOGLOWS River Forecast System v2 (GEO con ECMWF, NASA, NOAA y BYU; CC BY 4.0), medias anuales desde 1940. También se fuerza con ERA5: cambia el modelo de tránsito (RAPID) y la red de ríos (TDX-Hydro). Es una segunda opinión de modelo, no una medición.
+- **Salto:** elevación de la toma menos la de la casa de máquinas en NASADEM, contrastada con Copernicus GLO-30 (ADR-039). Sin token de Earthdata el salto sale de Copernicus y se declara.
+- **Contexto:** precipitación y temperatura de NASA POWER en la toma, con Mann–Kendall corregido como en los demás sectores.
+
+**Regla del cauce de GloFAS.** El cauce del modelo no siempre pasa por la celda del punto: el río Tambo en El Fiscal da 0.00 m³/s en su celda y 39.2 m³/s (1997–2025) en la vecina. Regla declarada, que no mira otra fuente:
+1. Se lee el caudal medio del último año completo en el vecindario 3 × 3.
+2. Si la celda del punto lleva al menos el 20 % del máximo vecino, se usa.
+3. Si no, se usa la más cercana entre las que llevan al menos el 50 %, y se declara la distancia.
+4. Si ninguna llega a 0.05 m³/s, no hay cauce modelado: error 422 con el motivo, nunca un cero.
+
+**Regla de búsqueda de GEOGLOWS.** `getriverid` no devuelve el tramo cuya línea pasa por el punto. Con el punto exacto del cauce según OpenStreetMap:
+
+| Punto | Tramo que devuelve en el punto | Cauce principal en la malla |
+|---|---|---|
+| Tambo, El Fiscal | 0.00 m³/s | 73.3 m³/s |
+| Tambo alto (Moquegua) | 0.28 m³/s | 50.7–52.2 m³/s |
+| Majes, Corire | 0.64 m³/s | 156.9 m³/s |
+
+Por eso se consulta una malla de 5 × 5 puntos cada 0.02° (±4.4 km) y se toma el tramo de mayor caudal medio. El servicio corta las ráfagas (con seis conexiones cerró la sesión): se usan tres, con reintentos. Un punto nuevo tarda cerca de un minuto, así que la búsqueda corre en segundo plano con 40 s de espera; si no llega, el resultado lo declara «en consulta» y la siguiente ejecución lo trae de caché (30 días).
+
+**Comparación de fuentes (constantes en `orchestration/discoveries.py`).**
+- **Caudal:** coinciden bajo 25 % en la media de los años comunes; difieren desde 50 %. Si una fuente lleva más de diez veces el caudal de la otra, no se comparan: se registra que no ubican el mismo río y no entra al tornado.
+- **Salto:** coinciden bajo 5 %; difieren desde 10 %.
+- **Tendencia del caudal:** se contrasta en los años comunes con BH entre sitios (`orchestration/annual_crosscheck.py`, la misma pieza que ahora usa ERA5).
+
+**Energía (`sectors/hydro_energy.py`, funciones puras).**
+- Caudal ecológico: fracción declarada del caudal medio (10 % por defecto), que se deja siempre en el río.
+- Caudal de diseño: el aprovechable excedido el 30 % del tiempo, o el que el usuario declare para el sitio.
+- Cada día se turbina el caudal aprovechable con tope en el de diseño; bajo el mínimo técnico (20 % del de diseño) la central para.
+- Potencia = ρ · g · Q · salto neto · eficiencia; la potencia instalada es un resultado, no un supuesto, y el CAPEX se declara por MW.
+- Solo entran años con al menos el 90 % de sus días. Es una central sin embalse.
+
+**Decisión: GloFAS en el caso base.** GEOGLOWS da entre 49 % y 64 % más caudal que GloFAS en los dos sitios de ejemplo, en los años comunes 2001–2024. La producción real respalda a GloFAS (ver validación), así que GEOGLOWS queda como el otro extremo del factor «Caudal (GloFAS ↔ GEOGLOWS)» en el tornado. Con el salto ocurre lo mismo: Copernicus es el otro extremo de «Salto (NASADEM ↔ Copernicus)».
+
+**Validación con producción real (10-nov-2026).** Central Machupicchu, río Vilcanota: 192.45 MW y 61 m³/s de diseño. Represa y casa de máquinas tomadas de OpenStreetMap. El COES registra 1,252,221 MWh en 2024.
+
+| | Factor de planta 2024 | Potencia |
+|---|---|---|
+| Central real (COES) | 74.1 % | 192.45 MW |
+| Modelo, ecológico 10 % (por defecto) | 64.7 % | 163.2 MW |
+| Modelo, ecológico 5 % | 71.8 % | 163.2 MW |
+| Modelo, sin caudal ecológico | 77.1 % | 163.2 MW |
+
+- El valor real cae dentro del rango que abre el supuesto de caudal ecológico: el régimen del río de GloFAS es consistente con la operación de la central. En estiaje GloFAS da unos 29 m³/s, por debajo de los 61 de diseño.
+- La potencia queda 15 % por debajo porque el salto se lee sobre el terreno (330 m entre los dos puntos del mapa), no en el eje de la turbina.
+- Con los supuestos por defecto, la energía de 2024 queda 26 % por debajo de la real: el modelo es prudente.
+- La validación se reproduce con dos guiones fuera del producto: `scripts/qa/coes_production.py 2024 MACHUPICCHU` (producción real) y `scripts/qa/validate_hydro.py` (modelo). El primero también reproduce la validación eólica de ADR-041 con `--tipo EOL`.
+
+**Puntaje (pesos editables).**
+
+| Criterio | Peso |
+|---|---|
+| Factor de planta | 0.20 |
+| Caudal firme en estiaje (Q95 ÷ diseño) | 0.10 |
+| Deriva del caudal (solo si es significativa tras BH) | 0.10 |
+| Confianza del caudal (\|Δ\| GloFAS–GEOGLOWS) | 0.15 |
+| Confianza del salto (\|Δ\| NASADEM–Copernicus) | 0.10 |
+| VAN / CAPEX | 0.35 |
+
+**Brechas declaradas:** aforo en la toma; disponibilidad hídrica y caudal ecológico de la ANA; topografía, geología y sedimentos; red eléctrica; restricciones ambientales y sociales.
+
+**Contrato y piezas comunes (aditivo).** `Sector.HYDRO`; `SectorLens.location_note`; `extraction_stage(..., provider=)`; unidad `m3/s` y variable `RIVER_DISCHARGE` en los catálogos.
+
+**Pantalla y PDF.**
+- Tercera opción en «Tecnología», con editor de toma y casa de máquinas por sitio y botón «Elegir en el mapa».
+- Lectura con potencia, energía y VAN; pestaña Caudal con GloFAS continua y GEOGLOWS punteada.
+- Por sitio: tabla caso base frente a segunda fuente y curva de duración con la línea de plena carga.
+- El PDF cita GloFAS y GEOGLOWS.
+
+**Resultado real del 10-nov-2026 (2001 a hoy).**
+
+| Sitio | Caudal medio | Salto | Potencia | Energía | Segunda opinión del caudal |
+|---|---|---|---|---|---|
+| Machupicchu (río Vilcanota) | 156 m³/s | 330 m | 163 MW | 970 GWh/año | +49 % (intermedia) |
+| Tambo alto (Moquegua) | 32 m³/s | 146 m | 28 MW | 115 GWh/año | +64 % (difieren) |
+
+- En el Tambo, el salto difiere 23 m entre NASADEM (146 m) y Copernicus (169 m).
+- En Machupicchu, GloFAS muestra una tendencia creciente del caudal que GEOGLOWS no repite.
+
+**Verificación:**
+- 25 pruebas nuevas en `test_hydro.py` (250 en total): energía, regla del cauce, conectores con transporte simulado, búsqueda de GEOGLOWS, sobre C2 con y sin segunda fuente, fuente lenta, río no comparable, salto solo con Copernicus, puntos invertidos (422), un solo sitio, PDF.
+- Conftest sin red para GloFAS y GEOGLOWS.
+- Build con 20 rutas.
+- QA `hydro_shots` en 1440 y 390: 0 errores de consola, 0 desbordamiento, PDF de 6 páginas.
+
+## ADR-043 — El relieve cruzado llega a los pilotos vial e inmobiliario y al puntaje
+
+**Motivo.** Los pilotos vial e inmobiliario ya recibían la pendiente de Copernicus GLO-30 junto a la de NASADEM (ADR-039), pero no la usaban: eran los dos únicos sectores sin descubrimientos. Además, cuatro puntajes (solar, eólico, vial e inmobiliario) puntúan la pendiente de NASADEM en un solo punto y no decían qué pasa si el otro modelo tiene razón.
+
+**Decisión.**
+- **Descubrimientos:** `terrain_discoveries` se aplica también a vial e inmobiliario y queda en la etapa «Resultados». Si ningún punto tiene contraste, la etapa dice «Sin contraste del relieve», no «ninguno»: una lista vacía ahí significa que no hubo con qué cruzar.
+- **Puntaje (`orchestration/slope_check.py`):** se recalcula con la pendiente de Copernicus en lugar de la de NASADEM y una nota dice si el primer lugar cambia y con qué puntajes. La nota usa los pesos iniciales y lo declara, porque el usuario puede editarlos después.
+- **Cuándo no se compara:** si a algún sujeto con pendiente le falta el contraste (no se mezclan modelos) o si hay menos de dos sujetos con puntaje.
+- **Texto del método del puntaje:** ahora declara la regla de empate práctico (menos de 5 puntos o un primero que gana en menos del 75 % de las combinaciones). Un reemplazo de comas le había quitado la puntuación; quedó corregido.
+
+**Resultado real del 10-nov-2026.**
+
+| Sector | Primer lugar con NASADEM | Con la pendiente de Copernicus |
+|---|---|---|
+| Vial (corredor Moquegua–Ilo) | Tramo 5 (48.5) frente a Tramo 2 (38.7) | No cambia: Tramo 5 (44.4) frente a Tramo 4 (37.1) |
+| Solar (Moquegua y Arequipa) | Arequipa, empate práctico | No cambia: Arequipa (66.9) frente a Moquegua (65.6) |
+| Eólico (Marcona y Moquegua) | Marcona por 50 puntos | No cambia: Marcona (67.4) frente a Moquegua (16.3) |
+| Inmobiliario (tres áreas de ejemplo) | Cerro Colorado, empate práctico | No cambia: Cerro Colorado (75.9) frente a Moquegua (72.4) |
+
+La fila inmobiliaria usa las alertas de CENEPRED de su última copia válida (ADR-044). Con ese criterio fuera del puntaje, como estuvo unas horas el 10-nov, la nota daba 78.7 frente a 74.5.
+
+- **El hallazgo del corredor:** el Tramo 5 lidera por su pendiente, 17.9° en NASADEM. Copernicus da 12.5° en el mismo punto: sigue siendo el más empinado (los demás tramos van de 1.2° a 4.2°), pero ya no supera el umbral de 15° de pendiente fuerte. El orden se sostiene; la magnitud debe confirmarse con topografía.
+- En los cinco tramos NASADEM da entre 2.0° y 5.5° más de pendiente que Copernicus, con la elevación a 6 m o menos. En los puntos de solar, eólica e inmobiliario la diferencia es menor de 2° y va en ambos sentidos. La causa de ese sesgo sobre el corredor no se ha investigado.
+
+**Verificación.** 10 pruebas nuevas (260 en total): seis en `test_slope_check.py` con puntajes calculados a mano y dos en cada piloto. Regresión en navegador de vial e inmobiliario en 1440/768/390 sin errores ni desbordes.
+
+## ADR-044 — Última copia válida cuando una capa oficial deja de responder
+
+**Motivo.** El 10-nov-2026 el servicio de CENEPRED (SIGRID, `FEN/ER_NINO2027_BD`) empezó a responder `499 Token Required` y su directorio público dejó de listar los servicios. Sus tres capas (riesgo por inundación, riesgo por movimientos en masa y susceptibilidad por puntos) quedaron como `DATA_UNAVAILABLE` en amenazas, vial e inmobiliario. La última respuesta válida que tenía la caché era del 24 al 28 de octubre. La misma regresión mostró el otro caso: SIGDA no contestó nueve capas del distrito de Ilo y una hora después sí.
+
+**Decisión.** Si una capa oficial falla y existe una copia anterior de **la misma consulta**, se muestra esa copia y se declara.
+- **Conectores:** `connectors/peru/territory.py` y `connectors/peru/identify_layers.py`. Primero se consulta al servicio; solo si falla se busca la copia (`RawPayloadCache.last_valid`).
+- **Vigencia:** hasta 90 días (`STALE_MAX_AGE`). Más antigua, o sin copia, la capa queda como `DATA_UNAVAILABLE`, igual que antes.
+- **Procedencia:** `CACHED_DATA` con la **fecha original** de la copia; nunca la de hoy. Si una fuente junta varias capas, se informa la fecha de la copia más antigua.
+- **Dónde se declara:**
+  - en la capa (`stale_note`, campo aditivo en `TerritorialSourceResult`, `BaselineLayer` y los resúmenes de vial e inmobiliario), con el motivo y la fecha;
+  - en una brecha con procedencia `CACHED_DATA` y la acción siguiente;
+  - en los descubrimientos que usan esa capa;
+  - en la pantalla (etiqueta «copia del 25-oct-2026» junto al dato y nota al pie) y en el PDF.
+- **Cortesía con el servidor:** en el muestreo por puntos, tras la primera falla no se vuelve a llamar por los demás puntos. Una falla por credenciales no se reintenta; un corte de conexión, una vez.
+
+**Alcance.** Capas oficiales peruanas consultadas por área o con `identify` (CENEPRED, SERNANP, Cultura, ANA, MINAM y los mapas volcánicos de INGEMMET). No cambia NASA POWER ni las capas de NASA.
+
+**Límites.**
+- Solo cubre geometrías ya consultadas: un sitio nuevo no tendrá las capas de CENEPRED mientras el servicio exija token.
+- Una copia no prueba que el dato siga vigente. Por eso entra como brecha y no como dato verificado hoy.
+- Un producto comercial debe gestionar el acceso con CENEPRED; el equipo no crea cuentas en nombre de terceros.
+
+**Resultado real del 10-nov-2026.**
+
+| Caso | Sin la copia | Con la última copia válida |
+|---|---|---|
+| Corredor Moquegua–Ilo, riesgo de inundación y de movimientos en masa | «No disponible» en los cinco tramos | Entre 1 y 3 distritos por tramo, copia del 25-oct-2026 |
+| Lurigancho (Chosica), tres capas de CENEPRED | Sin respuesta | 9, 9 y 18 registros, copia del 27-oct-2026 |
+| Lurigancho, descubrimiento «CENEPRED y NASA coinciden en la susceptibilidad a deslizamientos» | No se podía calcular | Vuelve, con la advertencia de la copia |
+| Inmobiliario, criterio de alertas de CENEPRED | Fuera del puntaje (cobertura 85 %) | Vuelve a puntuar |
+
+**Verificación.** 6 pruebas nuevas (266 en total): copia servida con su fecha original, sin copia, copia demasiado antigua, muestreo por puntos que deja de insistir, y la declaración en capa, brecha, descubrimiento y PDF. QA en navegador a 1440 y 390 en amenazas y vial: sin recortes, desbordes ni errores de consola.
+
+## ADR-045 — La validación con producción real se muestra junto al método
+
+**Motivo.** Los modelos eólico e hidroeléctrico se validaron con la producción real del COES (ADR-041 y ADR-042), pero esa validación solo estaba en este registro y en dos guiones. En la pantalla y en el PDF nada la respaldaba.
+
+**Decisión.** El sobre C2 agrega `method_validation` (lista de textos, aditiva, vacía por defecto). Eólica e hidroeléctrica la llenan con una frase cada una: qué central, qué año, qué dio la realidad, qué da el modelo, cuándo se midió y que es un solo caso. Se muestra como primera nota del panel «Método», marcada «real», y en la sección de método del PDF.
+
+**Lo que no es.** No es un resultado del análisis en curso ni se recalcula con los sitios del usuario: es una constante del método, con fecha, que se reproduce con `scripts/qa/coes_production.py` y `scripts/qa/validate_hydro.py`. Traer la producción real de la central que el usuario elija sigue siendo una idea abierta del equipo (A1).
+
+**Verificación.** Las pruebas de PDF de eólica e hidroeléctrica leen el texto del reporte y comprueban la frase, la cifra real y la advertencia de alcance.

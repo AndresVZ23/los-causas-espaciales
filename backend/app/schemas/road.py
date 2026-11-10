@@ -118,6 +118,7 @@ class RoadTerritorialSourceSummary(BaseModel):
     provenance: Provenance
     downloaded_at: datetime | None
     limitations: list[str]
+    stale_note: str | None = None   # la fuente no respondió hoy: se muestra su última copia válida (motivo y fecha)
 
 
 class RoadTerritorialEvidence(BaseModel):

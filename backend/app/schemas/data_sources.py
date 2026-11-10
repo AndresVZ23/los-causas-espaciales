@@ -92,6 +92,7 @@ class TerritorialSourceResult(BaseModel):
     scale_or_resolution: str
     license: str
     limitations: list[str]
+    stale_note: str | None = Field(default=None, description="Si la fuente no respondió hoy y se muestra su última copia válida: el motivo y la fecha de esa copia.")
 
 
 class TerritorialQueryResponse(BaseModel):

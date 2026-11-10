@@ -11,17 +11,14 @@ from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from ..connectors.jrc.pvgis import Era5Annual, PvgisConnector, PvgisError
-from ..schemas.analysis import Observation, Point, TrendResult
-from ..schemas.pipeline import AnnualObservation, DataGap, ExtremeCountercheck, VariableSummary
-from ..statistics.multiple_testing import benjamini_hochberg
-from ..statistics.trends import analyze_trend, decision_p_value
-from .analysis import agreement
+from ..schemas.analysis import Point
+from ..schemas.pipeline import DataGap, VariableSummary
+from .annual_crosscheck import MIN_COMMON_YEARS, attach_annual_countercheck  # noqa: F401 — MIN_COMMON_YEARS se reexporta
 
 ERA5_SOURCE = "ERA5 (ECMWF) vía PVGIS (JRC)"
 # Variable de NASA POWER → serie anual de ERA5 y nombre de la fuente principal en las frases.
 ERA5_VARIABLES = {"T2M": "temperature", "ALLSKY_SFC_SW_DWN": "irradiance", "WS10M": "wind"}
 PRIMARY_NAMES = {"T2M": "MERRA-2", "ALLSKY_SFC_SW_DWN": "CERES", "WS10M": "MERRA-2"}
-MIN_COMMON_YEARS = 10
 CONCURRENCY = 3
 WIND_WAIT_SECONDS = 45.0     # el viento horario de un punto nuevo tarda ~17 s; varios puntos, más de un minuto
 _inflight: dict[str, asyncio.Task] = {}
@@ -48,15 +45,6 @@ def _wind_task(point: Point) -> asyncio.Task:
         _inflight[key] = task
         task.add_done_callback(lambda t, k=key: _inflight.pop(k, None) if not t.cancelled() and t.exception() is None else None)
     return task
-
-
-@dataclass
-class _Fit:
-    """Forma mínima que espera `agreement`: tendencia y significancia tras BH."""
-
-    trend: TrendResult
-    adjusted_p_value: float | None = None
-    significant_after_bh: bool = False
 
 
 async def era5_series(subjects: Sequence[tuple[str, Point]], wait: float = WIND_WAIT_SECONDS) -> Era5Result:
@@ -91,39 +79,15 @@ async def era5_series(subjects: Sequence[tuple[str, Point]], wait: float = WIND_
     return result
 
 
-def _adjust(fits: list[_Fit]) -> None:
-    adjusted = benjamini_hochberg([decision_p_value(fit.trend) for fit in fits])
-    for fit, value in zip(fits, adjusted, strict=True):
-        fit.adjusted_p_value = value
-        fit.significant_after_bh = value is not None and value < fit.trend.alpha
-
-
 def attach_era5(variables_by_site: Sequence[Sequence[VariableSummary]], era5: Era5Result) -> None:
-    """Anota en temperatura y radiación de cada sitio su contraste ERA5 en los años comunes."""
+    """Anota en temperatura, radiación y viento de cada sitio su contraste ERA5 en los años comunes."""
     for code, attribute in ERA5_VARIABLES.items():
-        family = []
+        pairs = []
         for variables, series in zip(variables_by_site, era5.series, strict=True):
             summary = next((item for item in variables if item.variable == code), None)
-            if summary is None or series is None:
-                continue
-            primary_by_year = {point.year: point.value for point in summary.annual_series}
-            common = [item for item in getattr(series, attribute) if item.timestamp.year in primary_by_year]
-            if len(common) < MIN_COMMON_YEARS:
-                continue
-            primary = [Observation(timestamp=item.timestamp, value=primary_by_year[item.timestamp.year]) for item in common]
-            family.append((summary, common, _Fit(analyze_trend(common, already_annual=True)), _Fit(analyze_trend(primary, already_annual=True))))
-        if not family:
-            continue
-        _adjust([twin for _, _, twin, _ in family])
-        _adjust([primary for _, _, _, primary in family])
-        for summary, common, twin, primary in family:
-            years = [item.timestamp.year for item in common]
-            summary.counterchecks.append(ExtremeCountercheck(
-                source=ERA5_SOURCE, valid_years=len(common), direction=twin.trend.direction, slope_per_year=twin.trend.slope_per_year,
-                adjusted_p_value=twin.adjusted_p_value, significant_after_bh=twin.significant_after_bh, agreement=agreement(primary, twin),
-                annual_series=[AnnualObservation(year=item.timestamp.year, value=item.value) for item in common],
-                period=f"{years[0]}–{years[-1]}", primary_slope_per_year=primary.trend.slope_per_year,
-            ))
+            if summary is not None and series is not None:
+                pairs.append((summary, getattr(series, attribute)))
+        attach_annual_countercheck(pairs, ERA5_SOURCE)
 
 
 def era5_gaps(era5: Era5Result) -> list[DataGap]:

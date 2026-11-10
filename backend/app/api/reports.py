@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from ..reports.executive_pdf import render_executive_pdf
 from ..schemas.baseline import BaselineScreeningResponse
 from ..schemas.climate import ClimateScreeningResponse
+from ..schemas.hydro import HydroScreeningResponse
 from ..schemas.pipeline import SolarScreeningResponse
 from ..schemas.screening import ScreeningEnvelope, Sector
 from ..schemas.wind import WindScreeningResponse
@@ -21,6 +22,7 @@ SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {
     Sector.CLIMATE: ClimateScreeningResponse,   # sus extremos dicen si CHIRPS entró como fuente
     Sector.SOLAR: SolarScreeningResponse,       # sus variables dicen si ERA5 entró como contraste
     Sector.WIND: WindScreeningResponse,         # además, la serie horaria y el Atlas Eólico Global
+    Sector.HYDRO: HydroScreeningResponse,       # caudal GloFAS con GEOGLOWS y salto por dos modelos de elevación
 }
 
 

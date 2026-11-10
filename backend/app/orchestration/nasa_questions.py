@@ -123,9 +123,10 @@ def _what(findings: list[TrendFinding], sites: Sequence[SubjectSummaries], tests
     )
 
 
-def _where(findings: list[TrendFinding], sites: Sequence[SubjectSummaries], coordinates: dict[str, tuple[float, float]]) -> NasaQuestionAnswer:
+def _where(findings: list[TrendFinding], sites: Sequence[SubjectSummaries], coordinates: dict[str, tuple[float, float]],
+           location_note: str) -> NasaQuestionAnswer:
     all_sites = [site.label for site in sites]
-    evidence = [f"{label}: {lat:.3f}, {lon:.3f} (WGS84) · celda de grilla NASA POWER, no medición en sitio" for label, (lat, lon) in coordinates.items()]
+    evidence = [f"{label}: {lat:.3f}, {lon:.3f} (WGS84) · {location_note}" for label, (lat, lon) in coordinates.items()]
     if not findings:
         return NasaQuestionAnswer(
             key="where", question="Where is it changing?", question_es="¿Dónde está cambiando?", status=QuestionStatus.INSUFFICIENT,
@@ -229,6 +230,8 @@ class SectorLens:
     readings: Mapping[tuple[str, str], str]
     stable_notes: Mapping[str, str] = field(default_factory=dict)
     economics: str | None = None
+    # Qué representa cada punto en «¿dónde?»; cambia en sectores cuyas series no vienen solo de NASA POWER.
+    location_note: str = "celda de grilla NASA POWER, no medición en sitio"
 
 
 def _so_what(findings: list[TrendFinding], lens: SectorLens, gaps: int) -> NasaQuestionAnswer:
@@ -267,7 +270,7 @@ def answer_nasa_questions(
     years = max((len(item.annual_series) for subject in subjects for item in subject.summaries), default=0)
     return [
         _what(findings, subjects, tests),
-        _where(findings, subjects, coordinates),
+        _where(findings, subjects, coordinates, lens.location_note),
         _how_much(findings),
         _significant(findings, subjects, tests, years),
         _so_what(findings, lens, pending_gaps),

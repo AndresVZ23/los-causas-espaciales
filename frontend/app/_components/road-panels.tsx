@@ -1,6 +1,6 @@
 "use client";
 
-import { formatMillions, formatNumber } from "./format";
+import { formatDay, formatMillions, formatNumber } from "./format";
 import type { RoadAssumptions, RoadResult, RoadSegment, TerritorialEvidence } from "./types";
 
 export const DEFAULT_ROAD_ASSUMPTIONS: RoadAssumptions = {
@@ -95,6 +95,11 @@ export function RoadReading({ result, headingId }: { result: RoadResult; heading
 /** Objetos devueltos por cada capa oficial por sujeto; «No disponible» si la capa no respondió. Compartida por los pilotos. */
 export function TerritorialTable({ evidence, scope }: { evidence: TerritorialEvidence[]; scope: string }) {
   const sourceIds = [...new Set(evidence.flatMap((item) => item.sources.map((source) => source.source_id)))];
+  // Capas cuyo servicio no respondió hoy: se muestran desde su última copia válida, marcadas en la celda y explicadas al pie.
+  const staleNotes = sourceIds.flatMap((id) => {
+    const stale = evidence.flatMap((item) => item.sources).find((source) => source.source_id === id && source.status === "READY" && source.stale_note);
+    return stale?.stale_note ? [{ id, note: stale.stale_note }] : [];
+  });
   return (
     <article className="siteResult">
       <div className="siteResultHeader"><div><h3>Capas territoriales oficiales</h3><p>Objetos devueltos por cada servicio {scope}. Cero no prueba ausencia de riesgo o restricción.</p></div></div>
@@ -106,12 +111,16 @@ export function TerritorialTable({ evidence, scope }: { evidence: TerritorialEvi
               <th>{sourceLabel(id)}</th>
               {evidence.map((item) => {
                 const source = item.sources.find((entry) => entry.source_id === id);
-                return <td key={item.subject}>{!source || source.status !== "READY" || source.intersection_count == null ? "No disponible" : source.intersection_count}</td>;
+                const ready = source && source.status === "READY" && source.intersection_count != null;
+                return <td key={item.subject}>{ready ? source.intersection_count : "No disponible"}{ready && source.stale_note && <small className="staleTag">copia del {formatDay(source.downloaded_at)}</small>}</td>;
               })}
             </tr>
           ))}</tbody>
         </table>
       </div>
+      {staleNotes.length > 0 && (
+        <div className="staleNotes">{staleNotes.map((item) => <p key={item.id}><b>{sourceLabel(item.id)}.</b> {item.note}</p>)}</div>
+      )}
     </article>
   );
 }

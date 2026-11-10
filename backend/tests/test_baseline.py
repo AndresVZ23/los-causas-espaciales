@@ -242,6 +242,39 @@ def test_hazards_module_reads_rainfall_extremes_and_risk_levels(patched, monkeyp
     assert "Amenazas por área de estudio" in text and "Índice ETCCDI" in text and "GPM IMERG" in text and "Valle de Ilo" in text
 
 
+def test_layer_served_from_its_last_valid_copy_is_declared_everywhere(patched, monkeypatch):
+    from backend.app.orchestration import extraction
+    from backend.app.reports.executive_pdf import render_executive_pdf
+    from backend.tests.test_solar import FakePowerConnector
+    note = "El servicio oficial no respondió hoy (Token Required); se muestra la última copia válida, del 27-oct-2026."
+
+    class ClosedCenepred(FakeTerritory):
+        """CENEPRED exige token: su capa de inundación llega de la última copia válida, con la nota del conector."""
+
+        async def query(self, request):
+            response = await super().query(request)
+            for source in response.sources:
+                if source.source_id == "cenepred-flood-risk":
+                    source.provenance, source.stale_note = Provenance.CACHED, note
+                    source.limitations.insert(0, note)
+            return response
+
+    monkeypatch.setattr(extraction, "PowerConnector", FakePowerConnector)
+    monkeypatch.setattr(baseline, "TerritoryConnector", ClosedCenepred)
+    result = asyncio.run(baseline.run_baseline_screening(_request(), Sector.HAZARDS))
+
+    assert envelope_violations(result) == []
+    flood = next(layer for layer in result.baselines[0].layers if layer.source_id == "cenepred-flood-risk")
+    assert flood.status == "READY" and flood.stale_note == note and flood.intersection_count == 1      # el dato se usa, con su advertencia
+    gap = next(item for item in result.data_gaps if item.dataset.endswith("última copia válida"))
+    assert gap.status == Provenance.CACHED and gap.impact == note and "credenciales" in gap.next_action
+    assert sum(item.dataset.endswith("última copia válida") for item in result.data_gaps) == 1          # una vez, aunque haya dos áreas
+    agreement = next(item for item in result.discoveries if "coinciden en riesgo de inundación" in item.title)
+    assert "se muestra la última copia válida, del 27-oct-2026" in agreement.detail
+    text = _pdf_text(render_executive_pdf(result))
+    assert "última copia válida" in text and "Token Required" in text
+
+
 def test_hazards_without_power_series_declares_the_gap(patched, monkeypatch):
     from backend.app.connectors.nasa.power import PowerConnectorError
     from backend.app.orchestration import extraction

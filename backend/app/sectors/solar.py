@@ -12,12 +12,12 @@ import numpy as np
 from ..finance.engine import calculate_npv
 from ..finance.sensitivity import Driver, break_even_item, tornado
 from ..schemas.scoring import Criterion, Direction, Scorecard, ScorecardRequest, SubjectValues
-from ..scoring.multicriteria import build_scorecard
 from ..orchestration.analysis import analyze_subjects
 from ..orchestration.discoveries import record_in_pipeline, terrain_discoveries, variable_discoveries
 from ..orchestration.era5_crosscheck import attach_era5, era5_gaps, era5_series
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
+from ..orchestration.slope_check import scorecard_with_slope_check
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -287,7 +287,7 @@ def solar_scorecard(subjects: list[StudySubject], results: list[SolarSiteResult]
     missing = [row.subject for row in rows if row.values["terrain_slope"] is None]
     if missing:
         notes.append(f"Sin pendiente NASADEM para {', '.join(missing)}: ese criterio queda fuera y su peso se reparte (ver cobertura).")
-    return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    return scorecard_with_slope_check(ScorecardRequest(criteria=criteria, subjects=rows), notes, terrain)
 
 
 def _evaluation_and_finance_stages(results: list[SolarSiteResult], sensitivities: list[SubjectSensitivity], source_provenance: list[Provenance], finance_ms: float):

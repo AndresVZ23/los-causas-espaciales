@@ -70,7 +70,8 @@ def configuration_stage(sector_label: str, variables: Sequence[str], start: date
                  [Provenance.ASSUMPTION], evidence)
 
 
-def extraction_stage(subjects: Sequence[SubjectSummaries], duration_ms: float | None) -> PipelineStage:
+def extraction_stage(subjects: Sequence[SubjectSummaries], duration_ms: float | None, provider: str = "NASA POWER") -> PipelineStage:
+    """`provider` nombra a quien entregó las series diarias cuando no todas son de NASA POWER (p. ej. el caudal de GloFAS)."""
     summaries = _all_summaries(subjects)
     variables = list(dict.fromkeys(item.variable for item in summaries))
     observations = sum(item.valid_observations for item in summaries)
@@ -105,7 +106,7 @@ def extraction_stage(subjects: Sequence[SubjectSummaries], duration_ms: float | 
     if partial:
         evidence.append(StageEvidence(label="Año en curso", value=f"{', '.join(map(str, partial))} fuera de la tendencia; comparado con la misma ventana de años completos"))
     summary = (
-        f"NASA POWER entregó {observations:,} observaciones diarias para {len(variables)} variables en {len(subjects)} sujetos."
+        f"{provider} {'entregaron' if ' y ' in provider else 'entregó'} {observations:,} observaciones diarias para {len(variables)} variables en {len(subjects)} sujetos."
         if status == PipelineStatus.COMPLETED
         else f"La cobertura mínima es {min_completeness:.1f} %, inferior al umbral de {COMPLETENESS_THRESHOLD:.0f} %; revise los faltantes antes de interpretar."
     )

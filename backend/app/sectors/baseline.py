@@ -38,6 +38,7 @@ from ..orchestration.extraction import elapsed_ms, extract_terrain, max_separati
 from ..orchestration.rainfall_crosscheck import CHIRPS_NOTE, chirps_gaps
 from ..orchestration.nasa_questions import INSUFFICIENT, SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, join_es
 from ..orchestration.stages import analysis_stage, assemble_pipeline, export_stage, results_stage, selection_stage, stage, unique
+from ..orchestration.stale_copies import stale_gap
 from ..schemas.analysis import Point, Provenance
 from ..schemas.baseline import BaselineLayer, BaselineRequest, BaselineScreeningResponse, Component, SubjectBaseline
 from ..schemas.climate import Agreement
@@ -233,13 +234,19 @@ async def _query_source(connector: TerritoryConnector, area: StudyArea, source_i
 
 
 async def _one_layer(connector: TerritoryConnector, area: StudyArea, source_id: str, limit: asyncio.Semaphore):
-    """Una capa por consulta, con tope por servidor y un reintento si el servicio no respondió."""
+    """Una capa por consulta, con tope por servidor y un reintento si el servicio no respondió.
+
+    También se reintenta cuando la respuesta salió de la última copia válida, salvo que el servicio pida credenciales:
+    eso no se arregla insistiendo.
+    """
     for attempt in range(2):
         async with limit:
             result = await _query_source(connector, area, source_id)
-            if result.provenance != Provenance.CACHED:
+            if result.provenance != Provenance.CACHED or result.stale_note:
                 await asyncio.sleep(PACE_SECONDS)
-        if result.status == "READY" or not result.limitations[0].startswith("El servicio oficial no respondió") or attempt:
+        failed = result.limitations[0] if result.status != "READY" else (result.stale_note or "")
+        transient = failed.startswith("El servicio oficial no respondió") and "Token" not in failed
+        if not transient or attempt:
             return result
         await asyncio.sleep(RETRY_SECONDS)
     return result
@@ -463,6 +470,10 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
             if layer.status == "DATA_UNAVAILABLE" and all(gap.dataset != layer.dataset for gap in gaps):
                 gaps.append(DataGap(dataset=layer.dataset, impact=layer.limitations[0] if layer.limitations else "El servicio no respondió.",
                                     next_action=f"Reintentar la consulta a {layer.organization}."))
+            elif layer.stale_note:
+                gap = stale_gap(layer.source_id, layer.stale_note, dataset=layer.dataset, organization=layer.organization)
+                if all(item.dataset != gap.dataset for item in gaps):
+                    gaps.append(gap)
         for error in baseline.errors:
             gaps.append(DataGap(dataset=f"{baseline.subject} · fuente con error", impact=error, next_action="Reintentar; el análisis no rellena el faltante."))
     pending = sum(1 for gap in gaps if gap.status == Provenance.UNAVAILABLE)

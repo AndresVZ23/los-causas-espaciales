@@ -22,8 +22,11 @@ from ..finance.engine import calculate_npv
 from ..finance.sensitivity import Driver, break_even_item, tornado
 from ..geospatial.geometry import GeometryValidationError, inspect_geometry
 from ..orchestration.analysis import analyze_subjects
+from ..orchestration.discoveries import NO_TERRAIN_CHECK, record_in_pipeline, terrain_discoveries
 from ..orchestration.extraction import PowerDataset, elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
+from ..orchestration.slope_check import scorecard_with_slope_check
+from ..orchestration.stale_copies import stale_gap
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -65,7 +68,6 @@ from ..schemas.screening import (
 )
 from ..schemas.spatial_sampling import SpatialSamplingRequest
 from ..schemas.terrain import TerrainResponse
-from ..scoring.multicriteria import build_scorecard
 from ..statistics.extremes import linear_percentile
 
 ROAD_VARIABLES = ["PRECTOTCORR", "T2M"]
@@ -265,6 +267,7 @@ def _territorial_summary(subject: StudySubject, response: TerritorialQueryRespon
             provenance=item.provenance,
             downloaded_at=item.downloaded_at,
             limitations=item.limitations,
+            stale_note=item.stale_note,
         ) for item in response.sources],
     )
 
@@ -419,6 +422,7 @@ def _scorecard(
     segments: list[RoadSegmentInput],
     results: list[RoadSegmentResult],
     assumptions: RoadAssumptions,
+    terrain: TerrainResponse | None = None,
 ) -> Scorecard:
     rows = []
     for subject, segment, result in zip(subjects, segments, results, strict=True):
@@ -444,7 +448,7 @@ def _scorecard(
     missing_slope = [item.label for item in results if item.terrain_slope_degrees is None]
     if missing_slope:
         notes.append(f"Sin pendiente NASADEM para {', '.join(missing_slope)}; el criterio se omite para esos tramos.")
-    return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    return scorecard_with_slope_check(ScorecardRequest(criteria=criteria, subjects=rows), notes, terrain)
 
 
 def _assumption_items(request: RoadScreeningRequest, segments: list[RoadSegmentInput]) -> list[AssumptionItem]:
@@ -501,10 +505,13 @@ def _data_gaps(
                 next_action=f"Reintentar K1 y revisar el error del proveedor: {error}",
             ))
     unavailable = {}
+    stale: dict[str, str] = {}
     for item in territorial:
         for source in item.sources:
             if source.status == "DATA_UNAVAILABLE":
                 unavailable[source.source_id] = source.limitations[0] if source.limitations else "Fuente no disponible."
+            elif source.stale_note:
+                stale.setdefault(source.source_id, source.stale_note)
     for subject, error in zip(subjects, territorial_errors, strict=True):
         if error:
             unavailable[f"consulta-territorial-{subject.id}"] = error
@@ -514,6 +521,7 @@ def _data_gaps(
             impact=f"La capa territorial no pudo verificarse: {reason}",
             next_action="Restablecer el servicio oficial o seleccionar una fuente vigente con licencia y escala documentadas.",
         ))
+    gaps.extend(stale_gap(source_id, note) for source_id, note in stale.items())
     gaps.extend([
         DataGap(
             dataset="Eje vial e inventario de activos MTC",
@@ -647,7 +655,7 @@ async def run_road_screening(request: RoadScreeningRequest) -> RoadScreeningResp
         ))
     timings.finance_ms = elapsed_ms(finance_start)
 
-    scorecard = _scorecard(subjects, segments, results, request.assumptions)
+    scorecard = _scorecard(subjects, segments, results, request.assumptions, terrain)
     labelled = [
         SubjectSummaries(label=subject.label, summaries=summaries)
         for subject, summaries in zip(subjects, summaries_by_subject, strict=True)
@@ -722,6 +730,9 @@ async def run_road_screening(request: RoadScreeningRequest) -> RoadScreeningResp
         results_stage(trend_findings, gaps, all_provenance),
         export_stage(all_provenance),
     ])
+    # La pendiente puntúa en la prioridad del tramo: se contrasta con el segundo modelo de elevación y se registra.
+    discoveries = terrain_discoveries(terrain)
+    record_in_pipeline(pipeline, discoveries, empty=NO_TERRAIN_CHECK)
     fingerprint_payload = request.model_dump(mode="json")
     fingerprint_payload["resolved_segments"] = [item.model_dump(mode="json") for item in segments]
     fingerprint = hashlib.sha256(json.dumps(fingerprint_payload, sort_keys=True).encode()).hexdigest()[:16]
@@ -739,6 +750,7 @@ async def run_road_screening(request: RoadScreeningRequest) -> RoadScreeningResp
         assumption_items=_assumption_items(request, segments),
         financial_sensitivity=sensitivities,
         scorecard=scorecard,
+        discoveries=discoveries,
         disclaimer=(
             "Screening preliminar de resiliencia vial con datos NASA, capas públicas y supuestos del usuario. "
             "No sustituye ingeniería vial, hidrología/hidráulica, geotecnia, inventario de activos, tránsito, "

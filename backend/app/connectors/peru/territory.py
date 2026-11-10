@@ -19,7 +19,7 @@ from ...schemas.data_sources import (
     TerritorialQueryResponse,
     TerritorialSourceResult,
 )
-from ..cache import RawPayloadCache
+from ..cache import RawPayloadCache, stale_copy_note
 
 TIMEOUT = httpx.Timeout(connect=20, read=45, write=20, pool=20)
 CULTURA_CACHE_TTL = timedelta(days=7)
@@ -246,7 +246,7 @@ class TerritoryConnector:
         cache_key = self.cache.request_key(descriptor)
         cached = self.cache.get(cache_key, max_age=_cache_max_age(source, self.settings.cache_ttl_hours))
         if cached:
-            return json.loads(cached.content), cached.downloaded_at, Provenance.CACHED
+            return json.loads(cached.content), cached.downloaded_at, Provenance.CACHED, None
         endpoint = f"{source.base_url}/{layer_id}/query"
         parsed = urlparse(endpoint)
         if parsed.scheme != "https" or parsed.hostname is None:
@@ -257,14 +257,21 @@ class TerritoryConnector:
             "spatialRel": "esriSpatialRelIntersects", "outFields": "*", "returnGeometry": "false",
             "resultRecordCount": "100",
         }
-        async with httpx.AsyncClient(timeout=TIMEOUT, transport=self.transport, follow_redirects=False) as client:
-            response = await client.post(endpoint, data=form)
-            response.raise_for_status()
-        payload = response.json()
-        if payload.get("error"):
-            raise TerritoryConnectorError(str(payload["error"].get("message", "ArcGIS devolvió un error")))
+        try:
+            async with httpx.AsyncClient(timeout=TIMEOUT, transport=self.transport, follow_redirects=False) as client:
+                response = await client.post(endpoint, data=form)
+                response.raise_for_status()
+            payload = response.json()
+            if payload.get("error"):
+                raise TerritoryConnectorError(str(payload["error"].get("message", "ArcGIS devolvió un error")))
+        except (httpx.HTTPError, ValueError, TerritoryConnectorError) as exc:
+            # El proveedor falló: si hay una copia válida anterior de la misma consulta se muestra, con su fecha y el motivo.
+            stale = self.cache.last_valid(cache_key)
+            if stale is None:
+                raise
+            return json.loads(stale.content), stale.downloaded_at, Provenance.CACHED, str(exc) or type(exc).__name__
         raw = self.cache.put(cache_key, response.content, suffix=".json")
-        return payload, raw.downloaded_at, Provenance.REAL
+        return payload, raw.downloaded_at, Provenance.REAL, None
 
     async def _source_query(self, source: OfficialLayer, geometry_type: str, geometry: dict[str, Any]):
         limitations = [*source.limitations,
@@ -281,10 +288,12 @@ class TerritoryConnector:
         except (httpx.HTTPError, ValueError, TerritoryConnectorError) as exc:
             return TerritorialSourceResult(status="DATA_UNAVAILABLE", provenance=Provenance.UNAVAILABLE,
                 limitations=[f"El servicio oficial no respondió con datos utilizables: {exc}", *limitations], **common)
-        features, timestamps, provenances = [], [], []
+        features, timestamps, provenances, stale = [], [], [], []
         exceeded = False
-        for layer_id, (payload, downloaded_at, provenance) in zip(source.layer_ids, payloads, strict=True):
+        for layer_id, (payload, downloaded_at, provenance, stale_reason) in zip(source.layer_ids, payloads, strict=True):
             timestamps.append(downloaded_at); provenances.append(provenance)
+            if stale_reason:
+                stale.append((downloaded_at, stale_reason))
             exceeded = exceeded or bool(payload.get("exceededTransferLimit"))
             layer_name = payload.get("name") or f"layer-{layer_id}"
             for feature in payload.get("features", []):
@@ -292,10 +301,15 @@ class TerritoryConnector:
                     attributes=_safe_attributes(feature.get("attributes", {}))))
         if exceeded:
             limitations.append("La respuesta superó 100 objetos; el detalle se truncó y no es un conteo exhaustivo.")
+        # Con alguna capa servida de su última copia válida, la fecha que se informa es la de la copia más antigua.
+        note = stale_copy_note(stale[0][1], min(stamp for stamp, _ in stale)) if stale else None
+        if note:
+            limitations.insert(0, note)
+        latest = min(stamp for stamp, _ in stale) if stale else (max(timestamps) if timestamps else None)
         return TerritorialSourceResult(status="READY", intersection_count=len(features), features=features,
             provenance=Provenance.CACHED if provenances and all(p == Provenance.CACHED for p in provenances) else Provenance.REAL,
-            downloaded_at=max(timestamps).astimezone(timezone.utc) if timestamps else None,
-            limitations=limitations, **common)
+            downloaded_at=latest.astimezone(timezone.utc) if latest else None,
+            limitations=limitations, stale_note=note, **common)
 
     async def query(self, request: TerritorialQueryRequest) -> TerritorialQueryResponse:
         try:

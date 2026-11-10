@@ -29,6 +29,7 @@ from ..orchestration.discoveries import record_in_pipeline, terrain_discoveries,
 from ..orchestration.era5_crosscheck import attach_era5, era5_gaps, era5_series
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
+from ..orchestration.slope_check import scorecard_with_slope_check
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -48,7 +49,6 @@ from ..schemas.scoring import Criterion, Direction, Scorecard, ScorecardRequest,
 from ..schemas.screening import AssumptionItem, FinanceScenario, PipelineStatus, StageEvidence, StudySubject, SubjectKind, SubjectSensitivity
 from ..schemas.terrain import TerrainResponse
 from ..schemas.wind import WindAssumptions, WindAtlasCheck, WindResource, WindScreeningRequest, WindScreeningResponse, WindSiteResult
-from ..scoring.multicriteria import build_scorecard
 from .energy_common import BREAK_EVEN_SPAN, break_even_note, fmt_value, lower_first, scenario_npv
 from .wind_energy import (
     SHEAR_LIMITS,
@@ -107,6 +107,13 @@ WIND_CRITERIA = [
 SCORE_NOTES = [
     "Ordena prioridades de estudio entre sitios; no es una recomendación de inversión ni un índice de factibilidad.",
     "Escalas de referencia y pesos son supuestos editables; el resultado debe leerse junto con su estabilidad.",
+]
+# Validación del método (ADR-041), no un resultado del análisis en curso: se reproduce con scripts/qa/coes_production.py.
+METHOD_VALIDATION = [
+    "Validación del método con producción real (COES, registros diarios de 2024; medida el 30-oct-2026): las centrales eólicas Marcona y "
+    "Tres Hermanas, en Marcona, produjeron al 57.7 % y al 56.5 % de su potencia. Para ese sitio este modelo da 46.7 % neto con el nivel "
+    "del Atlas Eólico Global y 14.0 % con el de NASA POWER. Es un solo caso: respalda tomar el nivel del atlas, no la exactitud del modelo "
+    "en otro sitio.",
 ]
 
 
@@ -331,7 +338,7 @@ def wind_scorecard(subjects: list[StudySubject], results: list[WindSiteResult], 
         missing = [row.subject for row in rows if row.values[key] is None]
         if missing:
             notes.append(f"Sin {name} para {', '.join(missing)}: ese criterio queda fuera y su peso se reparte (ver cobertura).")
-    return build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    return scorecard_with_slope_check(ScorecardRequest(criteria=criteria, subjects=rows), notes, terrain)
 
 
 def _data_gaps(terrain: TerrainResponse | None, atlas_errors: list[str]) -> list[DataGap]:
@@ -484,7 +491,7 @@ async def run_wind_screening(request: WindScreeningRequest) -> WindScreeningResp
         nasa_questions=nasa_questions, trend_findings=trend_findings, sites=site_results, terrain=terrain, comparative_findings=comparative,
         data_gaps=gaps, assumptions=a,
         assumption_items=[AssumptionItem(key=key, label=label, value=float(getattr(a, key)), unit=unit) for key, (label, unit) in ASSUMPTION_LABELS.items()],
-        financial_sensitivity=sensitivities, scorecard=scorecard, discoveries=discoveries,
+        financial_sensitivity=sensitivities, scorecard=scorecard, discoveries=discoveries, method_validation=METHOD_VALIDATION,
         disclaimer="Screening preliminar basado en datos NASA, un atlas modelado y supuestos del usuario. No sustituye la campaña de medición de viento, "
                    "el estudio de conexión, la ingeniería, el impacto ambiental (incluida la avifauna), patrimonio, debida diligencia legal ni factibilidad financiera.",
     )

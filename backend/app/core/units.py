@@ -11,6 +11,7 @@ DISPLAY_UNITS: dict[str, str] = {
     "C": "°C",
     "deg C": "°C",
     "m/s": "m/s",
+    "m3/s": "m³/s",
     "percent_cover": "% del área",
     "kg_C/m^2": "kg C/m²",
 }

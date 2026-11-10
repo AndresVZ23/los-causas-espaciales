@@ -8,6 +8,8 @@ from fastapi.testclient import TestClient
 
 from backend.app.main import app
 from backend.app.orchestration.conformance import envelope_violations
+from backend.app.orchestration.discoveries import NO_TERRAIN_CHECK
+from backend.app.orchestration.slope_check import LEAD as SLOPE_LEAD
 from backend.app.schemas.analysis import Observation, Provenance, SourceMetadata
 from backend.app.schemas.road import (
     RoadAssumptions,
@@ -16,7 +18,8 @@ from backend.app.schemas.road import (
     RoadTerritorialEvidence,
     RoadTerritorialSourceSummary,
 )
-from backend.app.schemas.terrain import TerrainMetrics, TerrainResponse, TerrainSiteResult
+from backend.app.schemas.screening import DiscoveryKind
+from backend.app.schemas.terrain import TerrainCrosscheck, TerrainMetrics, TerrainResponse, TerrainSiteResult
 from backend.app.sectors import road
 from backend.app.statistics.extremes import linear_percentile
 
@@ -199,6 +202,71 @@ def test_missing_evidence_becomes_gap_and_reduces_score_coverage(monkeypatch):
     assert all(item.terrain_slope_degrees is None and item.spatial_exposure is None for item in response.segments)
     assert all(item.coverage < 1 for item in response.scorecard.subjects)
     assert any("no se interpreta como terreno plano" in item for item in response.segments[0].cautions)
+
+
+def test_second_elevation_model_becomes_discoveries_in_results_stage(monkeypatch):
+    async def checked_terrain(points):
+        terrain, error, elapsed = await _terrain(points)
+        for index, site in enumerate(terrain.sites):
+            site.crosscheck = TerrainCrosscheck(
+                source="Copernicus GLO-30",
+                elevation_m=site.metrics.elevation_m + (120 if index == 0 else 3),
+                slope_degrees=site.metrics.slope_degrees + 0.5,
+                tile_url="https://example.invalid/Copernicus_DSM_COG_10.tif",
+                provenance=Provenance.CACHED,
+                downloaded_at=datetime(2026, 10, 23, tzinfo=timezone.utc),
+            )
+        return terrain, error, elapsed
+
+    monkeypatch.setattr(road, "extract_power", _power)
+    monkeypatch.setattr(road, "extract_terrain", checked_terrain)
+    monkeypatch.setattr(road, "_spatial_exposures", _spatial)
+    monkeypatch.setattr(road, "_territorial_evidence", _territory)
+    response = asyncio.run(road.run_road_screening(_request()))
+
+    assert envelope_violations(response) == []
+    assert [item.subjects for item in response.discoveries] == [[subject.label] for subject in response.subjects]
+    assert response.discoveries[0].kind == DiscoveryKind.CONTRADICTION
+    assert "+120 m" in response.discoveries[0].detail
+    assert all(item.kind == DiscoveryKind.AGREEMENT for item in response.discoveries[1:])
+    results = next(item for item in response.pipeline if item.key == "results")
+    recorded = next(item for item in results.evidence if item.label == "Descubrimientos al cruzar fuentes")
+    assert "1 contradicciones" in recorded.value and "coincidencias" in recorded.value
+    # El puntaje se recalcula con la pendiente de Copernicus (+0.5° en cada tramo) y dice que el primer lugar no cambia.
+    slope_note = next(item for item in response.scorecard.notes if item.startswith(SLOPE_LEAD))
+    assert f"el primer lugar no cambia: {response.scorecard.leader}" in slope_note
+
+
+def test_no_second_elevation_model_is_declared_not_read_as_agreement(road_response):
+    assert road_response.discoveries == []
+    assert not any(item.startswith(SLOPE_LEAD) for item in road_response.scorecard.notes)
+    results = next(item for item in road_response.pipeline if item.key == "results")
+    recorded = next(item for item in results.evidence if item.label == "Descubrimientos al cruzar fuentes")
+    assert recorded.value == NO_TERRAIN_CHECK
+
+
+def test_layer_from_last_valid_copy_keeps_its_count_and_becomes_a_declared_gap(monkeypatch):
+    note = "El servicio oficial no respondió hoy (Token Required); se muestra la última copia válida, del 27-oct-2026."
+
+    async def closed_cenepred(subjects, enabled):
+        evidence, errors = await _territory(subjects, enabled)
+        for item in evidence:
+            flood = next(source for source in item.sources if source.source_id == "cenepred-flood-risk")
+            flood.stale_note = note
+        return evidence, errors
+
+    monkeypatch.setattr(road, "extract_power", _power)
+    monkeypatch.setattr(road, "extract_terrain", _terrain)
+    monkeypatch.setattr(road, "_spatial_exposures", _spatial)
+    monkeypatch.setattr(road, "_territorial_evidence", closed_cenepred)
+    response = asyncio.run(road.run_road_screening(_request()))
+
+    assert envelope_violations(response) == []
+    assert all(item.territorial_intersections["cenepred-flood-risk"] == 1 for item in response.segments)   # el conteo de la copia se conserva
+    stale = [item for item in response.data_gaps if item.dataset.endswith("última copia válida")]
+    assert len(stale) == 1 and stale[0].status == Provenance.CACHED and stale[0].impact == note            # una brecha, no una por tramo
+    assert stale[0].dataset.startswith("Escenario de riesgo por inundaciones")
+    assert "CENEPRED" in stale[0].next_action
 
 
 def test_road_endpoint_rejects_non_linestring_before_external_io():

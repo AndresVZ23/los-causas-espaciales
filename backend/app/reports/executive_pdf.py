@@ -432,7 +432,15 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
         if any(check.source.startswith("ERA5") for site in getattr(envelope, "sites", []) for item in getattr(site, "variables", []) for check in item.counterchecks):
             sources.append("ERA5 (ECMWF) servido por PVGIS 5.3 del JRC de la Comisión Europea (https://re.jrc.ec.europa.eu/api/v5_3/MRcalc), "
                            "temperatura a 2 m e irradiación global horizontal mensuales 2005–2023, como contraste de MERRA-2 y CERES.")
-        wind_sites = [site for site in getattr(envelope, "sites", []) if getattr(site, "resource", None) is not None]
+        # El recurso eólico trae horas; el hidroeléctrico, salto: así se distinguen sin depender del sector.
+        wind_sites = [site for site in getattr(envelope, "sites", []) if getattr(getattr(site, "resource", None), "hours", None) is not None]
+        hydro_sites = [site for site in getattr(envelope, "sites", []) if getattr(site, "head", None) is not None]
+        if hydro_sites:
+            sources.append("GloFAS v4 (Copernicus Emergency Management Service, ECMWF) servido por la Flood API de Open-Meteo "
+                           "(https://open-meteo.com/en/docs/flood-api), caudal diario simulado en celdas de 0.05°, para la curva de duración y la energía.")
+        if any(getattr(site, "flow_check", None) for site in hydro_sites):
+            sources.append("GEOGLOWS River Forecast System v2 (https://geoglows.ecmwf.int), caudal medio anual simulado desde 1940, CC BY 4.0, "
+                           "como segunda opinión del caudal.")
         if wind_sites:
             sources.append(f"NASA POWER, API Hourly Point (https://power.larc.nasa.gov/api/temporal/hourly/point), viento a 10 y 50 m de MERRA-2 "
                            f"{wind_sites[0].resource.years}, para la energía hora por hora con una curva de potencia genérica.")
@@ -447,8 +455,11 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
                            "(https://registry.opendata.aws/copernicus-dem/), 1 arc-second, como contraste de NASADEM.")
     used = sorted({value for stage in envelope.pipeline for value in stage.provenance} | {value for question in envelope.nasa_questions for value in question.provenance})
     provenance_lines = [f"<font name='{MONO}' size='7'>{value}</font>: {_text(PROVENANCE_TEXT.get(Provenance(value), value))}" for value in used]
+    # Validación del método contra datos reales (eólica e hidroeléctrica): va junto al método, no entre los resultados.
+    validation = [item for note in envelope.method_validation for item in (Paragraph(_text(note), styles["body"]), Spacer(1, 2 * mm))]
     story += [
         Paragraph(f"<b>Método.</b> {_text(method)}", styles["body"]), Spacer(1, 2 * mm),
+        *validation,
         Paragraph("<b>Fuentes.</b> " + " ".join(_text(source) for source in sources), styles["body"]), Spacer(1, 2 * mm),
         Paragraph("<b>Procedencia usada en este reporte.</b> " + "; ".join(provenance_lines) + ".", styles["body"]), Spacer(1, 2 * mm),
         Paragraph(f"<b>Alcance.</b> {_text(envelope.disclaimer)}", styles["body"]), Spacer(1, 3 * mm),

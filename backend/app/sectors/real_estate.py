@@ -19,8 +19,11 @@ from ..connectors.peru.territory import TerritoryConnector, TerritoryConnectorEr
 from ..finance.sensitivity import Driver, break_even_item, tornado
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
 from ..orchestration.analysis import analyze_subjects
+from ..orchestration.discoveries import NO_TERRAIN_CHECK, record_in_pipeline, terrain_discoveries
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
+from ..orchestration.slope_check import scorecard_with_slope_check
+from ..orchestration.stale_copies import stale_gap
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -61,7 +64,6 @@ from ..schemas.screening import (
 )
 from ..schemas.spatial_sampling import SpatialSamplingRequest
 from ..schemas.terrain import TerrainResponse
-from ..scoring.multicriteria import build_scorecard
 from ..statistics.extremes import linear_percentile
 
 ESTATE_VARIABLES = ["PRECTOTCORR", "T2M"]
@@ -250,6 +252,7 @@ def _territorial_summary(subject: StudySubject, response: TerritorialQueryRespon
             provenance=item.provenance,
             downloaded_at=item.downloaded_at,
             limitations=item.limitations,
+            stale_note=item.stale_note,
         ) for item in response.sources],
     )
 
@@ -440,6 +443,7 @@ def _scorecard(
     results: list[RealEstateSiteResult],
     territorial: list[RealEstateTerritorialEvidence],
     assumptions: RealEstateAssumptions,
+    terrain: TerrainResponse | None = None,
 ) -> Scorecard:
     territorial_by_subject = {item.subject: item for item in territorial}
     rows = []
@@ -464,7 +468,7 @@ def _scorecard(
         "Cero intersecciones significa solo que el servicio consultado no devolvió cruces; nunca equivale a cero riesgo o restricción.",
         "Una fuente incompleta elimina el criterio relacionado y reduce la cobertura, en vez de convertir el faltante en cero.",
     ]
-    card = build_scorecard(ScorecardRequest(criteria=criteria, subjects=rows), notes)
+    card = scorecard_with_slope_check(ScorecardRequest(criteria=criteria, subjects=rows), notes, terrain)
     if len(rows) == 1:
         card.margin = None
         card.tie = False
@@ -512,10 +516,13 @@ def _data_gaps(
                 next_action=f"Reintentar K1 y revisar el error del proveedor: {error}",
             ))
     unavailable: dict[str, str] = {}
+    stale: dict[str, str] = {}
     for item in territorial:
         for source in item.sources:
             if source.status == "DATA_UNAVAILABLE":
                 unavailable[source.source_id] = source.limitations[0] if source.limitations else "Fuente no disponible."
+            elif source.stale_note:
+                stale.setdefault(source.source_id, source.stale_note)
     for subject, error in zip(subjects, territorial_errors, strict=True):
         if error:
             unavailable[f"consulta-territorial-{subject.id}"] = error
@@ -525,6 +532,7 @@ def _data_gaps(
             impact=f"La capa no pudo verificarse: {reason}",
             next_action="Restablecer el servicio oficial o usar una fuente vigente con licencia, fecha, escala y cobertura documentadas.",
         ))
+    gaps.extend(stale_gap(source_id, note) for source_id, note in stale.items())
     gaps.extend([
         DataGap(
             dataset="Catastro, titularidad y parámetros urbanísticos",
@@ -662,7 +670,7 @@ async def run_real_estate_screening(request: RealEstateScreeningRequest) -> Real
         ))
     timings.finance_ms = elapsed_ms(finance_start)
 
-    scorecard = _scorecard(subjects, results, territorial, request.assumptions)
+    scorecard = _scorecard(subjects, results, territorial, request.assumptions, terrain)
     labelled = [
         SubjectSummaries(label=subject.label, summaries=summaries)
         for subject, summaries in zip(subjects, summaries_by_subject, strict=True)
@@ -742,6 +750,9 @@ async def run_real_estate_screening(request: RealEstateScreeningRequest) -> Real
         results_stage(trend_findings, gaps, all_provenance),
         export_stage(all_provenance),
     ])
+    # La pendiente puntúa en la comparación de terrenos: se contrasta con el segundo modelo de elevación y se registra.
+    discoveries = terrain_discoveries(terrain)
+    record_in_pipeline(pipeline, discoveries, empty=NO_TERRAIN_CHECK)
     fingerprint_payload = request.model_dump(mode="json")
     fingerprint_payload["resolved_geometries"] = [item.geometry for item in subjects]
     fingerprint = hashlib.sha256(json.dumps(fingerprint_payload, sort_keys=True).encode()).hexdigest()[:16]
@@ -759,6 +770,7 @@ async def run_real_estate_screening(request: RealEstateScreeningRequest) -> Real
         assumption_items=_assumption_items(request),
         financial_sensitivity=sensitivities,
         scorecard=scorecard,
+        discoveries=discoveries,
         disclaimer=(
             "Screening preliminar con datos NASA, límites IGN/capas públicas y supuestos del usuario. No acredita "
             "propiedad, catastro, zonificación, parámetros urbanísticos, ausencia de riesgo o patrimonio, factibilidad "

@@ -21,7 +21,7 @@ export const windTabs = [
 
 const atlasLevel = (site: WindSite) => site.resource.level_factor !== 1;
 
-export type EnergyTech = "solar" | "wind";
+export type EnergyTech = "solar" | "wind" | "hydro";
 
 export function EnergyTechControls({ tech, onTech }: { tech: EnergyTech; onTech: (tech: EnergyTech) => void }) {
   return (
@@ -31,6 +31,8 @@ export function EnergyTechControls({ tech, onTech }: { tech: EnergyTech; onTech:
         <span>Solar fotovoltaica<small>Irradiancia NASA POWER (CERES) cruzada con ERA5</small></span></label>
       <label className="layerOption"><input type="radio" name="tecnologia" checked={tech === "wind"} onChange={() => onTech("wind")} />
         <span>Eólica<small>Viento horario NASA POWER a 50 m, nivel del Atlas Eólico Global y contraste ERA5</small></span></label>
+      <label className="layerOption"><input type="radio" name="tecnologia" checked={tech === "hydro"} onChange={() => onTech("hydro")} />
+        <span>Hidroeléctrica de pasada<small>Caudal diario GloFAS cruzado con GEOGLOWS y salto NASADEM cruzado con Copernicus</small></span></label>
     </section>
   );
 }
@@ -158,6 +160,7 @@ export function WindEvidence({ result }: { result: WindResult }) {
       })}
       <div className="findingsPanel methodPanel">
         <h3>Método eólico</h3>
+        {result.method_validation?.map((note) => <p key={note} className="methodValidation"><span>real</span>{note}</p>)}
         {[result.sites[0]?.finance.formula, "Cizalladura por sitio: ln(v50 / v10) / ln 5 con las medias horarias; el atlas usa su propia cizalladura entre 50 y 100 m.",
           ...(result.sites[0]?.finance.limitations ?? []),
           ...(result.sites.find((site) => site.atlas_check)?.atlas_check?.limitations ?? [])].filter(Boolean).map((note, index) => <p key={index}><span>{index + 1}</span>{note}</p>)}

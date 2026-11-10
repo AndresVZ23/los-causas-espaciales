@@ -75,7 +75,7 @@ export default function ScorecardPanel({ initial }: { initial: Scorecard }) {
       {ranked.length > 1 && (
         <p className={`scoreVerdict ${tie ? "tie" : ""}`} role="status">
           {tie
-            ? `Empate práctico: ${formatNumber(gap ?? 0, 1)} punto(s) de diferencia y ${ranked[0].subject} queda primero solo en ${formatPercent(ranked[0].first_place_share, 0)} de las combinaciones de pesos. El puntaje no separa los sitios; decida con los criterios uno por uno.`
+            ? `Empate práctico: ${formatNumber(gap ?? 0, 1)} punto(s) de diferencia; ${ranked[0].subject} queda primero en ${formatPercent(ranked[0].first_place_share, 0)} de las combinaciones de pesos. El puntaje no separa los sitios; decida con los criterios uno por uno.`
             : `${ranked[0].subject} lidera por ${formatNumber(gap ?? 0, 0)} puntos y queda primero en ${formatPercent(ranked[0].first_place_share, 0)} de las combinaciones de pesos.`}
         </p>
       )}

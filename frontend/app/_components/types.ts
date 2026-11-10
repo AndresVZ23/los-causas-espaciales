@@ -61,6 +61,8 @@ export type ScreeningResult = {
   pipeline: Stage[]; nasa_questions: NasaQuestion[]; trend_findings: TrendFinding[];
   sites: SiteResult[]; terrain: TerrainResult | null;
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; discoveries?: Discovery[]; disclaimer: string;
+  // Validaciones del método contra datos reales (con fecha, fuente y alcance); no son resultados del análisis en curso.
+  method_validation?: string[];
 };
 export type DiscoveryKind = "artefacto_probable" | "confirmado" | "sin_respaldo" | "coincidencia" | "contradiccion";
 export type Discovery = { kind: DiscoveryKind; title: string; detail: string; subjects: string[]; sources: string[] };
@@ -114,7 +116,8 @@ export type RoadSegment = {
   finance: { baseline_interruption_days_per_year: number; avoided_interruption_days_per_year: number; annual_avoided_cost_usd: number; mitigation_capex_usd: number; npv_usd: number; formula: string; limitations: string[] };
   opportunities: string[]; cautions: string[];
 };
-export type RoadTerritorialSource = { source_id: string; status: string; intersection_count: number | null; provenance: string; limitations: string[] };
+// `stale_note`: la fuente no respondió hoy y se muestra su última copia válida (motivo y fecha de la copia).
+export type RoadTerritorialSource = { source_id: string; status: string; intersection_count: number | null; provenance: string; downloaded_at?: string | null; limitations: string[]; stale_note?: string | null };
 export type RoadResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
   sector: "road"; corridor_source: { name: string; source: string; source_url: string | null; license: string | null; provenance: string; limitations: string[] };
   segments: RoadSegment[]; territorial_evidence: { subject: string; sources: RoadTerritorialSource[] }[]; assumptions: RoadAssumptions;
@@ -145,7 +148,7 @@ export type LayerHighlight = { label: string; count: number; detail: string | nu
 export type BaselineLayer = {
   source_id: string; organization: string; dataset: string; component: BaselineComponent; status: "READY" | "DATA_UNAVAILABLE";
   intersection_count: number | null; truncated: boolean; highlights: LayerHighlight[]; provenance: string; downloaded_at: string | null;
-  source_url: string; limitations: string[];
+  source_url: string; limitations: string[]; stale_note?: string | null;
 };
 export type LandCoverChange = {
   product: string; first_year: number; last_year: number; pixels: number; changed_percent: number;
@@ -188,8 +191,41 @@ export type WindSite = {
   opportunities: string[]; cautions: string[];
 };
 export type WindResult = Omit<ScreeningResult, "sites" | "assumptions"> & { sector: "wind"; sites: WindSite[]; assumptions: WindAssumptions };
-export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult | BaselineResult | WindResult;
+// Piloto hidroeléctrico (sector "hydro" del contrato C2): caudal GloFAS con GEOGLOWS, salto NASADEM con Copernicus.
+export type HydroPoint = { latitude: number; longitude: number };
+export type HydroSiteInput = { label: string; intake: HydroPoint; powerhouse: HydroPoint; design_flow_m3s: number | null };
+export type HydroAssumptions = {
+  design_exceedance_percent: number; ecological_flow_fraction: number; min_turbine_flow_fraction: number; efficiency: number; head_loss_fraction: number;
+  availability: number; capex_usd_per_mw: number; opex_fraction_of_capex: number; energy_price_usd_mwh: number; mitigation_capex_usd: number;
+  discount_rate: number; horizon_years: number; price_sensitivity: number; capex_sensitivity: number; opex_sensitivity: number; discount_rate_sensitivity: number;
+};
+export type HydroHead = {
+  source: string; intake_elevation_m: number; powerhouse_elevation_m: number; gross_head_m: number; second_source: string | null;
+  second_gross_head_m: number | null; gap_m: number | null; gap_percent: number | null; conduction_km: number; mean_slope_percent: number;
+  provenance: string; limitations: string[];
+};
+export type HydroResource = {
+  period: string; days: number; mean_flow_m3s: number; firm_flow_m3s: number; ecological_flow_m3s: number; design_flow_m3s: number; design_basis: string;
+  min_turbine_flow_m3s: number; flow_duration: { exceedance_percent: number; flow_m3s: number }[]; net_head_m: number; capacity_mw: number;
+  plant_factor: number; annual_plant_factors: { year: number; value: number }[];
+  cell: { latitude: number; longitude: number; distance_km: number; moved: boolean; point_cell_mean_m3s: number | null; used_cell_mean_m3s: number; neighborhood_max_m3s: number; scan_year: number };
+  source: string; source_url: string; provenance: string; downloaded_at: string;
+};
+export type HydroFlowCheck = {
+  source: string; river_id: number; nearest_river_id: number; candidates: number; period: string; mean_m3s: number; primary_mean_m3s: number;
+  ratio: number | null; gap_percent: number | null; verdict: "coinciden" | "intermedio" | "difieren" | "no_comparable";
+  plant_factor_at_second: number | null; annual_energy_mwh_at_second: number | null; provenance: string; downloaded_at: string; source_url: string; limitations: string[];
+};
+export type HydroSiteResult = {
+  location: Point; powerhouse: Point; relative_position: number; relative_position_text: string; variables: VariableSummary[];
+  head: HydroHead; resource: HydroResource; flow_check: HydroFlowCheck | null;
+  finance: { capacity_mw: number; plant_factor_net: number; annual_energy_mwh: number; initial_capex_usd: number; annual_opex_usd: number; annual_revenue_usd: number; npv_usd: number; formula: string; limitations: string[] };
+  opportunities: string[]; cautions: string[];
+};
+export type HydroResult = Omit<ScreeningResult, "sites" | "assumptions"> & { sector: "hydro"; sites: HydroSiteResult[]; assumptions: HydroAssumptions };
+export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult | BaselineResult | WindResult | HydroResult;
 export const isWind = (result: AnyResult | null): result is WindResult => result?.sector === "wind";
+export const isHydro = (result: AnyResult | null): result is HydroResult => result?.sector === "hydro";
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export const isRoad = (result: AnyResult | null): result is RoadResult => result?.sector === "road";
 export const isRealEstate = (result: AnyResult | null): result is RealEstateResult => result?.sector === "real_estate";

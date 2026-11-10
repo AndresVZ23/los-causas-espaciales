@@ -1097,3 +1097,87 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Docker:** `docker compose build api` no pudo ejecutarse porque el motor Linux de Docker Desktop no estaba activo (`dockerDesktopLinuxEngine` inexistente). No se inició Docker Desktop para evitar levantar o alterar los stacks reservados en 3100/8000. La imagen queda como única verificación operativa pendiente; las pruebas usan la misma versión fijada y el import de Zstandard quedó validado en `.venv`.
 
 **Publicación:** Christian autorizó subir `master` a `origin`. No se crea `v0.1.0`. El SHA remoto exacto se verificará después del push; por definición no puede autorreferenciarse dentro del commit que contiene esta entrada.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · Guía del equipo y piloto hidroeléctrico (ADR-042)
+
+**Qué entró (sobre master `dd09f34`):**
+- **Documentos del equipo:** `docs/equipo/EMPEZAR_AQUI.md`, `docs/equipo/pipeline.html` (red del proyecto, lee `docs/interno/dop-datos.js`) y `CLAUDE.md`. Solo documentación.
+- **Hidroeléctrica de pasada:** tercera tecnología de Energía, con `POST /api/v1/projects/hydro-screening` y `Sector.HYDRO` (C2 aditivo).
+  - Caudal diario GloFAS v4 vía Open-Meteo, con una regla declarada para hallar la celda del cauce.
+  - Segunda opinión del caudal con GEOGLOWS v2, buscada en una malla de ±4.4 km, en segundo plano y con 40 s de espera.
+  - Salto con NASADEM entre toma y casa de máquinas, contrastado con Copernicus; sin token de Earthdata funciona con Copernicus.
+  - Energía día por día, curva de duración, potencia como resultado, VAN con tornado, puntaje, descubrimientos y PDF.
+- **Piezas comunes tocadas (sin cambiar el comportamiento de los otros sectores):**
+  - `orchestration/annual_crosscheck.py` reúne el contraste anual que antes vivía en `era5_crosscheck.py`.
+  - `extraction_stage(..., provider=)` y `SectorLens.location_note`, ambos con el valor anterior por defecto.
+  - `discoveries.short()` reconoce GEOGLOWS; nuevas constantes de caudal y salto.
+
+**Validación:** producción COES 2024 de la C.H. Machupicchu (1,252,221 MWh; 192.45 MW; factor de planta 74.1 %). El modelo da entre 64.7 % y 77.1 % según el caudal ecológico que se suponga, y 163 MW de potencia. Detalle y límites en ADR-042.
+
+**Para Codex:**
+- **DATA_SOURCES.md:** faltan dos fichas.
+  - GloFAS v4 (Copernicus EMS) vía Open-Meteo Flood API: `https://flood-api.open-meteo.com/v1/flood`, variable `river_discharge`, 0.05°, válido desde 1997-01-01 en esa API. Anotar la licencia de Copernicus y que el uso gratuito de Open-Meteo es solo no comercial y con cuota.
+  - GEOGLOWS River Forecast System v2: `https://geoglows.ecmwf.int/api/v2/` (`getriverid`, `annualaverages`), CC BY 4.0, simulación histórica forzada con ERA5.
+- **Sin dependencias nuevas.**
+- **Docker:** la imagen de la API se reconstruyó aquí y el stack 3100/8000 corre con este commit. La caché del contenedor es un volumen aparte de la del `.venv`.
+- **Cuidado con las cuotas al probar:** una serie nueva de GloFAS pesa ~76 llamadas de Open-Meteo (tope 600 por minuto) y GEOGLOWS corta las ráfagas de más de unas pocas conexiones.
+
+**Verificación:** 250 pruebas backend (25 nuevas), build con 20 rutas, `npm audit` en 0, auditor científico `ok: true`, QA en navegador 1440/768/390 (puerta de cierre y pantalla hidroeléctrica) sin errores de consola ni desbordes. Detalle en ADR-042.
+
+**Bloqueos:** ninguno. No se hace push ni se crea `v0.1.0` sin la aprobación de Christian.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · El relieve cruzado en vial, inmobiliario y el puntaje (ADR-043)
+
+**Qué entró (sobre el commit hidroeléctrico `a33f782`):**
+- **Descubrimientos en vial e inmobiliario:** `sectors/road.py` y `sectors/real_estate.py` registran el contraste NASADEM ↔ Copernicus que `extract_terrain` ya traía. Tres líneas por sector; el resto del cálculo de K2 y K3 no cambia.
+- **Puntaje recalculado con el segundo modelo (`orchestration/slope_check.py`):** solar, eólico, vial e inmobiliario agregan una nota que dice si el primer lugar cambia con la pendiente de Copernicus. `_scorecard` de vial e inmobiliario recibe `terrain` como parámetro opcional.
+- **`record_in_pipeline(..., empty=)`:** en vial e inmobiliario, una lista vacía se declara como «Sin contraste del relieve».
+- **Texto del método del puntaje:** declara la regla de empate práctico y recupera las comas que un `replace` le quitaba. En pantalla, el empate ya no dice «solo en 99 %».
+
+**Resultado real:** en el corredor Moquegua–Ilo, el Tramo 5 tiene 17.9° en NASADEM y 12.5° en Copernicus; sigue primero (44.4 frente a 37.1). En solar, eólico e inmobiliario el primer lugar tampoco cambia. Detalle en ADR-043.
+
+**Regresión funcional de los módulos existentes (10-nov, stack 3100/8000):** `pipeline`, `climate_ui`, `baseline_ui`, `road_ui`, `realestate_ui`, `scorecard_ui`, `sensitivity_ui`, `assistant_ui`, `territory_ui`, `layers_ui`, `geometry_ui`, `pdf_e2e`, `release_ui` y `energy_ui`, cada uno en 1440/768/390 donde aplica: sin errores de consola, sin desbordes y sin recortes.
+
+**Para Codex:** sin fuentes ni dependencias nuevas. `road.py` y `real_estate.py` son tuyos: revisa el cambio antes de fusionar.
+
+**Verificación:** 260 pruebas backend (10 nuevas), build con 20 rutas, `npm audit` en 0.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · CENEPRED exige token: última copia válida (ADR-044)
+
+**Qué pasó:** desde hoy `https://sigrid.cenepred.gob.pe/arcgis/rest/services/FEN/ER_NINO2027_BD/MapServer` responde `{"error": {"code": 499, "message": "Token Required"}}` y el directorio público ya no lista los servicios (solo quedan `SampleWorldCities` y `sigrid/sigrid_collect`). Las tres capas de CENEPRED quedaron como `DATA_UNAVAILABLE` en amenazas, vial e inmobiliario. Lo detectó la regresión funcional, no una prueba unitaria: los dobles no ven un proveedor que cierra.
+
+**Qué entró:**
+- **Última copia válida** en `connectors/peru/territory.py` y `connectors/peru/identify_layers.py`: si el servicio falla y la caché guarda una respuesta anterior de la misma consulta (hasta 90 días), se muestra como `CACHED_DATA` con su fecha original y el motivo. Sin copia, sigue `DATA_UNAVAILABLE`.
+- **Campo aditivo `stale_note`** en `TerritorialSourceResult`, `BaselineLayer`, `RoadTerritorialSourceSummary` y `RealEstateTerritorialSourceSummary`.
+- **Declaración:** etiqueta «copia del 25-oct-2026» junto al dato, nota al pie, brecha con procedencia `CACHED_DATA` (`orchestration/stale_copies.py`), advertencia en los descubrimientos que usan la capa y línea en el PDF.
+- **Reintentos:** una falla por credenciales ya no se reintenta; el muestreo por puntos deja de llamar tras la primera falla.
+
+**Resultado real:** el corredor Moquegua–Ilo recupera el riesgo de inundación y de movimientos en masa por tramo (copia del 25-oct); Lurigancho recupera las tres capas (copia del 27-oct) y el descubrimiento CENEPRED ↔ NASA; el puntaje inmobiliario vuelve a cobertura 100 %.
+
+**Para Codex:**
+- **`DATA_SOURCES.md`, ficha de CENEPRED:** anotar que desde el 10-nov-2026 el servicio exige token y que la aplicación solo muestra copias anteriores de consultas ya hechas, declaradas con su fecha.
+- **`territory.py` es tuyo:** `_layer_query` ahora devuelve cuatro valores (el cuarto es el motivo cuando la respuesta sale de la copia). Revisa el cambio.
+- **Tu caché es otra:** las copias viven en el volumen `power-cache` de este stack. En tu carpeta, o en la de cualquier compañero, CENEPRED saldrá «No disponible» salvo que tengan copias propias de antes del cierre.
+- **SIGDA:** en la corrida del mediodía no respondió nueve capas del distrito de Ilo y una hora después sí. Espaciar las corridas de `baseline_ui`.
+
+**Decisión que le toca a Christian:** gestionar o no un acceso con CENEPRED. Aquí no se crean cuentas a nombre de nadie.
+
+**Verificación:** 266 pruebas backend (6 nuevas), build con 20 rutas, `npm audit` en 0, auditor científico `ok: true`; QA en navegador a 1440 y 390 en amenazas y vial, y `release_ui`, `road_ui` y `realestate_ui` en los tres anchos.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · Materiales de entrega y validación a la vista (ADR-045)
+
+**Qué entró:**
+- **Materiales de entrega (en inglés, como el resto de `docs/nasa-submission`):** `DEMO_SCENARIOS.md` con ocho actos ensayados (clima, amenazas en Lurigancho–Chosica, vial, solar, eólica, hidroeléctrica y PDF), `PITCH.md`, `PROJECT_OVERVIEW.md` y `SCIENTIFIC_METHODOLOGY.md`. Los dos últimos describían el MVP de octubre.
+- **`scripts/qa/demo_ensayo.cjs`:** actos 1B, 2C y 2D; una captura fallida ya no detiene el ensayo.
+- **Leyenda de sensibilidad por sector:** dejó de decir «NASA POWER» donde el rango sale de GloFAS o es un supuesto.
+- **`method_validation` en el sobre C2 (aditivo, ADR-045):** eólica e hidroeléctrica muestran junto al método, en pantalla y en el PDF, su validación con la producción real del COES.
+- **Equipo:** `pipeline.html` con F1 y F2 hechas, idea A11 «Acceso a CENEPRED» y la guía con el aviso de CENEPRED.
+
+**Para Codex:**
+- `TECHNICAL_ARCHITECTURE.md` sigue en el estado del 25-oct: faltan eólica, hidroeléctrica, los conectores de segunda fuente y la última copia válida. Es tuyo.
+- `docs/nasa-submission/AI_USE.md` es un borrador de la declaración de uso de IA que piden las bases de 2026: el equipo lo confirma contra la guía de entrega (se publica el 13-nov).
+
+**Verificación:**
+- 266 pruebas backend, build con 20 rutas, `npm audit` en 0.
+- Regresión funcional del 10-nov con los catorce guiones de `scripts/qa` (`pipeline`, `climate_ui`, `baseline_ui`, `road_ui`, `realestate_ui`, `energy_ui`, `scorecard_ui`, `sensitivity_ui`, `assistant_ui`, `territory_ui`, `layers_ui`, `geometry_ui`, `pdf_e2e`, `release_ui`): sin errores de consola, desbordes ni recortes; las salidas se leyeron, no solo los códigos. Corrió sobre el build anterior a ADR-045; después de ADR-045 se repitieron `release_ui`, `energy_ui` y `pdf_e2e`, también limpios.
+- Estado de las capas en esa corrida: CENEPRED desde su última copia válida; el inventario de INGEMMET sin publicar; SIGDA respondió.

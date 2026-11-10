@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Última actualización: 2026-10-23
+Última actualización: 2026-11-10 (el estado vigente está en la última sección; lo anterior se conserva como historial)
 
 ## Versión operativa verificada
 
@@ -210,3 +210,25 @@
 - `DATA_SOURCES.md` y `TECHNICAL_ARCHITECTURE.md` quedaron fijados el 24-oct-2026 como baseline de fuentes y arquitectura para `v0.1.0`.
 - El manifiesto `docs/coordination/RELEASE_2026-11-15.md` define la evidencia, las brechas aceptadas, la puerta final y los comandos exactos de etiquetado.
 - El 29-oct corresponde al anteproyecto de la sede. La entrega final cierra el 15-nov a las 23:59; la etiqueta anotada `v0.1.0` se crea únicamente entonces sobre el commit final aprobado.
+
+## Estado vigente al 10 de noviembre de 2026
+
+Los siete módulos funcionan sobre el contrato común C2, y cada dato satelital tiene una segunda fuente que lo comprueba. Lo que aparece al cruzarlas se registra como «descubrimientos» en la pantalla, el PDF y el asistente.
+
+| Módulo | Estado | Contraste | Decisión |
+|---|---|---|---|
+| 1 · Clima | Funcional | ERA5 para temperatura, radiación y viento; GPM IMERG y CHIRPS para los extremos de lluvia | ADR-018, 019, 021, 036 y 038 |
+| 2 · Energía solar | Funcional | ERA5 | ADR-038 |
+| 2 · Energía eólica | Funcional | Global Wind Atlas; validada con la producción COES 2024 de Marcona | ADR-041 |
+| 2 · Energía hidroeléctrica | Funcional | GEOGLOWS para el caudal y Copernicus para el salto; validada con la producción COES 2024 de Machupicchu | ADR-042 |
+| 3 · Amenazas | Funcional | Deslizamientos de NASA frente a CENEPRED; IMERG y CHIRPS | ADR-034 a ADR-037 |
+| 4 · Ambiente | Funcional | ESA WorldCover frente a MODIS | ADR-032, ADR-040 |
+| 5 · Territorio | Patrimonio funcional | Sin segunda fuente; comunidades y conflictos siguen como brecha | ADR-032 |
+| 6 · Infraestructura | Piloto vial funcional | Copernicus para el relieve, en los descubrimientos y en el puntaje | K2, ADR-043 |
+| 7 · Inversión | Piloto inmobiliario funcional | Copernicus para el relieve, en los descubrimientos y en el puntaje | K3, ADR-043 |
+
+- **Puerta al 10-nov:** 266 pruebas backend, build de Next.js con 20 rutas, `npm audit` en 0 y QA en navegador a 1440, 768 y 390 px.
+- **El puntaje dice si depende del modelo de elevación:** solar, eólica, vial e inmobiliario lo recalculan con la pendiente de Copernicus y declaran si cambia el primer lugar (ADR-043).
+- **CENEPRED exige token desde el 10-nov:** sus capas se muestran desde la última copia válida, con la fecha de la copia y el motivo a la vista, solo donde ya se había consultado antes. En un sitio nuevo figuran como no disponibles (ADR-044).
+- **Lo que falta para la entrega del 15-nov:** escenarios de demo, video, pitch y textos, QA de usuario y la puerta final con la etiqueta `v0.1.0`. El detalle y las ideas para sumar están en `docs/equipo/pipeline.html`.
+- **Brechas que siguen declaradas:** aforos y mediciones en sitio, comunidades y conflictos, emergencias viales reales, distancia a la red eléctrica, persistencia de ejecuciones.

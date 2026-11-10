@@ -37,6 +37,8 @@ async function run(viewport, tag) {
     segmentsTable: await page.locator(".siteResult").first().innerText().then((text) => text.slice(0, 400)),
     territorial: await page.locator(".siteResult").nth(1).innerText().then((text) => text.slice(0, 500)),
     questions: await page.locator(".question").count(),
+    // Relieve del punto representativo de cada tramo: NASADEM frente a Copernicus GLO-30.
+    discoveries: await page.locator(".discoveriesPanel .discovery").evaluateAll((items) => items.map((item) => `${item.querySelector(".discoveryKind")?.textContent} · ${item.querySelector("h4")?.textContent}`)),
   };
   await page.locator(".assistantPanel").scrollIntoViewIfNeeded();
   const ask = async (index) => {

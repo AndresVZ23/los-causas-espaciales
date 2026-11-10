@@ -1,33 +1,45 @@
 # Los Causas Espaciales
 
-Plataforma de inteligencia territorial para convertir datos de observación de la Tierra en decisiones de inversión trazables. Esta primera versión operativa implementa un screening solar comparativo para Moquegua y Arequipa con datos reales de NASA POWER.
+Plataforma de inteligencia territorial para convertir datos de observación de la Tierra en decisiones de inversión trazables. Tiene siete módulos: clima, energía (solar, eólica e hidroeléctrica), amenazas, ambiente, patrimonio, infraestructura vial e inversión inmobiliaria. Cada dato se contrasta con una segunda fuente independiente.
+
+**¿Eres del equipo?** Empieza por [`docs/equipo/EMPEZAR_AQUI.md`](docs/equipo/EMPEZAR_AQUI.md), con la puesta en marcha, la forma de trabajo y las reglas. Lo hecho, lo que falta y las ideas para agregar están en la red del proyecto, `docs/equipo/pipeline.html`: ábrela con doble clic después de clonar.
 
 ## Qué puede hacer hoy
 
-- Ejecutar un pipeline visible de nueve pasos, desde la selección del caso hasta la exportación.
-- Consultar cuatro variables reales de NASA POWER para dos a cuatro ubicaciones.
-- Graficar medias anuales reales por sitio y variable después de cada consulta.
-- Usar NASA EOSDIS GIBS Blue Marble como mapa base contextual estático, separado de la evidencia analítica POWER.
-- Consultar en NASA CMR los gránulos NASADEM HGT y SC para cada sitio, mostrar sus metadatos oficiales y superponer la vista previa pública disponible.
-- Comparar irradiancia, temperatura, viento y precipitación sin inventar datos ausentes.
-- Calcular Mann–Kendall, pendiente de Sen, p-value, intervalo de confianza y corrección Benjamini–Hochberg.
-- Ordenar ubicaciones por irradiancia histórica mediante una regla explícita y reproducible, no mediante un puntaje opaco.
-- Estimar energía anual y VAN utilizando únicamente supuestos editables del usuario.
-- Mostrar oportunidades, cautelas, procedencia del dato y brechas que todavía impiden una decisión de factibilidad.
-- Descargar el resultado completo en JSON.
-- Crear tareas asíncronas AppEEARS para MOD13Q1.061 (NDVI/EVI + QA) y MOD44W.061 (agua + QA), consultar su estado, listar el bundle y descargar archivos con verificación SHA-256.
-- Consultar intersecciones de punto, corredor o polígono en CENEPRED, SERNANP, Osinergmin y Cultura, conservando CRS, procedencia y límites de interpretación.
-- Cruzar la susceptibilidad a deslizamientos de CENEPRED con la susceptibilidad global de NASA, el nowcast LHASA 2 y los reportes COOLR, sin convertir nodata ni ausencia de reportes en riesgo cero.
-- Obtener generación mensual real de COES para Rubí, Intipampa, Moquegua FV, Majes, Repartición y Panamericana como etiquetas `in-coes`.
+| Módulo | Qué hace | Segunda fuente que lo comprueba |
+|---|---|---|
+| 1 · Clima | Tendencias de temperatura, lluvia, viento y radiación desde 2001, extremos de lluvia ETCCDI y año en curso | ERA5; GPM IMERG y CHIRPS para la lluvia |
+| 2 · Energía solar | Recurso, energía, VAN y puntaje de dos a cuatro sitios | ERA5 |
+| 2 · Energía eólica | Viento horario llevado al buje, energía, VAN y puntaje | Global Wind Atlas; producción real del COES como validación |
+| 2 · Energía hidroeléctrica | Central de pasada: caudal en la toma, salto hasta la casa de máquinas, curva de duración, energía y VAN | GEOGLOWS para el caudal y Copernicus para el salto; producción real del COES como validación |
+| 3 · Amenazas | Lluvia extrema, relieve, riesgo y susceptibilidad de CENEPRED, puntos críticos de la ANA, volcanes de INGEMMET | Deslizamientos de NASA (susceptibilidad global, LHASA y reportes COOLR) |
+| 4 · Ambiente | Insumos de línea base: vegetación MODIS con tendencia, agua, ecosistemas y áreas protegidas | ESA WorldCover |
+| 5 · Territorio | Patrimonio arqueológico y consulta previa del Ministerio de Cultura | Sin segunda fuente; comunidades y conflictos siguen como brecha |
+| 6 · Infraestructura | Corredor vial por tramos: lluvia, capas oficiales, VAN de mitigación y puntaje | Copernicus para el relieve |
+| 7 · Inversión | Terrenos o territorios IGN: lluvia, relieve, capas oficiales, VAN y puntaje | Copernicus para el relieve |
 
-La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY`. AppEEARS requiere `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`: el token temporal permanece en memoria, se renueva al vencer y se revoca al terminar. Las fuentes activas y sus cautelas de licencia están en `docs/nasa-submission/DATA_SOURCES.md`. LHASA 2, ANA e INGEMMET volcánico ya están integrados; SINPAD, SERV_PERUALERTA, SENACE, Defensoría y comunidades continúan como brechas explícitas.
+En todos los módulos:
+
+- Un pipeline visible de nueve etapas, de la selección a la exportación, con el tiempo y la procedencia de cada una.
+- Mann–Kendall corregido por autocorrelación (Hamed–Rao), pendiente de Sen y ajuste Benjamini–Hochberg entre los sujetos comparados.
+- Respuestas a las cinco preguntas del reto «Be An Earth System Trend Detective!».
+- «Descubrimientos»: lo que aparece al cruzar fuentes (confirmaciones, contradicciones y artefactos probables).
+- Supuestos financieros editables, escenarios base, adverso y favorable, tornado y puntos de equilibrio.
+- En energía, infraestructura e inversión, un puntaje multicriterio con escalas y pesos a la vista y su estabilidad ante 2,000 combinaciones de pesos; donde puntúa la pendiente, dice si el primer lugar cambia con el segundo modelo de elevación.
+- Brechas declaradas: lo que falta para una decisión de factibilidad, nunca convertido en cero.
+- Reporte ejecutivo en PDF con huella SHA-256, exportación JSON y un asistente que explica el resultado.
+
+La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY` y usa Copernicus GLO-30 donde necesita una elevación. AppEEARS requiere `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`: el token temporal permanece en memoria, se renueva al vencer y se revoca al terminar. Las fuentes activas y sus cautelas de licencia están en `docs/nasa-submission/DATA_SOURCES.md`. LHASA 2, ANA e INGEMMET volcánico ya están integrados; SINPAD, SERV_PERUALERTA, SENACE, Defensoría y comunidades continúan como brechas explícitas.
+
+Cuando una capa oficial peruana no responde, la aplicación muestra su última copia válida de la misma consulta (hasta 90 días), con la fecha de la copia y el motivo a la vista; sin copia, la declara no disponible. Es el caso de CENEPRED, cuyo servicio exige token desde el 10-nov-2026: en una instalación nueva sus capas figuran como no disponibles (ADR-044).
 
 ## Ejecución con Docker
 
 El proyecto está aislado de MyFix. Usa `localhost:3100` para la web y `localhost:8000` para la API; no utiliza el puerto 3000.
 
 ```powershell
-cd "C:\Users\USUARIO\Desktop\Codex\Nasa Space Apps Challenge"
+git clone https://github.com/ChristianVenegas7/los-causas-espaciales.git
+cd los-causas-espaciales
 Copy-Item .env.example .env
 docker compose -p los-causas-espaciales up -d --build
 ```
@@ -43,8 +55,9 @@ Los documentos internos de seguimiento no forman parte de la aplicación; se abr
 
 ## Ejecución local sin Docker
 
+Desde la carpeta del repositorio:
+
 ```powershell
-cd "C:\Users\USUARIO\Desktop\Codex\Nasa Space Apps Challenge"
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --port 8000
@@ -53,7 +66,7 @@ python -m venv .venv
 En otra terminal:
 
 ```powershell
-cd "C:\Users\USUARIO\Desktop\Codex\Nasa Space Apps Challenge\frontend"
+cd frontend
 npm.cmd install
 npm.cmd run dev
 ```
