@@ -1181,3 +1181,13 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 - 266 pruebas backend, build con 20 rutas, `npm audit` en 0.
 - Regresión funcional del 10-nov con los catorce guiones de `scripts/qa` (`pipeline`, `climate_ui`, `baseline_ui`, `road_ui`, `realestate_ui`, `energy_ui`, `scorecard_ui`, `sensitivity_ui`, `assistant_ui`, `territory_ui`, `layers_ui`, `geometry_ui`, `pdf_e2e`, `release_ui`): sin errores de consola, desbordes ni recortes; las salidas se leyeron, no solo los códigos. Corrió sobre el build anterior a ADR-045; después de ADR-045 se repitieron `release_ui`, `energy_ui` y `pdf_e2e`, también limpios.
 - Estado de las capas en esa corrida: CENEPRED desde su última copia válida; el inventario de INGEMMET sin publicar; SIGDA respondió.
+
+## 2026-11-10 · Codex · `master` · ver `git log -1` · integración ADR-042 a ADR-045 y cierre documental
+
+**Fusión:** los once commits de `claude/pdf-linea-base` (`552060a`) se integraron sobre `dd09f34` mediante el merge local `430dd8b`, sin conflictos. Se revisaron expresamente el contrato de cuatro valores de `TerritoryConnector._layer_query`, la propagación de `stale_note` y los cambios de relieve cruzado en `road.py` y `real_estate.py`. No entraron dependencias nuevas.
+
+**Documentación:** `DATA_SOURCES.md` incorpora GloFAS v4 vía Open-Meteo y GEOGLOWS v2, separa la licencia/atribución del dato de las condiciones del intermediario, registra CC BY 4.0 para GEOGLOWS y documenta cuotas/no comercialidad del endpoint gratuito de Open-Meteo. La ficha CENEPRED declara el `499 Token Required` observado desde el 10-nov y la regla de última copia válida con fecha original. `TECHNICAL_ARCHITECTURE.md` ya incluye eólica, hidroeléctrica, segundas fuentes, los endpoints nuevos y la semántica de copias vencidas de ADR-044.
+
+**Puerta común:** 266/266 pruebas backend; build Next.js 16.4.2 con 20 rutas; `npm audit --omit=dev` con 0 vulnerabilidades; auditor científico `ok: true`, sin errores ni advertencias. No se repitieron `baseline_ui` ni `demo_ensayo`: la regresión visual completa y la repetición posterior a ADR-045 ya están registradas en la entrada de Claude, y una nueva ráfaga habría añadido carga innecesaria a SIGDA.
+
+**Operación:** no se ejecutó Docker ni se tocó el volumen `power-cache` del stack de Claude. En esta carpeta CENEPRED seguirá correctamente como «No disponible» si no existe una copia previa propia. No se hizo push y no se creó `v0.1.0`; ambos quedan sujetos a aprobación explícita de Christian.
