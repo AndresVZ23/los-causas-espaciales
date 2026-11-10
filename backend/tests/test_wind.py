@@ -254,8 +254,16 @@ def test_without_atlas_the_nasa_level_is_used_and_declared(offline_daily, monkey
 
 
 def test_wind_envelope_renders_the_executive_pdf(offline_daily):
+    from io import BytesIO
+
+    from pypdf import PdfReader
     result = asyncio.run(wind.run_wind_screening(_request()))
-    assert render_executive_pdf(result)[:4] == b"%PDF"
+    pdf = render_executive_pdf(result)
+    assert pdf[:4] == b"%PDF"
+    # La validación con producción real acompaña al método en el sobre y en el PDF, con su fecha y su alcance.
+    assert len(result.method_validation) == 1 and "COES" in result.method_validation[0] and "Es un solo caso" in result.method_validation[0]
+    text = " ".join(" ".join(page.extract_text().split()) for page in PdfReader(BytesIO(pdf)).pages)
+    assert "Validación del método con producción real" in text and "57.7 %" in text
 
 
 def test_atlas_gap_becomes_contradiction_or_agreement():

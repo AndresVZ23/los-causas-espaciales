@@ -107,7 +107,7 @@ Están completas en [AGENTS.md](../../AGENTS.md). Las que no se negocian:
 | `backend/app/reports/` | PDF ejecutivo. |
 | `backend/tests/` | Pruebas. `conftest.py` impide que salgan a internet. |
 | `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. |
-| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-044). Léela antes de cambiar un método. |
+| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-045). Léela antes de cambiar un método. |
 | `docs/nasa-submission/` | Materiales de la entrega: fuentes (`DATA_SOURCES.md`), metodología, arquitectura, pitch y escenarios de demo. |
 
 ## Receta: agregar una fuente de datos

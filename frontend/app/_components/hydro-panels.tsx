@@ -234,6 +234,7 @@ export function HydroEvidence({ result }: { result: HydroResult }) {
       })}
       <div className="findingsPanel methodPanel">
         <h3>Método hidroeléctrico</h3>
+        {result.method_validation?.map((note) => <p key={note} className="methodValidation"><span>real</span>{note}</p>)}
         {[first?.finance.formula,
           "Caudal: GloFAS v4 diario en la celda del cauce más cercana a la toma. Si la celda de la toma lleva menos del 20 % del máximo de sus vecinas, se usa la más cercana con al menos el 50 %, y se declara.",
           "Segunda opinión del caudal: el río de mayor caudal medio que GEOGLOWS devuelve en una malla de ±4.4 km alrededor de la toma. Coinciden bajo 25 %; difieren desde 50 %.",

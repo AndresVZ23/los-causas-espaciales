@@ -220,4 +220,8 @@ class ScreeningEnvelope(BaseModel):
     )
     scorecard: Scorecard | None = Field(default=None, description="Puntaje multicriterio con escalas, pesos, cobertura y estabilidad; None si el sector no lo usa.")
     discoveries: list[Discovery] = Field(default_factory=list, description="Descubrimientos al cruzar fuentes independientes (artefactos, confirmaciones, coincidencias).")
+    method_validation: list[str] = Field(
+        default_factory=list,
+        description="Validaciones del método del sector contra datos reales, con fecha, fuente y alcance. No son resultados de este análisis.",
+    )
     disclaimer: str

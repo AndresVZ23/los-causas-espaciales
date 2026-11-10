@@ -160,6 +160,7 @@ export function WindEvidence({ result }: { result: WindResult }) {
       })}
       <div className="findingsPanel methodPanel">
         <h3>Método eólico</h3>
+        {result.method_validation?.map((note) => <p key={note} className="methodValidation"><span>real</span>{note}</p>)}
         {[result.sites[0]?.finance.formula, "Cizalladura por sitio: ln(v50 / v10) / ln 5 con las medias horarias; el atlas usa su propia cizalladura entre 50 y 100 m.",
           ...(result.sites[0]?.finance.limitations ?? []),
           ...(result.sites.find((site) => site.atlas_check)?.atlas_check?.limitations ?? [])].filter(Boolean).map((note, index) => <p key={index}><span>{index + 1}</span>{note}</p>)}

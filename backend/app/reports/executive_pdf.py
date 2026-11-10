@@ -455,8 +455,11 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
                            "(https://registry.opendata.aws/copernicus-dem/), 1 arc-second, como contraste de NASADEM.")
     used = sorted({value for stage in envelope.pipeline for value in stage.provenance} | {value for question in envelope.nasa_questions for value in question.provenance})
     provenance_lines = [f"<font name='{MONO}' size='7'>{value}</font>: {_text(PROVENANCE_TEXT.get(Provenance(value), value))}" for value in used]
+    # Validación del método contra datos reales (eólica e hidroeléctrica): va junto al método, no entre los resultados.
+    validation = [item for note in envelope.method_validation for item in (Paragraph(_text(note), styles["body"]), Spacer(1, 2 * mm))]
     story += [
         Paragraph(f"<b>Método.</b> {_text(method)}", styles["body"]), Spacer(1, 2 * mm),
+        *validation,
         Paragraph("<b>Fuentes.</b> " + " ".join(_text(source) for source in sources), styles["body"]), Spacer(1, 2 * mm),
         Paragraph("<b>Procedencia usada en este reporte.</b> " + "; ".join(provenance_lines) + ".", styles["body"]), Spacer(1, 2 * mm),
         Paragraph(f"<b>Alcance.</b> {_text(envelope.disclaimer)}", styles["body"]), Spacer(1, 3 * mm),

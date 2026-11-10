@@ -129,6 +129,13 @@ SCORE_NOTES = [
     "Ordena prioridades de estudio entre aprovechamientos; no es una recomendación de inversión ni un índice de factibilidad.",
     "Escalas de referencia y pesos son supuestos editables; el resultado debe leerse junto con su estabilidad.",
 ]
+# Validación del método (ADR-042), no un resultado del análisis en curso: se reproduce con scripts/qa/validate_hydro.py.
+METHOD_VALIDATION = [
+    "Validación del método con producción real (COES, registros diarios de 2024; medida el 10-nov-2026): la C.H. Machupicchu produjo "
+    "1,252 GWh con 192.45 MW, un factor de planta de 74.1 %. Para ese año este modelo da 64.7 % con caudal ecológico de 10 %, 71.8 % con "
+    "5 % y 77.1 % sin caudal ecológico, y 163 MW de potencia con el salto leído sobre el relieve. Es un solo caso: respalda a GloFAS como "
+    "caso base, no la exactitud del modelo en otro río.",
+]
 
 
 class HydroSiteError(ValueError):
@@ -691,7 +698,7 @@ async def run_hydro_screening(request: HydroScreeningRequest) -> HydroScreeningR
         nasa_questions=nasa_questions, trend_findings=trend_findings, sites=site_results, terrain=terrain, comparative_findings=comparative,
         data_gaps=gaps, assumptions=a,
         assumption_items=[AssumptionItem(key=key, label=label, value=float(getattr(a, key)), unit=unit) for key, (label, unit) in ASSUMPTION_LABELS.items()],
-        financial_sensitivity=sensitivities, scorecard=scorecard, discoveries=discoveries,
+        financial_sensitivity=sensitivities, scorecard=scorecard, discoveries=discoveries, method_validation=METHOD_VALIDATION,
         disclaimer="Screening preliminar basado en modelos globales de caudal, modelos de elevación y supuestos del usuario. No sustituye el aforo, "
                    "la disponibilidad hídrica de la ANA, la topografía, la geología, el estudio de conexión, el impacto ambiental ni la factibilidad financiera.",
     )

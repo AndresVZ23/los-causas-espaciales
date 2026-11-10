@@ -61,6 +61,8 @@ export type ScreeningResult = {
   pipeline: Stage[]; nasa_questions: NasaQuestion[]; trend_findings: TrendFinding[];
   sites: SiteResult[]; terrain: TerrainResult | null;
   comparative_findings: string[]; data_gaps: DataGap[]; assumptions: Assumptions; discoveries?: Discovery[]; disclaimer: string;
+  // Validaciones del método contra datos reales (con fecha, fuente y alcance); no son resultados del análisis en curso.
+  method_validation?: string[];
 };
 export type DiscoveryKind = "artefacto_probable" | "confirmado" | "sin_respaldo" | "coincidencia" | "contradiccion";
 export type Discovery = { kind: DiscoveryKind; title: string; detail: string; subjects: string[]; sources: string[] };

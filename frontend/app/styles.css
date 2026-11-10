@@ -202,6 +202,9 @@ td.agreement.sin_tendencia { color: var(--muted); }
 .compactTable td small { display: block; margin-top: 2px; color: var(--subtle); font: 400 10px/1.2 var(--font-data-mono), monospace; }
 @media (max-width: 560px) { .hydroPoint { grid-template-columns: 1fr 1fr; }.hydroPoint button { grid-column: 1 / -1; min-height: 44px; }.hydroSiteHead button, .hydroAdd { min-height: 44px; } }
 .methodPanel { margin-top: 14px; }.methodPanel p { color: var(--muted); font-size: 12px; }
+/* Validación del método con producción real: va primero y se distingue de las notas numeradas. */
+.methodPanel p.methodValidation { grid-template-columns: 36px 1fr; padding: 9px 10px; border-left: 2px solid var(--positive); background: #111a15; color: #d3d9de; }
+.methodPanel p.methodValidation span { color: var(--positive); font-size: 10px; line-height: 1.6; }
 .verdictAssumptions { padding: 7px 0 9px; display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--rule); }
 .verdictAssumptions p { min-width: 0; margin: 0; display: flex; flex-direction: column; gap: 3px; }
 .verdictAssumptions span { color: var(--warning); font: 500 10px/1.2 var(--font-data-mono), monospace; }

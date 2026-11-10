@@ -1163,3 +1163,21 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Decisión que le toca a Christian:** gestionar o no un acceso con CENEPRED. Aquí no se crean cuentas a nombre de nadie.
 
 **Verificación:** 266 pruebas backend (6 nuevas), build con 20 rutas, `npm audit` en 0, auditor científico `ok: true`; QA en navegador a 1440 y 390 en amenazas y vial, y `release_ui`, `road_ui` y `realestate_ui` en los tres anchos.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · Materiales de entrega y validación a la vista (ADR-045)
+
+**Qué entró:**
+- **Materiales de entrega (en inglés, como el resto de `docs/nasa-submission`):** `DEMO_SCENARIOS.md` con ocho actos ensayados (clima, amenazas en Lurigancho–Chosica, vial, solar, eólica, hidroeléctrica y PDF), `PITCH.md`, `PROJECT_OVERVIEW.md` y `SCIENTIFIC_METHODOLOGY.md`. Los dos últimos describían el MVP de octubre.
+- **`scripts/qa/demo_ensayo.cjs`:** actos 1B, 2C y 2D; una captura fallida ya no detiene el ensayo.
+- **Leyenda de sensibilidad por sector:** dejó de decir «NASA POWER» donde el rango sale de GloFAS o es un supuesto.
+- **`method_validation` en el sobre C2 (aditivo, ADR-045):** eólica e hidroeléctrica muestran junto al método, en pantalla y en el PDF, su validación con la producción real del COES.
+- **Equipo:** `pipeline.html` con F1 y F2 hechas, idea A11 «Acceso a CENEPRED» y la guía con el aviso de CENEPRED.
+
+**Para Codex:**
+- `TECHNICAL_ARCHITECTURE.md` sigue en el estado del 25-oct: faltan eólica, hidroeléctrica, los conectores de segunda fuente y la última copia válida. Es tuyo.
+- `docs/nasa-submission/AI_USE.md` es un borrador de la declaración de uso de IA que piden las bases de 2026: el equipo lo confirma contra la guía de entrega (se publica el 13-nov).
+
+**Verificación:**
+- 266 pruebas backend, build con 20 rutas, `npm audit` en 0.
+- Regresión funcional del 10-nov con los catorce guiones de `scripts/qa` (`pipeline`, `climate_ui`, `baseline_ui`, `road_ui`, `realestate_ui`, `energy_ui`, `scorecard_ui`, `sensitivity_ui`, `assistant_ui`, `territory_ui`, `layers_ui`, `geometry_ui`, `pdf_e2e`, `release_ui`): sin errores de consola, desbordes ni recortes; las salidas se leyeron, no solo los códigos. Corrió sobre el build anterior a ADR-045; después de ADR-045 se repitieron `release_ui`, `energy_ui` y `pdf_e2e`, también limpios.
+- Estado de las capas en esa corrida: CENEPRED desde su última copia válida; el inventario de INGEMMET sin publicar; SIGDA respondió.

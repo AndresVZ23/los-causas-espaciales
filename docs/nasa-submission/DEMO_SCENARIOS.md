@@ -91,7 +91,8 @@ Rehearsal timing with a warm cache: 66 to 92 s of total screen wait for the eigh
 3. Point at:
    - «Lectura comparativa»: Marcona 9.74 m/s at hub height, net capacity factor 46.6 %, NPV USD 21.1 M. Moquegua 2.28 m/s, 0.3 %, −USD 80.27 M: the platform also says no.
    - «Descubrimientos al cruzar fuentes»: «Marcona: el recurso eólico difiere 52 % entre NASA POWER y el Atlas Eólico Global». NASA's reanalysis cell is about 50 km wide and gives 6.4 m/s; the 250 m atlas gives 9.7 m/s.
-   - Say: the wind farms that operate in Marcona produced at 56 % to 58 % of capacity in 2024 according to the grid operator COES. That supports the atlas, so the model uses the atlas level for the mean and NASA's hourly record for the shape, and stays below the real figure. NASA's level remains as the adverse case.
+   - «Método eólico», first note, marked «real»: the wind farms that operate in Marcona produced at 56 % to 58 % of capacity in 2024 according to the grid operator COES; the model gives 46.7 % with the atlas level and 14.0 % with NASA's.
+   - Say: real production supports the atlas, so the model uses the atlas level for the mean and NASA's hourly record for the shape, and stays below the real figure. NASA's level remains as the adverse case.
    - «Puntaje multicriterio»: Marcona leads by 50 points, first in 100 % of the weightings.
    - Break-even price 43.62 USD/MWh against 55 assumed.
 
@@ -107,7 +108,8 @@ Rehearsal timing with a warm cache: 66 to 92 s of total screen wait for the eigh
      - «Tambo alto: el salto difiere 23 m según el modelo de elevación» (146 m in NASADEM, 169 m in Copernicus).
      - «Machupicchu: NASADEM y Copernicus coinciden en el salto».
    - «Escenarios y sensibilidad del VAN»: the tornado carries both disagreements as factors, «Caudal (GloFAS ↔ GEOGLOWS)» and «Salto (NASADEM ↔ Copernicus)».
-   - Say: the real Machupicchu plant ran at 74 % of capacity in 2024 (COES). The model gives 65 % to 77 % depending on the ecological flow left in the river, so the real figure falls inside the range. GloFAS is the base case because it is the one the real plant supports.
+   - «Método hidroeléctrico», first note, marked «real»: the real Machupicchu plant ran at 74.1 % of capacity in 2024 (COES); the model gives 64.7 % to 77.1 % depending on the ecological flow left in the river.
+   - Say: the real figure falls inside the model's range. GloFAS is the base case because it is the one the real plant supports.
 
 ### Act 3 · Export
 

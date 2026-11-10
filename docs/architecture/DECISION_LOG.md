@@ -725,3 +725,13 @@ La fila inmobiliaria usa las alertas de CENEPRED de su última copia válida (AD
 | Inmobiliario, criterio de alertas de CENEPRED | Fuera del puntaje (cobertura 85 %) | Vuelve a puntuar |
 
 **Verificación.** 6 pruebas nuevas (266 en total): copia servida con su fecha original, sin copia, copia demasiado antigua, muestreo por puntos que deja de insistir, y la declaración en capa, brecha, descubrimiento y PDF. QA en navegador a 1440 y 390 en amenazas y vial: sin recortes, desbordes ni errores de consola.
+
+## ADR-045 — La validación con producción real se muestra junto al método
+
+**Motivo.** Los modelos eólico e hidroeléctrico se validaron con la producción real del COES (ADR-041 y ADR-042), pero esa validación solo estaba en este registro y en dos guiones. En la pantalla y en el PDF nada la respaldaba.
+
+**Decisión.** El sobre C2 agrega `method_validation` (lista de textos, aditiva, vacía por defecto). Eólica e hidroeléctrica la llenan con una frase cada una: qué central, qué año, qué dio la realidad, qué da el modelo, cuándo se midió y que es un solo caso. Se muestra como primera nota del panel «Método», marcada «real», y en la sección de método del PDF.
+
+**Lo que no es.** No es un resultado del análisis en curso ni se recalcula con los sitios del usuario: es una constante del método, con fecha, que se reproduce con `scripts/qa/coes_production.py` y `scripts/qa/validate_hydro.py`. Traer la producción real de la central que el usuario elija sigue siendo una idea abierta del equipo (A1).
+
+**Verificación.** Las pruebas de PDF de eólica e hidroeléctrica leen el texto del reporte y comprueban la frase, la cifra real y la advertencia de alcance.
