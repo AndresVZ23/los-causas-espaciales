@@ -143,6 +143,8 @@
     .cal .barRow .cell { border-left: 1px solid var(--line); }
     .cal .bar { position: absolute; top: 9px; bottom: 9px; border-radius: 999px; background: linear-gradient(90deg, rgba(179,156,255,.85), rgba(56,217,195,.85)); display: flex; align-items: center; padding: 0 12px; color: #07110f; font-size: 12.5px; font-weight: 600; transform-origin: left; transform: scaleX(0); transition: transform .9s cubic-bezier(.2,.7,.2,1) var(--d, 0s); }
     .cal.seen .bar { transform: scaleX(1); }
+    .cal .bar.done { background: rgba(117, 229, 154, .16); border: 1px solid var(--ok); color: var(--ok); white-space: nowrap; }
+    .cal .name.done svg { color: var(--ok); }
     .cal .today { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--todo); box-shadow: 0 0 12px var(--todo); }
     .cal .today::after { content: "hoy"; position: absolute; bottom: 6px; left: 6px; color: var(--todo); font-size: 11px; font-weight: 600; }
     .note { color: var(--faint); font-size: 12.5px; margin-top: 8px; }
@@ -158,7 +160,7 @@
     .idea .size i { width: 18px; height: 4px; border-radius: 2px; background: var(--line-2); }
     .idea .size i.on { background: var(--task); }
 
-    .asks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .asks { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
     .ask { padding: 18px; border-radius: 12px; border: 1px dashed var(--line-2); color: var(--muted); font-size: 14px; }
     .ask b { display: block; color: var(--text); font: 600 16px var(--display); margin-bottom: 4px; }
 
@@ -257,7 +259,7 @@
 
     <section class="block" aria-labelledby="falta">
       <h2 id="falta">Lo que falta hasta el domingo</h2>
-      <p class="lede">Seis tareas para la entrega. Toca una para ver qué piezas mueve y cuándo está terminada.</p>
+      <p class="lede" id="faltaLede">Toca una tarea para ver qué piezas mueve y cuándo está terminada.</p>
       <div class="cal" id="cal"></div>
       <p class="note">Calendario propuesto: el equipo define quién toma cada tarea.</p>
     </section>
@@ -270,11 +272,12 @@
 
     <section class="block" aria-labelledby="preguntas">
       <h2 id="preguntas">Por decidir</h2>
-      <p class="lede">Tres preguntas antes del jueves 12.</p>
+      <p class="lede">Cuatro preguntas antes del jueves 12.</p>
       <div class="asks">
-        <div class="ask"><b>¿Quién toma qué?</b>Cada uno se anota en el grupo y abre una rama con su nombre: abel/hidro, nikol/demo…</div>
+        <div class="ask"><b>¿Quién toma qué?</b>Cada uno se anota en el grupo y abre una rama con su nombre: abel/red-electrica, nikol/demo…</div>
         <div class="ask"><b>¿Qué pide la entrega?</b>Duración del video, láminas y si el repositorio debe ser público: revisarlo en las bases.</div>
         <div class="ask"><b>¿Repositorio público?</b>Antes: revisar la licencia de cada fuente en DATA_SOURCES.md y que no haya secretos en el historial.</div>
+        <div class="ask"><b>¿Pedimos acceso a CENEPRED?</b>Su servicio exige token desde el 10-nov. Hoy la aplicación muestra la última copia válida, con su fecha, solo donde ya se había consultado.</div>
       </div>
     </section>
 
@@ -304,6 +307,7 @@
       road: '<path d="M8 3l-4 18M16 3l4 18M12 5v2M12 11v2M12 17v2"/>',
       house: '<path d="M4 21V9l8-6 8 6v12M9 21v-6h6v6"/>',
       drop: '<path d="M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z"/>',
+      river: '<path d="M3 7c3-3 6 3 9 0s6-3 9 0M3 12c3-3 6 3 9 0s6-3 9 0M3 17c3-3 6 3 9 0s6-3 9 0"/>',
       mount: '<path d="M3 20l6-10 4 6 3-4 5 8z"/>',
       wind: '<path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/>',
       sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
@@ -321,30 +325,31 @@
     const icon = (name, cls = "icon") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICON[name] || ""}</svg>`;
 
     // Tareas del equipo (los días son una propuesta: 0 = martes 10-nov … 5 = domingo 15-nov).
+    // Una tarea terminada lleva `finished` con la fecha: sigue en el calendario, en verde, y deja de contar como pendiente.
     const TASKS = [
-      { id: "F1", now: true, icon: "drop", days: [0, 3], name: "Hidroeléctrica", touches: ["c-windhydro", "o-energy", "b-terrain", "b-hydro"],
-        detail: "La promesa del anteproyecto: caudal diario GloFAS y salto entre toma y casa de máquinas, de ahí potencia, energía y VAN.",
-        profile: "Backend Python, datos", size: 3, start: "sectors/wind.py como modelo; ADR-041",
-        done: "Corre en la consola con un caso real, tiene pruebas sin red, un segundo testigo (lluvia frente a caudal o producción COES) y su ADR." },
-      { id: "F2", now: true, icon: "play", days: [1, 2], name: "Escenarios de la demo", touches: ["o-nasa", "o-climate", "o-energy", "o-hazards", "o-infra"],
-        detail: "Marcona (eólica), Moquegua (el día de 300 mm que solo ve un modelo), Chosica (deslizamientos) y el corredor Moquegua–Ilo.",
-        profile: "Producto, cualquiera", size: 2, start: "docs/nasa-submission/DEMO_SCENARIOS.md",
+      { id: "F1", now: true, finished: "10-nov", icon: "river", days: [0, 0], name: "Hidroeléctrica", touches: ["c-windhydro", "o-energy", "in-glofas", "in-geoglows"],
+        detail: "La promesa del anteproyecto, cumplida (ADR-042): central de pasada con caudal diario GloFAS, segunda opinión de GEOGLOWS, salto NASADEM contrastado con Copernicus, curva de duración, energía y VAN. Validada con la producción real de Machupicchu.",
+        profile: "Backend Python, datos", size: 3, start: "sectors/hydro.py y docs/architecture/DECISION_LOG.md (ADR-042)",
+        done: "Corre en la consola con un caso real, tiene pruebas sin red, un segundo testigo y su ADR." },
+      { id: "F2", now: true, finished: "10-nov", icon: "play", days: [0, 0], name: "Escenarios de la demo", touches: ["o-nasa", "o-climate", "o-energy", "o-hazards", "o-infra"],
+        detail: "Ocho actos con el clic, lo que se ve y lo que se dice: Moquegua (el día de 300 mm que solo ve un modelo), Chosica (deslizamientos), el corredor Moquegua–Ilo, solar, Marcona (eólica) y Machupicchu con el Tambo (hidroeléctrica). Cifras del ensayo del 10-nov.",
+        profile: "Producto, cualquiera", size: 2, start: "docs/nasa-submission/DEMO_SCENARIOS.md y el ensayo: node scripts/qa/demo_ensayo.cjs dia-demo",
         done: "Cada escenario dice qué clic dar, qué se ve y qué decir; probado de punta a punta." },
-      { id: "F5", now: true, icon: "check", days: [2, 3], name: "QA de usuario", touches: ["o-climate", "o-energy", "o-hazards", "o-environment", "o-social", "o-infra", "o-invest"],
-        detail: "Recorrer los siete módulos como alguien de afuera, en escritorio y en celular.", profile: "Cualquiera", size: 1,
+      { id: "F5", now: true, icon: "people", days: [1, 3], name: "QA de usuario", touches: ["o-climate", "o-energy", "o-hazards", "o-environment", "o-social", "o-infra", "o-invest"],
+        detail: "Recorrer los siete módulos como alguien de afuera, en escritorio y en celular. En tu máquina CENEPRED saldrá «No disponible»: su servicio exige token desde el 10-nov, no es un defecto.", profile: "Cualquiera", size: 1,
         start: "La aplicación en localhost:3100", done: "Cada problema queda como issue en GitHub con captura y pasos." },
-      { id: "F4", now: true, icon: "slides", days: [2, 4], name: "Pitch y textos", touches: ["o-nasa", "o-reports"],
-        detail: "Presentación y descripción del proyecto con la eólica incluida y tono comercial.", profile: "Comunicación, negocio", size: 2,
+      { id: "F4", now: true, icon: "slides", days: [1, 4], name: "Pitch y textos", touches: ["o-nasa", "o-reports"],
+        detail: "La base ya está al día (10-nov): pitch, descripción y metodología con la eólica, la hidroeléctrica y las segundas fuentes. Falta el tono comercial, la presentación de siete láminas y los textos del formulario de la entrega.", profile: "Comunicación, negocio", size: 2,
         start: "docs/nasa-submission/PITCH.md y PROJECT_OVERVIEW.md", done: "Toda cifra citada coincide con un ADR o con la app." },
       { id: "F3", now: true, icon: "cam", days: [3, 4], name: "Video de la demo", touches: ["o-nasa"],
-        detail: "Grabado con la aplicación real siguiendo los escenarios.", profile: "Comunicación", size: 2, start: "Los escenarios de F2",
+        detail: "Grabado con la aplicación real siguiendo los escenarios, en la máquina de Christian: es la que guarda las copias de CENEPRED.", profile: "Comunicación", size: 2, start: "docs/nasa-submission/DEMO_SCENARIOS.md y el corte de 30 segundos de PITCH.md",
         done: "Sin datos de mentira y con la duración que pidan las bases." },
       { id: "F6", now: true, icon: "flag", days: [5, 5], name: "Cierre y v0.1.0", touches: ["o-reports", "o-nasa"],
         detail: "Pruebas, build, auditoría y etiqueta de la versión entregada.", profile: "Christian con Codex", size: 1,
         start: "docs/coordination/RELEASE_2026-11-15.md", done: "La puerta pasa sobre el commit final y la etiqueta está publicada." },
-      { id: "A1", icon: "bolt", name: "Factor de planta eólico real (COES)", touches: ["in-coes", "c-windhydro", "b-discoveries"],
-        detail: "Un tercer testigo para la eólica: la producción real de cada central.", profile: "Backend, datos", size: 2,
-        start: "connectors/energy/coes.py", done: "Marcona y Tres Hermanas con su factor real en la app, frente al modelo." },
+      { id: "A1", icon: "bolt", name: "Producción real del COES dentro de la app", touches: ["in-coes", "c-windhydro", "b-discoveries"],
+        detail: "Un tercer testigo para la eólica y la hidroeléctrica: la producción real de cada central. Hoy se valida con un guion aparte.", profile: "Backend, datos", size: 2,
+        start: "connectors/energy/coes.py y scripts/qa/coes_production.py", done: "Marcona y Machupicchu con su factor de planta real en la app, frente al modelo." },
       { id: "A2", icon: "plug", name: "Distancia a la red eléctrica", touches: ["in-grid", "c-solar", "c-windhydro", "c-finance"],
         detail: "La línea y la subestación más cercanas: mueven el CAPEX de conexión.", profile: "Backend geoespacial", size: 2,
         start: "connectors/peru/ y la skill geospatial-engineering", done: "Distancia geodésica por sitio, en pantalla y en el puntaje." },
@@ -365,7 +370,16 @@
         done: "Selector de idioma sin romper el diseño en 1440 y 390." },
       { id: "A8", icon: "wrench", name: "Dependencias al día", touches: ["a-connectors", "o-reports"],
         detail: "Avisos de seguridad previos en pypdf, starlette y pytest.", profile: "Backend", size: 1,
-        start: "backend/requirements.txt", done: "Actualizadas en una rama aparte con las 225 pruebas en verde." },
+        start: "backend/requirements.txt", done: "Actualizadas en una rama aparte con todas las pruebas en verde." },
+      { id: "A9", icon: "river", name: "Más centrales para validar la hidro", touches: ["c-windhydro", "in-glofas", "in-coes"],
+        detail: "Hoy solo se validó con Machupicchu. San Gabán II produjo 764 GWh en 2024: falta ubicar su toma y su casa de máquinas.", profile: "Datos, energía", size: 2,
+        start: "scripts/qa/validate_hydro.py", done: "Dos centrales más comparadas con su producción real y anotadas en el ADR-042." },
+      { id: "A10", icon: "drop", name: "Aforos de la ANA o SENAMHI", touches: ["in-glofas", "in-geoglows", "b-discoveries"],
+        detail: "Un caudal medido resolvería la diferencia entre GloFAS y GEOGLOWS, que llega a 64 % en el Tambo.", profile: "Investigación de fuentes", size: 3,
+        start: "Brecha «Aforo en la toma» de sectors/hydro.py", done: "Una estación con datos consultables y su comparación con los dos modelos." },
+      { id: "A11", icon: "warn", name: "Acceso a CENEPRED", touches: ["in-hazards-pe", "b-hazard", "o-hazards", "o-infra"],
+        detail: "Desde el 10-nov su servicio exige token. La aplicación muestra la última copia válida, con su fecha, solo donde ya se había consultado antes (ADR-044). Falta gestionar el acceso o hallar otra publicación oficial del mismo mapa.", profile: "Investigación de fuentes, gestión", size: 2,
+        start: "ADR-044 y connectors/peru/territory.py", done: "Las capas vuelven a consultarse en vivo, o queda escrito por qué no se puede." },
     ];
     // Contrastes reales, con la cifra del ADR que los midió.
     const WITNESS = [
@@ -377,10 +391,16 @@
         case: "Marcona: la producción real del COES (57.7 %) confirma el atlas; el modelo usa su nivel (ADR-041)." },
       { icon: "sun", what: "Recurso solar", a: ["CERES", "base"], b: ["ERA5", "+1.6 %"], verdict: "coinciden", tone: "ok",
         case: "Moquegua: el recurso solar difiere menos de 5 % entre fuentes (ADR-038)." },
+      { icon: "river", what: "Caudal del río", a: ["GloFAS", "32 m³/s"], b: ["GEOGLOWS", "52 m³/s"], verdict: "difieren", tone: "todo",
+        case: "Tambo alto (Moquegua), 2001–2024: el caso base usa GloFAS, que en Machupicchu encaja con la producción real (ADR-042)." },
+      { icon: "mount", what: "Salto de la central", a: ["NASADEM", "146 m"], b: ["Copernicus", "169 m"], verdict: "difieren", tone: "todo",
+        case: "Tambo alto: 23 m de diferencia en un cañón; en Machupicchu los dos modelos coinciden, 330 y 335 m (ADR-042)." },
       { icon: "mount", what: "Relieve", a: ["NASADEM", "1,420 m"], b: ["Copernicus", "1,413 m"], verdict: "coinciden", tone: "ok",
         case: "Moquegua: dos misiones de radar dan la misma altura (ADR-039)." },
+      { icon: "road", what: "Pendiente del tramo", a: ["NASADEM", "17.9°"], b: ["Copernicus", "12.5°"], verdict: "difieren", tone: "todo",
+        case: "Corredor Moquegua–Ilo, tramo 5: el puntaje se recalcula con el segundo modelo y el primer lugar no cambia (ADR-043)." },
       { icon: "warn", what: "Deslizamientos", a: ["CENEPRED", "9 puntos"], b: ["NASA", "7 iguales"], verdict: "coinciden", tone: "ok",
-        case: "Lurigancho: y seis deslizamientos reportados por NASA COOLR respaldan el mapa (ADR-037)." },
+        case: "Lurigancho: seis deslizamientos reportados por NASA COOLR respaldan el mapa (ADR-037). CENEPRED sale de su copia del 27-oct (ADR-044)." },
       { icon: "leaf", what: "Vegetación", a: ["MODIS", "21.8 %"], b: ["ESA WorldCover", "18.7 %"], verdict: "coinciden", tone: "ok",
         case: "Ilo: vegetación no arbórea, dos sensores dentro de ±10 puntos (ADR-040)." },
     ];
@@ -397,6 +417,7 @@
     const STATUS = {
       VERIFICADO: ["Lista", "var(--ok)"], LISTO_PARA_QA: ["Lista para QA", "var(--wip)"], EN_CURSO: ["En curso", "var(--wip)"],
       PENDIENTE: ["Pendiente", "var(--todo)"], BLOQUEADO: ["Bloqueada", "var(--stop)"], TAREA: ["Por hacer", "var(--task)"],
+      HECHA: ["Tarea hecha", "var(--ok)"],
     };
     const statusName = (s) => (STATUS[s] || [s])[0], statusColor = (s) => (STATUS[s] || [0, "var(--faint)"])[1];
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -408,7 +429,7 @@
     }
     const P = D.platform;
     const COLUMNS = [...P.layers.map((layer) => layer.id), "team"];
-    const nodes = [...P.units.map((u) => ({ ...u, kind: "unit" })), ...TASKS.map((t) => ({ ...t, layer: "team", status: "TAREA", kind: "task" }))];
+    const nodes = [...P.units.map((u) => ({ ...u, kind: "unit" })), ...TASKS.map((t) => ({ ...t, layer: "team", status: t.finished ? "HECHA" : "TAREA", kind: "task" }))];
     const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
     const links = P.links.filter(([a, b]) => byId[a] && byId[b]).map(([source, target, type]) => ({ source, target, type: type || "R" }));
     TASKS.forEach((t) => t.touches.filter((id) => byId[id]).forEach((id) => links.push({ source: t.id, target: id, type: "T" })));
@@ -434,7 +455,7 @@
     columns[5].sort((a, b) => mean(a.touches, .5) - mean(b.touches, .5)); place(columns[5]);
 
     // Conteos del titular.
-    const counts = { units: P.units.length, ok: P.units.filter((u) => u.status === "VERIFICADO").length, tasks: TASKS.length };
+    const counts = { units: P.units.length, ok: P.units.filter((u) => u.status === "VERIFICADO").length, tasks: TASKS.filter((t) => !t.finished).length };
     document.querySelectorAll("[data-count]").forEach((el) => {
       const target = counts[el.dataset.count];
       if (reduced) { el.textContent = target; return; }
@@ -598,7 +619,7 @@
     const controls = document.getElementById("controls");
     const statusCounts = {};
     nodes.forEach((n) => { statusCounts[n.status] = (statusCounts[n.status] || 0) + 1; });
-    controls.innerHTML = ["VERIFICADO", "EN_CURSO", "PENDIENTE", "BLOQUEADO", "TAREA"].filter((s) => statusCounts[s]).map((s) =>
+    controls.innerHTML = ["VERIFICADO", "EN_CURSO", "PENDIENTE", "BLOQUEADO", "TAREA", "HECHA"].filter((s) => statusCounts[s]).map((s) =>
       `<button class="chip" data-status="${s}" aria-pressed="false" style="--c:${statusColor(s)}"><i></i>${statusName(s)} <b>${statusCounts[s]}</b></button>`).join("")
       + `<button class="chip toggle" data-names aria-pressed="true">Ocultar nombres</button>`;
     function syncChips() { controls.querySelectorAll("[data-status]").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.status === statusFocus))); }
@@ -623,7 +644,8 @@
         <h3>${n.kind === "task" ? n.id + " · " : ""}${n.name}</h3>
         ${n.detail ? `<p>${n.detail}</p>` : ""}
         ${n.kind === "task"
-          ? `<dl><dt>Perfil</dt><dd>${n.profile}</dd><dt>Empezar por</dt><dd>${n.start}</dd><dt>Terminada cuando</dt><dd>${n.done}</dd></dl><h4>Piezas que mueve</h4>${linkChips(n.touches)}`
+          ? `<dl>${n.finished ? `<dt>Hecha el</dt><dd>${n.finished}</dd><dt>Dónde verla</dt><dd>${n.start}</dd>`
+              : `<dt>Perfil</dt><dd>${n.profile}</dd><dt>Empezar por</dt><dd>${n.start}</dd><dt>Terminada cuando</dt><dd>${n.done}</dd>`}</dl><h4>Piezas que mueve</h4>${linkChips(n.touches)}`
           : `<dl>${n.owner ? `<dt>Responsable</dt><dd>${n.owner}</dd>` : ""}${n.provenance ? `<dt>Procedencia</dt><dd>${n.provenance}</dd>` : ""}</dl>
              ${evidence ? `<h4>Evidencia</h4><ul>${evidence}</ul>` : ""}
              ${preds[id].length ? `<h4>La alimentan</h4>${linkChips(preds[id])}` : ""}
@@ -678,12 +700,16 @@
     const cal = document.getElementById("cal");
     const days = [["mar", 10], ["mié", 11], ["jue", 12], ["vie", 13], ["sáb", 14], ["dom", 15]];
     const now = TASKS.filter((t) => t.now);
+    const open = now.filter((t) => !t.finished), closed = now.length - open.length;
+    const words = ["Ninguna tarea", "Una tarea", "Dos tareas", "Tres tareas", "Cuatro tareas", "Cinco tareas", "Seis tareas"];
+    document.getElementById("faltaLede").textContent = `${words[open.length] || `${open.length} tareas`} para la entrega`
+      + (closed ? ` y ${closed === 1 ? "una ya hecha" : `${closed} ya hechas`}` : "") + ". Toca una para ver qué piezas mueve y cuándo está terminada.";
     cal.innerHTML = `<div class="name" style="border-top:0;color:var(--faint);font-weight:500">Noviembre</div>`
       + days.map(([d, n]) => `<div class="day${n === 15 ? " goal" : ""}">${d}<b>${n}</b></div>`).join("")
-      + now.map((t, i) => `<button class="name" data-go="${t.id}">${icon(t.icon)}<span>${t.id} · ${t.name}</span></button>
+      + now.map((t, i) => `<button class="name${t.finished ? " done" : ""}" data-go="${t.id}">${icon(t.finished ? "check" : t.icon)}<span>${t.id} · ${t.name}</span></button>
         <div class="barRow">${days.map(() => '<div class="cell"></div>').join("")}
-          <button class="bar" data-go="${t.id}" style="left:calc(${(t.days[0] / 6) * 100}% + 6px);width:calc(${((t.days[1] - t.days[0] + 1) / 6) * 100}% - 12px);--d:${0.12 * i}s">
-            <span>${t.id} · ${t.name}</span></button></div>`).join("");
+          <button class="bar${t.finished ? " done" : ""}" data-go="${t.id}" style="left:calc(${(t.days[0] / 6) * 100}% + 6px);width:calc(${((t.days[1] - t.days[0] + 1) / 6) * 100}% - 12px);--d:${0.12 * i}s">
+            <span>${t.finished ? `Hecha el ${t.finished}` : `${t.id} · ${t.name}`}</span></button></div>`).join("");
     cal.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b) pickAndShow(b.dataset.go); });
     const placeToday = () => {
       const start = new Date("2026-11-10T00:00:00-05:00").getTime(), span = 6 * 86400000, k = (Date.now() - start) / span;

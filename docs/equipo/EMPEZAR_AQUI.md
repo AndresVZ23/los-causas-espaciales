@@ -18,7 +18,7 @@ Responde al reto «Be An Earth System Trend Detective!». Nuestra diferencia es 
 | Módulo | Estado | Qué hace |
 |---|---|---|
 | 1 · Clima | Funcional | Tendencias NASA POWER cruzadas con ERA5; extremos de lluvia con IMERG y CHIRPS. |
-| 2 · Energía | Solar y eólica funcionales | Solar: irradiancia CERES contra ERA5. Eólica: viento horario NASA con el nivel del Global Wind Atlas, validada contra la producción real del COES. **Hidroeléctrica pendiente.** |
+| 2 · Energía | Solar, eólica e hidroeléctrica funcionales | Solar: irradiancia CERES contra ERA5. Eólica: viento horario NASA con el nivel del Global Wind Atlas. Hidroeléctrica de pasada: caudal GloFAS contra GEOGLOWS y salto NASADEM contra Copernicus. Eólica e hidro validadas contra la producción real del COES. |
 | 3 · Amenazas | Funcional | Lluvia extrema, CENEPRED frente a los deslizamientos de NASA, ANA e INGEMMET. |
 | 4 · Ambiente | Funcional | Vegetación MODIS frente a ESA WorldCover; agua, ecosistemas y áreas protegidas. |
 | 5 · Territorio | Patrimonio funcional | Patrimonio del Ministerio de Cultura. **Comunidades y conflictos pendientes.** |
@@ -51,6 +51,8 @@ Si te equivocas de puerto, ojo: el `3000` es de otro proyecto (MyFix), no lo use
 
 **La primera consulta es lenta.** Cada fuente se descarga una vez y queda en caché (`backend/data/cache/`). La primera ejecución de un sitio nuevo puede tardar 1–2 minutos; las siguientes, segundos.
 
+**CENEPRED saldrá «No disponible» en tu máquina, y no es un error tuyo.** Desde el 10 de noviembre su servicio exige un token. La aplicación muestra la última copia válida, con su fecha, solo donde ya se había consultado antes del cierre; esas copias están en la máquina de Christian (ADR-044).
+
 **Sin Docker:**
 
 ```powershell
@@ -63,13 +65,13 @@ cd frontend; npm.cmd install; npm.cmd run dev
 
 ## Cómo trabajamos
 
-1. **Una rama por persona y tema**, por ejemplo `abel/hidro`, `nikol/demo` o `mario/pitch`. Nunca se trabaja sobre `master`.
+1. **Una rama por persona y tema**, por ejemplo `abel/red-electrica`, `nikol/demo` o `mario/pitch`. Nunca se trabaja sobre `master`.
    ```powershell
    git switch master; git pull
-   git switch -c abel/hidro
+   git switch -c abel/red-electrica
    # ... cambios ...
-   git add <archivos>; git commit -m "feat(energia): caudal GloFAS para hidro"
-   git push -u origin abel/hidro
+   git add <archivos>; git commit -m "feat(energia): distancia a la red eléctrica"
+   git push -u origin abel/red-electrica
    ```
 2. **Pull Request a `master`** en GitHub, con qué cambiaste, cómo lo probaste y capturas si hay pantalla.
 3. **Christian revisa y fusiona** después de la puerta común: pruebas, build y QA. Nadie hace push directo a `master`.
@@ -78,7 +80,7 @@ cd frontend; npm.cmd install; npm.cmd run dev
 **Puerta común antes del Pull Request.** Las pruebas no salen a internet, porque usan dobles de las fuentes.
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 225 pruebas
+.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 266 pruebas
 cd frontend; npm.cmd run build; npm.cmd audit --omit=dev
 ```
 
@@ -97,20 +99,20 @@ Están completas en [AGENTS.md](../../AGENTS.md). Las que no se negocian:
 
 | Carpeta | Qué hay |
 |---|---|
-| `backend/app/connectors/` | Una carpeta por proveedor: `nasa/`, `jrc/` (ERA5), `esa/`, `copernicus/`, `gwa/`, `peru/`, `energy/` (COES). Cada conector usa caché y declara su procedencia. |
-| `backend/app/sectors/` | Un archivo por módulo (`climate.py`, `solar.py`, `wind.py`, `road.py`, `real_estate.py`, `baseline*.py`). Arma el resultado completo. |
+| `backend/app/connectors/` | Una carpeta por proveedor: `nasa/`, `jrc/` (ERA5), `esa/`, `copernicus/` (relieve y caudal GloFAS), `geoglows/`, `gwa/`, `peru/`, `energy/` (COES). Cada conector usa caché y declara su procedencia. |
+| `backend/app/sectors/` | Un archivo por módulo (`climate.py`, `solar.py`, `wind.py`, `hydro.py`, `road.py`, `real_estate.py`, `baseline*.py`). Arma el resultado completo. |
 | `backend/app/orchestration/` | Piezas comunes: extracción, análisis, contrastes con segundas fuentes y `discoveries.py` (las reglas de los descubrimientos). |
 | `backend/app/statistics/`, `finance/`, `scoring/` | Mann–Kendall, Sen y Benjamini–Hochberg; VAN y sensibilidad; puntaje multicriterio. |
 | `backend/app/schemas/` | Contratos de datos. `screening.py` es el **contrato común C2** que comparten todos los módulos. |
 | `backend/app/reports/` | PDF ejecutivo. |
 | `backend/tests/` | Pruebas. `conftest.py` impide que salgan a internet. |
 | `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. |
-| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-041). Léela antes de cambiar un método. |
+| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-044). Léela antes de cambiar un método. |
 | `docs/nasa-submission/` | Materiales de la entrega: fuentes (`DATA_SOURCES.md`), metodología, arquitectura, pitch y escenarios de demo. |
 
 ## Receta: agregar una fuente de datos
 
-Así se integraron ERA5, Copernicus, WorldCover y el Global Wind Atlas.
+Así se integraron ERA5, Copernicus, WorldCover, el Global Wind Atlas, GloFAS y GEOGLOWS.
 
 1. **Verificar la fuente** contra su documentación oficial: producto, versión, unidad, resolución, licencia y cómo marca los faltantes. Hacer una consulta real de prueba.
 2. **Conector** en `backend/app/connectors/<proveedor>/`, con timeout, reintentos limitados, caché (`RawPayloadCache`) y procedencia.
