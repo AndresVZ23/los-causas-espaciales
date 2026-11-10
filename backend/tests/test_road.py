@@ -245,6 +245,30 @@ def test_no_second_elevation_model_is_declared_not_read_as_agreement(road_respon
     assert recorded.value == NO_TERRAIN_CHECK
 
 
+def test_layer_from_last_valid_copy_keeps_its_count_and_becomes_a_declared_gap(monkeypatch):
+    note = "El servicio oficial no respondió hoy (Token Required); se muestra la última copia válida, del 27-oct-2026."
+
+    async def closed_cenepred(subjects, enabled):
+        evidence, errors = await _territory(subjects, enabled)
+        for item in evidence:
+            flood = next(source for source in item.sources if source.source_id == "cenepred-flood-risk")
+            flood.stale_note = note
+        return evidence, errors
+
+    monkeypatch.setattr(road, "extract_power", _power)
+    monkeypatch.setattr(road, "extract_terrain", _terrain)
+    monkeypatch.setattr(road, "_spatial_exposures", _spatial)
+    monkeypatch.setattr(road, "_territorial_evidence", closed_cenepred)
+    response = asyncio.run(road.run_road_screening(_request()))
+
+    assert envelope_violations(response) == []
+    assert all(item.territorial_intersections["cenepred-flood-risk"] == 1 for item in response.segments)   # el conteo de la copia se conserva
+    stale = [item for item in response.data_gaps if item.dataset.endswith("última copia válida")]
+    assert len(stale) == 1 and stale[0].status == Provenance.CACHED and stale[0].impact == note            # una brecha, no una por tramo
+    assert stale[0].dataset.startswith("Escenario de riesgo por inundaciones")
+    assert "CENEPRED" in stale[0].next_action
+
+
 def test_road_endpoint_rejects_non_linestring_before_external_io():
     response = TestClient(app).post("/api/v1/projects/road-screening", json={
         "start_date": "2018-01-01",

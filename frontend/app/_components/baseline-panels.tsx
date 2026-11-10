@@ -1,7 +1,7 @@
 "use client";
 
 import { evidenceLabel, ExtremesTable } from "./climate-panels";
-import { formatNumber } from "./format";
+import { formatDay, formatNumber } from "./format";
 import type { BaselineComponent, BaselineLayer, BaselineResult, SubjectBaseline } from "./types";
 
 export const BASELINE_HINT = "Dibuje o cargue polígonos o corredores; se suman a los sitios y territorios como áreas de estudio (hasta 4 en total).";
@@ -15,6 +15,8 @@ const MODULE_SOURCES: Record<BaselineModule, string> = {
 const signed = (value: number, digits: number) => `${value > 0 ? "+" : value < 0 ? "−" : ""}${formatNumber(Math.abs(value), digits)}`;
 const withRecords = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status === "READY" && (layer.intersection_count ?? 0) > 0);
 const unanswered = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status !== "READY").length;
+// Capas cuyo servicio no respondió hoy y se muestran desde su última copia válida.
+const fromCopy = (item: SubjectBaseline) => item.layers.filter((layer) => layer.status === "READY" && layer.stale_note).length;
 
 export function BaselineOptions({ bufferKm, onBuffer, geometries, module }: { bufferKm: number; onBuffer: (km: number) => void; geometries: number; module: BaselineModule }) {
   return (
@@ -56,7 +58,8 @@ export function BaselineReading({ result, headingId }: { result: BaselineResult;
                 <th scope="row">{item.subject}<small>{formatNumber(item.area_km2, item.area_km2 < 10 ? 2 : 0)} km² · {item.origin}</small></th>
                 {/* Una capa que no respondió no cuenta como «sin registros»: se informa aparte. */}
                 <td className="figure">{withRecords(item).length} de {item.layers.length - unanswered(item)}
-                  {unanswered(item) > 0 && <small className="negative">{unanswered(item)} sin respuesta</small>}</td>
+                  {unanswered(item) > 0 && <small className="negative">{unanswered(item)} sin respuesta</small>}
+                  {fromCopy(item) > 0 && <small className="staleTag">{fromCopy(item)} de una copia anterior</small>}</td>
                 {environment && <td className="figure">{bare ? `${formatNumber(bare.mean, 1)} %` : "N/D"}<small>{bare && slope != null ? `${signed(slope * 10, 1)} pts/década · ${evidenceLabel(bare).toLowerCase()}` : "sin serie"}</small></td>}
                 {hazards && <td className="figure">{rx1 ? `${formatNumber(rx1.mean, 1)} mm` : "N/D"}<small>{rx1 ? `tendencia ${evidenceLabel(rx1).toLowerCase()}${rx1.atypical_years?.length ? ` · ${rx1.atypical_years.length} año(s) atípico(s)` : ""}` : "sin serie"}</small></td>}
               </tr>
@@ -74,7 +77,8 @@ function LayerRows({ layers }: { layers: BaselineLayer[] }) {
     <tbody>{layers.map((layer) => (
       <tr key={layer.source_id}>
         <th>{layer.dataset}<small>{layer.organization}</small></th>
-        <td className="figure">{layer.status !== "READY" || layer.intersection_count == null ? "No disponible" : `${layer.intersection_count}${layer.truncated ? "+" : ""}`}</td>
+        <td className="figure">{layer.status !== "READY" || layer.intersection_count == null ? "No disponible" : `${layer.intersection_count}${layer.truncated ? "+" : ""}`}
+          {layer.status === "READY" && layer.stale_note && <small className="staleTag">copia del {formatDay(layer.downloaded_at)}</small>}</td>
         <td>
           {layer.status !== "READY"
             ? <span className="layerMuted">{layer.limitations[0]}</span>
@@ -87,6 +91,7 @@ function LayerRows({ layers }: { layers: BaselineLayer[] }) {
                     {item.detail && <small>{item.detail}</small>}
                   </li>
                 ))}</ul>}
+          {layer.status === "READY" && layer.stale_note && <span className="layerMuted staleNote">{layer.stale_note}</span>}
         </td>
       </tr>
     ))}</tbody>

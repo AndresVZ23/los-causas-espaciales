@@ -114,7 +114,8 @@ export type RoadSegment = {
   finance: { baseline_interruption_days_per_year: number; avoided_interruption_days_per_year: number; annual_avoided_cost_usd: number; mitigation_capex_usd: number; npv_usd: number; formula: string; limitations: string[] };
   opportunities: string[]; cautions: string[];
 };
-export type RoadTerritorialSource = { source_id: string; status: string; intersection_count: number | null; provenance: string; limitations: string[] };
+// `stale_note`: la fuente no respondió hoy y se muestra su última copia válida (motivo y fecha de la copia).
+export type RoadTerritorialSource = { source_id: string; status: string; intersection_count: number | null; provenance: string; downloaded_at?: string | null; limitations: string[]; stale_note?: string | null };
 export type RoadResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
   sector: "road"; corridor_source: { name: string; source: string; source_url: string | null; license: string | null; provenance: string; limitations: string[] };
   segments: RoadSegment[]; territorial_evidence: { subject: string; sources: RoadTerritorialSource[] }[]; assumptions: RoadAssumptions;
@@ -145,7 +146,7 @@ export type LayerHighlight = { label: string; count: number; detail: string | nu
 export type BaselineLayer = {
   source_id: string; organization: string; dataset: string; component: BaselineComponent; status: "READY" | "DATA_UNAVAILABLE";
   intersection_count: number | null; truncated: boolean; highlights: LayerHighlight[]; provenance: string; downloaded_at: string | null;
-  source_url: string; limitations: string[];
+  source_url: string; limitations: string[]; stale_note?: string | null;
 };
 export type LandCoverChange = {
   product: string; first_year: number; last_year: number; pixels: number; changed_percent: number;

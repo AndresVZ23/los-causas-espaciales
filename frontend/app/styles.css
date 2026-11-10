@@ -471,6 +471,14 @@ table.compactTable { min-width: 0; }
 .layerHighlights em { color: var(--muted); font-style: normal; font-size: 11px; }
 .layerHighlights small { flex-basis: 100%; color: var(--subtle); font-size: 11px; }
 .layerMuted { color: var(--subtle); font-size: 11px; }
+/* Última copia válida (ADR-044): la capa no respondió hoy; el dato se muestra con el color de «copia en caché», su fecha y el motivo. */
+small.staleTag { display: block; margin-top: 2px; color: var(--cached); font: 10px/1.3 var(--font-data-mono), monospace; white-space: nowrap; }
+/* En la lectura por área la etiqueta puede partirse: sin esto ensancha su columna y le quita sitio a la siguiente en 390 px. */
+.climateTable td small.staleTag { color: var(--cached); white-space: normal; }
+.layerMuted.staleNote { display: block; margin-top: 6px; padding-left: 8px; border-left: 2px solid var(--cached); line-height: 1.45; }
+.staleNotes { margin: 0; padding: 8px 12px 10px; display: grid; gap: 4px; border-top: 1px solid var(--rule); }
+.staleNotes p { margin: 0; padding-left: 8px; border-left: 2px solid var(--cached); color: var(--subtle); font-size: 11px; line-height: 1.45; }
+.staleNotes b { color: var(--muted); font-weight: 500; }
 .baselineCount { min-width: 0; margin: 0; display: grid; gap: 3px; color: var(--muted); font: 10px/1 var(--font-data-mono), monospace; }
 .baselineCount b { min-height: 31px; display: flex; align-items: center; color: var(--text); font-size: 12px; }
 .scoreTable tbody th small { overflow-wrap: anywhere; }

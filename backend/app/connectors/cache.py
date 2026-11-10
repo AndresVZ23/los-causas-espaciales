@@ -9,6 +9,19 @@ from pathlib import Path
 from typing import Any
 
 
+# Última copia válida: si el proveedor falla, una copia ya vencida de hasta este tiempo puede mostrarse, declarada como tal
+# y con su fecha original. Nunca reemplaza a una respuesta que sí llegó.
+STALE_MAX_AGE = timedelta(days=90)
+_MONTHS = ("ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic")
+
+
+def stale_copy_note(reason: str, downloaded_at: datetime) -> str:
+    """Frase única con la que una fuente declara que muestra su última copia válida, por qué y de cuándo es."""
+    day = downloaded_at.astimezone(timezone.utc)
+    return (f"El servicio oficial no respondió hoy ({reason or 'sin respuesta'}); se muestra la última copia válida, "
+            f"del {day.day}-{_MONTHS[day.month - 1]}-{day.year}.")
+
+
 @dataclass(frozen=True)
 class CachedPayload:
     content: bytes
@@ -48,6 +61,13 @@ class RawPayloadCache:
             return CachedPayload(content=content, downloaded_at=downloaded_at, provenance="CACHED_DATA")
         except (KeyError, ValueError, OSError, json.JSONDecodeError):
             return None
+
+    def last_valid(self, request_key: str) -> CachedPayload | None:
+        """La última copia válida aunque su vigencia normal haya vencido, con su fecha original.
+
+        Solo para cuando el proveedor falla: quien la use debe declararlo (`stale_copy_note`).
+        """
+        return self.get(request_key, max_age=STALE_MAX_AGE)
 
     def put(self, request_key: str, content: bytes, *, suffix: str) -> CachedPayload:
         digest = hashlib.sha256(content).hexdigest()

@@ -684,9 +684,44 @@ Por eso se consulta una malla de 5 × 5 puntos cada 0.02° (±4.4 km) y se toma 
 | Vial (corredor Moquegua–Ilo) | Tramo 5 (48.5) frente a Tramo 2 (38.7) | No cambia: Tramo 5 (44.4) frente a Tramo 4 (37.1) |
 | Solar (Moquegua y Arequipa) | Arequipa, empate práctico | No cambia: Arequipa (66.9) frente a Moquegua (65.6) |
 | Eólico (Marcona y Moquegua) | Marcona por 50 puntos | No cambia: Marcona (67.4) frente a Moquegua (16.3) |
-| Inmobiliario (tres áreas de ejemplo) | Cerro Colorado, empate práctico | No cambia: Cerro Colorado (78.7) frente a Moquegua (74.5) |
+| Inmobiliario (tres áreas de ejemplo) | Cerro Colorado, empate práctico | No cambia: Cerro Colorado (75.9) frente a Moquegua (72.4) |
+
+La fila inmobiliaria usa las alertas de CENEPRED de su última copia válida (ADR-044). Con ese criterio fuera del puntaje, como estuvo unas horas el 10-nov, la nota daba 78.7 frente a 74.5.
 
 - **El hallazgo del corredor:** el Tramo 5 lidera por su pendiente, 17.9° en NASADEM. Copernicus da 12.5° en el mismo punto: sigue siendo el más empinado (los demás tramos van de 1.2° a 4.2°), pero ya no supera el umbral de 15° de pendiente fuerte. El orden se sostiene; la magnitud debe confirmarse con topografía.
 - En los cinco tramos NASADEM da entre 2.0° y 5.5° más de pendiente que Copernicus, con la elevación a 6 m o menos. En los puntos de solar, eólica e inmobiliario la diferencia es menor de 2° y va en ambos sentidos. La causa de ese sesgo sobre el corredor no se ha investigado.
 
 **Verificación.** 10 pruebas nuevas (260 en total): seis en `test_slope_check.py` con puntajes calculados a mano y dos en cada piloto. Regresión en navegador de vial e inmobiliario en 1440/768/390 sin errores ni desbordes.
+
+## ADR-044 — Última copia válida cuando una capa oficial deja de responder
+
+**Motivo.** El 10-nov-2026 el servicio de CENEPRED (SIGRID, `FEN/ER_NINO2027_BD`) empezó a responder `499 Token Required` y su directorio público dejó de listar los servicios. Sus tres capas (riesgo por inundación, riesgo por movimientos en masa y susceptibilidad por puntos) quedaron como `DATA_UNAVAILABLE` en amenazas, vial e inmobiliario. La última respuesta válida que tenía la caché era del 24 al 28 de octubre. La misma regresión mostró el otro caso: SIGDA no contestó nueve capas del distrito de Ilo y una hora después sí.
+
+**Decisión.** Si una capa oficial falla y existe una copia anterior de **la misma consulta**, se muestra esa copia y se declara.
+- **Conectores:** `connectors/peru/territory.py` y `connectors/peru/identify_layers.py`. Primero se consulta al servicio; solo si falla se busca la copia (`RawPayloadCache.last_valid`).
+- **Vigencia:** hasta 90 días (`STALE_MAX_AGE`). Más antigua, o sin copia, la capa queda como `DATA_UNAVAILABLE`, igual que antes.
+- **Procedencia:** `CACHED_DATA` con la **fecha original** de la copia; nunca la de hoy. Si una fuente junta varias capas, se informa la fecha de la copia más antigua.
+- **Dónde se declara:**
+  - en la capa (`stale_note`, campo aditivo en `TerritorialSourceResult`, `BaselineLayer` y los resúmenes de vial e inmobiliario), con el motivo y la fecha;
+  - en una brecha con procedencia `CACHED_DATA` y la acción siguiente;
+  - en los descubrimientos que usan esa capa;
+  - en la pantalla (etiqueta «copia del 25-oct-2026» junto al dato y nota al pie) y en el PDF.
+- **Cortesía con el servidor:** en el muestreo por puntos, tras la primera falla no se vuelve a llamar por los demás puntos. Una falla por credenciales no se reintenta; un corte de conexión, una vez.
+
+**Alcance.** Capas oficiales peruanas consultadas por área o con `identify` (CENEPRED, SERNANP, Cultura, ANA, MINAM y los mapas volcánicos de INGEMMET). No cambia NASA POWER ni las capas de NASA.
+
+**Límites.**
+- Solo cubre geometrías ya consultadas: un sitio nuevo no tendrá las capas de CENEPRED mientras el servicio exija token.
+- Una copia no prueba que el dato siga vigente. Por eso entra como brecha y no como dato verificado hoy.
+- Un producto comercial debe gestionar el acceso con CENEPRED; el equipo no crea cuentas en nombre de terceros.
+
+**Resultado real del 10-nov-2026.**
+
+| Caso | Sin la copia | Con la última copia válida |
+|---|---|---|
+| Corredor Moquegua–Ilo, riesgo de inundación y de movimientos en masa | «No disponible» en los cinco tramos | Entre 1 y 3 distritos por tramo, copia del 25-oct-2026 |
+| Lurigancho (Chosica), tres capas de CENEPRED | Sin respuesta | 9, 9 y 18 registros, copia del 27-oct-2026 |
+| Lurigancho, descubrimiento «CENEPRED y NASA coinciden en la susceptibilidad a deslizamientos» | No se podía calcular | Vuelve, con la advertencia de la copia |
+| Inmobiliario, criterio de alertas de CENEPRED | Fuera del puntaje (cobertura 85 %) | Vuelve a puntuar |
+
+**Verificación.** 6 pruebas nuevas (266 en total): copia servida con su fecha original, sin copia, copia demasiado antigua, muestreo por puntos que deja de insistir, y la declaración en capa, brecha, descubrimiento y PDF. QA en navegador a 1440 y 390 en amenazas y vial: sin recortes, desbordes ni errores de consola.

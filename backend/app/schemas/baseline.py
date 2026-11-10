@@ -62,6 +62,7 @@ class BaselineLayer(BaseModel):
     downloaded_at: datetime | None
     source_url: str
     limitations: list[str]
+    stale_note: str | None = Field(default=None, description="La fuente no respondió hoy y se muestra su última copia válida: motivo y fecha de la copia.")
 
 
 class LandCoverClass(BaseModel):

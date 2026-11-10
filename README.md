@@ -31,6 +31,8 @@ En todos los módulos:
 
 La descarga y lectura de celdas raster NASADEM requiere un `EARTHDATA_TOKEN`; sin él, el sistema se mantiene honestamente en `METADATA_ONLY` y usa Copernicus GLO-30 donde necesita una elevación. AppEEARS requiere `EARTHDATA_USERNAME` y `EARTHDATA_PASSWORD`: el token temporal permanece en memoria, se renueva al vencer y se revoca al terminar. Las fuentes activas y sus cautelas de licencia están en `docs/nasa-submission/DATA_SOURCES.md`. LHASA 2, ANA e INGEMMET volcánico ya están integrados; SINPAD, SERV_PERUALERTA, SENACE, Defensoría y comunidades continúan como brechas explícitas.
 
+Cuando una capa oficial peruana no responde, la aplicación muestra su última copia válida de la misma consulta (hasta 90 días), con la fecha de la copia y el motivo a la vista; sin copia, la declara no disponible. Es el caso de CENEPRED, cuyo servicio exige token desde el 10-nov-2026: en una instalación nueva sus capas figuran como no disponibles (ADR-044).
+
 ## Ejecución con Docker
 
 El proyecto está aislado de MyFix. Usa `localhost:3100` para la web y `localhost:8000` para la API; no utiliza el puerto 3000.

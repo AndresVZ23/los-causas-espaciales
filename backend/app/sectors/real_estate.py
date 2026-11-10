@@ -23,6 +23,7 @@ from ..orchestration.discoveries import NO_TERRAIN_CHECK, record_in_pipeline, te
 from ..orchestration.extraction import elapsed_ms, extract_power, extract_terrain, max_separation_km
 from ..orchestration.nasa_questions import SectorLens, SubjectSummaries, answer_nasa_questions, collect_trend_findings, millions_usd
 from ..orchestration.slope_check import scorecard_with_slope_check
+from ..orchestration.stale_copies import stale_gap
 from ..orchestration.stages import (
     StageTimings,
     analysis_stage,
@@ -251,6 +252,7 @@ def _territorial_summary(subject: StudySubject, response: TerritorialQueryRespon
             provenance=item.provenance,
             downloaded_at=item.downloaded_at,
             limitations=item.limitations,
+            stale_note=item.stale_note,
         ) for item in response.sources],
     )
 
@@ -514,10 +516,13 @@ def _data_gaps(
                 next_action=f"Reintentar K1 y revisar el error del proveedor: {error}",
             ))
     unavailable: dict[str, str] = {}
+    stale: dict[str, str] = {}
     for item in territorial:
         for source in item.sources:
             if source.status == "DATA_UNAVAILABLE":
                 unavailable[source.source_id] = source.limitations[0] if source.limitations else "Fuente no disponible."
+            elif source.stale_note:
+                stale.setdefault(source.source_id, source.stale_note)
     for subject, error in zip(subjects, territorial_errors, strict=True):
         if error:
             unavailable[f"consulta-territorial-{subject.id}"] = error
@@ -527,6 +532,7 @@ def _data_gaps(
             impact=f"La capa no pudo verificarse: {reason}",
             next_action="Restablecer el servicio oficial o usar una fuente vigente con licencia, fecha, escala y cobertura documentadas.",
         ))
+    gaps.extend(stale_gap(source_id, note) for source_id, note in stale.items())
     gaps.extend([
         DataGap(
             dataset="Catastro, titularidad y parámetros urbanísticos",

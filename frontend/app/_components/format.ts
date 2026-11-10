@@ -11,3 +11,9 @@ export function formatNumber(value: number, digits = 2) { return new Intl.Number
 export function formatMillions(value: number) { return `${value < 0 ? "−" : ""}USD ${formatNumber(Math.abs(value) / 1e6, 2)} M`; }
 export function formatPercent(fraction: number, digits = 1) { return `${formatNumber(fraction * 100, digits)} %`; }
 export function formatDuration(ms: number) { return ms >= 1000 ? `${formatNumber(ms / 1000, 2)} s` : `${formatNumber(ms, 0)} ms`; }
+const SHORT_MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+/** Día (UTC) de una fecha ISO como «27-oct-2026», igual que lo escribe el backend; vacío si no hay fecha. */
+export function formatDay(iso?: string | null) {
+  const date = iso ? new Date(iso) : null;
+  return date && !Number.isNaN(date.getTime()) ? `${date.getUTCDate()}-${SHORT_MONTHS[date.getUTCMonth()]}-${date.getUTCFullYear()}` : "";
+}

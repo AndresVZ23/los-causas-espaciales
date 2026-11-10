@@ -1141,3 +1141,25 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Para Codex:** sin fuentes ni dependencias nuevas. `road.py` y `real_estate.py` son tuyos: revisa el cambio antes de fusionar.
 
 **Verificación:** 260 pruebas backend (10 nuevas), build con 20 rutas, `npm audit` en 0.
+
+## 2026-11-10 · Claude · claude/pdf-linea-base · CENEPRED exige token: última copia válida (ADR-044)
+
+**Qué pasó:** desde hoy `https://sigrid.cenepred.gob.pe/arcgis/rest/services/FEN/ER_NINO2027_BD/MapServer` responde `{"error": {"code": 499, "message": "Token Required"}}` y el directorio público ya no lista los servicios (solo quedan `SampleWorldCities` y `sigrid/sigrid_collect`). Las tres capas de CENEPRED quedaron como `DATA_UNAVAILABLE` en amenazas, vial e inmobiliario. Lo detectó la regresión funcional, no una prueba unitaria: los dobles no ven un proveedor que cierra.
+
+**Qué entró:**
+- **Última copia válida** en `connectors/peru/territory.py` y `connectors/peru/identify_layers.py`: si el servicio falla y la caché guarda una respuesta anterior de la misma consulta (hasta 90 días), se muestra como `CACHED_DATA` con su fecha original y el motivo. Sin copia, sigue `DATA_UNAVAILABLE`.
+- **Campo aditivo `stale_note`** en `TerritorialSourceResult`, `BaselineLayer`, `RoadTerritorialSourceSummary` y `RealEstateTerritorialSourceSummary`.
+- **Declaración:** etiqueta «copia del 25-oct-2026» junto al dato, nota al pie, brecha con procedencia `CACHED_DATA` (`orchestration/stale_copies.py`), advertencia en los descubrimientos que usan la capa y línea en el PDF.
+- **Reintentos:** una falla por credenciales ya no se reintenta; el muestreo por puntos deja de llamar tras la primera falla.
+
+**Resultado real:** el corredor Moquegua–Ilo recupera el riesgo de inundación y de movimientos en masa por tramo (copia del 25-oct); Lurigancho recupera las tres capas (copia del 27-oct) y el descubrimiento CENEPRED ↔ NASA; el puntaje inmobiliario vuelve a cobertura 100 %.
+
+**Para Codex:**
+- **`DATA_SOURCES.md`, ficha de CENEPRED:** anotar que desde el 10-nov-2026 el servicio exige token y que la aplicación solo muestra copias anteriores de consultas ya hechas, declaradas con su fecha.
+- **`territory.py` es tuyo:** `_layer_query` ahora devuelve cuatro valores (el cuarto es el motivo cuando la respuesta sale de la copia). Revisa el cambio.
+- **Tu caché es otra:** las copias viven en el volumen `power-cache` de este stack. En tu carpeta, o en la de cualquier compañero, CENEPRED saldrá «No disponible» salvo que tengan copias propias de antes del cierre.
+- **SIGDA:** en la corrida del mediodía no respondió nueve capas del distrito de Ilo y una hora después sí. Espaciar las corridas de `baseline_ui`.
+
+**Decisión que le toca a Christian:** gestionar o no un acceso con CENEPRED. Aquí no se crean cuentas a nombre de nadie.
+
+**Verificación:** 266 pruebas backend (6 nuevas), build con 20 rutas, `npm audit` en 0, auditor científico `ok: true`; QA en navegador a 1440 y 390 en amenazas y vial, y `release_ui`, `road_ui` y `realestate_ui` en los tres anchos.

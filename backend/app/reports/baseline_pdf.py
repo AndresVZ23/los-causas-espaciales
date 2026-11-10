@@ -124,8 +124,10 @@ def _land_cover(item: SubjectBaseline, styles: dict[str, ParagraphStyle], usable
 def _layer_cell(layer: BaselineLayer, styles: dict[str, ParagraphStyle]) -> Paragraph:
     if layer.status != "READY":
         return Paragraph(_text(layer.limitations[0] if layer.limitations else "El servicio no respondió."), styles["cellMuted"])
+    # Última copia válida: el motivo y la fecha de la copia van junto al dato, no solo en las brechas.
+    copy = f"<font size='6.8' color='#5b6670'>{_text(layer.stale_note)}</font>" if layer.stale_note else ""
     if not layer.highlights:
-        return Paragraph("Sin registros devueltos; no prueba ausencia.", styles["cellMuted"])
+        return Paragraph("Sin registros devueltos; no prueba ausencia." + (f"<br/>{copy}" if copy else ""), styles["cellMuted"])
     lines = []
     for highlight in layer.highlights[:MAX_HIGHLIGHTS]:
         count = f" ×{highlight.count}" if highlight.count > 1 else ""
@@ -134,6 +136,8 @@ def _layer_cell(layer: BaselineLayer, styles: dict[str, ParagraphStyle]) -> Para
     hidden = len(layer.highlights) - MAX_HIGHLIGHTS
     if hidden > 0:
         lines.append(f"<font size='6.8' color='#5b6670'>y {hidden} grupo(s) más en el JSON exportado</font>")
+    if copy:
+        lines.append(copy)
     return Paragraph("<br/>".join(lines), styles["cell"])
 
 
