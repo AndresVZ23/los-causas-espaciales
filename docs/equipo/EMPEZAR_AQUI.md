@@ -2,7 +2,7 @@
 
 Guía para el equipo de **Los Causas Espaciales** (NASA Space Apps 2026, sede Moquegua). Léela antes de tu primer cambio. El estado de cada pieza, lo que falta y lo que se puede agregar están en la **red del proyecto**: abre `docs/equipo/pipeline.html` con doble clic después de clonar. GitHub no muestra HTML, así que hay que abrirlo desde tu copia.
 
-**Entrega final: sábado 15 de noviembre de 2026, 23:59.**
+**Entrega final: domingo 15 de noviembre de 2026, 23:59.**
 
 ## Qué es
 
