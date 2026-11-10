@@ -66,12 +66,17 @@ export default function SensitivityPanel({ items, stale }: { items: SubjectSensi
   const [active, setActive] = useState(0);
   const item = items[Math.min(active, items.length - 1)];
   const scenarioKeys = items[0].scenarios.map((scenario) => scenario.key);
+  // El origen de cada rango lo declara su barra; aquí solo se dice si alguno viene de datos (años observados o una
+  // segunda fuente) o si, como en vial e inmobiliario, todos son supuestos.
+  const measured = items.some((subject) => subject.tornado.some((bar) => bar.provenance !== "USER_ASSUMPTION"));
   return (
     <section className="sensitivityPanel" aria-labelledby="sensibilidad-title">
       <div className="panelHeader">
         <div>
           <h3 id="sensibilidad-title">Escenarios y sensibilidad del VAN</h3>
-          <p>Un factor a la vez en el tornado; juntos en los escenarios. El rango del recurso sale de los años observados por NASA POWER; los demás son supuestos editables.</p>
+          <p>Un factor a la vez en el tornado; juntos en los escenarios. {measured
+            ? "Los rangos medidos salen de los años observados o de la segunda fuente; los demás son supuestos editables."
+            : "Todos los rangos son supuestos editables."}</p>
         </div>
         <span>{item.currency} · MODEL_ESTIMATE</span>
       </div>
