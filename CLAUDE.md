@@ -6,7 +6,7 @@ Las normas del proyecto están en AGENTS.md y se aplican siempre:
 
 Guía del equipo, puesta en marcha y forma de trabajo: @docs/equipo/EMPEZAR_AQUI.md
 
-Estado, pendientes e ideas: docs/equipo/PIPELINE.md
+Estado, pendientes e ideas: docs/equipo/pipeline.html. Las piezas salen de docs/interno/dop-datos.js y las tareas del equipo están en el arreglo TASKS del propio HTML: al cerrar una tarea o una pieza, actualizar ambos.
 
 Antes de proponer un Pull Request:
 

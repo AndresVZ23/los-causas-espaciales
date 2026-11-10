@@ -8,7 +8,7 @@
 window.DOP_DATA = {
   schema: "los-causas-dop",
   version: 2,
-  updatedAt: "2026-10-24T09:00:00Z",
+  updatedAt: "2026-11-10T15:00:00Z",
   updatedBy: "Claude",
   // Hitos de la sede Moquegua (mensaje de la Local Lead, 24-oct): anteproyecto con plantilla de la sede (límite 30-oct;
   // el equipo lo entrega el 29), hackathon 14–15 nov y entrega final en la plataforma oficial el 15-nov a las 23:59.

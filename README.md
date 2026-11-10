@@ -2,7 +2,7 @@
 
 Plataforma de inteligencia territorial para convertir datos de observación de la Tierra en decisiones de inversión trazables. Tiene siete módulos: clima, energía (solar y eólica), amenazas, ambiente, patrimonio, infraestructura vial e inversión inmobiliaria. Cada dato se contrasta con una segunda fuente independiente.
 
-**¿Eres del equipo?** Empieza por [`docs/equipo/EMPEZAR_AQUI.md`](docs/equipo/EMPEZAR_AQUI.md), con la puesta en marcha, la forma de trabajo y las reglas. Lo hecho, lo que falta y las ideas para agregar están en [`docs/equipo/PIPELINE.md`](docs/equipo/PIPELINE.md).
+**¿Eres del equipo?** Empieza por [`docs/equipo/EMPEZAR_AQUI.md`](docs/equipo/EMPEZAR_AQUI.md), con la puesta en marcha, la forma de trabajo y las reglas. Lo hecho, lo que falta y las ideas para agregar están en la red del proyecto, `docs/equipo/pipeline.html`: ábrela con doble clic después de clonar.
 
 ## Qué puede hacer hoy
 
