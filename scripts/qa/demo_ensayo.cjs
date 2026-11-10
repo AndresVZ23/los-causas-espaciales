@@ -1,4 +1,4 @@
-// Ensayo del recorrido principal del demo (DEMO_SCENARIOS.md) en 1440 px, con los actos 2A y 2B: mide la espera de cada acto,
+// Ensayo del recorrido principal del demo (DEMO_SCENARIOS.md) en 1440 px, con los actos 2A a 2D: mide la espera de cada acto,
 // registra la procedencia visible, captura cada pantalla y descarga el PDF ejecutivo.
 // Uso: node scripts/qa/demo_ensayo.cjs [etiqueta]. Correrlo el mismo día del demo deja la caché caliente (TTL 24 h).
 const { chromium } = require("playwright");
@@ -19,7 +19,14 @@ const PROVENANCE = ["REAL_DATA", "CACHED_DATA", "MODEL_ESTIMATE", "USER_ASSUMPTI
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
   const acts = [];
-  const shot = (name) => page.screenshot({ path: path.join(OUT, `${name}.png`) });
+  // Una captura fallida no detiene el ensayo: se reintenta una vez y, si vuelve a fallar, queda anotada en el informe.
+  const missedShots = [];
+  const shot = async (name) => {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try { await page.screenshot({ path: path.join(OUT, `${name}.png`) }); return; } catch (error) { await page.waitForTimeout(800); }
+    }
+    missedShots.push(name);
+  };
   // Procedencia citada en la fuente del mapa y en el contenido del resultado (no en la leyenda fija de la cabecera).
   const provenanceSeen = () => page.evaluate((codes) => {
     const text = [...document.querySelectorAll(".mapSource, .controlContent, .resultsPane, main section:not(.consoleHeader)")].map((el) => el.innerText).join(" ");
@@ -68,6 +75,28 @@ const PROVENANCE = ["REAL_DATA", "CACHED_DATA", "MODEL_ESTIMATE", "USER_ASSUMPTI
   await page.locator(".siteResult").first().screenshot({ path: path.join(OUT, "1c-clima-imerg.png") });
   acts.push({ act: "1 · territorio, tendencia y extremos", seconds: climateWait, climate });
 
+  // Acto 1B · Amenazas en el distrito de Lurigancho (Chosica): el mapa de CENEPRED frente a los deslizamientos de NASA.
+  await page.locator(".moduleNav button", { hasText: "Amenazas" }).click();
+  await page.locator(".territorySection").waitFor();
+  await page.getByLabel("Buscar departamento, provincia o distrito").fill("Lurigancho");
+  await page.locator('.territoryResults button:has(b:text-is("Lurigancho"))').first().click();
+  await page.locator(".territoryChosen li", { hasText: "Lurigancho" }).waitFor();
+  await page.locator(".territoryChosen li", { hasText: "Moquegua" }).locator("button").click();
+  await page.locator(".siteRemove").first().click();
+  const hazardsWait = await runAndWait(() => page.locator(".verdict", { hasText: "Lectura de amenazas" }).first().waitFor({ timeout: 400000 }));
+  await page.waitForTimeout(1500);
+  await shot("1d-amenazas-lectura");
+  const hazards = {
+    status: await page.locator(".systemLine b").first().innerText(),
+    reading: (await page.locator(".verdict").first().innerText()).slice(0, 900),
+    discoveries: await page.locator(".discoveriesPanel .discovery").evaluateAll((items) => items.map((item) => `${item.querySelector(".discoveryKind")?.textContent} · ${item.querySelector("h4")?.textContent} — ${item.querySelector("p")?.textContent}`)),
+    nasaLayers: (await page.locator(".baselineLayers tbody tr", { hasText: "NASA" }).allInnerTexts()).map((row) => row.replace(/\s+/g, " ").slice(0, 260)),
+    provenance: await provenanceSeen(),
+  };
+  await page.locator(".discoveriesPanel").first().scrollIntoViewIfNeeded();
+  await shot("1e-amenazas-descubrimientos");
+  acts.push({ act: "1B · amenazas, CENEPRED frente a los deslizamientos de NASA", seconds: hazardsWait, hazards });
+
   // Acto 2 · Activo: corredor Moquegua–Ilo (piloto vial) con exposición, puntaje, sensibilidad y decisión.
   await page.locator(".moduleNav button", { hasText: "Infraestructura" }).click();
   await page.locator(".roadControls").waitFor();
@@ -107,7 +136,32 @@ const PROVENANCE = ["REAL_DATA", "CACHED_DATA", "MODEL_ESTIMATE", "USER_ASSUMPTI
   await shot("2f-solar-equilibrio");
   acts.push({ act: "2B · solar, empate y punto de equilibrio", seconds: solarWait, solar });
 
-  // Acto 3 · Exportación: PDF ejecutivo del último análisis (solar mientras el acto 2A espera la corrección K2).
+  // Actos 2C y 2D · Eólica e hidroeléctrica con sus sitios de ejemplo: lectura, lo que dice la segunda fuente y el VAN.
+  const energyAct = async (radio, editor, firstTab, file) => {
+    await page.locator('input[name="tecnologia"]').nth(radio).check();
+    await page.locator(editor).waitFor({ timeout: 20000 });
+    await page.waitForFunction((label) => document.querySelector('[aria-label="Variable NASA POWER"] button')?.textContent === label, firstTab, { timeout: 20000 });
+    const seconds = await runAndWait(() => page.locator(".verdict").first().waitFor({ timeout: 400000 }));
+    await page.waitForTimeout(1500);
+    await shot(`${file}-lectura`);
+    const detail = {
+      status: await page.locator(".systemLine b").first().innerText(),
+      reading: await page.locator(".verdictTable tbody tr").allInnerTexts(),
+      discoveries: await page.locator(".discoveriesPanel .discovery").evaluateAll((items) => items.map((item) => `${item.querySelector(".discoveryKind")?.textContent} · ${item.querySelector("h4")?.textContent}`)),
+      scorecard: (await page.locator(".scorecardPanel").first().innerText()).slice(0, 500),
+      sensitivity: (await page.locator(".sensitivityPanel").first().innerText()).slice(0, 900),
+      provenance: await provenanceSeen(),
+    };
+    await page.locator(".discoveriesPanel").first().scrollIntoViewIfNeeded();
+    await shot(`${file}-descubrimientos`);
+    return { seconds, detail };
+  };
+  const wind = await energyAct(1, ".siteEditor", "Viento 50 m", "2g-eolica");
+  acts.push({ act: "2C · eólica, el atlas frente al reanálisis", seconds: wind.seconds, wind: wind.detail });
+  const hydro = await energyAct(2, ".hydroEditor", "Caudal", "2h-hidro");
+  acts.push({ act: "2D · hidroeléctrica, dos modelos de caudal y dos de relieve", seconds: hydro.seconds, hydro: hydro.detail });
+
+  // Acto 3 · Exportación: PDF ejecutivo del último análisis en pantalla (el hidroeléctrico del acto 2D).
   const pdfButton = page.locator(".exportAction.primaryExport");
   await pdfButton.scrollIntoViewIfNeeded();
   started = Date.now();
@@ -121,7 +175,7 @@ const PROVENANCE = ["REAL_DATA", "CACHED_DATA", "MODEL_ESTIMATE", "USER_ASSUMPTI
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   await browser.close();
   const waitTotal = acts.reduce((sum, item) => sum + item.seconds, 0);
-  const report = { label: LABEL, at: new Date().toISOString(), waitSeconds: Math.round(waitTotal * 10) / 10, acts, overflow, errors };
+  const report = { label: LABEL, at: new Date().toISOString(), waitSeconds: Math.round(waitTotal * 10) / 10, acts, overflow, errors, missedShots };
   fs.writeFileSync(path.join(OUT, "ensayo.json"), JSON.stringify(report, null, 1));
   console.log(JSON.stringify(report, null, 1));
 })().catch((err) => { console.error(err); process.exit(1); });
