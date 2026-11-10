@@ -432,6 +432,13 @@ def render_executive_pdf(envelope: ScreeningEnvelope) -> bytes:
         if any(check.source.startswith("ERA5") for site in getattr(envelope, "sites", []) for item in getattr(site, "variables", []) for check in item.counterchecks):
             sources.append("ERA5 (ECMWF) servido por PVGIS 5.3 del JRC de la Comisión Europea (https://re.jrc.ec.europa.eu/api/v5_3/MRcalc), "
                            "temperatura a 2 m e irradiación global horizontal mensuales 2005–2023, como contraste de MERRA-2 y CERES.")
+        wind_sites = [site for site in getattr(envelope, "sites", []) if getattr(site, "resource", None) is not None]
+        if wind_sites:
+            sources.append(f"NASA POWER, API Hourly Point (https://power.larc.nasa.gov/api/temporal/hourly/point), viento a 10 y 50 m de MERRA-2 "
+                           f"{wind_sites[0].resource.years}, para la energía hora por hora con una curva de potencia genérica.")
+        if any(getattr(site, "atlas_check", None) for site in wind_sites):
+            sources.append("Global Wind Atlas 4.0 (DTU con ESMAP del Banco Mundial, https://globalwindatlas.info), velocidad media de largo plazo a 50 y "
+                           "100 m con resolución de 250 m, CC BY 4.0, como contraste del nivel del recurso.")
     if envelope.terrain:
         dois = sorted({granule.doi_url for site in envelope.terrain.sites for granule in site.granules})
         sources.append(f"{envelope.terrain.dataset}: {', '.join(dois)}.")

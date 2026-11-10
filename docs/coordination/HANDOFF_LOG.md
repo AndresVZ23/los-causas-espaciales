@@ -1063,3 +1063,23 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Puerta común:** 209/209 pruebas backend; build Next.js 16.4.2 con 18 rutas; `npm audit --omit=dev` = 0 vulnerabilidades. Las únicas advertencias de pytest son deprecaciones de terceros en ReportLab y Starlette.
 
 **Publicación:** no se hizo push porque esta instrucción no incluye aprobación explícita de Christian. No se creó `v0.1.0` y no se modificó el stack 3100/8000.
+## 2026-10-30 · Claude · claude/pdf-linea-base · Piloto eólico (ADR-041)
+
+**Qué entró:** eólica como segunda tecnología de Energía, con `POST /api/v1/projects/wind-screening` y `Sector.WIND` (C2 aditivo).
+- **Fuentes:** NASA POWER horario (WS50M/WS10M, diez años) y Global Wind Atlas 4.0, leído como BigTIFF/ZSTD con el lector COG común.
+- **Energía:** cizalladura y densidad por sitio, curva genérica.
+- **Caso base:** nivel del atlas con la forma horaria de NASA. El nivel NASA queda como adverso.
+- **Resultados:** puntaje, tornado, descubrimientos y PDF.
+- **Refactor:** `sectors/energy_common.py` reúne los formatos y equilibrios que antes estaban privados en `solar.py`. La solar los importa sin cambiar su comportamiento.
+
+**Validación:** la producción COES 2024 de Tres Hermanas (56.5 %) y Marcona (57.7 %) contra el modelo. Con el nivel del atlas da 46.7 % neto; con el de MERRA-2, 14 %.
+
+**Para Codex:**
+- **Dependencia nueva:** `zstandard==0.23.0` en `backend/requirements.txt` (BSD, versión de jul-2024), porque el atlas usa compresión 50000. Revisarla en la auditoría.
+- **DATA_SOURCES.md:** faltan dos fichas.
+  - NASA POWER Hourly Point API v2.10.3.
+  - Global Wind Atlas 4.0: `https://globalwindatlas.info/api/gis/country/PER/wind-speed/{50|100}`, que redirige a `gwa.cdn.nazkamapps.com/country_tifs_v4/`. Va con CC BY 4.0 y la atribución DTU/Banco Mundial. Christian puede confirmar la cita preferida en globalwindatlas.info.
+- **COES:** el conector solo filtra tipo SOLAR. La validación eólica se hizo con un script de QA fuera del producto (`.claude-qa/coes_wind_check.py`). Un factor de planta eólico real por central sería un K-siguiente natural.
+
+**Verificación:** ver ADR-041 (pruebas, QA 1440/390 y PDF).
+**Bloqueos:** ninguno. Hidroeléctrica es lo siguiente.

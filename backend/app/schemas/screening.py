@@ -23,6 +23,7 @@ CONTRACT_VERSION = "1.0"
 class Sector(StrEnum):
     CLIMATE = "climate"
     SOLAR = "solar"
+    WIND = "wind"                  # energía eólica: módulo Energía, segunda tecnología
     ROAD = "road"
     REAL_ESTATE = "real_estate"
     ENVIRONMENT = "environment"    # módulo 4: línea base ambiental (medios físico y biológico)

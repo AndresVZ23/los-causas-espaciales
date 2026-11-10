@@ -9,6 +9,7 @@ from ..schemas.baseline import BaselineScreeningResponse
 from ..schemas.climate import ClimateScreeningResponse
 from ..schemas.pipeline import SolarScreeningResponse
 from ..schemas.screening import ScreeningEnvelope, Sector
+from ..schemas.wind import WindScreeningResponse
 
 router = APIRouter(prefix="/api/v1/reports", tags=["reports"])
 
@@ -19,6 +20,7 @@ SECTOR_SCHEMAS: dict[str, type[ScreeningEnvelope]] = {
     Sector.ENVIRONMENT: BaselineScreeningResponse, Sector.HERITAGE: BaselineScreeningResponse, Sector.HAZARDS: BaselineScreeningResponse,
     Sector.CLIMATE: ClimateScreeningResponse,   # sus extremos dicen si CHIRPS entró como fuente
     Sector.SOLAR: SolarScreeningResponse,       # sus variables dicen si ERA5 entró como contraste
+    Sector.WIND: WindScreeningResponse,         # además, la serie horaria y el Atlas Eólico Global
 }
 
 

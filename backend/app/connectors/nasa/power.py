@@ -14,6 +14,7 @@ VARIABLE_UNITS = {
     "PRECTOTCORR": "mm/day",
     "ALLSKY_SFC_SW_DWN": "kWh/m2/day",
     "WS10M": "m/s",
+    "WS50M": "m/s",
 }
 
 

@@ -165,7 +165,31 @@ export type SubjectBaseline = {
 export type BaselineResult = Omit<ScreeningResult, "sites" | "comparative_findings" | "assumptions"> & {
   sector: "environment" | "heritage" | "hazards"; components: BaselineComponent[]; baselines: SubjectBaseline[]; method_notes: string[];
 };
-export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult | BaselineResult;
+// Piloto eólico (sector "wind" del contrato C2): forma horaria NASA POWER, nivel del Atlas Eólico Global.
+export type WindAssumptions = {
+  capacity_mw: number; hub_height_m: number; cut_in_ms: number; rated_ms: number; cut_out_ms: number; losses: number;
+  initial_capex_usd: number; annual_opex_usd: number; energy_price_usd_mwh: number; mitigation_capex_usd: number; discount_rate: number; horizon_years: number;
+  price_sensitivity: number; capex_sensitivity: number; opex_sensitivity: number; losses_sensitivity: number; discount_rate_sensitivity: number;
+};
+export type WindResource = {
+  years: string; hours: number; mean_speed_10m: number; mean_speed_50m: number; shear_exponent: number; shear_basis: string; hub_height_m: number;
+  mean_speed_hub: number; air_density_kg_m3: number; density_basis: string; capacity_factor_gross: number; annual_capacity_factors: { year: number; value: number }[];
+  capacity_factor_gross_nasa_level: number; level_source: string; level_factor: number; mean_speed_hub_used: number;
+  provenance: string; downloaded_at: string; source_url: string; version: string;
+};
+export type WindAtlasCheck = {
+  source: string; speed_50m: number | null; speed_100m: number | null; speed_hub: number | null; power_speed_50m: number;
+  gap_percent_50m: number | null; gap_percent_hub: number | null; capacity_factor_gross_at_atlas: number | null; annual_energy_mwh_at_atlas: number | null;
+  provenance: string; downloaded_at: string; urls: string[]; license: string; limitations: string[];
+};
+export type WindSite = {
+  location: Point; relative_position: number; relative_position_text: string; variables: VariableSummary[]; resource: WindResource; atlas_check: WindAtlasCheck | null;
+  finance: { capacity_factor_net: number; annual_energy_mwh: number; annual_revenue_usd: number; npv_usd: number; formula: string; limitations: string[] };
+  opportunities: string[]; cautions: string[];
+};
+export type WindResult = Omit<ScreeningResult, "sites" | "assumptions"> & { sector: "wind"; sites: WindSite[]; assumptions: WindAssumptions };
+export type AnyResult = ScreeningResult | ClimateResult | RoadResult | RealEstateResult | BaselineResult | WindResult;
+export const isWind = (result: AnyResult | null): result is WindResult => result?.sector === "wind";
 export const isClimate = (result: AnyResult | null): result is ClimateResult => result?.sector === "climate";
 export const isRoad = (result: AnyResult | null): result is RoadResult => result?.sector === "road";
 export const isRealEstate = (result: AnyResult | null): result is RealEstateResult => result?.sector === "real_estate";

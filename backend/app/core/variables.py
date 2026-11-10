@@ -8,6 +8,7 @@ POWER_VARIABLE_LABELS: dict[str, str] = {
     "ALLSKY_SFC_SW_DWN": "Irradiancia solar superficial",
     "T2M": "Temperatura del aire a 2 m",
     "WS10M": "Velocidad del viento a 10 m",
+    "WS50M": "Velocidad del viento a 50 m",
     "PRECTOTCORR": "Precipitación corregida",
     "IMERG_PRECTOT": "Precipitación satelital GPM IMERG",
 }
