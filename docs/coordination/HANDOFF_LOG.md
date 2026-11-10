@@ -1083,3 +1083,17 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 
 **Verificación:** ver ADR-041 (pruebas, QA 1440/390 y PDF).
 **Bloqueos:** ninguno. Hidroeléctrica es lo siguiente.
+
+## 2026-11-10 · Codex · `master` · integración y QA del piloto eólico (ADR-041)
+
+**Fusión aprobada:** `claude/pdf-linea-base` (`a94d61c`) se integró en `master` mediante merge commit `a42de58`, conservando los tres commits posteriores que ya estaban en la línea principal. El cambio es aditivo: `Sector.WIND`, `POST /api/v1/projects/wind-screening`, POWER horario, Global Wind Atlas, cálculo energético/financiero, puntaje, PDF y pantalla. `codex/nasadem-resumable` ya era ancestro de `master`; no quedaba un commit NASADEM separado por integrar.
+
+**Fuentes y contraprueba real:** `DATA_SOURCES.md` registra NASA POWER Hourly y Global Wind Atlas 4.0, sus resoluciones, semántica, caché, licencia y limitaciones. Una consulta independiente para Marcona el 10-nov-2026 recuperó 8,784 pares horarios de 2024, media `WS50M` 5.8844 m/s y encabezado API **v2.10.4** (`REAL_DATA`); se conserva también la evidencia v2.10.3 del 30-oct porque el conector lee la versión y no la fija. El Atlas devolvió 9.09 m/s a 50 m y 9.74 m/s a 100 m; la ruta oficial redirigió al TIFF `country_tifs_v4` y aceptó HTTP 206. El recálculo independiente de COES con 8,784 h reprodujo Tres Hermanas 56.46 %, Marcona 57.66 % y San Juan 51.59 %; 204,355 MWh/año sobre 50 MW reprodujo 46.66 % neto del modelo.
+
+**Dependencia:** `zstandard==0.23.0` instaló correctamente, declara licencia BSD y `pip check` no encontró incompatibilidades. `pip-audit 2.10.1` no reportó vulnerabilidades para Zstandard. La auditoría completa sí expuso deuda previa ajena a este commit en `pypdf 5.1.0`, `starlette 0.41.3` y `pytest 8.3.4`; actualizar FastAPI/Starlette y pypdf requiere una rama de mantenimiento y regresión de PDF/API, no una modificación silenciosa del piloto.
+
+**Puerta común:** 225/225 pruebas backend; build Next.js 16.4.2 con 19 rutas; `npm audit --omit=dev` = 0 vulnerabilidades. `audit_project.py` no existe en el repositorio actual, por lo que esa comprobación permanece no aplicable. QA en el navegador integrado sobre `127.0.0.1:13108` y API temporal `18108`: selección Solar → Eólica comprobada, panel eólico visible, 0 errores/advertencias de consola, 0 overlay y 0 px de desbordamiento en escritorio y 390 × 844. Los listeners temporales se cerraron.
+
+**Docker:** `docker compose build api` no pudo ejecutarse porque el motor Linux de Docker Desktop no estaba activo (`dockerDesktopLinuxEngine` inexistente). No se inició Docker Desktop para evitar levantar o alterar los stacks reservados en 3100/8000. La imagen queda como única verificación operativa pendiente; las pruebas usan la misma versión fijada y el import de Zstandard quedó validado en `.venv`.
+
+**Publicación:** Christian autorizó subir `master` a `origin`. No se crea `v0.1.0`. El SHA remoto exacto se verificará después del push; por definición no puede autorreferenciarse dentro del commit que contiene esta entrada.
