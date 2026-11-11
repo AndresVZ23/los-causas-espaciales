@@ -735,3 +735,30 @@ La fila inmobiliaria usa las alertas de CENEPRED de su última copia válida (AD
 **Lo que no es.** No es un resultado del análisis en curso ni se recalcula con los sitios del usuario: es una constante del método, con fecha, que se reproduce con `scripts/qa/coes_production.py` y `scripts/qa/validate_hydro.py`. Traer la producción real de la central que el usuario elija sigue siendo una idea abierta del equipo (A1).
 
 **Verificación.** Las pruebas de PDF de eólica e hidroeléctrica leen el texto del reporte y comprueban la frase, la cifra real y la advertencia de alcance.
+
+## ADR-046 — Alcance global: cualquier lugar del mundo y alertas activas sobre el mapa
+
+**Motivo.** Decisión de Christian (10-nov-2026): la plataforma debe funcionar en todo el mundo, con menos detalle que en el Perú, y mostrar con animaciones básicas los lugares que necesitan apoyo urgente, empezando por algunos del mundo y algunos del Perú.
+
+**Qué ya era global y qué no.** Probado ese día en Nairobi, Sevilla y Chennai: Clima, solar, eólica, hidroeléctrica y los deslizamientos de NASA respondían fuera del Perú, porque NASA POWER, IMERG, CHIRPS, ERA5, NASADEM, Copernicus, MODIS, WorldCover, GloFAS y GEOGLOWS son globales. Estaban atados al Perú: el archivo del Atlas Eólico, las capas oficiales, la búsqueda de territorios y los títulos.
+
+**Decisiones.**
+- **País de un punto (`geospatial/countries.py`):** Natural Earth 1:110m, de dominio público, guardado en `backend/data/world/`. Con holgura de 0.5° para costas y fronteras simplificadas (Ilo y Marcona quedan fuera del polígono a esa escala). Un punto en mar abierto no tiene país: no se adivina.
+- **Atlas Eólico Global:** se lee el archivo del país donde cae el punto. Sin país, no hay atlas y el modelo usa el nivel de NASA POWER, declarado.
+- **Capas oficiales del Perú:** solo se consultan si el área toca el Perú. Fuera, no se llama a ningún servicio peruano (devolvería un cero que se leería como ausencia) y una sola brecha lo declara con el país. Las brechas fijas que nombran instituciones peruanas tampoco se muestran.
+- **Búsqueda de lugares:** `GET /api/v1/world/places` con el geocodificador de Open-Meteo. Solo ubica el sitio.
+- **Alertas del mundo (`orchestration/world_alerts.py`, `GET /api/v1/world/alerts`):**
+  - «Apoyo urgente» no lo decide la plataforma: se usa el nivel de GDACS (ONU y Comisión Europea). Naranja y roja en el mundo; en el Perú también las verdes de inundación, sequía, incendio, ciclón y erupción, las ocho más recientes.
+  - Segundo testigo: NASA EONET. Mismo tipo, a 150 km o menos (600 km en ciclones) y con fechas a 10 días o menos.
+  - Los eventos abiertos de EONET sin pareja en GDACS se listan sin nivel. Sus incendios solo sirven para el cruce: eran 395 de 400.
+  - Vigencia de una hora y última copia válida si una fuente falla (ADR-044). Si GDACS cae, no hay niveles: no se inventan.
+- **Pantalla:** botón «Alertas en el mundo» sobre el mapa. Cada evento es un pulso con el color de su nivel; laten los vigentes y los de nivel naranja o rojo, y la animación se detiene con «reducir movimiento». El panel filtra Mundo o Perú y, por evento, ofrece «Analizar amenazas aquí» y «Analizar clima aquí». Sobre el editor de sitios, «Buscar un lugar del mundo».
+
+**Lo que no es.** No es un sistema de alerta temprana. Analizar el punto de un evento muestra las tendencias y amenazas de fondo del lugar, no el estado del evento. Fuera del Perú no hay territorios oficiales (departamento, provincia, distrito), ni capas nacionales de riesgo, patrimonio o áreas protegidas, ni validación con producción real.
+
+**Resultado real del 10-nov-2026.**
+- 25 eventos: 4 alertas rojas (ciclones en la India, Filipinas y México), 14 naranjas (sequías en Europa, Centroamérica y África, sismos, erupciones e inundaciones), 3 tormentas abiertas de EONET y 4 alertas verdes del Perú (tres inundaciones y un incendio forestal). Ningún evento coincidió entre las dos fuentes ese día.
+- Atlas Eólico fuera del Perú: Nairobi 3.61 m/s frente a 6.36 de NASA POWER; Sevilla 4.47 frente a 6.10. En esos dos puntos NASA POWER queda por encima del atlas, al revés que en Marcona.
+- Amenazas en Chennai: tres capas de NASA y la brecha de capas nacionales, sin ninguna consulta a servicios peruanos.
+
+**Verificación.** 10 pruebas nuevas (276 en total): país de un punto con costa y mar abierto, analizadores de GDACS y EONET, cruce y regla de pareja, última copia válida del GET común, fuente caída declarada, búsqueda de lugares y área fuera del Perú sin consultas peruanas. Build con 22 rutas. `scripts/qa/world_ui.cjs` en 1440, 768 y 390: 25 pulsos en su lugar, sin recortes, desbordes ni errores de consola.

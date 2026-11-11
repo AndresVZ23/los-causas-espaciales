@@ -43,6 +43,28 @@ The Peru rasters are floating-point 0.0025° grids (~250 m) of long-term mean wi
 
 Global Wind Atlas data is licensed under **Creative Commons Attribution 4.0 International (CC BY 4.0)**. Outputs must credit: **“Technical University of Denmark (DTU). Global Wind Atlas 4.0, a free, web-based application developed, owned and operated by DTU. The Global Wind Atlas 4.0 is released in partnership with the World Bank Group, using data provided by Vortex, with funding provided by the Energy Sector Management Assistance Program (ESMAP).”** The GIS download page warns that the API is not intended for bulk download; the production connector performs point/block range reads only. Primary references verified 10-Nov-2026: [Hourly API](https://power.larc.nasa.gov/docs/services/api/temporal/hourly/), [POWER temporal API](https://power.larc.nasa.gov/docs/services/api/temporal/), [Global Wind Atlas GIS files](https://globalwindatlas.info/en/download/gis-files), and [Global Wind Atlas terms of use](https://globalwindatlas.info/about/TermsOfUse).
 
+Since ADR-046 the connector reads the country file of the country where the point falls (`/country/{ISO3}/wind-speed/{50|100}`), resolved with the Natural Earth lookup described below. Live checks on 10-Nov-2026 read the Kenya and Spain files: Nairobi 3.61 m/s and Seville 4.47 m/s at hub height. A point that falls in no country polygon (open sea, small islands) has no atlas value and the model declares that it used the NASA POWER level.
+
+## Global scope: world alerts, place search and country lookup (ADR-046)
+
+### GDACS event list
+
+World alerts come from the **Global Disaster Alert and Coordination System (GDACS)**, a cooperation framework of the United Nations and the European Commission. The connector calls `https://www.gdacs.org/gdacsapi/api/events/geteventlist/SEARCH` twice: orange and red alerts worldwide, and all alert levels for Peru restricted to floods, droughts, wildfires, tropical cyclones and eruptions, both over the last 60 days. A live request on **10-Nov-2026** returned GeoJSON with one point per event, `alertlevel`, `fromdate`/`todate`, `iscurrent` as the strings `"true"`/`"false"`, `severitydata.severitytext` and a report URL: 18 orange or red events worldwide and floods and a wildfire in Peru at green level.
+
+The alert level is GDACS's own; the platform displays it and does not recompute it. An event without a point, a known type, a level or dates is discarded rather than completed. A flood published with the text `Magnitude 0` is shown without a magnitude. The point is the one GDACS publishes: for droughts and large floods it stands for the centre of the affected area. Responses are cached for one hour, with the last valid copy shown and declared if the service fails. **Reuse terms were not verified by the team; confirm them at [gdacs.org](https://www.gdacs.org) before redistributing the data.**
+
+### NASA EONET v3
+
+The second witness is NASA's **Earth Observatory Natural Event Tracker (EONET) v3**, `https://eonet.gsfc.nasa.gov/api/v3/events?status=open&days=60`. A live request on **10-Nov-2026** returned open events with one geometry per date; the connector uses the last point and the category (severe storms, wildfires, volcanoes, floods, drought, landslides, earthquakes). EONET assigns no alert level. A GDACS event carries the mark «también en NASA EONET» when EONET lists an event of the same type within 150 km (600 km for cyclones) and with dates within 10 days. Open EONET events with no GDACS counterpart are listed without a level; EONET wildfires are used only for the match, because on the day of the check 395 of 400 open events were wildfires. **Reuse terms were not verified by the team; confirm them at [eonet.gsfc.nasa.gov](https://eonet.gsfc.nasa.gov) before redistributing the data.**
+
+### Open-Meteo Geocoding API
+
+Place search uses `https://geocoding-api.open-meteo.com/v1/search` (built on GeoNames). It only turns a name into coordinates to position a site; it contributes no data to any analysis. Results are cached for 30 days. The same intermediary terms as the Flood API apply: the free endpoint is for non-commercial use.
+
+### Natural Earth country polygons
+
+`backend/data/world/countries_110m.geojson` is a compact copy of **Natural Earth 1:110m Admin 0 – Countries** (public domain), retrieved on 10-Nov-2026 from the project's GitHub repository, with coordinates rounded to three decimals and only the ISO codes and names kept. It decides which Global Wind Atlas country file to read and whether the official Peruvian layers apply to an area. At 1:110m coasts and borders are coarse: a tolerance of 0.5° is applied, and a point in no polygon returns no country instead of a guess.
+
 ## Run-of-river hydropower discharge inputs
 
 ### Copernicus EMS GloFAS v4 via Open-Meteo

@@ -24,6 +24,7 @@ from ..connectors.peru.admin_boundaries import PeruTerritoryCatalog, TerritoryCa
 from ..connectors.peru.identify_layers import CENEPRED_FEN, INGEMMET_BASE, IdentifyLayersConnector
 from ..connectors.peru.territory import LAYERS, TerritoryConnector, TerritoryConnectorError
 from ..geospatial.buffers import buffer_km, window_km
+from ..geospatial.countries import Country, country_at, touches_peru
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
 from ..orchestration.cover_crosscheck import COVER_NOTE, build_crosscheck, worldcover_composition
 from ..orchestration.discoveries import (
@@ -133,6 +134,9 @@ STATIC_GAPS = {
                 next_action="Verificar acceso a series diarias de estaciones cercanas."),
     ],
 }
+
+
+UNKNOWN_COUNTRY = Country(iso3="", name="un territorio sin país en el mapa base")
 
 
 class BaselineScreeningError(RuntimeError):
@@ -256,6 +260,9 @@ async def _layers(area: StudyArea, components: Sequence[Component], limits: dict
                   ) -> tuple[list[BaselineLayer], str | None, dict[str, TerritorialSourceResult]]:
     """Capas resumidas para el contrato y, aparte, los resultados crudos: los descubrimientos cruzan fuentes punto por punto."""
     component_of = {source: component for component in components for source in COMPONENT_SOURCES[component]}
+    if not touches_peru(area.subject.geometry):
+        # Fuera del Perú solo quedan las capas globales de NASA: consultar un servicio peruano devolvería un cero engañoso.
+        component_of = {source: component for source, component in component_of.items() if source in NASA_LANDSLIDE_SOURCES}
     connector = TerritoryConnector()
     try:
         results = await asyncio.gather(*(_one_layer(connector, area, source_id, limits[_host(source_id)]) for source_id in component_of))
@@ -455,6 +462,18 @@ async def run_baseline_screening(request: BaselineRequest, sector: Sector) -> Ba
     analysis_ms = elapsed_ms(analysis_started)
 
     gaps = list(STATIC_GAPS[sector])
+    abroad = [area for area in areas if not touches_peru(area.subject.geometry)]
+    if abroad:
+        # Las brechas fijas nombran instituciones peruanas: con todas las áreas fuera del Perú no aplican.
+        if len(abroad) == len(areas):
+            gaps = [DataGap(dataset="Mediciones en sitio", impact="El análisis usa satélites y reanálisis; no hay estaciones ni registros locales conectados.",
+                            next_action="Buscar las estaciones y los registros oficiales del país para contrastar.")]
+        countries = {(country_at(a.subject.representative_point.longitude, a.subject.representative_point.latitude) or UNKNOWN_COUNTRY).name for a in abroad}
+        gaps.insert(0, DataGap(
+            dataset="Capas oficiales nacionales fuera del Perú",
+            impact=f"{join_es([a.subject.label for a in abroad])}: las capas oficiales conectadas (riesgo, agua, áreas protegidas y patrimonio) son del Perú. "
+                   f"En {join_es(sorted(countries))} solo se usan las fuentes globales de NASA, Copernicus y ESA.",
+            next_action="Identificar y conectar el servicio oficial equivalente del país, con su licencia y su escala."))
     if rainfall and rainfall.power_error:
         gaps.insert(0, DataGap(dataset="NASA POWER · lluvia diaria", impact=f"Sin serie de lluvia: {rainfall.power_error}", next_action="Reintentar la consulta; no se rellena con ceros."))
     if rainfall and rainfall.countercheck_error:

@@ -17,6 +17,7 @@ from ..connectors.nasa.power_regional import RegionalPowerConnector, RegionalPow
 from ..connectors.peru.admin_boundaries import PeruTerritoryCatalog, TerritoryCatalogError
 from ..connectors.peru.territory import TerritoryConnector, TerritoryConnectorError
 from ..finance.sensitivity import Driver, break_even_item, tornado
+from ..geospatial.countries import OUTSIDE_PERU, touches_peru
 from ..geospatial.geometry import GEOD, GeometryValidationError, inspect_geometry
 from ..orchestration.analysis import analyze_subjects
 from ..orchestration.discoveries import NO_TERRAIN_CHECK, record_in_pipeline, terrain_discoveries
@@ -265,6 +266,11 @@ async def _territorial_evidence(subjects: list[StudySubject], enabled: bool):
     connector = TerritoryConnector()
     evidence, errors = [], []
     for subject in subjects:
+        if not touches_peru(subject.geometry):
+            # Un servicio peruano devolvería cero objetos para un terreno en otro país: no se consulta y se declara.
+            evidence.append(RealEstateTerritorialEvidence(subject=subject.label, sources=[]))
+            errors.append(OUTSIDE_PERU)
+            continue
         try:
             response = await connector.query(TerritorialQueryRequest(
                 geometry=subject.geometry,

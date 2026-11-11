@@ -408,7 +408,7 @@ async def run_solar_screening(request: SolarScreeningRequest) -> SolarScreeningR
     return SolarScreeningResponse(
         analysis_id=fingerprint,
         generated_at=datetime.now(timezone.utc),
-        title="Screening solar comparativo — sur del Perú",
+        title="Screening solar comparativo",
         period=f"{request.start_date.isoformat()}/{request.end_date.isoformat()}",
         subjects=subjects,
         pipeline=pipeline,

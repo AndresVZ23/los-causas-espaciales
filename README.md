@@ -18,6 +18,8 @@ Plataforma de inteligencia territorial para convertir datos de observación de l
 | 6 · Infraestructura | Corredor vial por tramos: lluvia, capas oficiales, VAN de mitigación y puntaje | Copernicus para el relieve |
 | 7 · Inversión | Terrenos o territorios IGN: lluvia, relieve, capas oficiales, VAN y puntaje | Copernicus para el relieve |
 
+**Alcance global.** Clima, Energía, Amenazas y Ambiente analizan cualquier lugar del mundo con las fuentes globales (NASA, Copernicus, ESA, ERA5): se escribe el nombre en «Buscar un lugar del mundo» o se hace clic en el mapa. El detalle oficial (territorios IGN, capas de riesgo, patrimonio y áreas protegidas) existe solo para el Perú, y fuera de él la aplicación lo declara en vez de mostrar ceros. «Alertas en el mundo» pone sobre el mapa, como pulsos animados, los eventos con alerta naranja o roja de GDACS y los del Perú, con NASA EONET como segundo testigo; cada uno se puede analizar con un clic (ADR-046).
+
 En todos los módulos:
 
 - Un pipeline visible de nueve etapas, de la selección a la exportación, con el tiempo y la procedencia de cada una.

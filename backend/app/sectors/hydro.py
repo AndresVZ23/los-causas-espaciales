@@ -693,7 +693,7 @@ async def run_hydro_screening(request: HydroScreeningRequest) -> HydroScreeningR
     record_in_pipeline(pipeline, discoveries)
     fingerprint = hashlib.sha256(json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()[:16]
     return HydroScreeningResponse(
-        analysis_id=fingerprint, generated_at=datetime.now(timezone.utc), title="Screening hidroeléctrico comparativo — Perú",
+        analysis_id=fingerprint, generated_at=datetime.now(timezone.utc), title="Screening hidroeléctrico comparativo",
         period=f"{request.start_date.isoformat()}/{request.end_date.isoformat()}", subjects=subjects, pipeline=pipeline,
         nasa_questions=nasa_questions, trend_findings=trend_findings, sites=site_results, terrain=terrain, comparative_findings=comparative,
         data_gaps=gaps, assumptions=a,

@@ -15,6 +15,7 @@ Instalación única: `cd scripts\qa` y luego `npm.cmd install` (Playwright 1.61.
 | `hr_real.py` | Contraste de Hamed–Rao con `pymannkendall` sobre una respuesta real (requiere instalar esa librería aparte) | `python scripts\qa\hr_real.py .claude-qa\datos\screening.json` |
 | `release_ui.cjs` | Puerta visual de cierre a 1440/768/390: recortes, desborde, teclado y estados de carga y error | `node scripts\qa\release_ui.cjs` |
 | `energy_ui.cjs` | Energía eólica e hidroeléctrica en el navegador: ejecución real, lectura, gráfico, evidencia, recortes y PDF | `node scripts\qa\energy_ui.cjs` |
+| `world_ui.cjs` | Alcance global: alertas del mundo con sus pulsos en su lugar, vuelo a un evento, análisis de amenazas fuera del Perú y búsqueda de un lugar | `node scripts\qa\world_ui.cjs` |
 | `demo_ensayo.cjs` | Ensayo del demo de punta a punta (clima, amenazas, vial, solar, eólica, hidro y PDF): esperas por acto, capturas y caché caliente | `node scripts\qa\demo_ensayo.cjs dia-demo` |
 | `coes_production.py` | Producción real por central del COES en un año, para validar los pilotos de energía (ADR-041, ADR-042) | `.venv\Scripts\python.exe scripts\qa\coes_production.py 2024 --tipo EOL` |
 | `validate_hydro.py` | Modelo hidroeléctrico frente a la producción real de la C.H. Machupicchu (ADR-042) | `.venv\Scripts\python.exe scripts\qa\validate_hydro.py` |

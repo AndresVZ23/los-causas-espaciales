@@ -29,6 +29,9 @@ import { isBaseline, isClimate, isHydro, isRealEstate, isRoad, isWind, seriesSub
 import type { AnyResult, Assumptions, HydroAssumptions, HydroSiteInput, Module, Point, QuestionKey, RealEstateAssumptions, RoadAssumptions, SeriesSubject, Stage, TerritoryPick, VisualLayerState, WindAssumptions } from "./types";
 import { DEFAULT_WIND_ASSUMPTIONS, EnergyTechControls, WIND_SITES, WindAssumptionFields, WindEvidence, WindReading, windTabs } from "./wind-panels";
 import type { EnergyTech } from "./wind-panels";
+import { PlaceSearch, WorldAlertsControl, useWorldAlerts } from "./world-alerts";
+import type { MapAlert, MapFocus } from "./geo-map";
+import type { WorldAlert } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
@@ -144,6 +147,19 @@ export default function Workspace() {
   const study = useStudyGeometries();
   const [visualLayer, setVisualLayer] = useState<VisualLayerState | null>(null);
   const [territories, setTerritories] = useState<TerritoryPick[]>([]);
+  // Alcance global: alertas del mundo sobre el mapa y encuadre al lugar elegido.
+  const [alertsOpen, setAlertsOpen] = useState(false);
+  // Los pulsos siguen en el mapa al cerrar el panel (que tapa parte del mundo); se quitan con «Quitar del mapa».
+  const [alertsShown, setAlertsShown] = useState(false);
+  const openAlerts = (open: boolean) => { setAlertsOpen(open); if (open) setAlertsShown(true); };
+  const [selectedAlert, setSelectedAlert] = useState<string | null>(null);
+  const [mapFocus, setMapFocus] = useState<MapFocus | null>(null);
+  const worldAlerts = useWorldAlerts(alertsShown);
+  const flyTo = (latitude: number, longitude: number, zoom: number) => setMapFocus({ latitude, longitude, zoom, token: Date.now() });
+  const mapAlerts = useMemo<MapAlert[]>(() => (alertsShown ? (worldAlerts.data?.alerts ?? []) : []).map((alert) => ({
+    id: alert.id, latitude: alert.latitude, longitude: alert.longitude, level: alert.level, live: alert.current,
+    label: `${alert.title} · ${alert.place}`,
+  })), [alertsShown, worldAlerts.data]);
   const [cellVariable, setCellVariable] = useState<CellVariable>("T2M");
   const [roadSource, setRoadSource] = useState<"pilot" | "mine">("pilot");
   const [roadAssumptions, setRoadAssumptions] = useState<RoadAssumptions>(DEFAULT_ROAD_ASSUMPTIONS);
@@ -320,6 +336,14 @@ export default function Workspace() {
     if (tech === "solar" && same(sites, WIND_SITES)) setSites(initialSites);
     setEnergyTech(tech);
   }
+  // Una alerta del mundo se analiza como un solo sitio: Amenazas y Clima lo aceptan, y los territorios del Perú se retiran.
+  function analyzeAlert(alert: WorldAlert, module: "hazards" | "climate") {
+    selectModule(module);
+    setTerritories([]);
+    setSites([{ label: alert.place ? `${alert.title} · ${alert.place}`.slice(0, 60) : alert.title.slice(0, 60), latitude: +alert.latitude.toFixed(4), longitude: +alert.longitude.toFixed(4) }]);
+    setAlertsOpen(false);
+    flyTo(alert.latitude, alert.longitude, 5);
+  }
   function goToStage(step: number) {
     setSelectedStep(step);
     window.setTimeout(() => document.getElementById("stage-inspector")?.scrollIntoView({ block: "nearest", behavior: "smooth" }), 0);
@@ -468,6 +492,8 @@ export default function Workspace() {
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
                     territories={isRealEstateModule ? parcelShapes : mapTerritories} cells={isClimateModule ? cellLayer.cells : []}
                     corridor={isRoadModule ? corridorLines : isHydroTech ? hydroLines : []}
+                    alerts={mapAlerts} selectedAlert={selectedAlert} focus={mapFocus}
+                    onAlert={(id) => { const alert = worldAlerts.data?.alerts.find((item) => item.id === id); if (alert) { setSelectedAlert(id); openAlerts(true); flyTo(alert.latitude, alert.longitude, 4); } }}
                     onPick={(latitude, longitude) => {
                       if (geometryHint) return;
                       if (isHydroTech) {
@@ -486,6 +512,9 @@ export default function Workspace() {
             {isClimateModule && cellLayer.cells.length > 0 && <CellTrendLegend variable={cellVariable} onVariable={setCellVariable} layer={cellLayer} />}
             <div className="mapSource">{visualLayer ? `NASA GIBS · ${visualLayer.layer.label.toUpperCase()} · CAPA VISUAL` : "NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO"}</div>
             <LayerControl value={visualLayer} onChange={setVisualLayer} />
+            <WorldAlertsControl open={alertsOpen} onOpen={openAlerts} shown={alertsShown} onHide={() => { setAlertsShown(false); setAlertsOpen(false); setSelectedAlert(null); }}
+                                data={worldAlerts.data} error={worldAlerts.error} selected={selectedAlert}
+                                onSelect={(alert) => { setSelectedAlert(alert?.id ?? null); if (alert) flyTo(alert.latitude, alert.longitude, 4); }} onAnalyze={analyzeAlert} />
             {visualLayer && <LayerLegend value={visualLayer} />}
           </div>
         </section>
@@ -496,7 +525,7 @@ export default function Workspace() {
             <details className="mobileContext">
               <summary>Contexto de análisis <span>{result ? "FUENTE VERIFICADA" : "PREPARADO"}</span></summary>
               <div className="mobileContextGrid">
-                <p><span>Región</span><b>Sur del Perú</b></p><p><span>Fuente</span><b>{isHydroTech ? "GloFAS · NASA POWER" : "NASA POWER · Daily"}</b></p>
+                <p><span>Alcance</span><b>Global · capas oficiales en el Perú</b></p><p><span>Fuente</span><b>{isHydroTech ? "GloFAS · NASA POWER" : "NASA POWER · Daily"}</b></p>
                 <label><span>Desde</span><input type="date" value={startDate} onChange={(event) => setStartDate(event.target.value)} /></label>
                 <label><span>Hasta</span><input type="date" value={endDate} onChange={(event) => setEndDate(event.target.value)} /></label>
                 <p className="mobileProvenance"><span>Procedencia efectiva</span><b>{sourceSummary}</b></p>
@@ -532,6 +561,11 @@ export default function Workspace() {
               </div>
             </> : geometryHint ? <GeometryPanel state={study} hint={geometryHint} /> : <>
             {activeModule === "solar" && <EnergyTechControls tech={energyTech} onTech={selectTech} />}
+            {!isHydroTech && <PlaceSearch slots={sites.map((site) => site.label)} onPick={(place, slot) => {
+              const picked = { label: place.name, latitude: +place.latitude.toFixed(4), longitude: +place.longitude.toFixed(4) };
+              setSites((current) => current.length ? current.map((site, index) => (index === slot ? picked : site)) : [picked]);
+              flyTo(place.latitude, place.longitude, 6);
+            }} />}
             {isHydroTech ? <HydroSiteEditor sites={hydroSites} onChange={setHydroSites} picking={hydroPick} onPick={setHydroPick} /> : <div className="siteEditor">
               {sites.map((site, index) => (
                 <div className="siteRow" key={index}>

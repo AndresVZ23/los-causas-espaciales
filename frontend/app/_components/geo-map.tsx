@@ -57,14 +57,24 @@ function cellFeatures(cells: MapCell[]): GeoJSON.FeatureCollection {
   };
 }
 
-export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null, territories = [], cells = [], corridor = [] }: {
+// Alertas del mundo: un pulso por evento; el color es el nivel que publica la fuente.
+export type MapAlert = { id: string; latitude: number; longitude: number; level: "red" | "orange" | "green" | "none"; label: string; live: boolean };
+// Encuadre pedido por la consola: `token` cambia en cada pedido para repetir un vuelo al mismo punto.
+export type MapFocus = { longitude: number; latitude: number; zoom: number; token: number };
+
+export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null, territories = [], cells = [], corridor = [],
+  alerts = [], selectedAlert = null, onAlert, focus = null }: {
   sites: Point[]; onPick: (latitude: number, longitude: number) => void; terrainOverlay: TerrainOverlay | null; showTerrain: boolean;
   geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null; visualLayer?: VisualLayerState | null;
   territories?: MapTerritory[]; cells?: MapCell[]; corridor?: MapTerritory[];
+  alerts?: MapAlert[]; selectedAlert?: string | null; onAlert?: (id: string) => void; focus?: MapFocus | null;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const alertMarkersRef = useRef<maplibregl.Marker[]>([]);
+  const onAlertRef = useRef(onAlert);
+  useEffect(() => { onAlertRef.current = onAlert; }, [onAlert]);
   const onPickRef = useRef(onPick);
   const sitesRef = useRef(sites);
   const drawingRef = useRef(drawing);
@@ -153,6 +163,7 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     mapRef.current = map;
     return () => {
       markersRef.current.forEach((marker) => marker.remove());
+      alertMarkersRef.current.forEach((marker) => marker.remove());
       map.remove();
       mapRef.current = null;
     };
@@ -180,6 +191,38 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
       map.fitBounds(bounds, { padding: 96, maxZoom: 7, duration: 650 });
     }
   }, [sites]);
+
+  // Pulsos de las alertas: marcadores HTML para poder animarlos con CSS (se detienen con «reducir movimiento»).
+  const alertCount = alerts.length;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    alertMarkersRef.current.forEach((marker) => marker.remove());
+    alertMarkersRef.current = alerts.map((alert) => {
+      const element = document.createElement("button");
+      element.type = "button";
+      element.className = `alertPulse level-${alert.level}${alert.live ? " live" : ""}${alert.id === selectedAlert ? " selected" : ""}`;
+      element.setAttribute("aria-label", alert.label);
+      element.title = alert.label;
+      // El clic en un pulso elige la alerta; no debe llegar al mapa, que movería el sitio principal.
+      element.addEventListener("click", (event) => { event.stopPropagation(); onAlertRef.current?.(alert.id); });
+      return new maplibregl.Marker({ element }).setLngLat([alert.longitude, alert.latitude]).addTo(map);
+    });
+  }, [alerts, selectedAlert]);
+  // Al encender las alertas el mapa se abre al mundo; al apagarlas no se mueve.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && alertCount > 0) map.fitBounds([[-168, -56], [178, 72]], { padding: 8, duration: 900 });
+    // Solo al pasar de cero a alguna alerta.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [alertCount > 0]);
+  const focusToken = focus?.token ?? null;
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && focus) map.flyTo({ center: [focus.longitude, focus.latitude], zoom: focus.zoom, duration: 1400, essential: false });
+    // El vuelo responde al pedido (token), no a cada render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusToken]);
 
   useEffect(() => {
     const map = mapRef.current;

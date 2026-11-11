@@ -1182,6 +1182,23 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 - Regresión funcional del 10-nov con los catorce guiones de `scripts/qa` (`pipeline`, `climate_ui`, `baseline_ui`, `road_ui`, `realestate_ui`, `energy_ui`, `scorecard_ui`, `sensitivity_ui`, `assistant_ui`, `territory_ui`, `layers_ui`, `geometry_ui`, `pdf_e2e`, `release_ui`): sin errores de consola, desbordes ni recortes; las salidas se leyeron, no solo los códigos. Corrió sobre el build anterior a ADR-045; después de ADR-045 se repitieron `release_ui`, `energy_ui` y `pdf_e2e`, también limpios.
 - Estado de las capas en esa corrida: CENEPRED desde su última copia válida; el inventario de INGEMMET sin publicar; SIGDA respondió.
 
+## 2026-11-10 · Claude · claude/pdf-linea-base · Alcance global y alertas del mundo (ADR-046)
+
+**Contexto:** Christian pidió cerrar los puntos sin esperar a Codex y abrir el alcance al mundo. Esta rama parte de `master` `31455e2` (con la corrección de procedencia mixta de Codex, ya integrada).
+
+**Qué entró:**
+- **País de un punto** (`geospatial/countries.py`, Natural Earth 1:110m en `backend/data/world/`).
+- **Atlas Eólico por país:** `WindAtlasConnector` lee el archivo del país del punto; ya no existe la constante `COUNTRY`.
+- **Capas peruanas solo en el Perú:** `sectors/baseline.py`, `road.py` y `real_estate.py` no consultan servicios peruanos para áreas en otro país y lo declaran en una brecha.
+- **Alertas del mundo:** `connectors/gdacs/events.py`, `connectors/nasa/eonet.py`, `orchestration/world_alerts.py`, `schemas/world.py`, `api/world.py` (`GET /api/v1/world/alerts` y `/world/places`), `connectors/openmeteo/geocoding.py` y `connectors/http_json.py` (GET con caché y última copia válida).
+- **Pantalla:** `world-alerts.tsx` (panel, pulsos y buscador de lugares), cambios en `geo-map.tsx`, `workspace.tsx` y `styles.css`; rutas `frontend/app/api/world-alerts` y `places`.
+- **`DATA_SOURCES.md`:** fichas de GDACS, NASA EONET, el geocodificador de Open-Meteo y Natural Earth, y el Atlas Eólico por país. Las condiciones de reutilización de GDACS y EONET quedan marcadas como no verificadas.
+- **Títulos** de solar, eólica e hidroeléctrica sin «Perú».
+
+**Para Codex cuando revise:** sin dependencias nuevas. `countries_110m.geojson` (200 KB) va versionado: es de dominio público. Las pruebas no salen a la red; `world_alerts` y el geocodificador se prueban con dobles.
+
+**Verificación:** 276 pruebas backend (10 nuevas), build con 22 rutas, `npm audit` en 0, auditor científico `ok: true`. `world_ui.cjs` en 1440/768/390 y regresión de `release_ui`, `climate_ui`, `energy_ui`, `road_ui` y `baseline_ui`.
+
 ## 2026-11-10 · Codex · `master` · ver `git log -1` · integración ADR-042 a ADR-045 y cierre documental
 
 **Fusión:** los once commits de `claude/pdf-linea-base` (`552060a`) se integraron sobre `dd09f34` mediante el merge local `430dd8b`, sin conflictos. Se revisaron expresamente el contrato de cuatro valores de `TerritoryConnector._layer_query`, la propagación de `stale_note` y los cambios de relieve cruzado en `road.py` y `real_estate.py`. No entraron dependencias nuevas.

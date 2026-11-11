@@ -17,12 +17,12 @@ from datetime import datetime
 import httpx
 
 from ...core.config import Settings, get_settings
+from ...geospatial.countries import country_at
 from ...schemas.analysis import Provenance
 from ..cache import RawPayloadCache
 from ..cog import CogError, CogMissing, CogReader
 
 API = "https://globalwindatlas.info/api/gis/country/{country}/wind-speed/{height}"
-COUNTRY = "PER"
 HEIGHTS = (50, 100)
 TIMEOUT = httpx.Timeout(connect=20, read=90, write=20, pool=20)
 SOURCE = "Global Wind Atlas 4.0 (DTU · Banco Mundial)"
@@ -51,19 +51,23 @@ class WindAtlasConnector:
     async def point(self, latitude: float, longitude: float) -> AtlasPoint:
         speeds: dict[int, float | None] = {}
         urls = []
+        # El atlas se publica en un archivo por país: se lee el del país donde cae el punto (ADR-046).
+        country = country_at(longitude, latitude)
+        if country is None:
+            raise WindAtlasError("El punto no cae en ningún país del mapa base (mar adentro o isla pequeña): el atlas se publica por país.")
         try:
             # El enlace oficial redirige a la CDN del atlas; el rango HTTP se conserva en la redirección.
             async with httpx.AsyncClient(timeout=TIMEOUT, transport=self.transport, follow_redirects=True) as client:
                 reader = CogReader(client, self.cache)
                 for height in HEIGHTS:
-                    url = API.format(country=COUNTRY, height=height)
+                    url = API.format(country=country.iso3, height=height)
                     urls.append(url)
                     header = await reader.header(url)
                     level = header.levels[0]
                     (scale_x, scale_y), (west, north) = header.scale, header.origin
                     row, col = int((north - latitude) / scale_y), int((longitude - west) / scale_x)
                     if not (0 <= row < level.height and 0 <= col < level.width):
-                        raise WindAtlasError("El punto queda fuera del archivo del Perú del atlas.")
+                        raise WindAtlasError(f"El punto queda fuera del archivo de {country.name} del atlas.")
                     index = (row // level.tile_height) * level.tiles_across + col // level.tile_width
                     block = await reader.tile(url, level, index)
                     sample = float(block[row % level.tile_height, col % level.tile_width])

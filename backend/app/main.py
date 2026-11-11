@@ -13,6 +13,7 @@ from .api.routes import router
 from .api.scoring import router as scoring_router
 from .api.spatial_sampling import router as spatial_sampling_router
 from .api.territories import router as territories_router
+from .api.world import router as world_router
 from .core.config import get_settings
 
 settings = get_settings()
@@ -36,6 +37,7 @@ app.include_router(assistant_router)
 app.include_router(map_router)
 app.include_router(spatial_sampling_router)
 app.include_router(territories_router)
+app.include_router(world_router)
 
 
 @app.get("/")

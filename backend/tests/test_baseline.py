@@ -275,6 +275,29 @@ def test_layer_served_from_its_last_valid_copy_is_declared_everywhere(patched, m
     assert "última copia válida" in text and "Token Required" in text
 
 
+def test_area_outside_peru_skips_peruvian_layers_and_declares_it(patched, monkeypatch):
+    from backend.app.orchestration import extraction
+    from backend.tests.test_solar import FakePowerConnector
+    asked: list[str] = []
+
+    class Spy(FakeTerritory):
+        async def query(self, request):
+            asked.extend(request.source_ids)
+            return await super().query(request)
+
+    monkeypatch.setattr(extraction, "PowerConnector", FakePowerConnector)
+    monkeypatch.setattr(baseline, "TerritoryConnector", Spy)
+    request = BaselineRequest(sites=[Point(latitude=-1.2833, longitude=36.8167, label="Nairobi")])
+    result = asyncio.run(baseline.run_baseline_screening(request, Sector.HAZARDS))
+
+    assert envelope_violations(result) == []
+    assert asked == []                                                         # ningún servicio peruano se consultó para Kenia
+    assert {layer.source_id for layer in result.baselines[0].layers} == {"nasa-landslide-susceptibility", "nasa-coolr-reports", "nasa-lhasa-nowcast"}
+    gap = next(item for item in result.data_gaps if item.dataset == "Capas oficiales nacionales fuera del Perú")
+    assert "Kenia" in gap.impact and "Nairobi" in gap.impact
+    assert not any("SINPAD" in item.dataset or "SENAMHI" in item.dataset for item in result.data_gaps)   # las brechas peruanas no aplican
+
+
 def test_hazards_without_power_series_declares_the_gap(patched, monkeypatch):
     from backend.app.connectors.nasa.power import PowerConnectorError
     from backend.app.orchestration import extraction

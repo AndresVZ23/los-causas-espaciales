@@ -66,6 +66,19 @@ export type ScreeningResult = {
 };
 export type DiscoveryKind = "artefacto_probable" | "confirmado" | "sin_respaldo" | "coincidencia" | "contradiccion";
 export type Discovery = { kind: DiscoveryKind; title: string; detail: string; subjects: string[]; sources: string[] };
+// Alcance global (ADR-046): alertas del mundo (GDACS con NASA EONET como segundo testigo) y búsqueda de lugares.
+export type AlertLevel = "red" | "orange" | "green" | "none";
+export type WorldAlert = {
+  id: string; source: "GDACS" | "NASA EONET"; kind: string; kind_label: string; level: AlertLevel; title: string; place: string;
+  started: string; updated: string; current: boolean; latitude: number; longitude: number; severity: string | null; url: string;
+  also_seen_by: string[]; in_peru: boolean;
+};
+export type WorldAlertsResponse = {
+  generated_at: string; window_days: number; alerts: WorldAlert[];
+  sources: { name: string; organization: string; url: string; provenance: string; downloaded_at: string | null; note: string }[];
+  method: string[]; disclaimer: string;
+};
+export type WorldPlace = { name: string; detail: string; country_code: string | null; latitude: number; longitude: number; population: number | null };
 // Módulo 1 · Inteligencia climática (sector "climate" del contrato C2).
 export type ExtremeIndex = {
   variable: string; label: string; description: string; unit: string; display_unit: string;

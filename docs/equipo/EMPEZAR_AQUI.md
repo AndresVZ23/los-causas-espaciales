@@ -15,6 +15,8 @@ Una plataforma web que convierte datos satelitales de NASA en decisiones de inve
 
 Responde al reto «Be An Earth System Trend Detective!». Nuestra diferencia es la confianza: cuando dos fuentes no coinciden, el informe lo dice.
 
+Funciona en cualquier lugar del mundo con las fuentes globales; el detalle oficial (territorios, riesgo, patrimonio) existe solo para el Perú. El botón «Alertas en el mundo» del mapa muestra los eventos con alerta de GDACS y permite analizarlos con un clic.
+
 | Módulo | Estado | Qué hace |
 |---|---|---|
 | 1 · Clima | Funcional | Tendencias NASA POWER cruzadas con ERA5; extremos de lluvia con IMERG y CHIRPS. |
@@ -80,7 +82,7 @@ cd frontend; npm.cmd install; npm.cmd run dev
 **Puerta común antes del Pull Request.** Las pruebas no salen a internet, porque usan dobles de las fuentes.
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 266 pruebas
+.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 276 pruebas
 cd frontend; npm.cmd run build; npm.cmd audit --omit=dev
 ```
 
@@ -99,7 +101,7 @@ Están completas en [AGENTS.md](../../AGENTS.md). Las que no se negocian:
 
 | Carpeta | Qué hay |
 |---|---|
-| `backend/app/connectors/` | Una carpeta por proveedor: `nasa/`, `jrc/` (ERA5), `esa/`, `copernicus/` (relieve y caudal GloFAS), `geoglows/`, `gwa/`, `peru/`, `energy/` (COES). Cada conector usa caché y declara su procedencia. |
+| `backend/app/connectors/` | Una carpeta por proveedor: `nasa/`, `jrc/` (ERA5), `esa/`, `copernicus/` (relieve y caudal GloFAS), `geoglows/`, `gwa/`, `gdacs/` (alertas del mundo), `openmeteo/` (buscador de lugares), `peru/`, `energy/` (COES). Cada conector usa caché y declara su procedencia. |
 | `backend/app/sectors/` | Un archivo por módulo (`climate.py`, `solar.py`, `wind.py`, `hydro.py`, `road.py`, `real_estate.py`, `baseline*.py`). Arma el resultado completo. |
 | `backend/app/orchestration/` | Piezas comunes: extracción, análisis, contrastes con segundas fuentes y `discoveries.py` (las reglas de los descubrimientos). |
 | `backend/app/statistics/`, `finance/`, `scoring/` | Mann–Kendall, Sen y Benjamini–Hochberg; VAN y sensibilidad; puntaje multicriterio. |
@@ -107,7 +109,7 @@ Están completas en [AGENTS.md](../../AGENTS.md). Las que no se negocian:
 | `backend/app/reports/` | PDF ejecutivo. |
 | `backend/tests/` | Pruebas. `conftest.py` impide que salgan a internet. |
 | `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. |
-| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-045). Léela antes de cambiar un método. |
+| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-046). Léela antes de cambiar un método. |
 | `docs/nasa-submission/` | Materiales de la entrega: fuentes (`DATA_SOURCES.md`), metodología, arquitectura, pitch y escenarios de demo. |
 
 ## Receta: agregar una fuente de datos

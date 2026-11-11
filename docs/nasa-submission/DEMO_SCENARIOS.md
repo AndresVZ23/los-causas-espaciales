@@ -33,6 +33,17 @@ Run acts 0, 1, one asset act, 3 and 4. Act 1B and the other asset acts are spare
 
 Rehearsal timing with a warm cache: 66 to 92 s of total screen wait for the eight acts that use the screen. A site that was never queried takes longer the first time: about 40 s for a hydro site, plus a second run to bring the GEOGLOWS flow, which is fetched in the background.
 
+### Opening option · The world, then Peru (map button «Alertas en el mundo»)
+
+A 30-second way to open: it shows that the method is global and why a place is chosen.
+
+1. On the map, press «Alertas en el mundo». The map opens to the whole world and each event appears as a pulse: red and orange are GDACS alert levels, green are events in Peru, blue are open NASA EONET events without a level.
+2. Point at the list: on 10 November 2026 it held 25 events, among them four red alerts (tropical cyclones in India, the Philippines and Mexico), fourteen orange (droughts across Europe, Central America and Africa, earthquakes, eruptions and floods) and, under «Perú», three floods and a wildfire at green level.
+3. Press one event, then «Analizar amenazas aquí». The site moves there and the hazards module runs with the global NASA sources only. Under «Brechas antes de invertir» the platform states that the official layers it connects are Peruvian.
+4. Say: the alert level is GDACS's, not ours, and analysing the point shows the background trends and hazards of the place, not the state of the event.
+
+Any other place in the world can be set from «Buscar un lugar del mundo», above the site list.
+
 ### Act 1 · Territory, trend and extremes (module «Clima»)
 
 1. Left menu → «Clima».

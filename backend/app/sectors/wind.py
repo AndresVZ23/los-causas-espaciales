@@ -486,7 +486,7 @@ async def run_wind_screening(request: WindScreeningRequest) -> WindScreeningResp
     record_in_pipeline(pipeline, discoveries)
     fingerprint = hashlib.sha256(json.dumps(request.model_dump(mode="json"), sort_keys=True).encode()).hexdigest()[:16]
     return WindScreeningResponse(
-        analysis_id=fingerprint, generated_at=datetime.now(timezone.utc), title="Screening eólico comparativo — Perú",
+        analysis_id=fingerprint, generated_at=datetime.now(timezone.utc), title="Screening eólico comparativo",
         period=f"{request.start_date.isoformat()}/{request.end_date.isoformat()}", subjects=subjects, pipeline=pipeline,
         nasa_questions=nasa_questions, trend_findings=trend_findings, sites=site_results, terrain=terrain, comparative_findings=comparative,
         data_gaps=gaps, assumptions=a,

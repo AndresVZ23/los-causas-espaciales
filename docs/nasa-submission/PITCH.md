@@ -24,6 +24,10 @@ A trend detective does not convict on one testimony. Each data item enters the p
 
 Two energy models are also checked against what real plants produced in 2024, as reported by the grid operator COES: the Marcona wind farms (56 % to 58 % of capacity; the model gives 47 %) and the Machupicchu hydro plant (74 %; the model gives 65 % to 77 %).
 
+## Global by design, detailed in Peru
+
+The global sources (NASA POWER, GPM IMERG, NASADEM, MODIS, Copernicus, ESA, ERA5, GloFAS, the Global Wind Atlas) let the platform analyse any place in the world, found by name or by a click on the map. Official national layers (administrative territories, risk, heritage, protected areas) are connected for Peru only, and outside Peru the platform says so instead of showing zeros. A map button, «Alertas en el mundo», shows the events that carry a GDACS orange or red alert as animated pulses, with NASA EONET as second witness, and lets the user analyse any of them with one click.
+
 ## Spoken narrative (3–5 minutes, live)
 
 Each block matches an act in [DEMO_SCENARIOS.md](DEMO_SCENARIOS.md). Figures below come from the rehearsal of 10 November 2026 (NASA POWER data through 8 November 2026). They are reproduced live and will move when the providers update their series; say the number the screen shows, not the number written here.

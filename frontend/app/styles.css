@@ -122,6 +122,57 @@ input::-webkit-calendar-picker-indicator:focus-visible { outline: 2px solid var(
 .layerSettings input[type="date"] { min-height: 28px; border: 1px solid var(--border); background: var(--control); color: var(--text); padding: 0 6px; }
 .layerSettings input[type="range"] { accent-color: var(--accent); }
 .layerLegend { position: absolute; right: 10px; bottom: 30px; z-index: 2; width: min(340px, calc(100% - 20px)); padding: 6px 8px; background: rgba(8,12,13,.9); border: 1px solid var(--border); }
+/* Alertas del mundo (ADR-046): botón bajo «Capas», panel con la lista y pulsos animados sobre el mapa. */
+.alertsControl { position: absolute; left: 13px; top: 78px; z-index: 2; max-width: calc(100% - 70px); }
+.alertsControl:has(.alertsPanel) { z-index: 4; }
+.alertsToggle { display: inline-flex; align-items: center; gap: 7px; }
+.alertsToggle i { width: 7px; height: 7px; border-radius: 50%; background: var(--negative); box-shadow: 0 0 0 0 rgba(238,113,128,.6); animation: alertBeat 1.8s ease-out infinite; }
+.alertsPanel { width: 340px; max-height: min(430px, calc(100vh - 260px)); }
+.alertsHide { border: 0; padding: 0; background: transparent; color: var(--accent); font-size: 11px; text-decoration: underline; cursor: pointer; }
+.alertsFilter { display: flex; gap: 6px; margin-bottom: 8px; }
+.alertsFilter button { min-height: 28px; padding: 0 9px; border: 1px solid var(--border); border-radius: 2px; background: transparent; color: var(--muted); font-size: 11px; }
+.alertsFilter button.active { border-color: var(--accent); color: var(--text); }
+.alertsList { margin: 0; padding: 0; list-style: none; display: grid; gap: 1px; }
+.alertsList li { border-left: 2px solid var(--border); background: rgba(255,255,255,.02); }
+.alertsList li.level-red { border-left-color: var(--negative); }.alertsList li.level-orange { border-left-color: #f0934a; }
+.alertsList li.level-green { border-left-color: var(--positive); }.alertsList li.level-none { border-left-color: var(--cached); }
+.alertsList li.selected { background: rgba(56,217,195,.07); }
+.alertRow { width: 100%; min-height: 44px; display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 6px 8px; border: 0; background: transparent; color: var(--text); text-align: left; font-size: 12px; }
+.alertRow i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .45; }
+.alertRow i.live { opacity: 1; animation: alertBeat 1.8s ease-out infinite; }
+.level-red .alertRow i { color: var(--negative); }.level-orange .alertRow i { color: #f0934a; }.level-green .alertRow i { color: var(--positive); }.level-none .alertRow i { color: var(--cached); }
+.alertRow span, .alertRow em { display: grid; gap: 2px; min-width: 0; font-style: normal; }
+.alertRow b { font-weight: 500; overflow-wrap: anywhere; }.alertRow small { color: var(--subtle); font: 10px/1.3 var(--font-data-mono), monospace; overflow-wrap: anywhere; }
+.alertRow em { justify-items: end; text-align: right; color: var(--muted); font-size: 11px; white-space: nowrap; }
+.alertDetail { padding: 2px 8px 10px 26px; display: grid; gap: 6px; }
+.alertDetail p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.45; }
+.alertActions { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.alertActions button { min-height: 30px; padding: 0 9px; border: 1px solid var(--accent); border-radius: 2px; background: transparent; color: var(--accent); font-size: 11px; }
+.alertActions a { color: var(--muted); font-size: 11px; }
+.alertsFoot { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule); display: grid; gap: 6px; }
+.alertsFoot p { margin: 0; color: var(--subtle); font: 10px/1.45 var(--font-data-mono), monospace; }.alertsFoot p b { color: var(--muted); font-weight: 500; }
+.alertsFoot p span { display: block; font-family: inherit; }
+.alertsFoot summary { color: var(--muted); font-size: 11px; cursor: pointer; }.alertsFoot details p { margin-top: 6px; font: 11px/1.45 inherit; color: var(--muted); }
+/* El pulso: un punto fijo con un anillo que se expande. Vigente = late; cerrado = punto quieto. */
+/* Sin `position`: MapLibre ubica el marcador con position:absolute y, si se pisa, todos los pulsos se corren de lugar. */
+.alertPulse { width: 14px; height: 14px; padding: 0; border: 2px solid rgba(8,12,13,.9); border-radius: 50%; background: var(--cached); cursor: pointer; }
+.alertPulse.level-red { background: var(--negative); }.alertPulse.level-orange { background: #f0934a; }.alertPulse.level-green { background: var(--positive); }
+.alertPulse::after { content: ""; position: absolute; inset: -2px; border-radius: 50%; border: 2px solid currentColor; color: inherit; opacity: 0; }
+.alertPulse.level-red { color: var(--negative); }.alertPulse.level-orange { color: #f0934a; }.alertPulse.level-green { color: var(--positive); }.alertPulse.level-none { color: var(--cached); }
+.alertPulse.live::after, .alertPulse.level-red::after, .alertPulse.level-orange::after { animation: alertRing 2.2s ease-out infinite; }
+.alertPulse.selected { outline: 2px solid var(--text); outline-offset: 3px; }
+.alertPulse:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@keyframes alertRing { 0% { transform: scale(1); opacity: .85; } 100% { transform: scale(3.4); opacity: 0; } }
+@keyframes alertBeat { 0% { box-shadow: 0 0 0 0 rgba(238,113,128,.55); } 100% { box-shadow: 0 0 0 9px rgba(238,113,128,0); } }
+@media (prefers-reduced-motion: reduce) { .alertPulse::after, .alertRow i.live, .alertsToggle i { animation: none !important; } }
+@media (max-width: 560px) { .alertsPanel { width: 270px; max-height: 215px; }.alertActions button { min-height: 36px; } }
+/* Buscador de lugares del mundo, sobre el editor de sitios. */
+.placeSearch { display: grid; gap: 5px; margin-bottom: 10px; }
+.placeSearch > label { color: var(--muted); font: 10px var(--font-data-mono), monospace; }
+.placeSearchRow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+.placeSearchRow input, .placeSearchRow select { min-height: 32px; min-width: 0; border: 1px solid var(--border); background: var(--control); color: var(--text); padding: 0 8px; font-size: 12px; }
+.placeSearchRow select { max-width: 170px; }
+@media (max-width: 900px) { .placeSearchRow input, .placeSearchRow select { min-height: 44px; } }
 .layerLegend p { margin: 0 0 4px; color: var(--muted); font: 10px/1.35 var(--font-data-mono), monospace; }.layerLegend b { color: var(--text); }
 .layerLegend img { display: block; width: 100%; height: auto; max-height: 52px; object-fit: contain; background: #e9edf0; border-radius: 2px; }
 .mapSource { position: absolute; left: 13px; top: 12px; padding: 6px 8px; background: rgba(8,12,13,.86); color: #c5ccd1; font: 10px/1 var(--font-data-mono), monospace; letter-spacing: .025em; }
