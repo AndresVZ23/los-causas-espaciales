@@ -69,7 +69,23 @@
 .zoneStart { width: 100%; min-height: 46px; border: 0; border-radius: 2px; background: var(--accent); color: #04110f; font-size: 14px; font-weight: 700;
   box-shadow: inset 3px 3px 0 rgba(255,255,255,.35), inset -3px -3px 0 rgba(0,0,0,.25); }
 .zoneStart:hover { filter: brightness(1.08); }
-.zoneHint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); margin: 0; padding: 7px 12px; background: var(--plate); border: 1px solid var(--edge); color: var(--muted); font-size: 12px; white-space: nowrap; pointer-events: none; }
+/* Juego: mira en el centro, barra de piezas abajo y aviso con la lectura de la celda arriba a la izquierda. */
+.zoneCross { position: absolute; left: 50%; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; pointer-events: none; mix-blend-mode: difference; }
+.zoneCross::before, .zoneCross::after { content: ""; position: absolute; background: #fff; }
+.zoneCross::before { left: 8px; top: 0; width: 2px; height: 18px; }
+.zoneCross::after { left: 0; top: 8px; width: 18px; height: 2px; }
+.zoneHotbar { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 4px; padding: 4px; background: var(--plate); border: 1px solid var(--edge); }
+.zoneHotbar button { position: relative; width: 78px; min-height: 58px; padding: 6px 4px 5px; display: grid; justify-items: center; align-content: center; gap: 5px; border: 2px solid transparent; border-radius: 2px;
+  background: rgba(255,255,255,.04); color: var(--muted); font-size: 11px; line-height: 1.15; }
+.zoneHotbar button:hover { background: rgba(255,255,255,.08); }
+.zoneHotbar button.active { border-color: var(--text); color: var(--text); background: rgba(255,255,255,.1); }
+.zoneHotbar i { width: 20px; height: 20px; box-shadow: inset 3px 3px 0 rgba(255,255,255,.3), inset -3px -3px 0 rgba(0,0,0,.3); }
+.zoneHotbar .brief { display: none; }
+.zoneHotbar kbd { position: absolute; top: 3px; left: 5px; color: var(--subtle); font: 500 11px/1 var(--font-data-mono), monospace; }
+.zoneToast { position: absolute; top: 76px; left: 12px; max-width: min(520px, calc(100% - 344px)); margin: 0; padding: 10px 14px; background: var(--plate); border: 1px solid var(--edge); border-left: 6px solid var(--accent);
+  font-size: 13px; line-height: 1.45; pointer-events: none; }
+.zoneToast small { display: block; margin-top: 4px; color: var(--subtle); font-size: 11px; }
+.zoneHint { position: absolute; left: 50%; bottom: 88px; transform: translateX(-50%); margin: 0; padding: 7px 12px; background: var(--plate); border: 1px solid var(--edge); color: var(--muted); font-size: 12px; white-space: nowrap; pointer-events: none; }
 
 .zonePad { position: absolute; right: 12px; bottom: 12px; display: flex; gap: 8px; }
 .zonePad button { min-width: 72px; min-height: 56px; border: 1px solid var(--edge); border-radius: 2px; background: var(--plate); color: var(--text); font-size: 13px; touch-action: none; user-select: none;
@@ -85,15 +101,30 @@
   .zoneTitle p { display: none; }
   .zoneTools { width: 100%; margin-left: 0; }
   .zoneTools button { flex: 1 1 0; padding: 0 6px; }
-  .zonePanel { top: 122px; }
-  .zoneMessage { top: 126px; }
+  .zonePanel { top: 122px; max-height: calc(100% - 270px); }
+  .zoneMessage, .zoneToast { top: 126px; }
+  .zoneToast { right: 12px; max-width: none; }
   .zoneHint { display: none; }
+  /* La barra de piezas ocupa el pie: la lectura y la ficha suben un escalón, y el mando táctil otro. */
+  .zoneReadout { bottom: 104px; }
+  .zoneCard { bottom: 166px; max-height: calc(100% - 308px); }
+  .zonePad { bottom: 104px; }
+  .zoneScreen.hasPad .zoneReadout { bottom: 168px; }
+  .zoneScreen.hasPad .zoneCard { bottom: 230px; max-height: calc(100% - 368px); }
 }
 @media (max-width: 760px) {
-  .zonePanel { left: 12px; right: 12px; width: auto; max-height: calc(100% - 210px); }
-  .zoneReadout { grid-template-columns: repeat(4, auto); gap: 1px 12px; padding: 6px 9px; bottom: 76px; }
+  .zonePanel { left: 12px; right: 12px; width: auto; }
+  .zoneReadout { grid-template-columns: repeat(4, auto); gap: 1px 12px; padding: 6px 9px; }
   .zoneReadout b { font-size: 12px; }
-  .zoneReadout span { font-size: 10px; }
-  .zoneCard { bottom: 132px; max-height: calc(100% - 270px); }
-  .zoneIntro ul { grid-template-columns: 1fr; }
+  .zoneReadout span { font-size: 11px; }
+  .zoneIntro { max-height: calc(100% - 150px); overflow-y: auto; }
+  .zoneIntro ul { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+  .zoneIntro li { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .zoneHotbar { left: 8px; right: 8px; transform: none; gap: 2px; }
+  .zoneHotbar button { width: auto; flex: 1 1 0; min-width: 0; min-height: 56px; }
+  /* En celular cada pieza muestra su nombre corto; el completo sigue en el nombre accesible del botón. */
+  .zoneHotbar .full { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+  .zoneHotbar .brief { display: block; }
+  .zonePad { right: 8px; gap: 6px; }
+  .zonePad button { min-width: 64px; }
 }

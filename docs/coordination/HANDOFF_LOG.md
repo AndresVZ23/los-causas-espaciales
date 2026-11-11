@@ -1284,3 +1284,23 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Agregado a los borradores de Codex:** `SLIDES.md` (lámina 6) y `SUBMISSION_FORM.md` («What is innovative») ya mencionan «Entrar a la zona» (ADR-047). **Pendiente para Codex:** `TECHNICAL_ARCHITECTURE.md` aún no la describe. Impeccable v4.8.2 y `.impeccable/design.json` quedan para una tarea visual posterior.
 
 **Verificación:** 285 pruebas backend, build con 25 rutas, `npm audit` en 0 y auditor científico sin errores. Sin push ni etiqueta.
+
+## 2026-11-11 · Claude · claude/pdf-linea-base · se puede jugar en la zona (ampliación de ADR-047)
+
+**Publicación:** Christian aprobó el push; `origin/master` quedó en `65e9bef` (alcance global, globo, zonas y la entrega de Codex). Lo de esta entrada es posterior y está sin subir.
+
+**Pedido de Christian tras probar la zona:** «se ve, pero debería ser posible jugar».
+
+**Qué entró:**
+- `frontend/app/_components/zone/zone-world.ts` (nuevo, sin three.js): mira por recorrido de celdas, quitar lo de arriba de una celda, poner una pieza, deshacer y la lectura de la celda (`assess`).
+- `zone-data.ts`: seis piezas (`PIECES`) y, en la cuadrícula, lo que cambia el jugador aparte del dato (`dug`, `placed`, `touched`, `origin`).
+- `zone-scene.ts`: terreno en trozos de 25 × 25 celdas que se rehacen solo donde hubo un cambio; marco y lámina sobre el bloque apuntado.
+- `zone-controls.ts`: clic izquierdo y derecho con el mouse capturado, y rueda.
+- `zone-explorer.tsx` y su CSS: mira, barra de piezas, aviso con la lectura, botón «Deshacer», botones táctiles «Poner» y «Quitar». La tecla `N` pasa a la siguiente baliza; los números eligen pieza.
+- ADR-047 (ampliación), `DEMO_SCENARIOS.md` (paso de juego) y `scripts/qa/zone_ui.cjs` (juego y pantalla táctil).
+
+**Reglas que se mantienen:** `heights`, `cover` y `slope` nunca cambian; la lectura usa la pendiente y la cobertura del dato; una celda excavada deja de pintarse como terreno medido; nada se guarda al salir.
+
+**Para Codex cuando revise:** la maqueta es un mapa de alturas, no un mundo de vóxeles: una pieza puesta contra una pared cae sobre la columna vecina. La prueba de navegador pone y quita con Enter y Supr; el clic derecho se comprobó solo hasta el aviso «Apunte a un bloque», porque el clic sintético mueve la mira.
+
+**Verificación:** 285 pruebas backend, build con 25 rutas, `npm audit` en 0, auditor científico sin errores, `zone_ui.cjs` en 1440, 768, 390 y táctil.

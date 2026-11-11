@@ -18,7 +18,15 @@ export type Player = {
   setFlying: (on: boolean) => void; jump: () => void; setLift: (direction: -1 | 0 | 1) => void; capture: () => void; dispose: () => void;
 };
 
-export function createPlayer(camera: PerspectiveCamera, surface: HTMLElement, grid: ZoneGrid, events: { onLock: (locked: boolean) => void; onFly: (flying: boolean) => void }): Player {
+export type PlayerEvents = {
+  onLock: (locked: boolean) => void; onFly: (flying: boolean) => void;
+  /** Con el mouse capturado: clic izquierdo quita un bloque y clic derecho pone la pieza elegida. */
+  onAct: (action: "break" | "place") => void;
+  /** Rueda del mouse: pieza siguiente (+1) o anterior (−1). */
+  onWheel: (direction: 1 | -1) => void;
+};
+
+export function createPlayer(camera: PerspectiveCamera, surface: HTMLElement, grid: ZoneGrid, events: PlayerEvents): Player {
   let x = grid.size / 2, z = grid.size / 2, feet = 0, eye = EYE, velocity = 0, yaw = 0, pitch = 0;
   let flying = false, grounded = false, lift: -1 | 0 | 1 = 0;
   const keys = new Set<string>();
@@ -79,6 +87,14 @@ export function createPlayer(camera: PerspectiveCamera, surface: HTMLElement, gr
     if (event.pointerId === stick.id) { stick.id = -1; stick.x = stick.y = 0; }
     if (event.pointerId === look.id) look.id = -1;
   };
+  // Poner y quitar solo con el mouse capturado: el clic que captura el mouse no debe romper un bloque.
+  const onMouseDown = (event: MouseEvent) => {
+    if (document.pointerLockElement !== surface) return;
+    if (event.button === 0) events.onAct("break");
+    else if (event.button === 2) events.onAct("place");
+  };
+  const onContextMenu = (event: Event) => event.preventDefault();
+  const onWheel = (event: WheelEvent) => { if (event.deltaY !== 0) events.onWheel(event.deltaY > 0 ? 1 : -1); };
 
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
@@ -89,6 +105,9 @@ export function createPlayer(camera: PerspectiveCamera, surface: HTMLElement, gr
   surface.addEventListener("pointermove", onPointerMove);
   surface.addEventListener("pointerup", onPointerUp);
   surface.addEventListener("pointercancel", onPointerUp);
+  surface.addEventListener("mousedown", onMouseDown);
+  surface.addEventListener("contextmenu", onContextMenu);
+  surface.addEventListener("wheel", onWheel, { passive: true });
 
   const sync = () => {
     camera.position.set(x, feet + eye, z);
@@ -153,6 +172,9 @@ export function createPlayer(camera: PerspectiveCamera, surface: HTMLElement, gr
       surface.removeEventListener("pointermove", onPointerMove);
       surface.removeEventListener("pointerup", onPointerUp);
       surface.removeEventListener("pointercancel", onPointerUp);
+      surface.removeEventListener("mousedown", onMouseDown);
+      surface.removeEventListener("contextmenu", onContextMenu);
+      surface.removeEventListener("wheel", onWheel);
       if (document.pointerLockElement === surface) document.exitPointerLock();
     },
   };

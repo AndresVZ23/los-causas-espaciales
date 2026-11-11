@@ -17,10 +17,28 @@ export type Zone = ZoneSummary & {
 };
 
 /**
- * Cuadrícula por filas de norte a sur. `road` marca las celdas por donde pasa una vía; `deco` es la altura del adorno
- * de la celda (árbol o volumen) y `solid` la altura que pisa el jugador: terreno más adorno.
+ * Cuadrícula por filas de norte a sur. `heights`, `cover` y `slope` son el dato y nunca cambian. `road` marca las
+ * celdas por donde pasa una vía y `deco` es la altura del adorno de la celda (árbol o volumen). Lo que el jugador
+ * cambia va aparte: `dug` son los bloques de terreno que quitó y `placed` las piezas que puso, por celda y de abajo
+ * hacia arriba. `solid` es la altura que se pisa: terreno que queda, más adorno, más piezas.
  */
-export type ZoneGrid = { size: number; heights: Uint16Array; cover: Uint8Array; slope: Uint8Array; road: Uint8Array; deco: Uint8Array; solid: Float32Array };
+export type ZoneGrid = {
+  size: number; heights: Uint16Array; cover: Uint8Array; slope: Uint8Array; road: Uint8Array; deco: Uint8Array; solid: Float32Array;
+  dug: Uint8Array; placed: Map<number, number[]>; touched: Set<number>;
+  /** Adornos y vía tal como salen del dato, para saber qué celdas cambió el jugador y poder deshacerlo. */
+  origin: { deco: Uint8Array; road: Uint8Array };
+};
+
+/** Pieza que el jugador puede poner. `height` es lo que ocupa en la columna; `parts` son las cajas que la dibujan. */
+export type Piece = { id: string; label: string; brief: string; css: string; height: number; builds: boolean; parts: { size: [number, number, number]; lift: number; color: number }[] };
+export const PIECES: Piece[] = [
+  { id: "vivienda", label: "Vivienda", brief: "Vivienda", css: "#ece4d6", height: 1, builds: true, parts: [{ size: [0.9, 0.7, 0.9], lift: 0.35, color: 0xece4d6 }, { size: [1, 0.3, 1], lift: 0.85, color: 0xc0694a }] },
+  { id: "panel", label: "Panel solar", brief: "Panel", css: "#2b57a8", height: 0.4, builds: true, parts: [{ size: [0.16, 0.3, 0.16], lift: 0.15, color: 0x8a8f94 }, { size: [0.95, 0.1, 0.95], lift: 0.35, color: 0x2b57a8 }] },
+  { id: "muro", label: "Muro de defensa", brief: "Muro", css: "#8f9499", height: 1, builds: false, parts: [{ size: [1, 1, 1], lift: 0.5, color: 0x8f9499 }] },
+  { id: "arbol", label: "Árbol", brief: "Árbol", css: "#3c8a47", height: 3, builds: false, parts: [{ size: [0.28, 2, 0.28], lift: 1, color: 0x6b4a2e }, { size: [1.06, 1.06, 1.06], lift: 2.5, color: 0x3c8a47 }] },
+  { id: "via", label: "Vía", brief: "Vía", css: "#f1c84b", height: 0.15, builds: true, parts: [{ size: [0.95, 0.15, 0.95], lift: 0.075, color: 0xf1c84b }] },
+  { id: "relleno", label: "Relleno", brief: "Relleno", css: "#9a7650", height: 1, builds: false, parts: [{ size: [1, 1, 1], lift: 0.5, color: 0x9a7650 }] },
+];
 
 export const WATER = 80;
 export const BUILT = 50;
@@ -114,7 +132,18 @@ export function decodeGrid(zone: Zone): ZoneGrid {
       solid[index] = surfaceTop(heights[index], cover[index]) + deco[index];
     }
   }
-  return { size, heights, cover, slope, road, deco, solid };
+  return { size, heights, cover, slope, road, deco, solid, dug: new Uint8Array(size * size), placed: new Map(), touched: new Set(), origin: { deco: deco.slice(), road: road.slice() } };
+}
+
+/** Cara superior del terreno que queda en una celda, descontado lo que el jugador quitó. */
+export function groundTop(grid: ZoneGrid, index: number): number {
+  return surfaceTop(grid.heights[index] - grid.dug[index], grid.dug[index] ? 0 : grid.cover[index]);
+}
+
+/** Recalcula la altura que se pisa en una celda después de un cambio del jugador. */
+export function refreshSolid(grid: ZoneGrid, index: number): void {
+  const pieces = grid.placed.get(index) ?? [];
+  grid.solid[index] = groundTop(grid, index) + grid.deco[index] + pieces.reduce((sum, piece) => sum + PIECES[piece].height, 0);
 }
 
 /** Cara superior de una celda en unidades de la escena (un bloque = una unidad; el bloque cero también se dibuja). */

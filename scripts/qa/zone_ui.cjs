@@ -15,11 +15,13 @@ const clipped = (page) => page.evaluate(() => [...document.querySelectorAll(".zo
 // Elementos de la consola que se salen de la pantalla o se montan unos sobre otros.
 const layout = (page) => page.evaluate(() => {
   const box = (selector) => { const el = document.querySelector(selector); if (!el) return null; const r = el.getBoundingClientRect(); return { l: Math.round(r.left), t: Math.round(r.top), r: Math.round(r.right), b: Math.round(r.bottom) }; };
-  const names = [".zoneBar", ".zonePanel", ".zoneReadout", ".zoneCard", ".zoneIntro", ".zonePad", ".zoneHint"];
+  const names = [".zoneBar", ".zonePanel", ".zoneReadout", ".zoneCard", ".zoneIntro", ".zonePad", ".zoneHint", ".zoneHotbar", ".zoneToast"];
   const boxes = Object.fromEntries(names.map((name) => [name, box(name)]).filter(([, value]) => value));
   const outside = Object.entries(boxes).filter(([, r]) => r.l < 0 || r.t < 0 || r.r > innerWidth || r.b > innerHeight).map(([name]) => name);
   const hit = (a, b) => a && b && a.l < b.r && b.l < a.r && a.t < b.b && b.t < a.b;
-  const pairs = [[".zoneBar", ".zonePanel"], [".zoneBar", ".zoneCard"], [".zoneCard", ".zoneReadout"], [".zonePanel", ".zoneCard"], [".zoneBar", ".zoneIntro"]];
+  const pairs = [[".zoneBar", ".zonePanel"], [".zoneBar", ".zoneCard"], [".zoneCard", ".zoneReadout"], [".zonePanel", ".zoneCard"], [".zoneBar", ".zoneIntro"],
+    [".zoneHotbar", ".zoneReadout"], [".zoneHotbar", ".zoneCard"], [".zoneHotbar", ".zonePanel"], [".zoneHotbar", ".zoneHint"], [".zoneHotbar", ".zonePad"], [".zonePad", ".zoneReadout"],
+    [".zonePad", ".zoneCard"], [".zoneToast", ".zoneBar"], [".zoneToast", ".zoneCard"]];
   return { outside, overlaps: pairs.filter(([a, b]) => hit(boxes[a], boxes[b])).map((pair) => pair.join(" × ")) };
 });
 const readout = (page) => page.locator(".zoneReadout").innerText().then((text) => text.replace(/\s+/g, " ").trim());
@@ -78,7 +80,40 @@ async function run(viewport, tag) {
   await page.keyboard.up("w");
   out.groundAfter = await readout(page);
   await shot("4-caminando");
+
+  // 2b · Jugar: elegir pieza, ponerla en el bloque de la mira, quitarla, excavar, clic derecho, rueda y deshacer.
+  const edits = () => page.evaluate(() => document.querySelector("canvas.zoneCanvas").dataset.edits);
+  const pieceName = () => page.locator(".zoneHotbar button.active").getAttribute("title");
+  await page.waitForFunction(() => document.querySelector("canvas.zoneCanvas")?.dataset.target, null, { timeout: 15000 }).catch(() => undefined);
+  out.play = { target: await page.evaluate(() => document.querySelector("canvas.zoneCanvas").dataset.target), firstPiece: await pieceName() };
+  await page.keyboard.press("2");
+  out.play.piece = await pieceName();
+  await page.keyboard.press("Enter");
+  await page.waitForTimeout(600);
+  out.play.afterPlace = await edits();
+  out.play.toast = await page.locator(".zoneToast").innerText().then((text) => text.replace(/\s+/g, " ")).catch(() => null);
+  out.play.layout = await layout(page);
+  await shot("4b-pieza-puesta");
+  await page.keyboard.press("Delete");
+  await page.waitForTimeout(400);
+  out.play.afterRemove = await edits();
+  await page.keyboard.press("Delete");
+  await page.waitForTimeout(300);
+  await page.keyboard.press("Delete");
+  await page.waitForTimeout(400);
+  out.play.afterDig = await edits();
+  await page.mouse.click(viewport.width / 2, viewport.height / 2, { button: "right" });
+  await page.waitForTimeout(500);
+  out.play.afterRightClick = await edits();
+  await page.mouse.wheel(0, 120);
+  await page.waitForTimeout(200);
+  out.play.afterWheel = await pieceName();
+  await shot("4c-excavado");
   await unlock(page);
+  await page.locator(".zoneTools button", { hasText: "Deshacer" }).click();
+  await page.waitForTimeout(400);
+  out.play.afterUndo = await edits();
+  out.play.undoButtonGone = (await page.locator(".zoneTools button", { hasText: "Deshacer" }).count()) === 0;
 
   // 3 · Balizas: cada una abre su ficha con cifra, segunda fuente y qué mirar primero.
   out.cards = [];
@@ -142,7 +177,42 @@ async function run(viewport, tag) {
   return out;
 }
 
+// Pantalla táctil (390 px): el mando con «Poner» y «Quitar» aparece, no se monta sobre la barra de piezas y funciona.
+async function runTouch() {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  const errors = [];
+  page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
+  page.on("pageerror", (err) => errors.push(String(err)));
+  const out = { tag: "390-tactil" };
+  await page.goto(`${BASE}/zona/moquegua`, { waitUntil: "domcontentloaded" });
+  await ready(page);
+  await page.waitForTimeout(1200);
+  out.introFits = await layout(page);
+  await page.screenshot({ path: path.join(OUT, "390-tactil-1-entrada.png") });
+  await page.locator(".zoneStart").tap();
+  out.pad = await page.locator(".zonePad button").allInnerTexts();
+  await page.locator(".zoneTools button", { hasText: "Volando" }).tap();
+  await page.waitForFunction(() => document.querySelector("canvas.zoneCanvas")?.dataset.height === "0.0", null, { timeout: 30000 });
+  await page.waitForFunction(() => document.querySelector("canvas.zoneCanvas")?.dataset.target, null, { timeout: 15000 }).catch(() => undefined);
+  out.padWalking = await page.locator(".zonePad button").allInnerTexts();
+  await page.locator(".zonePad button", { hasText: "Poner" }).tap();
+  await page.waitForTimeout(600);
+  out.afterPlace = await page.evaluate(() => document.querySelector("canvas.zoneCanvas").dataset.edits);
+  out.toast = await page.locator(".zoneToast").innerText().then((text) => text.replace(/\s+/g, " ")).catch(() => null);
+  out.layout = await layout(page);
+  out.clipped = await clipped(page);
+  await page.screenshot({ path: path.join(OUT, "390-tactil-2-pieza.png") });
+  await page.locator(".zonePad button", { hasText: "Quitar" }).tap();
+  await page.waitForTimeout(400);
+  out.afterRemove = await page.evaluate(() => document.querySelector("canvas.zoneCanvas").dataset.edits);
+  out.errors = errors;
+  await browser.close();
+  return out;
+}
+
 (async () => {
   const results = await runAll(run);
+  if (!process.env.QA_VIEWPORTS || process.env.QA_VIEWPORTS.includes("390")) results.push(await runTouch());
   console.log(JSON.stringify(results, null, 1));
 })();
