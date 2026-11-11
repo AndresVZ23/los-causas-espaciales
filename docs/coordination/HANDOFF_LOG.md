@@ -1222,3 +1222,23 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **QA visual acotado:** con API y web temporales en 18109/13109 se comprobó la selección de «Hidroeléctrica de pasada» y sus campos de toma/casa de máquinas en escritorio y 390 × 844: 0 errores de consola y 0 px de desbordamiento horizontal. No se envió un análisis remoto, por lo que no se consumió cuota de GloFAS/GEOGLOWS ni se consultó SIGDA. Ambos procesos temporales se cerraron.
 
 **Operación y publicación:** no se levantaron ni tocaron 3100/8000, Docker o `power-cache`; no se repitieron `baseline_ui` ni `demo_ensayo`. No se hizo push y no se creó `v0.1.0`, conforme al protocolo de aprobación de Christian.
+
+## 2026-11-11 · Claude · claude/pdf-linea-base · «Entrar a la zona»: maqueta en bloques de Moquegua y del volcán Taal (ADR-047)
+
+**Contexto:** Christian pidió que, desde las alertas del globo, se pueda entrar a un lugar y recorrerlo como en un juego de bloques. Alcance acordado: dos zonas para la entrega.
+
+**Qué entró:**
+- **Backend:** `backend/app/zones/builder.py` (ventana de Copernicus DEM y WorldCover, cuadrícula de bloques, pendiente de Horn antes de exagerar, agua plana), `zones/store.py`, `schemas/zones.py`, rutas `GET /api/v1/world/zones` y `/world/zones/{id}` en `api/world.py`, y las dos zonas ya construidas en `backend/data/zones/` (215 KB cada una).
+- **Guion:** `scripts/zones/build_zones.py` arma cada zona y sus balizas con resultados reales pedidos a la API local (necesita la API en 8000). Si un resultado no llega, la baliza no se crea.
+- **Pantalla:** carpeta `frontend/app/_components/zone/` (datos, escena three.js, controles, pantalla y estilos), rutas `frontend/app/api/zones`, enlace directo `frontend/app/zona/[id]`, sección «Zonas para recorrer» en `world-alerts.tsx`, marcador de zona en `geo-map.tsx` y estado en `workspace.tsx`.
+- **Dependencia nueva:** `three` 0.186.0 y `@types/three` 0.186.0, versiones exactas; se elige la 0.186.0 (8-sep-2026) y no la 0.187.0, publicada doce días antes.
+- **Documentos:** ADR-047, escena en `DEMO_SCENARIOS.md`, ficha en `DATA_SOURCES.md`, `EMPEZAR_AQUI.md`, `PROGRESS.md` y la tarea F8 en `pipeline.html`.
+
+**Para Codex cuando revise:**
+- Las zonas versionan una cuadrícula derivada de GLO-30 y de WorldCover. Falta confirmar en el texto completo de la licencia de GLO-30 que se puede redistribuir; si no, los dos JSON se reconstruyen con el guion y salen del control de versiones.
+- El defecto que encontró la prueba de navegador y ya está corregido: con el mouse capturado no se puede hacer clic en los paneles. Hay aviso («Esc suelta el mouse») y teclas 1 a 6 y P.
+- La ficha de una baliza elegida en la lista se mantiene aunque haya otra más cerca (`pinnedRef` en `zone-explorer.tsx`).
+
+**Verificación:** 284 pruebas backend (8 nuevas), build con 25 rutas, `npm audit` en 0, auditor científico sin errores. `scripts/qa/zone_ui.cjs` en 1440, 768 y 390: sin errores de consola, recortes, desbordes ni solapes. Docker tardó unos 10 minutos en desempaquetar la imagen web en dos compilaciones; el motor respondía y no hubo error.
+
+**Publicación:** sin push ni etiqueta. Quedan sin subir `d9330cc`, `3517207` y este commit.

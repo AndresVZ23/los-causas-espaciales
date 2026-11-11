@@ -44,6 +44,19 @@ A 30-second way to open: it shows that the method is global and why a place is c
 
 Any other place in the world can be set from «Buscar un lugar del mundo», above the site list.
 
+### Opening option B · Walk into the place («Zonas para recorrer», ADR-047)
+
+A one-minute scene that shows the findings where they are. It needs no live source: the two zones are pre-built and served by the local API. Direct links: `http://localhost:3100/zona/moquegua` and `http://localhost:3100/zona/taal`.
+
+1. Press «Alertas en el mundo». At the top of the panel, under «Zonas para recorrer», press «Moquegua, Perú»: the globe flies to the teal block. Press «Entrar».
+2. The screen opens above a block model of the real valley: each block is 30 m of terrain from Copernicus DEM GLO-30, coloured by ESA WorldCover 2021. Say it plainly: it is a scale model with the relief exaggerated ×2, with no real buildings or streets.
+3. Press «Empezar el recorrido», then `F` to drop to the ground and `W A S D` to walk. The plate at the bottom left shows the real altitude and slope under your feet.
+4. Press `2` to jump to the beacon «El día de 300 mm que solo ve un modelo»: MERRA-2 reports 300.2 mm in one day of 2022 and the two satellite products report 12.1 mm and 17.4 mm. The platform marks it as a probable artefact. This is the team's thesis in one card.
+5. Press `P` to paint the real slopes: 15 % of the model is steeper than 15°. Press `6` for the start of the Moquegua–Ilo corridor (the yellow line).
+6. Press `Esc`, then «Salir al mapa». For the second zone, open «Volcán Taal, Filipinas»: an active volcano inside a lake, with the GDACS orange alert of 8 October 2026 and, as the last beacon, what the platform does not know there (no official Philippine hazard map is connected).
+
+If the computer cannot start 3D graphics, the screen shows the same findings as a list. Do not describe the model as a view of the place or as a simulation of the eruption.
+
 ### Act 1 · Territory, trend and extremes (module «Clima»)
 
 1. Left menu → «Clima».

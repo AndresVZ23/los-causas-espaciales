@@ -15,7 +15,7 @@ Una plataforma web que convierte datos satelitales de NASA en decisiones de inve
 
 Responde al reto «Be An Earth System Trend Detective!». Nuestra diferencia es la confianza: cuando dos fuentes no coinciden, el informe lo dice.
 
-Funciona en cualquier lugar del mundo con las fuentes globales; el detalle oficial (territorios, riesgo, patrimonio) existe solo para el Perú. El botón «Alertas en el mundo» del mapa muestra los eventos con alerta de GDACS y permite analizarlos con un clic.
+Funciona en cualquier lugar del mundo con las fuentes globales; el detalle oficial (territorios, riesgo, patrimonio) existe solo para el Perú. El botón «Alertas en el mundo» del mapa muestra los eventos con alerta de GDACS y permite analizarlos con un clic. En ese mismo panel, «Zonas para recorrer» abre una maqueta en bloques de dos lugares reales (Moquegua y el volcán Taal) que se recorre a pie, con lo que la plataforma sabe de cada uno; también se entra directo por `http://localhost:3100/zona/moquegua` y `/zona/taal`.
 
 | Módulo | Estado | Qué hace |
 |---|---|---|
@@ -82,7 +82,7 @@ cd frontend; npm.cmd install; npm.cmd run dev
 **Puerta común antes del Pull Request.** Las pruebas no salen a internet, porque usan dobles de las fuentes.
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 276 pruebas
+.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 284 pruebas
 cd frontend; npm.cmd run build; npm.cmd audit --omit=dev
 ```
 
@@ -108,8 +108,9 @@ Están completas en [AGENTS.md](../../AGENTS.md). Las que no se negocian:
 | `backend/app/schemas/` | Contratos de datos. `screening.py` es el **contrato común C2** que comparten todos los módulos. |
 | `backend/app/reports/` | PDF ejecutivo. |
 | `backend/tests/` | Pruebas. `conftest.py` impide que salgan a internet. |
-| `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. |
-| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-046). Léela antes de cambiar un método. |
+| `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. `zone/` es la maqueta en bloques (three.js, se carga solo al entrar). |
+| `backend/app/zones/`, `backend/data/zones/`, `scripts/zones/` | Zonas para recorrer: lector de relieve y cobertura, las dos zonas ya construidas y el guion que las arma con resultados reales de la API local. |
+| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-047). Léela antes de cambiar un método. |
 | `docs/nasa-submission/` | Materiales de la entrega: fuentes (`DATA_SOURCES.md`), metodología, arquitectura, pitch y escenarios de demo. |
 
 ## Receta: agregar una fuente de datos

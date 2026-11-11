@@ -33,7 +33,11 @@ import { PlaceSearch, WorldAlertsControl, useWorldAlerts } from "./world-alerts"
 import type { AlertMarkerStyle, MapAlert, MapFocus } from "./geo-map";
 import type { WorldAlert } from "./types";
 
+import { useZones } from "./zone/use-zones";
+
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
+// La maqueta en bloques trae three.js: se descarga solo cuando alguien entra a una zona.
+const ZoneExplorer = dynamic(() => import("./zone/zone-explorer"), { ssr: false, loading: () => <div className="zoneOpening" role="status">Abriendo la zona…</div> });
 const TemporalChart = dynamic(() => import("./temporal-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando serie temporal…</div> });
 const ComparisonChart = dynamic(() => import("./comparison-chart"), { ssr: false, loading: () => <div className="chartLoading">Preparando comparación…</div> });
 
@@ -157,10 +161,16 @@ export default function Workspace() {
   const [mapFocus, setMapFocus] = useState<MapFocus | null>(null);
   const worldAlerts = useWorldAlerts(alertsShown);
   const flyTo = (latitude: number, longitude: number, zoom: number) => setMapFocus({ latitude, longitude, zoom, token: Date.now() });
-  const mapAlerts = useMemo<MapAlert[]>(() => (alertsShown ? (worldAlerts.data?.alerts ?? []) : []).map((alert) => ({
-    id: alert.id, latitude: alert.latitude, longitude: alert.longitude, level: alert.level, live: alert.current,
-    label: `${alert.title} · ${alert.place}`,
-  })), [alertsShown, worldAlerts.data]);
+  // Zonas para recorrer como maqueta en bloques (ADR-047): aparecen en el globo junto a las alertas.
+  const zones = useZones(alertsShown);
+  const [selectedZone, setSelectedZone] = useState<string | null>(null);
+  const [zoneId, setZoneId] = useState<string | null>(null);
+  const mapAlerts = useMemo<MapAlert[]>(() => (alertsShown ? [
+    ...(worldAlerts.data?.alerts ?? []).map((alert) => ({
+      id: alert.id, latitude: alert.latitude, longitude: alert.longitude, level: alert.level, live: alert.current, label: `${alert.title} · ${alert.place}`,
+    })),
+    ...zones.map((zone) => ({ id: `zone:${zone.id}`, latitude: zone.latitude, longitude: zone.longitude, level: "none" as const, live: true, zone: true, label: `Zona para recorrer: ${zone.name}, ${zone.country}` })),
+  ] : []), [alertsShown, worldAlerts.data, zones]);
   const [cellVariable, setCellVariable] = useState<CellVariable>("T2M");
   const [roadSource, setRoadSource] = useState<"pilot" | "mine">("pilot");
   const [roadAssumptions, setRoadAssumptions] = useState<RoadAssumptions>(DEFAULT_ROAD_ASSUMPTIONS);
@@ -493,8 +503,13 @@ export default function Workspace() {
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
                     territories={isRealEstateModule ? parcelShapes : mapTerritories} cells={isClimateModule ? cellLayer.cells : []}
                     corridor={isRoadModule ? corridorLines : isHydroTech ? hydroLines : []}
-                    alerts={mapAlerts} selectedAlert={selectedAlert} focus={mapFocus} globe={alertsShown} markerStyle={markerStyle}
-                    onAlert={(id) => { const alert = worldAlerts.data?.alerts.find((item) => item.id === id); if (alert) { setSelectedAlert(id); openAlerts(true); flyTo(alert.latitude, alert.longitude, 4); } }}
+                    alerts={mapAlerts} selectedAlert={selectedZone ? `zone:${selectedZone}` : selectedAlert} focus={mapFocus} globe={alertsShown} markerStyle={markerStyle}
+                    onAlert={(id) => {
+                      const zone = id.startsWith("zone:") ? zones.find((item) => item.id === id.slice(5)) : undefined;
+                      if (zone) { setSelectedZone(zone.id); setSelectedAlert(null); openAlerts(true); flyTo(zone.latitude, zone.longitude, 9); return; }
+                      const alert = worldAlerts.data?.alerts.find((item) => item.id === id);
+                      if (alert) { setSelectedZone(null); setSelectedAlert(id); openAlerts(true); flyTo(alert.latitude, alert.longitude, 4); }
+                    }}
                     onPick={(latitude, longitude) => {
                       if (geometryHint) return;
                       if (isHydroTech) {
@@ -516,7 +531,9 @@ export default function Workspace() {
             <WorldAlertsControl open={alertsOpen} onOpen={openAlerts} shown={alertsShown} onHide={() => { setAlertsShown(false); setAlertsOpen(false); setSelectedAlert(null); }}
                                 markerStyle={markerStyle} onMarkerStyle={setMarkerStyle}
                                 data={worldAlerts.data} error={worldAlerts.error} selected={selectedAlert}
-                                onSelect={(alert) => { setSelectedAlert(alert?.id ?? null); if (alert) flyTo(alert.latitude, alert.longitude, 4); }} onAnalyze={analyzeAlert} />
+                                zones={zones} selectedZone={selectedZone} onEnterZone={setZoneId}
+                                onZone={(zone) => { setSelectedZone(zone.id); setSelectedAlert(null); flyTo(zone.latitude, zone.longitude, 9); }}
+                                onSelect={(alert) => { setSelectedAlert(alert?.id ?? null); if (alert) { setSelectedZone(null); flyTo(alert.latitude, alert.longitude, 4); } }} onAnalyze={analyzeAlert} />
             {visualLayer && <LayerLegend value={visualLayer} />}
           </div>
         </section>
@@ -777,6 +794,7 @@ export default function Workspace() {
         {modules.filter((module) => ["solar", "climate", "hazards", "investment"].includes(module.id)).map((module) => <button key={module.id} onClick={() => selectModule(module.id)} className={activeModule === module.id ? "active" : ""} aria-pressed={activeModule === module.id}><Icon name={module.icon} /><span>{module.short}</span></button>)}
         <button ref={moreButtonRef} onClick={() => setMobileNavOpen(true)} aria-expanded={mobileNavOpen}><Icon name="menu" /><span>Más</span></button>
       </nav>
+      {zoneId && <ZoneExplorer zoneId={zoneId} onExit={() => setZoneId(null)} />}
     </main>
   );
 }

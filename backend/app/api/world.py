@@ -5,8 +5,25 @@ from ..connectors.openmeteo.geocoding import SOURCE as GEOCODING_SOURCE
 from ..connectors.openmeteo.geocoding import GeocodingConnector
 from ..orchestration.world_alerts import world_alerts
 from ..schemas.world import Place, PlaceSearchResponse, WorldAlertsResponse
+from ..schemas.zones import Zone, ZoneSummary
+from ..zones.store import get_zone, list_zones
 
 router = APIRouter(prefix="/api/v1/world", tags=["world"])
+
+
+@router.get("/zones", response_model=list[ZoneSummary])
+def zones() -> list[ZoneSummary]:
+    """Zonas que se pueden recorrer como maqueta en bloques (ADR-047)."""
+    return list_zones()
+
+
+@router.get("/zones/{zone_id}", response_model=Zone)
+def zone(zone_id: str) -> Zone:
+    """Maqueta de una zona: relieve Copernicus DEM, cobertura ESA WorldCover y balizas con lo que la plataforma sabe del lugar."""
+    found = get_zone(zone_id)
+    if found is None:
+        raise HTTPException(status_code=404, detail="Esa zona no está construida. Las disponibles están en /api/v1/world/zones.")
+    return found
 
 
 @router.get("/alerts", response_model=WorldAlertsResponse)

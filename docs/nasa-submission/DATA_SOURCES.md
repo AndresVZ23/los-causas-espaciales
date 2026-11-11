@@ -65,6 +65,17 @@ Place search uses `https://geocoding-api.open-meteo.com/v1/search` (built on Geo
 
 `backend/data/world/countries_110m.geojson` is a compact copy of **Natural Earth 1:110m Admin 0 – Countries** (public domain), retrieved on 10-Nov-2026 from the project's GitHub repository, with coordinates rounded to three decimals and only the ISO codes and names kept. It decides which Global Wind Atlas country file to read and whether the official Peruvian layers apply to an area. At 1:110m coasts and borders are coarse: a tolerance of 0.5° is applied, and a point in no polygon returns no country instead of a guess.
 
+### Block models of two places (ADR-047): derived grids kept in the repository
+
+`backend/data/zones/moquegua.json` and `backend/data/zones/taal.json` are built by `scripts/zones/build_zones.py` and versioned. Each holds a 200 × 200 grid derived from two sources already described in this document, read on **11-Nov-2026** with the shared range reader:
+
+- **Copernicus DEM GLO-30**: the elevation of the pixel nearest to each cell centre (30 m cells for Moquegua, 35 m for Taal; four 1° tiles for Taal). Stored as block heights above the lowest cell, after a declared vertical exaggeration (×2 and ×3), together with the real Horn slope in whole degrees computed before the exaggeration. Water cells are flattened to the lowest water elevation in their 5 × 5 neighbourhood.
+- **ESA WorldCover 10 m 2021 v200**: the class of the pixel nearest to each cell centre, unchanged.
+
+Unlike the rest of the platform, which reads point values on demand, these two files **redistribute a derived raster**. The screen shows the Copernicus adapted-data notice and the WorldCover CC BY 4.0 credit under «Sobre esta maqueta», and the OpenStreetMap credit next to the road line. **Before the repository is made public, confirm in the full GLO-30 licence text that a derived grid may be redistributed**; the team verified the product page and the attribution notice on 27-Oct-2026, not the full licence. If it may not, the two files can be rebuilt locally with the script and left out of version control.
+
+The findings shown inside each model («balizas») are not new data: they are results of the platform's own modules, requested from the local API when the zone is built, and they carry the build date.
+
 ## Run-of-river hydropower discharge inputs
 
 ### Copernicus EMS GloFAS v4 via Open-Meteo

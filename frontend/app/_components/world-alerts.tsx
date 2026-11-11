@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { formatDay } from "./format";
 import type { AlertMarkerStyle } from "./geo-map";
 import type { AlertLevel, WorldAlert, WorldAlertsResponse, WorldPlace } from "./types";
+import { nearKm } from "./zone/use-zones";
+import type { ZoneSummary } from "./zone/zone-data";
+
+/** Una alerta «cae» en una zona si su punto está a menos de esta distancia del centro de la maqueta. */
+const ZONE_REACH_KM = 40;
 
 const LEVEL_LABEL: Record<AlertLevel, string> = { red: "Alerta roja", orange: "Alerta naranja", green: "Alerta verde", none: "Sin nivel" };
 
@@ -29,10 +34,11 @@ type Props = {
   open: boolean; onOpen: (open: boolean) => void; shown: boolean; onHide: () => void; data: WorldAlertsResponse | null; error: string;
   selected: string | null; onSelect: (alert: WorldAlert | null) => void; onAnalyze: (alert: WorldAlert, module: "hazards" | "climate") => void;
   markerStyle: AlertMarkerStyle; onMarkerStyle: (style: AlertMarkerStyle) => void;
+  zones: ZoneSummary[]; selectedZone: string | null; onZone: (zone: ZoneSummary) => void; onEnterZone: (id: string) => void;
 };
 
 /** Botón y panel sobre el mapa. El nivel es el de GDACS; analizar un punto muestra su fondo climático, no el evento. */
-export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, selected, onSelect, onAnalyze, markerStyle, onMarkerStyle }: Props) {
+export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, selected, onSelect, onAnalyze, markerStyle, onMarkerStyle, zones, selectedZone, onZone, onEnterZone }: Props) {
   const [onlyPeru, setOnlyPeru] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -55,6 +61,19 @@ export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, s
             <button onClick={() => onOpen(false)}>Cerrar</button>
           </div>
           <p className="layerPanelNote">Al cerrar, los marcadores siguen en el globo. {shown && <button className="alertsHide" onClick={onHide}>Quitar del mapa</button>}</p>
+          {zones.length > 0 && (
+            <div className="zonesList">
+              <p className="layerPanelNote"><b>Zonas para recorrer.</b> Maquetas en bloques de lugares reales, con lo que la plataforma sabe de cada uno.</p>
+              {zones.map((zone) => (
+                <div key={zone.id} className={`zoneRow${zone.id === selectedZone ? " selected" : ""}`}>
+                  <button className="zoneRowName" aria-pressed={zone.id === selectedZone} onClick={() => onZone(zone)}>
+                    <i aria-hidden="true" /><span><b>{zone.name}, {zone.country}</b><small>{zone.tagline}</small></span>
+                  </button>
+                  <button className="zoneEnter" onClick={() => onEnterZone(zone.id)} aria-label={`Entrar a la zona ${zone.name}`}>Entrar</button>
+                </div>
+              ))}
+            </div>
+          )}
           {error && <p className="errorMessage" role="alert">{error}</p>}
           {!data && !error && <p className="layerPanelNote" role="status">Consultando GDACS y NASA EONET…</p>}
           {data && (
@@ -71,6 +90,7 @@ export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, s
               <ul className="alertsList">
                 {alerts.map((alert) => {
                   const isOpen = alert.id === selected;
+                  const zoneHere = isOpen ? zones.find((zone) => nearKm(alert.latitude, alert.longitude, zone.latitude, zone.longitude) < ZONE_REACH_KM) : undefined;
                   return (
                     <li key={alert.id} className={`level-${alert.level}${isOpen ? " selected" : ""}`}>
                       <button className="alertRow" aria-expanded={isOpen} onClick={() => onSelect(isOpen ? null : alert)}>
@@ -84,6 +104,7 @@ export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, s
                           <p>{alert.also_seen_by.length ? `También en ${alert.also_seen_by.join(" y ")}: dos fuentes publican este evento.` : alert.source === "GDACS"
                             ? "NASA EONET no lista un evento equivalente cerca y en estas fechas." : "GDACS no publica una alerta naranja o roja equivalente."}</p>
                           <div className="alertActions">
+                            {zoneHere && <button className="zoneEnter" onClick={() => onEnterZone(zoneHere.id)}>Entrar a la zona</button>}
                             <button onClick={() => onAnalyze(alert, "hazards")}>Analizar amenazas aquí</button>
                             <button onClick={() => onAnalyze(alert, "climate")}>Analizar clima aquí</button>
                             <a href={alert.url} target="_blank" rel="noreferrer">Ver en {alert.source}</a>

@@ -58,7 +58,7 @@ function cellFeatures(cells: MapCell[]): GeoJSON.FeatureCollection {
 }
 
 // Alertas del mundo: un pulso por evento; el color es el nivel que publica la fuente.
-export type MapAlert = { id: string; latitude: number; longitude: number; level: "red" | "orange" | "green" | "none"; label: string; live: boolean };
+export type MapAlert = { id: string; latitude: number; longitude: number; level: "red" | "orange" | "green" | "none"; label: string; live: boolean; zone?: boolean };
 // Encuadre pedido por la consola: `token` cambia en cada pedido para repetir un vuelo al mismo punto.
 export type MapFocus = { longitude: number; latitude: number; zoom: number; token: number };
 // Estilo de los marcadores de alerta: «blocks» (bloques que saltan, estilo juego) o «pulses» (anillos clásicos).
@@ -209,16 +209,18 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     alertMarkersRef.current = alerts.map((alert, index) => {
       const element = document.createElement("button");
       element.type = "button";
-      const base = markerStyle === "blocks" ? "alertBlock" : "alertPulse";
+      // Una zona para recorrer siempre es un bloque, con su propio color, aunque las alertas se vean como pulsos.
+      const block = alert.zone || markerStyle === "blocks";
+      const base = alert.zone ? "alertBlock zoneBlock" : block ? "alertBlock" : "alertPulse";
       element.className = `${base} level-${alert.level}${alert.live ? " live" : ""}${alert.id === selectedAlert ? " selected" : ""}`;
       // Desfase por evento: los bloques no saltan todos a la vez.
       element.style.setProperty("--delay", `${(index % 7) * 0.17}s`);
       element.setAttribute("aria-label", alert.label);
       element.title = alert.label;
-      if (markerStyle === "blocks") element.innerHTML = '<i aria-hidden="true"></i>';
+      if (block) element.innerHTML = '<i aria-hidden="true"></i>';
       // El clic en un marcador elige la alerta; no debe llegar al mapa, que movería el sitio principal.
       element.addEventListener("click", (event) => { event.stopPropagation(); onAlertRef.current?.(alert.id); });
-      return new maplibregl.Marker({ element, anchor: markerStyle === "blocks" ? "bottom" : "center", opacityWhenCovered: "0" })
+      return new maplibregl.Marker({ element, anchor: block ? "bottom" : "center", opacityWhenCovered: "0" })
         .setLngLat([alert.longitude, alert.latitude]).addTo(map);
     });
   }, [alerts, selectedAlert, markerStyle]);
