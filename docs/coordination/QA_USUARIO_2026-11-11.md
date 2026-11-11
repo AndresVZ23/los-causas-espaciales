@@ -85,3 +85,50 @@ El inspector local se ejecutó después del recorrido manual y terminó con 3 fa
 - Cuatro iconos dentro de superficies teñidas; requiere defensa o ajuste de diseño.
 
 Estos puntos pertenecen a los archivos visuales reservados por Claude; Codex no los modificó.
+
+## Segunda revisión · «Entrar a la zona» y juego (`229e642`, `8854b53`)
+
+### Alcance y entorno
+
+- Rama: `codex/entrega-11nov-b`, creada desde `claude/pdf-linea-base` (`8854b53`).
+- API temporal: `127.0.0.1:8313`; web temporal: `127.0.0.1:3413`. No se usaron 3100/8000, Docker ni el volumen `power-cache`.
+- Rutas: `/zona/moquegua` y `/zona/taal`, en 1440 × 900 y 390 × 844.
+- Codex Browser verificó estructura, lectura, anchos, teclas 1–6, N, P y F, rueda y ausencia de desborde. Su motor no concedió Pointer Lock (`document.pointerLockElement === null`), por lo que el flujo de mouse se repitió en Chrome local con el guion QA del repositorio, sin modificarlo, y con una prueba focalizada temporal.
+- Resultado funcional: Pointer Lock activo en Chrome en los cuatro casos; rueda cambia la pieza; clic derecho coloca; clic izquierdo quita; «Deshacer» vuelve a cero; la lectura de elevación, pendiente y cobertura de la fuente permanece idéntica antes y después de editar. Las seis piezas, las balizas, la vista de pendientes y el modo vuelo/caminata respondieron. No hubo errores de consola ni desborde horizontal.
+- El QA táctil adicional a 390 px mostró `Poner`, `Quitar`, `Subir/Bajar` y `Saltar`; colocar y quitar volvió de una edición a cero sin errores.
+
+### Hallazgos para Claude en archivos reservados
+
+#### P2 · La notificación tapa la ficha de una baliza en móvil
+
+- Evidencia: `frontend/app/_components/zone/zone-explorer.css:48-60` y `:85-106`; ambos elementos son absolutos y no coordinan sus cajas en el corte móvil.
+- Reproducción: 390 × 844, Moquegua, empezar, poner una pieza para mostrar la lectura de celda y abrir la segunda baliza antes de que pasen los 8 segundos de la notificación. El detector del propio flujo devuelve `.zoneToast × .zoneCard`.
+- Impacto: la lectura de la pieza oculta parte de la evidencia científica y de la segunda fuente de la baliza.
+- Corrección sugerida: reservar bandas que no se crucen, apilar una sobre otra o cerrar la notificación al abrir una ficha; agregar la combinación al QA móvil.
+
+#### P2 · Clic derecho seguido de clic izquierdo no revierte la pieza de forma consistente en Moquegua
+
+- Evidencia: `frontend/app/_components/zone/zone-explorer.tsx:114-126` usa `target.index` para quitar y `target.placeIndex` para poner; la distinción se origina en `frontend/app/_components/zone/zone-world.ts:10-31`.
+- Reproducción: Moquegua, caminar hasta que `data-target=33100`, rueda a «Panel solar», clic derecho con el mouse capturado y luego clic izquierdo sin moverlo. En 1440 y 390, las ediciones quedan `1 → 1`; en Taal (`data-target=35500`) quedan `1 → 0`. Enter seguido de Supr sí vuelve a cero.
+- Impacto: el mismo gesto y la misma mira se comportan distinto según la geometría; la persona puede quitar el bloque vecino o no recuperar la pieza recién puesta.
+- Corrección sugerida: decidir y probar el contrato de la mira después de colocar (recalcular el objetivo de forma síncrona o quitar explícitamente la pieza que ocupa la cara apuntada) y agregar una prueba de terreno escalonado.
+
+#### P2 · La ruta directa se anuncia como diálogo modal sin implementar el patrón modal
+
+- Evidencia: `frontend/app/_components/zone/zone-explorer.tsx:255-262` declara `role="dialog" aria-modal="true"`, usa un `h2` como título principal y solo mueve el foco a «Salir al mapa» al montar; no hay ciclo de foco ni restauración en la ruta directa.
+- Verificación independiente: el inspector no encontró ningún `h1` en 1440 ni 390.
+- Impacto: lectores de pantalla reciben semántica de modal para una página completa, pero sin el comportamiento esperado; además la jerarquía de encabezados empieza en nivel 2.
+- Corrección sugerida: en `/zona/{id}`, usar un contenedor de página con `h1`; reservar el patrón de diálogo para la variante realmente superpuesta y completar foco inicial, contención, Escape y restauración.
+
+#### P2 · Atajos globales también actúan mientras el foco está en controles
+
+- Evidencia: `frontend/app/_components/zone/zone-explorer.tsx:227-238` calcula `onControl`, pero solo lo aplica a Enter/Supr; P, N y 1–6 siguen actuando. `frontend/app/_components/zone/zone-controls.ts:49-61` protege Espacio, pero no F.
+- Reproducción: enfocar un botón de la barra o una ficha y pulsar P, N, un dígito o F. El control conserva el foco y la escena cambia en segundo plano.
+- Impacto: conflicto con navegación por teclado, tecnologías de asistencia y activación de botones mediante teclas.
+- Corrección sugerida: ignorar todos los atajos del juego cuando el foco esté en un control, salvo que el mouse esté capturado o el canvas tenga un modo de juego enfocado explícitamente.
+
+### Inspectores de diseño
+
+- `design-taste-frontend` sobre los siete archivos de zona: 0 fallos y 7 advertencias por sombras. El inspector renderizado confirmó 0 desborde, 0 errores de consola y detectó la ausencia de `h1`; sus avisos de sombra corresponden a la estética de bloques aceptada en ADR-047 y deben resolverse o justificarse por Claude.
+- `impeccable detect` sobre la ruta en 1440 y 390: 0 hallazgos primarios.
+- No se modificó ningún archivo bajo `frontend/app/_components/zone/`, `scripts/zones/` o `backend/app/zones/`.

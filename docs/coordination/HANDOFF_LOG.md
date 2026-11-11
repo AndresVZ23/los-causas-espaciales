@@ -1304,3 +1304,19 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Para Codex cuando revise:** la maqueta es un mapa de alturas, no un mundo de vóxeles: una pieza puesta contra una pared cae sobre la columna vecina. La prueba de navegador pone y quita con Enter y Supr; el clic derecho se comprobó solo hasta el aviso «Apunte a un bloque», porque el clic sintético mueve la mira.
 
 **Verificación:** 285 pruebas backend, build con 25 rutas, `npm audit` en 0, auditor científico sin errores, `zone_ui.cjs` en 1440, 768, 390 y táctil.
+
+## 2026-11-11 · Codex · `codex/entrega-11nov-b` · licencia, arquitectura y QA de «Entrar a la zona»
+
+**Base y límites respetados:** rama creada desde `claude/pdf-linea-base` (`8854b53`). Se revisaron `229e642` y `8854b53` sin editar `frontend/app/_components/zone/`, `scripts/zones/` ni `backend/app/zones/`.
+
+**Licencia de los modelos versionados:** el texto completo oficial de la licencia de Copernicus DEM GLO-30, no solo la ficha del producto, concede expresamente reproducción, distribución, comunicación pública, adaptación, modificación y combinación. Por ello `backend/data/zones/moquegua.json` y `taal.json` pueden permanecer y redistribuirse como cuadrículas derivadas. `DATA_SOURCES.md` ahora deja la conclusión inequívoca y reproduce las condiciones: aviso oficial para datos adaptados, exención de responsabilidad, ausencia de respaldo oficial y traslado de obligaciones a redistribuidores posteriores; WorldCover conserva su atribución CC BY 4.0.
+
+**Arquitectura:** `TECHNICAL_ARCHITECTURE.md` incorpora `GET /api/v1/world/zones` y `/zones/{zone_id}`, las zonas construidas y versionadas de antemano, la carga dinámica de `three.js` solo en `/zona/{id}` y la separación estricta entre los arreglos científicos inmutables (`heights`, `cover`, `slope`) y las ediciones transitorias del jugador. Poner, quitar o deshacer nunca reescribe la fuente ni crea un resultado analítico.
+
+**QA y revisión:** `QA_USUARIO_2026-11-11.md` contiene pasos, líneas y severidad de cuatro defectos reservados para Claude: la notificación tapa una ficha a 390 px; clic derecho seguido de izquierdo no revierte de forma consistente la pieza en Moquegua; la ruta directa usa semántica modal sin el patrón de foco ni un `h1`; y P/N/1–6/F actúan aunque el foco esté en controles. No se corrigieron por la regla de propiedad de archivos.
+
+**Prueba funcional:** API 8313 y web 3413 temporales, luego apagadas. Moquegua y Taal se recorrieron en 1440 × 900 y 390 × 844. Chrome confirmó Pointer Lock, clic derecho/izquierdo, rueda, 1–6, N, P, F y «Deshacer»; el dato de elevación/pendiente/cobertura permaneció estable. QA táctil: poner/quitar vuelve de una edición a cero. Sin errores de consola ni desborde horizontal. Codex Browser no concedió Pointer Lock, así que esa parte se repitió con Chrome local y una copia temporal del guion QA, sin cambiar el repositorio.
+
+**Puerta común:** 285/285 pruebas backend; build Next.js 16.4.2 con 25 rutas; `npm audit` con 0 vulnerabilidades; `git diff --check` limpio. Pytest conserva dos deprecaciones de terceros (ReportLab y Starlette). El lint de zona terminó con 0 fallos y 7 avisos de sombras; el inspector confirmó 0 desborde/errores y la falta de `h1`; `impeccable detect` terminó con 0 hallazgos primarios. El repositorio sigue sin `scripts/audit_project.py`, por lo que no se declara una nueva ejecución del auditor científico.
+
+**Operación y publicación:** no se tocaron 3100/8000, Docker ni `power-cache`. No se hizo push ni se creó etiqueta; ambos requieren aprobación de Christian.

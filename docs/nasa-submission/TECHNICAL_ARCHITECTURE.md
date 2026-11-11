@@ -41,6 +41,8 @@ Current endpoints:
 - `GET /api/v1/map/layers`
 - `GET /api/v1/world/alerts`
 - `GET /api/v1/world/places?q={name}`
+- `GET /api/v1/world/zones`
+- `GET /api/v1/world/zones/{zone_id}`
 - `POST /api/v1/analyses/point`
 - `POST /api/v1/comparisons/sites`
 - `POST /api/v1/terrain/points`
@@ -84,6 +86,14 @@ The global shell separates navigation context from analytical evidence. Open-Met
 `GET /api/v1/world/alerts` orchestrates two independent providers. GDACS supplies its own red/orange/green levels and NASA EONET supplies an unlevelled second witness. The contract matches only events of an equivalent type within a declared time and geodesic-distance window, retains the source URL and never derives an alert level from NASA. If either provider fails, the other remains available and the failed source is emitted as `DATA_UNAVAILABLE`; one-hour caches and the exact-key last-valid-copy rule preserve freshness and failure evidence. The response disclaimer states that the list is informational, not an early-warning system or a substitute for national or local authorities.
 
 Global inputs do not imply global parity. NASA, ERA5, Copernicus, GDACS and EONET-based analyses can operate outside Peru, but IGN territories and the connected CENEPRED, ANA, SERNANP, Cultura, MINAM, INGEMMET, Osinergmin and related layers are Peruvian. When a subject is outside Peru, those connectors are skipped and the response states the geographic limitation; no absent query is converted into zero exposure.
+
+## Enter the zone: prebuilt block models (ADR-047)
+
+“Entrar a la zona” is an exploratory block model, not a photorealistic view, hazard simulation or engineering design tool. `GET /api/v1/world/zones` lists the versioned models and `GET /api/v1/world/zones/{zone_id}` returns one complete model. The two current zones—Moquegua and Taal—are built ahead of time by the controlled zone builder and stored under `backend/data/zones/`; an interactive request never downloads rasters or constructs a new zone. Adding a place requires rebuilding, validating and versioning a new asset.
+
+The route `/zona/{id}` dynamically loads the zone explorer with server-side rendering disabled. The `three.js` scene and its code are therefore fetched only when a person enters a zone; the ordinary map, modules and world-alert flow do not pay that runtime cost. The scene renders precomputed block heights, original real-world elevations, Horn slope calculated before declared vertical exaggeration, nearest-pixel WorldCover classes, paths and dated analytical beacons. The textual findings list remains the non-3D fallback.
+
+Gameplay state is deliberately separate from scientific source state. The immutable `heights`, `cover` and `slope` arrays continue to drive the readout and any cell assessment. Digging, placed pieces, removed decorations and touched cells live only in transient browser-side arrays/maps; rebuilding a changed terrain chunk never rewrites the source arrays or the versioned JSON. “Deshacer” restores the prebuilt model, leaving the route discards all edits, and no gameplay action is submitted to an analytical endpoint. A placed or removed block is therefore a user sketch, not a new observation, corrected land-cover class or simulated development outcome.
 
 PostGIS and a local job queue remain planned for persistent geometries, bulk corridor sampling, and locally managed raster workloads. AppEEARS does not depend on that queue because NASA owns the asynchronous task lifecycle.
 
