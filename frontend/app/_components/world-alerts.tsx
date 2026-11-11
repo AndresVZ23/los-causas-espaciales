@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatDay } from "./format";
+import type { AlertMarkerStyle } from "./geo-map";
 import type { AlertLevel, WorldAlert, WorldAlertsResponse, WorldPlace } from "./types";
 
 const LEVEL_LABEL: Record<AlertLevel, string> = { red: "Alerta roja", orange: "Alerta naranja", green: "Alerta verde", none: "Sin nivel" };
@@ -27,10 +28,11 @@ export function useWorldAlerts(enabled: boolean) {
 type Props = {
   open: boolean; onOpen: (open: boolean) => void; shown: boolean; onHide: () => void; data: WorldAlertsResponse | null; error: string;
   selected: string | null; onSelect: (alert: WorldAlert | null) => void; onAnalyze: (alert: WorldAlert, module: "hazards" | "climate") => void;
+  markerStyle: AlertMarkerStyle; onMarkerStyle: (style: AlertMarkerStyle) => void;
 };
 
 /** Botón y panel sobre el mapa. El nivel es el de GDACS; analizar un punto muestra su fondo climático, no el evento. */
-export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, selected, onSelect, onAnalyze }: Props) {
+export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, selected, onSelect, onAnalyze, markerStyle, onMarkerStyle }: Props) {
   const [onlyPeru, setOnlyPeru] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -52,7 +54,7 @@ export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, s
             <p className="layerPanelNote">Eventos de los últimos {data?.window_days ?? 60} días. El nivel lo asigna <b>GDACS</b>; <b>NASA EONET</b> es el segundo testigo.</p>
             <button onClick={() => onOpen(false)}>Cerrar</button>
           </div>
-          <p className="layerPanelNote">Al cerrar, los pulsos siguen en el mapa. {shown && <button className="alertsHide" onClick={onHide}>Quitar del mapa</button>}</p>
+          <p className="layerPanelNote">Al cerrar, los marcadores siguen en el globo. {shown && <button className="alertsHide" onClick={onHide}>Quitar del mapa</button>}</p>
           {error && <p className="errorMessage" role="alert">{error}</p>}
           {!data && !error && <p className="layerPanelNote" role="status">Consultando GDACS y NASA EONET…</p>}
           {data && (
@@ -60,6 +62,10 @@ export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, s
               <div className="alertsFilter" role="group" aria-label="Filtro de alertas">
                 <button className={onlyPeru ? "" : "active"} aria-pressed={!onlyPeru} onClick={() => setOnlyPeru(false)}>Mundo · {data.alerts.length}</button>
                 <button className={onlyPeru ? "active" : ""} aria-pressed={onlyPeru} onClick={() => setOnlyPeru(true)}>Perú · {peruCount}</button>
+              </div>
+              <div className="alertsFilter" role="group" aria-label="Estilo de los marcadores">
+                <button className={markerStyle === "blocks" ? "active" : ""} aria-pressed={markerStyle === "blocks"} onClick={() => onMarkerStyle("blocks")}>Bloques</button>
+                <button className={markerStyle === "pulses" ? "active" : ""} aria-pressed={markerStyle === "pulses"} onClick={() => onMarkerStyle("pulses")}>Pulsos</button>
               </div>
               {alerts.length === 0 && <p className="layerPanelNote">Sin eventos publicados en este filtro. No significa que no haya emergencias: solo que estas fuentes no listan ninguna.</p>}
               <ul className="alertsList">

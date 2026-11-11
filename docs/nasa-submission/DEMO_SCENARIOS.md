@@ -37,7 +37,7 @@ Rehearsal timing with a warm cache: 66 to 92 s of total screen wait for the eigh
 
 A 30-second way to open: it shows that the method is global and why a place is chosen.
 
-1. On the map, press «Alertas en el mundo». The map opens to the whole world and each event appears as a pulse: red and orange are GDACS alert levels, green are events in Peru, blue are open NASA EONET events without a level.
+1. On the map, press «Alertas en el mundo». The map turns into a 3D globe over South America that spins slowly, and each event appears as a small hopping block: red and orange are GDACS alert levels, green are events in Peru, blue are open NASA EONET events without a level. «Pulsos» switches to round pulses.
 2. Point at the list: on 10 November 2026 it held 25 events, among them four red alerts (tropical cyclones in India, the Philippines and Mexico), fourteen orange (droughts across Europe, Central America and Africa, earthquakes, eruptions and floods) and, under «Perú», three floods and a wildfire at green level.
 3. Press one event, then «Analizar amenazas aquí». The site moves there and the hazards module runs with the global NASA sources only. Under «Brechas antes de invertir» the platform states that the official layers it connects are Peruvian.
 4. Say: the alert level is GDACS's, not ours, and analysing the point shows the background trends and hazards of the place, not the state of the event.

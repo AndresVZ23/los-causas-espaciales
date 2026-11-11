@@ -61,13 +61,18 @@ function cellFeatures(cells: MapCell[]): GeoJSON.FeatureCollection {
 export type MapAlert = { id: string; latitude: number; longitude: number; level: "red" | "orange" | "green" | "none"; label: string; live: boolean };
 // Encuadre pedido por la consola: `token` cambia en cada pedido para repetir un vuelo al mismo punto.
 export type MapFocus = { longitude: number; latitude: number; zoom: number; token: number };
+// Estilo de los marcadores de alerta: «blocks» (bloques que saltan, estilo juego) o «pulses» (anillos clásicos).
+export type AlertMarkerStyle = "blocks" | "pulses";
+
+const prefersReducedMotion = () => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geometries = [], selectedGeometry = null, drawing = null, visualLayer = null, territories = [], cells = [], corridor = [],
-  alerts = [], selectedAlert = null, onAlert, focus = null }: {
+  alerts = [], selectedAlert = null, onAlert, focus = null, globe = false, markerStyle = "blocks" }: {
   sites: Point[]; onPick: (latitude: number, longitude: number) => void; terrainOverlay: TerrainOverlay | null; showTerrain: boolean;
   geometries?: MapGeometry[]; selectedGeometry?: string | null; drawing?: MapDrawing | null; visualLayer?: VisualLayerState | null;
   territories?: MapTerritory[]; cells?: MapCell[]; corridor?: MapTerritory[];
   alerts?: MapAlert[]; selectedAlert?: string | null; onAlert?: (id: string) => void; focus?: MapFocus | null;
+  globe?: boolean; markerStyle?: AlertMarkerStyle;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
@@ -106,6 +111,8 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
       attributionControl: { compact: true },
     });
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+    // Botón propio de MapLibre para pasar del plano al globo 3D en cualquier momento.
+    map.addControl(new maplibregl.GlobeControl(), "top-right");
     map.on("load", () => {
       map.addSource("comparison-axis", {
         type: "geojson",
@@ -192,27 +199,76 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     }
   }, [sites]);
 
-  // Pulsos de las alertas: marcadores HTML para poder animarlos con CSS (se detienen con «reducir movimiento»).
+  // Marcadores de las alertas: elementos HTML animados con CSS, sin modelos 3D ni texturas (se detienen con «reducir
+  // movimiento»). En estilo «bloques» cada evento es un bloque que salta; el salto escalonado imita un juego de bloques.
   const alertCount = alerts.length;
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     alertMarkersRef.current.forEach((marker) => marker.remove());
-    alertMarkersRef.current = alerts.map((alert) => {
+    alertMarkersRef.current = alerts.map((alert, index) => {
       const element = document.createElement("button");
       element.type = "button";
-      element.className = `alertPulse level-${alert.level}${alert.live ? " live" : ""}${alert.id === selectedAlert ? " selected" : ""}`;
+      const base = markerStyle === "blocks" ? "alertBlock" : "alertPulse";
+      element.className = `${base} level-${alert.level}${alert.live ? " live" : ""}${alert.id === selectedAlert ? " selected" : ""}`;
+      // Desfase por evento: los bloques no saltan todos a la vez.
+      element.style.setProperty("--delay", `${(index % 7) * 0.17}s`);
       element.setAttribute("aria-label", alert.label);
       element.title = alert.label;
-      // El clic en un pulso elige la alerta; no debe llegar al mapa, que movería el sitio principal.
+      if (markerStyle === "blocks") element.innerHTML = '<i aria-hidden="true"></i>';
+      // El clic en un marcador elige la alerta; no debe llegar al mapa, que movería el sitio principal.
       element.addEventListener("click", (event) => { event.stopPropagation(); onAlertRef.current?.(alert.id); });
-      return new maplibregl.Marker({ element }).setLngLat([alert.longitude, alert.latitude]).addTo(map);
+      return new maplibregl.Marker({ element, anchor: markerStyle === "blocks" ? "bottom" : "center", opacityWhenCovered: "0" })
+        .setLngLat([alert.longitude, alert.latitude]).addTo(map);
     });
-  }, [alerts, selectedAlert]);
-  // Al encender las alertas el mapa se abre al mundo; al apagarlas no se mueve.
+  }, [alerts, selectedAlert, markerStyle]);
+
+  // Globo 3D: al encender las alertas el mapa pasa a globo y se abre al mundo; al apagarlas vuelve al plano.
   useEffect(() => {
     const map = mapRef.current;
-    if (map && alertCount > 0) map.fitBounds([[-168, -56], [178, 72]], { padding: 8, duration: 900 });
+    if (!map) return;
+    whenReady(map, () => {
+      map.setProjection({ type: globe ? "globe" : "mercator" });
+      if (globe) {
+        map.setSky({ "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 1, 7, 0] });
+        // Empieza sobre Sudamérica, con el Perú a la vista, y desde ahí gira hacia el este.
+        map.easeTo({ center: [-62, -6], zoom: 1.3, duration: 1100 });
+      }
+    });
+  }, [globe]);
+  // Giro lento del globo hasta que la persona toque el mapa; nunca con «reducir movimiento».
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !globe || prefersReducedMotion()) return;
+    let frame = 0;
+    let spinning = true;
+    let last = performance.now();
+    const stop = () => { spinning = false; };
+    const step = (now: number) => {
+      if (!spinning) return;
+      const elapsed = Math.min(now - last, 100);
+      last = now;
+      // Solo gira con el mundo entero a la vista y sin otra animación en curso.
+      if (map.getZoom() < 2.4 && !map.isMoving()) {
+        const center = map.getCenter();
+        map.setCenter([center.lng + elapsed * 0.004, center.lat]);
+      }
+      frame = requestAnimationFrame(step);
+    };
+    const start = window.setTimeout(() => { frame = requestAnimationFrame(step); }, 1300);
+    const canvas = map.getCanvasContainer();
+    ["mousedown", "touchstart", "wheel"].forEach((name) => canvas.addEventListener(name, stop, { passive: true }));
+    return () => {
+      spinning = false;
+      window.clearTimeout(start);
+      cancelAnimationFrame(frame);
+      ["mousedown", "touchstart", "wheel"].forEach((name) => canvas.removeEventListener(name, stop));
+    };
+  }, [globe]);
+  // Sin globo, al encender las alertas el plano se abre al mundo.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (map && alertCount > 0 && !globe) map.fitBounds([[-168, -56], [178, 72]], { padding: 8, duration: 900 });
     // Solo al pasar de cero a alguna alerta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alertCount > 0]);

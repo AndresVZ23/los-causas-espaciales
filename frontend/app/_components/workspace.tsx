@@ -30,7 +30,7 @@ import type { AnyResult, Assumptions, HydroAssumptions, HydroSiteInput, Module, 
 import { DEFAULT_WIND_ASSUMPTIONS, EnergyTechControls, WIND_SITES, WindAssumptionFields, WindEvidence, WindReading, windTabs } from "./wind-panels";
 import type { EnergyTech } from "./wind-panels";
 import { PlaceSearch, WorldAlertsControl, useWorldAlerts } from "./world-alerts";
-import type { MapAlert, MapFocus } from "./geo-map";
+import type { AlertMarkerStyle, MapAlert, MapFocus } from "./geo-map";
 import type { WorldAlert } from "./types";
 
 const GeoMap = dynamic(() => import("./geo-map"), { ssr: false, loading: () => <div className="mapLoading">Preparando mapa NASA…</div> });
@@ -153,6 +153,7 @@ export default function Workspace() {
   const [alertsShown, setAlertsShown] = useState(false);
   const openAlerts = (open: boolean) => { setAlertsOpen(open); if (open) setAlertsShown(true); };
   const [selectedAlert, setSelectedAlert] = useState<string | null>(null);
+  const [markerStyle, setMarkerStyle] = useState<AlertMarkerStyle>("blocks");
   const [mapFocus, setMapFocus] = useState<MapFocus | null>(null);
   const worldAlerts = useWorldAlerts(alertsShown);
   const flyTo = (latitude: number, longitude: number, zoom: number) => setMapFocus({ latitude, longitude, zoom, token: Date.now() });
@@ -487,12 +488,12 @@ export default function Workspace() {
 
         <section className="mapStage" aria-label="Mapa de evaluación">
           <div className="panelCaption"><span>MAPA — OBSERVACIÓN TERRESTRE</span><b>WGS84 · EPSG:4326</b></div>
-          <div className={`mapViewport ${loading ? "isAcquiring" : ""} ${visualLayer ? "hasVisualLayer" : ""}`}>
+          <div className={`mapViewport ${loading ? "isAcquiring" : ""} ${visualLayer ? "hasVisualLayer" : ""} ${alertsShown ? "hasGlobe" : ""}`}>
             <GeoMap sites={isRoadModule || isRealEstateModule ? [] : isHydroTech ? hydroMarkers : sites} terrainOverlay={terrainOverlay} showTerrain={terrainVisible} visualLayer={visualLayer}
                     geometries={mapGeometries} selectedGeometry={study.selectedId} drawing={mapDrawing}
                     territories={isRealEstateModule ? parcelShapes : mapTerritories} cells={isClimateModule ? cellLayer.cells : []}
                     corridor={isRoadModule ? corridorLines : isHydroTech ? hydroLines : []}
-                    alerts={mapAlerts} selectedAlert={selectedAlert} focus={mapFocus}
+                    alerts={mapAlerts} selectedAlert={selectedAlert} focus={mapFocus} globe={alertsShown} markerStyle={markerStyle}
                     onAlert={(id) => { const alert = worldAlerts.data?.alerts.find((item) => item.id === id); if (alert) { setSelectedAlert(id); openAlerts(true); flyTo(alert.latitude, alert.longitude, 4); } }}
                     onPick={(latitude, longitude) => {
                       if (geometryHint) return;
@@ -513,6 +514,7 @@ export default function Workspace() {
             <div className="mapSource">{visualLayer ? `NASA GIBS · ${visualLayer.layer.label.toUpperCase()} · CAPA VISUAL` : "NASA GIBS · BLUE MARBLE · MAPA BASE ESTÁTICO"}</div>
             <LayerControl value={visualLayer} onChange={setVisualLayer} />
             <WorldAlertsControl open={alertsOpen} onOpen={openAlerts} shown={alertsShown} onHide={() => { setAlertsShown(false); setAlertsOpen(false); setSelectedAlert(null); }}
+                                markerStyle={markerStyle} onMarkerStyle={setMarkerStyle}
                                 data={worldAlerts.data} error={worldAlerts.error} selected={selectedAlert}
                                 onSelect={(alert) => { setSelectedAlert(alert?.id ?? null); if (alert) flyTo(alert.latitude, alert.longitude, 4); }} onAnalyze={analyzeAlert} />
             {visualLayer && <LayerLegend value={visualLayer} />}

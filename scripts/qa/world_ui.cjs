@@ -37,34 +37,58 @@ async function run(viewport, tag) {
   // 1 · Alertas del mundo: panel, lista y pulsos.
   await page.locator(".alertsToggle").click();
   await page.locator(".alertsList li").first().waitFor({ timeout: 90000 });
-  await page.waitForTimeout(1600);
+  await page.waitForTimeout(2400);
   out.alerts = await page.locator(".alertsList li").count();
+  // Globo 3D: el botón de MapLibre queda en modo globo y el fondo pasa a espacio.
+  out.globe = await page.waitForFunction(() => Boolean(document.querySelector(".maplibregl-ctrl-globe-enabled")) && document.querySelector(".mapViewport").classList.contains("hasGlobe"),
+    null, { timeout: 15000 }).then(() => true).catch(() => false);
+  // Estilo «bloques» (por defecto): un bloque por evento; saltan los vigentes y los de nivel naranja o rojo.
+  out.blocks = await page.locator(".alertBlock").count();
+  out.hopping = await page.locator(".alertBlock i").evaluateAll((items) => items.filter((item) => getComputedStyle(item).animationName === "blockHop").length);
+  // En el globo, los bloques del otro lado del planeta quedan ocultos: se cuentan los visibles dentro del mapa.
+  out.visibleBlocks = await page.evaluate(() => {
+    const map = document.querySelector(".mapViewport").getBoundingClientRect();
+    return [...document.querySelectorAll(".alertBlock")].filter((el) => {
+      const r = el.getBoundingClientRect();
+      return Number(getComputedStyle(el).opacity) > 0.1 && r.left >= map.left && r.right <= map.right && r.top >= map.top && r.bottom <= map.bottom;
+    }).length;
+  });
+  await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `globo-bloques-${tag}.png`) });
+  // Cambio a «Pulsos»: mismos eventos, el estilo clásico.
+  await page.locator(".alertsFilter button", { hasText: "Pulsos" }).click();
+  await page.waitForTimeout(500);
   out.pulses = await page.locator(".alertPulse").count();
   out.animated = await page.locator(".alertPulse").evaluateAll((items) => items.filter((item) => getComputedStyle(item, "::after").animationName !== "none").length);
+  await page.locator(".alertsFilter button", { hasText: "Bloques" }).click();
+  await page.waitForTimeout(500);
   out.levels = await page.locator(".alertsList li").evaluateAll((items) => items.reduce((acc, item) => { const level = [...item.classList].find((name) => name.startsWith("level-")); acc[level] = (acc[level] || 0) + 1; return acc; }, {}));
   out.sources = await page.locator(".alertsFoot > p").allInnerTexts();
   out.panelClipped = await clipped(page);
   out.panelOverflow = await overflow(page);
   await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `mundo-${tag}.png`) });
 
-  // Los pulsos deben caer donde está el evento: uno del Perú queda al oeste (izquierda) de uno de la India, y ambos dentro del mapa.
-  out.placement = await page.evaluate(() => {
-    const map = document.querySelector(".mapViewport").getBoundingClientRect();
-    const at = (word) => { const el = [...document.querySelectorAll(".alertPulse")].find((item) => item.getAttribute("aria-label").includes(word)); return el ? el.getBoundingClientRect() : null; };
-    const peru = at("Peru"), india = at("India");
-    return peru && india ? { peruWestOfIndia: peru.x < india.x, peruSouthOfIndia: peru.y > india.y, peruInside: peru.x > map.left && peru.right < map.right } : null;
-  });
-  // Al cerrar el panel los pulsos siguen: captura del mundo completo.
+  // Al cerrar el panel los bloques siguen sobre el globo: captura del mundo.
   await page.locator(".alertsPanel .layerPanelHead button", { hasText: "Cerrar" }).click();
-  await page.waitForTimeout(600);
-  out.pulsesAfterClose = await page.locator(".alertPulse").count();
-  await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `pulsos-${tag}.png`) });
+  await page.waitForTimeout(900);
+  out.blocksAfterClose = await page.locator(".alertBlock").count();
+  await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `globo-${tag}.png`) });
   await page.locator(".alertsToggle").click();
   await page.locator(".alertsList li").first().waitFor();
 
-  // 2 · Filtro del Perú.
+  // 2 · Filtro del Perú: al elegir una alerta del Perú el globo vuela hasta ella y su bloque queda a la vista.
   await page.locator(".alertsFilter button", { hasText: "Perú" }).click();
   out.peru = await page.locator(".alertsList li .alertRow").allInnerTexts().then((rows) => rows.map((row) => row.replace(/\s+/g, " ")));
+  await page.locator(".alertsList li .alertRow").first().click();
+  await page.waitForTimeout(2200);
+  out.peruVisible = await page.evaluate(() => {
+    const map = document.querySelector(".mapViewport").getBoundingClientRect();
+    const el = document.querySelector(".alertBlock.selected");
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return Number(getComputedStyle(el).opacity) > 0.1 && r.left > map.left && r.right < map.right && r.top > map.top && r.bottom < map.bottom;
+  });
+  await page.locator(".mapViewport").screenshot({ path: path.join(OUT, `peru-${tag}.png`) });
+  await page.locator(".alertsList li .alertRow").first().click();
   await page.locator(".alertsFilter button", { hasText: "Mundo" }).click();
 
   // 3 · Elegir la primera alerta con nivel (GDACS): se abre el detalle y el mapa vuela al evento.

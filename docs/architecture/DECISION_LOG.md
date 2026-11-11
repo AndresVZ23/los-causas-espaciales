@@ -761,4 +761,10 @@ La fila inmobiliaria usa las alertas de CENEPRED de su última copia válida (AD
 - Atlas Eólico fuera del Perú: Nairobi 3.61 m/s frente a 6.36 de NASA POWER; Sevilla 4.47 frente a 6.10. En esos dos puntos NASA POWER queda por encima del atlas, al revés que en Marcona.
 - Amenazas en Chennai: tres capas de NASA y la brecha de capas nacionales, sin ninguna consulta a servicios peruanos.
 
+**Ampliación del 11-nov: globo 3D y marcadores de bloques.** Pedido de Christian: vista 3D y una animación «tipo juego, que no sea pesada».
+- **Globo:** al mostrar las alertas el mapa pasa a la proyección de globo de MapLibre 6.15 (sin dependencias nuevas), con atmósfera, empezando sobre Sudamérica. Gira despacio hasta que la persona toca el mapa, y nunca con «reducir movimiento». «Quitar del mapa» vuelve al plano. El botón de globo de MapLibre (arriba a la derecha) cambia la vista en cualquier momento.
+- **Bloques:** cada evento es un cubo de píxeles con biselado que salta en pasos discretos, con su sombra y un marco cuadrado que se expande. Es CSS puro (transform y opacity), sin modelos 3D ni texturas. Es la estética genérica de los juegos de bloques, sin los gráficos de ningún juego concreto. «Pulsos» deja los anillos anteriores.
+- Los marcadores del otro lado del planeta se ocultan: con el globo sobre Sudamérica se ven 8 o 9 de los 25 eventos.
+- `world_ui.cjs` en 1440, 768 y 390: globo activo, 25 bloques (21 saltando), el bloque del Perú a la vista al elegirlo, sin recortes, desbordes ni errores de consola. En 390 px el panel abierto tapa casi todo el globo: se cierra con «Cerrar» y los bloques siguen.
+
 **Verificación.** 10 pruebas nuevas (276 en total): país de un punto con costa y mar abierto, analizadores de GDACS y EONET, cruce y regla de pareja, última copia válida del GET común, fuente caída declarada, búsqueda de lugares y área fuera del Perú sin consultas peruanas. Build con 22 rutas. `scripts/qa/world_ui.cjs` en 1440, 768 y 390: 25 pulsos en su lugar, sin recortes, desbordes ni errores de consola.

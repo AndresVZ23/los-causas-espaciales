@@ -163,6 +163,30 @@ input::-webkit-calendar-picker-indicator:focus-visible { outline: 2px solid var(
 .alertPulse.selected { outline: 2px solid var(--text); outline-offset: 3px; }
 .alertPulse:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 @keyframes alertRing { 0% { transform: scale(1); opacity: .85; } 100% { transform: scale(3.4); opacity: 0; } }
+/* Estilo «bloques» (tipo juego): un cubo de píxeles con biselado que salta en pasos discretos, su sombra en el suelo y
+   un marco cuadrado que se expande. Solo CSS con transform y opacity: no carga modelos ni texturas.
+   Sin `position` en el botón: MapLibre lo ubica con position:absolute. */
+.alertBlock { --c: var(--cached); width: 22px; height: 30px; padding: 0; border: 0; background: transparent; cursor: pointer; display: flex; align-items: flex-end; justify-content: center; }
+.alertBlock.level-red { --c: var(--negative); }.alertBlock.level-orange { --c: #f0934a; }.alertBlock.level-green { --c: var(--positive); }
+.alertBlock i { display: block; width: 14px; height: 14px; margin-bottom: 4px; background: var(--c);
+  box-shadow: inset 3px 3px 0 rgba(255,255,255,.4), inset -3px -3px 0 rgba(0,0,0,.4), 0 0 0 2px #05080a; image-rendering: pixelated; }
+.alertBlock::before { content: ""; position: absolute; left: 50%; bottom: 0; width: 14px; height: 3px; margin-left: -7px; background: rgba(0,0,0,.6); }
+.alertBlock::after { content: ""; position: absolute; left: 50%; bottom: 0; box-sizing: border-box; width: 14px; height: 6px; margin-left: -7px; border: 2px solid var(--c); opacity: 0; }
+.alertBlock.live i, .alertBlock.level-red i, .alertBlock.level-orange i { animation: blockHop 1.1s infinite; animation-delay: var(--delay, 0s); }
+.alertBlock.live::before, .alertBlock.level-red::before, .alertBlock.level-orange::before { animation: blockShadow 1.1s infinite; animation-delay: var(--delay, 0s); }
+.alertBlock.live::after, .alertBlock.level-red::after, .alertBlock.level-orange::after { animation: blockRing 1.65s steps(5, end) infinite; animation-delay: var(--delay, 0s); }
+.alertBlock.selected i { box-shadow: inset 3px 3px 0 rgba(255,255,255,.4), inset -3px -3px 0 rgba(0,0,0,.4), 0 0 0 2px #05080a, 0 0 0 4px var(--text); }
+.alertBlock:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* Pasos discretos (steps de 1): el bloque se mueve «a saltos», como en un juego de píxeles. */
+@keyframes blockHop { 0%, 70%, 100% { transform: translateY(0); animation-timing-function: steps(1, end); } 10% { transform: translateY(-3px); animation-timing-function: steps(1, end); }
+  20% { transform: translateY(-7px); animation-timing-function: steps(1, end); } 30% { transform: translateY(-9px); animation-timing-function: steps(1, end); }
+  40% { transform: translateY(-7px); animation-timing-function: steps(1, end); } 50% { transform: translateY(-3px); animation-timing-function: steps(1, end); } }
+@keyframes blockShadow { 0%, 70%, 100% { transform: scaleX(1); opacity: .6; animation-timing-function: steps(1, end); } 20%, 40% { transform: scaleX(.7); opacity: .4; animation-timing-function: steps(1, end); }
+  30% { transform: scaleX(.55); opacity: .3; animation-timing-function: steps(1, end); } }
+@keyframes blockRing { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .alertBlock i, .alertBlock::before, .alertBlock::after { animation: none !important; } }
+/* Con el globo, el fondo es el espacio. */
+.mapViewport.hasGlobe { background: radial-gradient(circle at 50% 50%, #0d1a24 0%, #05080a 70%); }
 @keyframes alertBeat { 0% { box-shadow: 0 0 0 0 rgba(238,113,128,.55); } 100% { box-shadow: 0 0 0 9px rgba(238,113,128,0); } }
 @media (prefers-reduced-motion: reduce) { .alertPulse::after, .alertRow i.live, .alertsToggle i { animation: none !important; } }
 @media (max-width: 560px) { .alertsPanel { width: 270px; max-height: 215px; }.alertActions button { min-height: 36px; } }
