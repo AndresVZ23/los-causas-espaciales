@@ -14,7 +14,7 @@ A trend detective does not convict on one testimony. Each data item enters the p
 | What is measured | First source | Second source | What the cross-check found in a real case |
 |---|---|---|---|
 | Temperature trend | NASA POWER (MERRA-2) | ERA5 | Moquegua, 2005–2023: the same warming, +0.039 and +0.042 °C per year. The level differs by 10.6 °C, and the platform says that too. |
-| Extreme rainfall | NASA POWER (MERRA-2) | GPM IMERG and CHIRPS | Moquegua, 2022: a 300 mm day that neither satellite product sees (12 and 17 mm). Flagged, not used as a hazard. |
+| Extreme rainfall | NASA POWER (MERRA-2) | GPM IMERG and CHIRPS | Moquegua, 2022: a 300 mm day that neither satellite product sees (12 and 17 mm). Flagged, not used as a hazard. [ADR-036] |
 | Solar resource | NASA POWER (CERES) | ERA5 | Moquegua: within 5 % (+1.6 %). |
 | Wind at hub height | NASA POWER hourly | Global Wind Atlas | Marcona: 6.4 against 9.7 m/s. Real production supports the atlas. |
 | River flow | GloFAS (Copernicus) | GEOGLOWS | Upper Tambo: 64 % apart. At Machupicchu, real production supports GloFAS. |
@@ -42,7 +42,7 @@ Each block matches an act in [DEMO_SCENARIOS.md](DEMO_SCENARIOS.md). Figures bel
 >
 > All nine cells are warming, and the evidence survives Mann–Kendall with autocorrelation correction and Benjamini–Hochberg across cells, at up to 0.42 °C per decade. 2026 so far is the third warmest of 26 years. At the city of Moquegua a second reanalysis, ERA5, sees the same warming.
 >
-> Now the trap. NASA POWER reports a 300 mm rain day in Moquegua in 2022. A naive tool would call that a flood regime. We cross-check against two satellite products, GPM IMERG and CHIRPS, whose wettest days that year were 12 and 17 mm. We keep the value, flag it as a probable artefact, and no rainfall-extreme index stays significant. Being a detective means refusing the convenient clue.
+> Now the trap. NASA POWER reports a 300 mm rain day in Moquegua in 2022. A naive tool would call that a flood regime. We cross-check against two satellite products, GPM IMERG and CHIRPS, whose wettest days that year were 12 and 17 mm. We keep the value, flag it as a probable artefact, and no rainfall-extreme index stays significant. Being a detective means refusing the convenient clue. [ADR-036]
 
 ### 2 · Translate it into a decision for an asset (≈90 s)
 
@@ -89,7 +89,7 @@ Use one act; all four are verified. They end on the same idea: a conditioned dec
 Target ≤ 30 s with English subtitles; the interface is in Spanish, so the subtitles carry the meaning.
 
 1. (0–6 s) Department of Moquegua selected → nine warming cells on the map. *"NASA data, tested trend by trend: all nine cells are warming."*
-2. (6–13 s) The 300 mm value next to IMERG and CHIRPS. *"300 mm in one product, 12 and 17 in two others. We flag it instead of trusting it."*
+2. (6–13 s) The 300 mm value next to IMERG and CHIRPS. *"300 mm in one product, 12 and 17 in two others. We flag it instead of trusting it."* [ADR-036]
 3. (13–22 s) Wind in Marcona: the discovery row and the reading. *"Two sources half apart. Real wind farms settle it."*
 4. (22–30 s) PDF downloading. *"Every number has a second witness and a source. Los Causas Espaciales."*
 
@@ -103,4 +103,4 @@ Target ≤ 30 s with English subtitles; the interface is in Spanish, so the subt
 6. Trust: six provenance classes, discoveries, visible gaps, reproducible PDF.
 7. Impact and next steps: one method for solar, wind, hydro, roads and real estate.
 
-The demo format above follows the published Project Submission Guide (video ≤ 30 s or ≤ 7 slides, in English, hosted publicly). Check both limits against the guide in force before uploading.
+The timing and seven-slide structure above are internal planning assumptions, not submission requirements. **Pending 13-Nov-2026:** replace this note only after checking the official Project Submission Guide for language, duration, slide count, hosting, file format and accessibility requirements.

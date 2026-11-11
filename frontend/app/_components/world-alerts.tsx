@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatDay } from "./format";
 import type { AlertMarkerStyle } from "./geo-map";
 import type { AlertLevel, WorldAlert, WorldAlertsResponse, WorldPlace } from "./types";
@@ -40,6 +40,16 @@ type Props = {
 /** Botón y panel sobre el mapa. El nivel es el de GDACS; analizar un punto muestra su fondo climático, no el evento. */
 export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, selected, onSelect, onAnalyze, markerStyle, onMarkerStyle, zones, selectedZone, onZone, onEnterZone }: Props) {
   const [onlyPeru, setOnlyPeru] = useState(false);
+  // Foco: al abrir entra al panel (botón «Cerrar») y al cerrar vuelve al botón que lo abrió. El panel no es modal:
+  // el mapa y el resto de la consola siguen disponibles.
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+  useEffect(() => {
+    if (open && !wasOpen.current) closeRef.current?.focus();
+    if (!open && wasOpen.current) toggleRef.current?.focus();
+    wasOpen.current = open;
+  }, [open]);
   useEffect(() => {
     if (!open) return;
     const close = (event: KeyboardEvent) => { if (event.key === "Escape") onOpen(false); };
@@ -51,14 +61,14 @@ export function WorldAlertsControl({ open, onOpen, shown, onHide, data, error, s
   const peruCount = (data?.alerts ?? []).filter((alert) => alert.in_peru).length;
   return (
     <div className="alertsControl">
-      <button className="layerToggle alertsToggle" aria-expanded={open} aria-controls="panel-alertas" onClick={() => onOpen(!open)}>
+      <button ref={toggleRef} className="layerToggle alertsToggle" aria-expanded={open} aria-controls="panel-alertas" onClick={() => onOpen(!open)}>
         <i aria-hidden="true" />Alertas en el mundo{data ? ` · ${data.alerts.length}` : ""}
       </button>
       {open && (
         <div className="layerPanel alertsPanel" id="panel-alertas" role="dialog" aria-label="Alertas en el mundo">
           <div className="layerPanelHead">
             <p className="layerPanelNote">Eventos de los últimos {data?.window_days ?? 60} días. El nivel lo asigna <b>GDACS</b>; <b>NASA EONET</b> es el segundo testigo.</p>
-            <button onClick={() => onOpen(false)}>Cerrar</button>
+            <button ref={closeRef} onClick={() => onOpen(false)}>Cerrar</button>
           </div>
           <p className="layerPanelNote">Al cerrar, los marcadores siguen en el globo. {shown && <button className="alertsHide" onClick={onHide}>Quitar del mapa</button>}</p>
           {zones.length > 0 && (
@@ -140,14 +150,17 @@ export function PlaceSearch({ slots, onPick }: { slots: string[]; onPick: (place
   useEffect(() => {
     const text = query.trim();
     if (text.length < 2) { setPlaces(null); setError(""); return; }
+    // Cada consulta cancela la anterior: una respuesta lenta de un texto viejo no puede pisar los resultados del actual.
+    const controller = new AbortController();
     const timer = window.setTimeout(() => {
-      fetch(`/api/places?q=${encodeURIComponent(text)}`).then(async (response) => {
+      fetch(`/api/places?q=${encodeURIComponent(text)}`, { signal: controller.signal }).then(async (response) => {
         const payload = await response.json();
+        if (controller.signal.aborted) return;
         if (!response.ok || !Array.isArray(payload.places)) throw new Error(typeof payload.detail === "string" ? payload.detail : "");
         setPlaces(payload.places); setError("");
-      }).catch((exception: Error) => { setPlaces(null); setError(exception.message || "El buscador de lugares no respondió."); });
+      }).catch((exception: Error) => { if (controller.signal.aborted) return; setPlaces(null); setError(exception.message || "El buscador de lugares no respondió."); });
     }, 350);
-    return () => window.clearTimeout(timer);
+    return () => { window.clearTimeout(timer); controller.abort(); };
   }, [query]);
 
   return (
@@ -164,7 +177,7 @@ export function PlaceSearch({ slots, onPick }: { slots: string[]; onPick: (place
       {error && <p className="errorMessage" role="alert">{error}</p>}
       {places && places.length === 0 && <p className="territoryHint">Sin resultados para «{query.trim()}». Pruebe con otro nombre o escriba las coordenadas.</p>}
       {places && places.length > 0 && (
-        <ul className="territoryResults" role="listbox" aria-label="Lugares encontrados">
+        <ul className="territoryResults" aria-label="Lugares encontrados">
           {places.map((place) => (
             <li key={`${place.name}-${place.latitude}-${place.longitude}`}>
               <button onClick={() => { onPick(place, target); setQuery(""); setPlaces(null); }}>

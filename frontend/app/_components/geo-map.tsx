@@ -234,7 +234,8 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
       if (globe) {
         map.setSky({ "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 1, 7, 0] });
         // Empieza sobre Sudamérica, con el Perú a la vista, y desde ahí gira hacia el este.
-        map.easeTo({ center: [-62, -6], zoom: 1.3, duration: 1100 });
+        // Con «reducir movimiento» el encuadre es inmediato (MapLibre ya lo hace con sus animaciones no esenciales; aquí queda explícito).
+        map.easeTo({ center: [-62, -6], zoom: 1.3, duration: prefersReducedMotion() ? 0 : 1100 });
       }
     });
   }, [globe]);
@@ -246,6 +247,10 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
     let spinning = true;
     let last = performance.now();
     const stop = () => { spinning = false; };
+    // Si la persona activa «reducir movimiento» con el globo ya girando, el giro se detiene en ese momento.
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onPreference = () => { if (media.matches) stop(); };
+    media.addEventListener("change", onPreference);
     const step = (now: number) => {
       if (!spinning) return;
       const elapsed = Math.min(now - last, 100);
@@ -264,20 +269,21 @@ export default function GeoMap({ sites, onPick, terrainOverlay, showTerrain, geo
       spinning = false;
       window.clearTimeout(start);
       cancelAnimationFrame(frame);
+      media.removeEventListener("change", onPreference);
       ["mousedown", "touchstart", "wheel"].forEach((name) => canvas.removeEventListener(name, stop));
     };
   }, [globe]);
   // Sin globo, al encender las alertas el plano se abre al mundo.
   useEffect(() => {
     const map = mapRef.current;
-    if (map && alertCount > 0 && !globe) map.fitBounds([[-168, -56], [178, 72]], { padding: 8, duration: 900 });
+    if (map && alertCount > 0 && !globe) map.fitBounds([[-168, -56], [178, 72]], { padding: 8, duration: prefersReducedMotion() ? 0 : 900 });
     // Solo al pasar de cero a alguna alerta.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [alertCount > 0]);
   const focusToken = focus?.token ?? null;
   useEffect(() => {
     const map = mapRef.current;
-    if (map && focus) map.flyTo({ center: [focus.longitude, focus.latitude], zoom: focus.zoom, duration: 1400, essential: false });
+    if (map && focus) map.flyTo({ center: [focus.longitude, focus.latitude], zoom: focus.zoom, duration: prefersReducedMotion() ? 0 : 1400, essential: false });
     // El vuelo responde al pedido (token), no a cada render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusToken]);

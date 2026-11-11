@@ -75,5 +75,7 @@ class GdacsConnector:
         world, provenance, stamp, stale = await self._search({"alertlevel": "red;orange", "eventlist": ALL_TYPES, **span})
         peru, peru_provenance, peru_stamp, peru_stale = await self._search({"alertlevel": "red;orange;green", "eventlist": PERU_TYPES, "country": "Peru", **span})
         merged = {item["id"]: item for item in [*world, *peru]}
-        both_cached = provenance == Provenance.CACHED and peru_provenance == Provenance.CACHED
-        return list(merged.values()), Provenance.CACHED if both_cached or stale or peru_stale else Provenance.REAL, min(stamp, peru_stamp), stale or peru_stale
+        # La respuesta combina dos consultas. Si cualquiera procede de caché, el conjunto ya no es
+        # enteramente una descarga nueva y debe conservar la etiqueta más conservadora.
+        any_cached = provenance == Provenance.CACHED or peru_provenance == Provenance.CACHED
+        return list(merged.values()), Provenance.CACHED if any_cached else Provenance.REAL, min(stamp, peru_stamp), stale or peru_stale

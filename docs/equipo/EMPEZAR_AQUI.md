@@ -58,12 +58,29 @@ Si te equivocas de puerto, ojo: el `3000` es de otro proyecto (MyFix), no lo use
 **Sin Docker:**
 
 ```powershell
+python --version  # debe responder 3.12.x; si abre Microsoft Store o no responde, instala Python 3.12 desde python.org y desactiva el alias de ejecución de Windows
 python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r backend\requirements.txt
 .\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --port 8000
 # en otra terminal
 cd frontend; npm.cmd install; npm.cmd run dev
 ```
+
+**Puertos temporales para trabajar en paralelo.** El frontend lee la API desde `BACKEND_API_URL`; cambiar solo el puerto de Next deja sus rutas internas apuntando al 8000. Este ejemplo evita el stack compartido de 3100/8000 y también el 3000 de MyFix:
+
+```powershell
+# terminal 1, desde la raíz
+.\.venv\Scripts\python.exe -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8311
+
+# terminal 2, desde frontend
+$env:BACKEND_API_URL = "http://127.0.0.1:8311"
+$env:API_PUBLIC_URL = "http://127.0.0.1:8311"   # solo para el enlace «OpenAPI» del pie de página
+npm.cmd run dev -- --hostname 127.0.0.1 --port 3411
+```
+
+Abre `http://127.0.0.1:3411` y `http://127.0.0.1:8311/docs`. Detén ambos procesos con `Ctrl+C` cuando termines. Los números 3411/8311 son ejemplos: usa dos puertos libres y conserva la misma relación en `BACKEND_API_URL`.
+
+> **Red restringida:** durante `npm run dev` o `npm run build`, Next puede no descargar Public Sans e IBM Plex Mono desde Google Fonts. La aplicación continúa con sus fuentes de respaldo, pero el resultado visual no es idéntico. Registra el aviso y repite el QA visual con acceso a `fonts.googleapis.com` y `fonts.gstatic.com` antes de aprobar una entrega.
 
 ## Cómo trabajamos
 
@@ -82,7 +99,7 @@ cd frontend; npm.cmd install; npm.cmd run dev
 **Puerta común antes del Pull Request.** Las pruebas no salen a internet, porque usan dobles de las fuentes.
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest backend\tests -q      # hoy: 284 pruebas
+.\.venv\Scripts\python.exe -m pytest backend\tests -q      # el número crece; ninguna prueba puede fallar
 cd frontend; npm.cmd run build; npm.cmd audit --omit=dev
 ```
 

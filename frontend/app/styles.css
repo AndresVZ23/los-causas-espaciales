@@ -96,6 +96,8 @@ input::-webkit-calendar-picker-indicator:focus-visible { outline: 2px solid var(
 .geoMap .maplibregl-ctrl-group { background: #111719; border-radius: 2px; overflow: hidden; box-shadow: 0 7px 18px rgba(0,0,0,.35); }
 .geoMap .maplibregl-ctrl button { background-color: #111719; }
 .geoMap .maplibregl-ctrl button span { filter: invert(1); }
+/* En pantallas táctiles o angostas los botones del mapa crecen a 44 px; el icono conserva su tamaño. */
+@media (pointer: coarse), (max-width: 900px) { .geoMap .maplibregl-ctrl-group button { width: 44px; height: 44px; } }
 .geoMap .maplibregl-ctrl-attrib { background: rgba(8,12,13,.84); color: var(--muted); font-size: 10px; }
 .geoMap .maplibregl-ctrl-attrib a { color: var(--text); }
 .geoMap .maplibregl-popup-content { border-radius: 2px; background: #0b1011; color: var(--text); border: 1px solid var(--border); padding: 7px 9px; }
@@ -200,7 +202,7 @@ input::-webkit-calendar-picker-indicator:focus-visible { outline: 2px solid var(
 @keyframes blockRing { 0% { transform: scale(1); opacity: .9; } 100% { transform: scale(2.6); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .alertBlock i, .alertBlock::before, .alertBlock::after { animation: none !important; } }
 /* Con el globo, el fondo es el espacio. */
-.mapViewport.hasGlobe { background: radial-gradient(circle at 50% 50%, #0d1a24 0%, #05080a 70%); }
+.mapViewport.hasGlobe { background: #070c11; }
 @keyframes alertBeat { 0% { box-shadow: 0 0 0 0 rgba(238,113,128,.55); } 100% { box-shadow: 0 0 0 9px rgba(238,113,128,0); } }
 @media (prefers-reduced-motion: reduce) { .alertPulse::after, .alertRow i.live, .alertsToggle i { animation: none !important; } }
 @media (max-width: 560px) { .alertsPanel { width: 270px; max-height: 215px; }.alertActions button { min-height: 36px; } }

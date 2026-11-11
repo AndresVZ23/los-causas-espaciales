@@ -119,7 +119,13 @@ function checkSeriesFor(site: SeriesSubject, code: string) {
 // Nombre de la serie principal en la leyenda: la radiación viene de CERES, el caudal de GloFAS y lo demás de MERRA-2.
 const primaryName = (code: string) => (code === "ALLSKY_SFC_SW_DWN" ? "CERES" : code === "RIVER_DISCHARGE" ? "GloFAS" : "MERRA-2");
 
-export default function Workspace() {
+/** Texto corto de una dirección para el pie: el puerto si lo tiene; si no, el nombre del servidor. */
+const addressLabel = (url: string) => { try { const parsed = new URL(url); return parsed.port || parsed.hostname; } catch { return url; } };
+
+export default function Workspace({ apiDocsUrl = "http://localhost:8000/docs" }: { apiDocsUrl?: string }) {
+  // La dirección de la aplicación se lee del navegador: en puertos temporales el pie ya no dice 3100.
+  const [appAddress, setAppAddress] = useState("");
+  useEffect(() => { setAppAddress(window.location.port || window.location.hostname); }, []);
   const [activeModule, setActiveModule] = useState("solar");
   const [activeVariable, setActiveVariable] = useState("ALLSKY_SFC_SW_DWN");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -788,7 +794,7 @@ export default function Workspace() {
         <div className="sectionHeader"><div><h2 id="coverage-title">Siete módulos, estados honestos</h2><p>Una capacidad pendiente permanece identificada como pendiente.</p></div></div>
         <div className="moduleMatrix">{modules.map((module) => <button key={module.id} onClick={() => { selectModule(module.id); document.getElementById("workspace")?.scrollIntoView({ behavior: "smooth" }); }}><Icon name={module.icon} /><span><b>{module.name}</b><small>{module.description}</small></span><em className={module.ready ? "ready" : "pending"}>{module.status}</em></button>)}</div>
       </section>
-      <footer><div><strong>LOS CAUSAS ESPACIALES</strong><span>Inteligencia terrestre verificable para decisiones reales.</span></div><div><a href="http://localhost:8000/docs">OpenAPI · 8000</a><span>Aplicación · 3100</span></div></footer>
+      <footer><div><strong>LOS CAUSAS ESPACIALES</strong><span>Inteligencia terrestre verificable para decisiones reales.</span></div><div><a href={apiDocsUrl}>OpenAPI · {addressLabel(apiDocsUrl)}</a><span>Aplicación{appAddress ? ` · ${appAddress}` : ""}</span></div></footer>
 
       <nav className="mobileBottomNav" aria-label="Navegación principal móvil">
         {modules.filter((module) => ["solar", "climate", "hazards", "investment"].includes(module.id)).map((module) => <button key={module.id} onClick={() => selectModule(module.id)} className={activeModule === module.id ? "active" : ""} aria-pressed={activeModule === module.id}><Icon name={module.icon} /><span>{module.short}</span></button>)}

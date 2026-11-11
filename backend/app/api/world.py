@@ -35,9 +35,13 @@ async def alerts() -> WorldAlertsResponse:
 @router.get("/places", response_model=PlaceSearchResponse)
 async def places(q: str = Query(min_length=2, max_length=80, description="Nombre de una ciudad, región o lugar.")) -> PlaceSearchResponse:
     """Busca un lugar del mundo por nombre para ubicarlo como sitio de análisis."""
+    # La longitud mínima se exige sobre el texto sin espacios: una consulta en blanco no debe llegar al proveedor.
+    text = q.strip()
+    if len(text) < 2:
+        raise HTTPException(status_code=422, detail="Escriba al menos dos letras del nombre del lugar.")
     try:
-        found, provenance, stamp, stale = await GeocodingConnector().search(q.strip())
+        found, provenance, stamp, stale = await GeocodingConnector().search(text)
     except JsonSourceError as exc:
         raise HTTPException(status_code=502, detail=f"El buscador de lugares no respondió: {exc}") from exc
-    return PlaceSearchResponse(query=q.strip(), places=[Place(**item) for item in found], source=GEOCODING_SOURCE, provenance=provenance, downloaded_at=stamp,
+    return PlaceSearchResponse(query=text, places=[Place(**item) for item in found], source=GEOCODING_SOURCE, provenance=provenance, downloaded_at=stamp,
                                note=stale or "Solo ubica el sitio; no aporta datos al análisis.")

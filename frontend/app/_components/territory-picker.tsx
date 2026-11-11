@@ -75,7 +75,7 @@ export default function TerritoryPicker({ onAdd, disabled, chosen }: { onAdd: (p
           <label className="srOnly" htmlFor="buscar-territorio">Buscar departamento, provincia o distrito</label>
           <input id="buscar-territorio" className="territorySearch" value={query} placeholder="Departamento, provincia, distrito o ubigeo" onChange={(event) => setQuery(event.target.value)} />
           {results.length > 0 && (
-            <ul className="territoryResults" role="listbox" aria-label="Territorios encontrados">
+            <ul className="territoryResults" aria-label="Territorios encontrados">
               {results.map((item) => (
                 <li key={`${item.level}-${item.ubigeo}`}>
                   <button disabled={disabled || busy || chosen.includes(item.ubigeo)} onClick={() => add(item)}>

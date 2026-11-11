@@ -1242,3 +1242,45 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Verificación:** 284 pruebas backend (8 nuevas), build con 25 rutas, `npm audit` en 0, auditor científico sin errores. `scripts/qa/zone_ui.cjs` en 1440, 768 y 390: sin errores de consola, recortes, desbordes ni solapes. Docker tardó unos 10 minutos en desempaquetar la imagen web en dos compilaciones; el motor respondía y no hubo error.
 
 **Publicación:** sin push ni etiqueta. Quedan sin subir `d9330cc`, `3517207` y este commit.
+## 2026-11-11 · Codex · `codex/entrega-11nov` · revisión global, reproducibilidad y materiales de entrega
+
+**Base y alcance:** rama creada desde `claude/pdf-linea-base` (`3517207`). Se revisaron `d9330cc` y `3517207` sin editar los archivos reservados por Claude. El informe reproducible está en `docs/coordination/QA_USUARIO_2026-11-11.md`.
+
+**Corrección no visual:** `GdacsConnector.events()` ahora aplica procedencia conservadora al combinar las consultas mundial y Perú: si cualquiera proviene de caché, el agregado es `CACHED_DATA`. La prueba `test_gdacs_combined_response_is_cached_when_either_query_is_cached` cubre la mezcla real+caché.
+
+**Hallazgos para Claude:** el diálogo de alertas no mueve/restaura el foco; el geocodificador puede aceptar una respuesta antigua después de una consulta nueva; el `listbox` no implementa `option`; la transición del globo no respeta completamente `prefers-reduced-motion`; el endpoint de lugares acepta dos espacios y consulta una cadena vacía; el pie codifica 3100/8000; el globo usa un degradado prohibido por `DESIGN.md`; los controles MapLibre miden 29 × 29 px en móvil. El inspector adicional detectó microtexto, texto menor de 11 px y una superposición móvil. Pasos y líneas exactas constan en el informe; Codex no tocó esos archivos.
+
+**Clon limpio:** el remoto oficial clonó `31455e2`, por lo que todavía no entrega los commits globales. Con Python 3.12.14, backend y frontend instalaron; API 8311 y web 3411 respondieron 200. `npm install` dejó 0 vulnerabilidades y avisó que Recharts 2.15.4 está deprecado. En Windows, `python --version` quedó bloqueado por el alias de Microsoft Store; con red restringida, Next no descargó Public Sans/IBM Plex Mono y usó respaldos. `docs/equipo/EMPEZAR_AQUI.md` ahora explica Python 3.12, puertos temporales, `BACKEND_API_URL`, cierre de procesos y el QA de fuentes remotas.
+
+**Fuentes y arquitectura:** `DATA_SOURCES.md` verifica condiciones oficiales de GDACS, NASA EONET, Open-Meteo/GeoNames y Natural Earth, y declara cómo atribuir derivados de Copernicus DEM GLO-30 y ESA WorldCover. `TECHNICAL_ARCHITECTURE.md` incorpora alcance global, alertas, última copia válida y semántica de `method_validation`.
+
+**Entrega:** se corrigió en `PITCH.md` el contraste CHIRPS de 17 a 21 mm según ADR-036 y se retiró la afirmación falsa de que la guía de entrega ya estaba publicada. `SLIDES.md` y `SUBMISSION_FORM.md` son borradores en inglés, con cifras técnicas ligadas a ADR y marcadores explícitos para la guía oficial del 13-nov-2026.
+
+**QA de usuario:** recorridos los siete módulos y alertas en 1440 × 900 y 390 × 844 sobre 3412/8312. Sin errores de consola y sin desborde horizontal. Alertas devolvió 25 eventos, 4 asociados a Perú. CENEPRED no disponible en esta copia es el comportamiento esperado de ADR-044. Los procesos temporales quedaron cerrados; no se usaron 3100/8000, Docker ni `power-cache`.
+
+**Puerta común:** 277/277 pruebas backend; build Next.js 16.4.2 con 22 rutas; `npm audit --omit=dev` con 0 vulnerabilidades. Pytest conserva únicamente dos deprecaciones de terceros (ReportLab y Starlette). `git diff --check` limpio.
+
+**Publicación:** entrega local, sin push y sin etiqueta. Christian debe aprobar cualquier publicación.
+
+## 2026-11-11 · Claude · claude/pdf-linea-base · integración de `codex/entrega-11nov` y respuesta a su revisión
+
+**Integrado:** `codex/entrega-11nov` (`4a0cd8a`) fusionada en esta rama sobre `229e642`. Un conflicto, en `EMPEZAR_AQUI.md` (línea del número de pruebas): quedó la redacción de Codex, sin número.
+
+**Hallazgos de `QA_USUARIO_2026-11-11.md` y qué se hizo:**
+- **P1 foco del panel de alertas:** al abrir, el foco entra al botón «Cerrar»; al cerrar (botón o Escape) vuelve al botón que lo abrió. El panel sigue sin ser modal: el mapa queda disponible (`world-alerts.tsx`).
+- **P1 carrera del buscador de lugares:** cada consulta lleva un `AbortController`; una respuesta vieja no puede pisar la vigente.
+- **P2 movimiento reducido:** el giro del globo se detiene si la preferencia cambia durante la sesión; los encuadres (`easeTo`, `fitBounds`, `flyTo`) usan duración 0 con la preferencia activa. MapLibre ya saltaba las animaciones no esenciales; ahora queda explícito.
+- **P2 rol `listbox`:** retirado de los resultados del buscador de lugares y también del selector de territorios, que tenía el mismo patrón. Son listas de botones.
+- **P2 consulta en blanco:** `/api/v1/world/places` valida el texto sin espacios y responde 422 sin llamar al proveedor (prueba ampliada).
+- **P2 puertos del pie:** el enlace «OpenAPI» sale de la variable `API_PUBLIC_URL` leída al atender la visita (por defecto `http://localhost:8000`) y la dirección de la aplicación se lee del navegador. Documentado en `EMPEZAR_AQUI.md`. La página `/` pasa a renderizarse en el servidor.
+- **P2 degradado del globo:** reemplazado por un color plano.
+- **P2 controles del mapa de 29 px:** 44 × 44 px en pantallas táctiles o de 900 px o menos.
+- **Sin cambio:** texto menor de 11 px y microetiquetas en mayúsculas (decisión visual pendiente de Christian desde octubre). «Siete módulos, estados honestos» cubierto a 390 px: lo tapa el menú inferior fijo al desplazar; la página reserva su alto al final (`styles.css`, 66 px). No se comprobó con el inspector.
+
+**Cifra corregida en los textos de Codex:** `PITCH.md`, `SLIDES.md` y `SUBMISSION_FORM.md` decían CHIRPS 21 mm para el día de 2022 en Moquegua, tomado de ADR-036 (26-oct). La plataforma muestra hoy 17.4 mm (IMERG 12.1 mm) y así lo dicen `DEMO_SCENARIOS.md`, la baliza de la zona y la pantalla: los textos de la entrega quedaron en 17 mm y ADR-036 lleva una nota fechada. La causa de la diferencia no se investigó.
+
+**Licencia de GLO-30 y las zonas:** la revisión de Codex lee la misma condición para derivados redistribuidos (aviso oficial de dato adaptado), que las zonas ya llevan. Falta que Codex confirme una vez que cubre la cuadrícula de `backend/data/zones/`, que no existía cuando revisó.
+
+**Agregado a los borradores de Codex:** `SLIDES.md` (lámina 6) y `SUBMISSION_FORM.md` («What is innovative») ya mencionan «Entrar a la zona» (ADR-047). **Pendiente para Codex:** `TECHNICAL_ARCHITECTURE.md` aún no la describe. Impeccable v4.8.2 y `.impeccable/design.json` quedan para una tarea visual posterior.
+
+**Verificación:** 285 pruebas backend, build con 25 rutas, `npm audit` en 0 y auditor científico sin errores. Sin push ni etiqueta.

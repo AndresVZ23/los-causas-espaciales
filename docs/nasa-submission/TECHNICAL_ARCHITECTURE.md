@@ -8,21 +8,25 @@ flowchart LR
   API --> NASA[NASA POWER / AppEEARS / NASADEM]
   API --> SECOND[PVGIS / Wind Atlas / Copernicus DEM]
   API --> FLOW[GloFAS v4 / GEOGLOWS v2]
+  API --> WORLD[GDACS / NASA EONET / Open-Meteo]
   API --> PERU[Official Peru ArcGIS layers]
   API --> COES[COES production labels]
   NASA --> CACHE[Content-addressed file cache]
   SECOND --> CACHE
   FLOW --> CACHE
+  WORLD --> CACHE
   PERU --> CACHE
   COES --> CACHE
   API --> STATS[Mann-Kendall + Sen]
   API --> GEO[Shapely + PROJ geometry engine]
   API --> TERR[IGN/OCHA territorial index]
+  API --> COUNTRY[Natural Earth country lookup]
   API --> SECTORS[Climate / solar / wind / hydro / road / real estate / baselines]
   API --> FIN[Financial scenarios]
   STATS --> CONTRACT[Traceable result contracts]
   GEO --> CONTRACT
   TERR --> CONTRACT
+  COUNTRY --> CONTRACT
   SECTORS --> CONTRACT
   FIN --> CONTRACT
   CONTRACT --> UI
@@ -35,6 +39,8 @@ Current endpoints:
 - `GET /api/v1/health`
 - `GET /api/v1/sources`
 - `GET /api/v1/map/layers`
+- `GET /api/v1/world/alerts`
+- `GET /api/v1/world/places?q={name}`
 - `POST /api/v1/analyses/point`
 - `POST /api/v1/comparisons/sites`
 - `POST /api/v1/terrain/points`
@@ -67,7 +73,17 @@ Current endpoints:
 
 Connector payloads use a content-addressed raw cache: the SHA-256 named provider response is immutable and a small request manifest points to it. AppEEARS credentials and tokens are excluded from both layers. AppEEARS logs in for each operation, renews on HTTP 403, and logs out in `finally`; tasks remain asynchronous at the NASA service. Bundle downloads verify the provider SHA-256 before caching, follow only an explicit HTTPS host allowlist, and never forward the Earthdata token to the object-storage redirect. COES exports are fetched sequentially one closed month at a time with `indicador=1`; the XLSX container, sheet and headers are validated before daily MWh values are aggregated by exact central name. GISEM capacity and coordinates enrich the result only after an exact name match; a failed cross-source lookup never hides the COES generation.
 
-Closed scientific inputs are reused from cache with their original download timestamp and provenance. For official territorial layers, a provider failure normally remains `DATA_UNAVAILABLE`. ADR-044 adds one narrow exception: the same request-cache key may use its last successful response for up to 90 days, labelled `CACHED_DATA` with the original date and current failure reason. `stale_note` propagates through the territorial contract, environmental baseline, road and real-estate summaries, gaps, UI and PDF. This is currently material for CENEPRED, whose public ArcGIS service began returning `499 Token Required` on 10-Nov-2026. A machine without a matching pre-closure cache correctly shows “No disponible”; caches are never fabricated or copied implicitly between stacks.
+Closed scientific inputs are reused from cache with their original download timestamp and provenance. The common small-JSON transport follows ADR-044 as well: it first uses a fresh content-addressed response, then calls the provider, and only after a transport, HTTP or JSON failure may serve the last valid response for the exact request key with `CACHED_DATA`, its original timestamp and the current failure reason. A combined response is conservatively `CACHED_DATA` if any constituent request came from cache; mixed freshness is never promoted to `REAL_DATA`.
+
+For official territorial layers, a provider failure normally remains `DATA_UNAVAILABLE`. ADR-044 adds one narrow exception: the same request-cache key may use its last successful response for up to 90 days, labelled `CACHED_DATA` with the original date and current failure reason. `stale_note` propagates through the territorial contract, environmental baseline, road and real-estate summaries, gaps, UI and PDF. This is currently material for CENEPRED, whose public ArcGIS service began returning `499 Token Required` on 10-Nov-2026. A machine without a matching pre-closure cache correctly shows “No disponible”; caches are never fabricated or copied implicitly between stacks.
+
+## Global scope and world alerts (ADR-046)
+
+The global shell separates navigation context from analytical evidence. Open-Meteo geocoding converts a place name into candidate WGS84 points; the selected point is only an input location and does not become evidence. Natural Earth Admin 0 polygons at 1:110m resolve a coarse country code for selecting a Global Wind Atlas country file and for deciding whether Peruvian official layers are applicable. The lookup declares a 0.5° coastal/border tolerance and returns no country over open ocean rather than guessing; it is not a legal-boundary service.
+
+`GET /api/v1/world/alerts` orchestrates two independent providers. GDACS supplies its own red/orange/green levels and NASA EONET supplies an unlevelled second witness. The contract matches only events of an equivalent type within a declared time and geodesic-distance window, retains the source URL and never derives an alert level from NASA. If either provider fails, the other remains available and the failed source is emitted as `DATA_UNAVAILABLE`; one-hour caches and the exact-key last-valid-copy rule preserve freshness and failure evidence. The response disclaimer states that the list is informational, not an early-warning system or a substitute for national or local authorities.
+
+Global inputs do not imply global parity. NASA, ERA5, Copernicus, GDACS and EONET-based analyses can operate outside Peru, but IGN territories and the connected CENEPRED, ANA, SERNANP, Cultura, MINAM, INGEMMET, Osinergmin and related layers are Peruvian. When a subject is outside Peru, those connectors are skipped and the response states the geographic limitation; no absent query is converted into zero exposure.
 
 PostGIS and a local job queue remain planned for persistent geometries, bulk corridor sampling, and locally managed raster workloads. AppEEARS does not depend on that queue because NASA owns the asynchronous task lifecycle.
 
@@ -79,7 +95,7 @@ The renewable-energy module has three lenses over the same C2 `ScreeningEnvelope
 
 Second-source checks are first-class evidence, not silent fallbacks. Temperature, solar radiation and 10 m wind use PVGIS-ERA5; rainfall extremes contrast NASA POWER/MERRA-2 with GPM IMERG and CHIRPS; land cover uses ESA WorldCover against MODIS; elevation and slope use Copernicus DEM GLO-30 against NASADEM; wind level uses Global Wind Atlas against POWER; discharge uses GEOGLOWS against GloFAS; landslide context separates NASA susceptibility, LHASA probability and COOLR reports from CENEPRED susceptibility. Each crosscheck records its source, period, scale, units, status and limitations. Missing secondary evidence lowers coverage or creates a gap but does not replace the primary value with zero. Where at least two subjects all have both terrain models, solar, wind, road and real-estate scoring also recompute the original scorecard with Copernicus slopes to disclose whether the leader changes; missing contrasts do not receive invented slopes.
 
-`ScreeningEnvelope.method_validation` is an additive `list[str]` with an empty default, so contract version 1.0 remains backward compatible. Wind and hydro use it to publish a dated, sector-level validation of the method against real COES 2024 production. These notes are constants supported by reproducible QA scripts, displayed in the Method panel and executive PDF; they are not observations or recalculations from the user's current analysis and must not be interpreted as site-specific accuracy.
+`ScreeningEnvelope.method_validation` is an additive `list[str]` with an empty default, so contract version 1.0 remains backward compatible. Wind and hydro use it to publish a dated, sector-level validation of the method against real COES 2024 production. These notes are constants supported by reproducible QA scripts, displayed in the Method panel and executive PDF; they are not observations or recalculations from the user's current analysis and must not be interpreted as site-specific accuracy. A method-validation statement must name its period, compared source and scope in an ADR; an empty list means no such validation is claimed, not that validation passed implicitly.
 
 K2 is the road-corridor screening service behind the integrated Infrastructure module. Its default public pilot is an ODbL-attributed OpenStreetMap route calculated with OSRM between Moquegua and Ilo and split into five contiguous WGS84 segments. In parallel, each segment obtains NASA POWER daily precipitation/temperature at a representative point, K1 area-weighted precipitation cells over a user-declared corridor buffer, NASADEM terrain when authenticated tiles are available, and intersections from the configured official Peruvian layers. The result inherits `ScreeningEnvelope` v1.0 and adds typed road results, territorial evidence, a six-criterion scorecard and a mitigation NPV with base/adverse/favorable scenarios, tornado and break-even values. The precipitation score uses the linearly interpolated 99th percentile of the recent area-weighted daily series; RX1DAY remains in the response for traceability and triggers an atypical-extreme warning when it is far above P99. This prevents the known 12–13 Sep 2022 MERRA-2 artifact from dominating the priority score while retaining it for IMERG or gauge review. Interruption days, cost per day, CAPEX, maintenance, residual interruption, discount rate and horizon are always `USER_ASSUMPTION`; NASA observations never become traffic, closure or loss observations. Missing terrain or official layers reduce score coverage and create `DATA_UNAVAILABLE` gaps rather than zero risk. The endpoint is screening, not road design, hydrology, geotechnics, environmental/social due diligence or investment feasibility.
 

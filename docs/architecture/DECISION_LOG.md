@@ -337,6 +337,7 @@ Los descubrimientos entran a la etapa «Resultados» del pipeline, a un panel pr
 **Resultado real del 26-oct-2026:**
 - **Moquegua, 2022:**
   - RX1DAY: 300 mm en MERRA-2, 12 mm en IMERG y 21 mm en CHIRPS. Es un artefacto confirmado por las dos fuentes independientes.
+  - **Nota del 11-nov-2026:** la consulta en vivo del sitio Moquegua (−17.193, −70.934) da hoy **17.4 mm** en CHIRPS y 12.1 mm en IMERG, y esa es la cifra que muestran la pantalla, la baliza de la zona (ADR-047) y los textos de la entrega. El valor de 21 mm del 26-oct no se volvió a reproducir y no se investigó la causa (área consultada o revisión del producto). La conclusión no cambia: MERRA-2 supera más de diecisiete veces a cada producto satelital.
   - CHIRPS ve aumentos significativos en 4 índices que MERRA-2 no ve. Se publican como pistas que hay que contrastar con estaciones, no como tendencias.
 - **Arequipa:** la tendencia de RX5DAY (+1.1 mm/año, p BH 0.019), que IMERG no respaldaba, se repite en CHIRPS.
 
@@ -789,6 +790,6 @@ La fila inmobiliaria usa las alertas de CENEPRED de su última copia válida (AD
 
 **Limitaciones.** GLO-30 es un modelo de superficie: en ciudad y bosque incluye techos y copas. WorldCover es de 2021 y asigna una clase dominante por píxel de 10 m, que aquí se muestrea cada 30 o 35 m. La maqueta no sirve para medir distancias de evacuación ni para ubicar obras. Las cifras de las balizas tienen la fecha de construcción de la zona, no la del día en que se recorre.
 
-**Licencias.** Las zonas versionan un dato derivado de GLO-30 y de WorldCover: la pantalla muestra el aviso de dato adaptado de Copernicus y el crédito CC BY 4.0 de WorldCover en «Sobre esta maqueta», y el crédito de OpenStreetMap junto a la vía. Queda por confirmar, antes de publicar el repositorio, que la licencia completa de GLO-30 permite redistribuir la cuadrícula derivada (ver `DATA_SOURCES.md`).
+**Licencias.** Las zonas versionan un dato derivado de GLO-30 y de WorldCover: la pantalla muestra el aviso de dato adaptado de Copernicus y el crédito CC BY 4.0 de WorldCover en «Sobre esta maqueta», y el crédito de OpenStreetMap junto a la vía. La revisión de licencias de Codex del 11-nov lee la misma condición para métricas puntuales y para derivados redistribuidos: llevar el aviso oficial de dato adaptado, que cada zona lleva en su lista `sources`. Esa revisión se escribió antes de que existieran estos dos archivos: falta que confirme una vez que cubre una cuadrícula derivada (ver `DATA_SOURCES.md`).
 
 **Verificación.** 8 pruebas nuevas sin red (284 en total): cuadrícula cuadrada en metros, pendiente de una rampa conocida, bloques sobre el punto más bajo, pendiente igual con y sin exageración, celda sin dato, agua plana, coherencia de las dos zonas con su cuadrícula y rutas de la API con identificadores inválidos. `scripts/qa/zone_ui.cjs` en 1440, 768 y 390: del globo a la zona, caminar, seis fichas, vista de pendientes, salida al globo y enlace directo `/zona/taal`, sin recortes, desbordes ni solapes.
