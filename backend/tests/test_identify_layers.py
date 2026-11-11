@@ -58,3 +58,28 @@ async def test_cenepred_sampling_without_copies_is_unavailable_not_empty(tmp_pat
     assert state["calls"] == 1
     assert result.status == "DATA_UNAVAILABLE" and result.intersection_count is None and result.stale_note is None
     assert "Token Required" in result.limitations[0]
+
+
+@pytest.mark.asyncio
+async def test_mixed_live_and_stale_identify_samples_are_declared_cached(tmp_path, monkeypatch):
+    """Un muestreo parcialmente recuperado de la última copia válida no se presenta como REAL_DATA."""
+    connector = IdentifyLayersConnector(settings=Settings(_env_file=None, cache_dir=tmp_path))
+    now = datetime.now(timezone.utc)
+    old = now - timedelta(days=10)
+    calls = 0
+
+    async def mixed_identify(url, params, **kwargs):
+        nonlocal calls
+        calls += 1
+        payload = {"results": [{"layerId": 2, "attributes": {"Pixel Value": "4"}}]}
+        if calls == 1:
+            return payload, Provenance.REAL, now, None
+        return payload, Provenance.CACHED, old, "Token Required"
+
+    monkeypatch.setattr(connector, "_identify", mixed_identify)
+    result = await connector.cenepred_susceptibility(SQUARE, CENTER)
+
+    assert calls == 17 and result.status == "READY" and result.intersection_count == 17
+    assert result.provenance == Provenance.CACHED
+    assert "Token Required" in result.stale_note and result.limitations[0] == result.stale_note
+    assert result.downloaded_at == old

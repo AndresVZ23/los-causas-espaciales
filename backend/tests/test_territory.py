@@ -7,6 +7,7 @@ import pytest
 from backend.app.connectors.cache import STALE_MAX_AGE
 from backend.app.connectors.peru.territory import (
     LAYERS,
+    OfficialLayer,
     TerritoryConnector,
     TerritoryConnectorError,
     _cache_max_age,
@@ -115,6 +116,38 @@ async def test_provider_failure_serves_the_last_valid_copy_with_its_original_dat
     assert "Token Required" in stale.stale_note and "última copia válida" in stale.stale_note
     assert stale.limitations[0] == stale.stale_note
     assert (datetime.now(timezone.utc) - stale.downloaded_at).days == 14     # la fecha informada es la de la copia, no la de hoy
+
+
+@pytest.mark.asyncio
+async def test_one_stale_sublayer_makes_the_aggregate_provenance_cached(tmp_path):
+    """Una fuente compuesta nunca debe ocultar una subcapa vencida detrás de REAL_DATA."""
+    source = OfficialLayer(
+        source_id="mixed-source", organization="Proveedor de prueba", dataset="Dos subcapas",
+        base_url="https://example.org/arcgis/MapServer", layer_ids=(1, 2), coverage="Prueba",
+        scale_or_resolution="Vector", license="Prueba",
+    )
+    geometry = {"x": -70.934, "y": -17.193, "spatialReference": {"wkid": 4326}}
+    connector = TerritoryConnector(
+        settings=Settings(_env_file=None, cache_dir=tmp_path, cache_ttl_hours=24),
+        transport=httpx.MockTransport(lambda request: httpx.Response(
+            200, json={"features": [{"attributes": {"origin": "cached-layer"}}]}
+        )),
+    )
+    await connector._layer_query(source, 2, "esriGeometryPoint", geometry)
+    _age_copies(tmp_path, days=14)
+
+    def mixed_handler(request: httpx.Request) -> httpx.Response:
+        if request.url.path.endswith("/1/query"):
+            return httpx.Response(200, json={"features": [{"attributes": {"origin": "live-layer"}}]})
+        return httpx.Response(200, json=TOKEN_REQUIRED)
+
+    connector.transport = httpx.MockTransport(mixed_handler)
+    result = await connector._source_query(source, "esriGeometryPoint", geometry)
+
+    assert result.status == "READY" and result.intersection_count == 2
+    assert result.provenance == Provenance.CACHED
+    assert "Token Required" in result.stale_note and result.limitations[0] == result.stale_note
+    assert (datetime.now(timezone.utc) - result.downloaded_at).days == 14
 
 
 @pytest.mark.asyncio

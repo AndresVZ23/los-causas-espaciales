@@ -307,7 +307,9 @@ class TerritoryConnector:
             limitations.insert(0, note)
         latest = min(stamp for stamp, _ in stale) if stale else (max(timestamps) if timestamps else None)
         return TerritorialSourceResult(status="READY", intersection_count=len(features), features=features,
-            provenance=Provenance.CACHED if provenances and all(p == Provenance.CACHED for p in provenances) else Provenance.REAL,
+            # El contrato no tiene una procedencia "mixta": si una subcapa viene de la última copia válida,
+            # declarar el agregado como REAL_DATA ocultaría esa antigüedad. CACHED_DATA es la etiqueta conservadora.
+            provenance=Provenance.CACHED if note or (provenances and all(p == Provenance.CACHED for p in provenances)) else Provenance.REAL,
             downloaded_at=latest.astimezone(timezone.utc) if latest else None,
             limitations=limitations, stale_note=note, **common)
 

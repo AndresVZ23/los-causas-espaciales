@@ -134,7 +134,7 @@ class IdentifyLayersConnector:
         provenances = [provenance for _, provenance, _, _ in responses]
         note, stamp = _stale(responses)
         return TerritorialSourceResult(status="READY", intersection_count=len(features), features=features,
-                                       provenance=Provenance.CACHED if all(p == Provenance.CACHED for p in provenances) else Provenance.REAL,
+                                       provenance=Provenance.CACHED if note or all(p == Provenance.CACHED for p in provenances) else Provenance.REAL,
                                        downloaded_at=stamp.astimezone(timezone.utc), limitations=[*([note] if note else []), *limitations],
                                        stale_note=note, **common)
 
@@ -175,7 +175,7 @@ class IdentifyLayersConnector:
         if note:
             limitations.insert(0, note)
         return TerritorialSourceResult(status="READY", intersection_count=len(features), features=features,
-                                       provenance=Provenance.CACHED if provenances and all(p == Provenance.CACHED for p in provenances) else Provenance.REAL,
+                                       provenance=Provenance.CACHED if note or (provenances and all(p == Provenance.CACHED for p in provenances)) else Provenance.REAL,
                                        downloaded_at=stamp.astimezone(timezone.utc) if stamp else None, limitations=limitations, stale_note=note, **common)
 
     async def _extent(self, service: str):

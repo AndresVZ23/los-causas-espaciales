@@ -1,6 +1,6 @@
 # Technical Architecture
 
-> **Release baseline `v0.1.0` · established 24-Oct-2026 for the final 15-Nov-2026 submission.** This document defines the deployable architecture and verified module boundary for the release. Changes after this baseline require an ADR or documented defect, the common quality gate, and a handoff entry. Planned components remain explicitly planned and are not part of the tagged architecture.
+> **Pre-release architecture baseline · updated 10-Nov-2026 for the final 15-Nov-2026 submission.** No release tag has been created. This document defines the deployable architecture and verified module boundary. Later changes require an ADR or documented defect, the common quality gate, and a handoff entry. Planned components remain explicitly planned and are not part of the verified architecture.
 
 ```mermaid
 flowchart LR
@@ -18,7 +18,7 @@ flowchart LR
   API --> STATS[Mann-Kendall + Sen]
   API --> GEO[Shapely + PROJ geometry engine]
   API --> TERR[IGN/OCHA territorial index]
-  API --> SECTORS[Climate / solar / wind / hydro / road / real estate]
+  API --> SECTORS[Climate / solar / wind / hydro / road / real estate / baselines]
   API --> FIN[Financial scenarios]
   STATS --> CONTRACT[Traceable result contracts]
   GEO --> CONTRACT
@@ -42,6 +42,9 @@ Current endpoints:
 - `POST /api/v1/projects/wind-screening`
 - `POST /api/v1/projects/hydro-screening`
 - `POST /api/v1/projects/climate-screening`
+- `POST /api/v1/projects/environment-screening`
+- `POST /api/v1/projects/hazards-screening`
+- `POST /api/v1/projects/heritage-screening`
 - `POST /api/v1/projects/road-screening`
 - `POST /api/v1/projects/real-estate-screening`
 - `POST /api/v1/geospatial/inspect`
@@ -64,7 +67,7 @@ Current endpoints:
 
 Connector payloads use a content-addressed raw cache: the SHA-256 named provider response is immutable and a small request manifest points to it. AppEEARS credentials and tokens are excluded from both layers. AppEEARS logs in for each operation, renews on HTTP 403, and logs out in `finally`; tasks remain asynchronous at the NASA service. Bundle downloads verify the provider SHA-256 before caching, follow only an explicit HTTPS host allowlist, and never forward the Earthdata token to the object-storage redirect. COES exports are fetched sequentially one closed month at a time with `indicador=1`; the XLSX container, sheet and headers are validated before daily MWh values are aggregated by exact central name. GISEM capacity and coordinates enrich the result only after an exact name match; a failed cross-source lookup never hides the COES generation.
 
-Closed scientific inputs are reused from cache with their original download timestamp and provenance. For official territorial layers, a provider failure normally remains `DATA_UNAVAILABLE`. ADR-044 adds one narrow exception: a byte-identical query may use its last successful cached response for up to 90 days, labelled `CACHED_DATA` with the original date and the current failure reason. This is currently material for CENEPRED, whose public ArcGIS service began returning `499 Token Required` on 10-Nov-2026. A machine without a pre-closure cache correctly shows “No disponible”; caches are never fabricated or copied implicitly between stacks.
+Closed scientific inputs are reused from cache with their original download timestamp and provenance. For official territorial layers, a provider failure normally remains `DATA_UNAVAILABLE`. ADR-044 adds one narrow exception: the same request-cache key may use its last successful response for up to 90 days, labelled `CACHED_DATA` with the original date and current failure reason. `stale_note` propagates through the territorial contract, environmental baseline, road and real-estate summaries, gaps, UI and PDF. This is currently material for CENEPRED, whose public ArcGIS service began returning `499 Token Required` on 10-Nov-2026. A machine without a matching pre-closure cache correctly shows “No disponible”; caches are never fabricated or copied implicitly between stacks.
 
 PostGIS and a local job queue remain planned for persistent geometries, bulk corridor sampling, and locally managed raster workloads. AppEEARS does not depend on that queue because NASA owns the asynchronous task lifecycle.
 
@@ -72,9 +75,11 @@ K5 is served from versioned, read-only GeoJSON assets under `backend/data/territ
 
 K1 validates GeoJSON in WGS84, buffers corridors in a local azimuthal-equidistant projection, and switches only sub-cell polygons to the POWER point endpoint. Larger subjects use one variable per POWER regional request. Periods longer than the provider's 366-day limit are partitioned by calendar year and cached per fragment; the merge requires stable cell centers and units and rejects conflicting dates or values. Returned cell centers define the observed grid spacing; inferred cell footprints are intersected with the subject and weighted by geodesic overlap area. The API returns both the area-weighted aggregate/dispersion and every underlying cell series. Provider JSON uses the immutable content-addressed cache, and duplicate centers with conflicting values stop the request.
 
-The renewable-energy module has three lenses over the same C2 `ScreeningEnvelope`. Solar combines NASA POWER/CERES resource series with PVGIS-ERA5 and terrain. Wind obtains ten closed years of hourly `WS50M`/`WS10M` from NASA POWER for temporal shape, then uses Global Wind Atlas 4.0 rasters at 50 m and 100 m as an independent long-term level; shear, density and a generic power curve remain screening calculations. Run-of-river hydro obtains daily modelled discharge from GloFAS v4 through the Open-Meteo Flood API, searches GEOGLOWS v2 for an independent annual-flow series, and derives gross head between user-defined intake and powerhouse points. Energy is calculated day by day from explicit efficiency and environmental-flow assumptions. None of these paths replaces bankable resource measurement, a turbine study, basin hydrology, water rights or environmental permitting.
+The renewable-energy module has three lenses over the same C2 `ScreeningEnvelope`. Solar combines NASA POWER/CERES resource series with PVGIS-ERA5 and terrain. Wind obtains ten closed years of hourly `WS50M`/`WS10M` from NASA POWER for temporal shape, then uses Global Wind Atlas 4.0 rasters at 50 m and 100 m as an independent long-term level; shear, density and a generic power curve remain screening calculations. Run-of-river hydro obtains daily modelled discharge from GloFAS v4 through the Open-Meteo Flood API, searches GEOGLOWS v2 for a second annual-flow model estimate, and derives gross head between user-defined intake and powerhouse points. GEOGLOWS and GloFAS both use ERA5 forcing, so the comparison tests different routing models and river networks rather than an independent climate observation. Energy is calculated day by day from explicit efficiency and environmental-flow assumptions. None of these paths replaces bankable resource measurement, a turbine study, basin hydrology, water rights or environmental permitting.
 
-Second-source checks are first-class evidence, not silent fallbacks. Temperature, solar radiation and 10 m wind use PVGIS-ERA5; land cover uses ESA WorldCover against MODIS; elevation and slope use Copernicus DEM GLO-30 against NASADEM; wind level uses Global Wind Atlas against POWER; discharge uses GEOGLOWS against GloFAS; landslide context separates NASA susceptibility, LHASA probability and COOLR reports from CENEPRED susceptibility. Each crosscheck records its source, period, scale, units, status and limitations. Missing secondary evidence lowers coverage or creates a gap but does not replace the primary value with zero.
+Second-source checks are first-class evidence, not silent fallbacks. Temperature, solar radiation and 10 m wind use PVGIS-ERA5; rainfall extremes contrast NASA POWER/MERRA-2 with GPM IMERG and CHIRPS; land cover uses ESA WorldCover against MODIS; elevation and slope use Copernicus DEM GLO-30 against NASADEM; wind level uses Global Wind Atlas against POWER; discharge uses GEOGLOWS against GloFAS; landslide context separates NASA susceptibility, LHASA probability and COOLR reports from CENEPRED susceptibility. Each crosscheck records its source, period, scale, units, status and limitations. Missing secondary evidence lowers coverage or creates a gap but does not replace the primary value with zero. Where at least two subjects all have both terrain models, solar, wind, road and real-estate scoring also recompute the original scorecard with Copernicus slopes to disclose whether the leader changes; missing contrasts do not receive invented slopes.
+
+`ScreeningEnvelope.method_validation` is an additive `list[str]` with an empty default, so contract version 1.0 remains backward compatible. Wind and hydro use it to publish a dated, sector-level validation of the method against real COES 2024 production. These notes are constants supported by reproducible QA scripts, displayed in the Method panel and executive PDF; they are not observations or recalculations from the user's current analysis and must not be interpreted as site-specific accuracy.
 
 K2 is the road-corridor screening service behind the integrated Infrastructure module. Its default public pilot is an ODbL-attributed OpenStreetMap route calculated with OSRM between Moquegua and Ilo and split into five contiguous WGS84 segments. In parallel, each segment obtains NASA POWER daily precipitation/temperature at a representative point, K1 area-weighted precipitation cells over a user-declared corridor buffer, NASADEM terrain when authenticated tiles are available, and intersections from the configured official Peruvian layers. The result inherits `ScreeningEnvelope` v1.0 and adds typed road results, territorial evidence, a six-criterion scorecard and a mitigation NPV with base/adverse/favorable scenarios, tornado and break-even values. The precipitation score uses the linearly interpolated 99th percentile of the recent area-weighted daily series; RX1DAY remains in the response for traceability and triggers an atypical-extreme warning when it is far above P99. This prevents the known 12–13 Sep 2022 MERRA-2 artifact from dominating the priority score while retaining it for IMERG or gauge review. Interruption days, cost per day, CAPEX, maintenance, residual interruption, discount rate and horizon are always `USER_ASSUMPTION`; NASA observations never become traffic, closure or loss observations. Missing terrain or official layers reduce score coverage and create `DATA_UNAVAILABLE` gaps rather than zero risk. The endpoint is screening, not road design, hydrology, geotechnics, environmental/social due diligence or investment feasibility.
 
@@ -84,7 +89,7 @@ The financial model charges land and mitigation at time zero and recognizes cons
 
 ## Cross-module release boundary
 
-The six operational decision lenses share the C2 envelope but keep their sector-specific evidence and limitations:
+Nine sector responses share the C2 envelope: six comparative decision lenses plus three baseline lenses presented inside the seven visible product modules. Each keeps its sector-specific evidence and limitations:
 
 | Module | Endpoint | Primary decision output | Scientific guardrail |
 |---|---|---|---|
@@ -94,5 +99,8 @@ The six operational decision lenses share the C2 envelope but keep their sector-
 | Run-of-river hydro | `/api/v1/projects/hydro-screening` | flow-duration energy, head, conditional NPV and score | GloFAS/GEOGLOWS are model simulations; intake, powerhouse, efficiency and environmental flow are assumptions |
 | Road infrastructure | `/api/v1/projects/road-screening` | segment exposure and mitigation priority | P99 enters the score; RX1DAY remains traceable; screening is not road design |
 | Real estate | `/api/v1/projects/real-estate-screening` | parcel/territory exposure and conditional project economics | areas above 200 ha are analysis areas, not project NPVs; one subject is not a ranking |
+| Environmental baseline | `/api/v1/projects/environment-screening` | physical/biological baseline evidence by subject | remote and official layers support scoping, not an EIA field inventory |
+| Natural hazards baseline | `/api/v1/projects/hazards-screening` | multi-source hazard evidence and counterchecks | an unavailable or non-intersecting layer never proves absence of hazard |
+| Heritage baseline | `/api/v1/projects/heritage-screening` | registered/declarative heritage evidence | public layers do not replace a CIRA, fieldwork or authority determination |
 
-The release QA runs each module through its controlled fixtures, C2 conformance and the generic PDF/report path where applicable. It also runs the complete backend suite, the production frontend build, the scientific auditor and the dependency audit. Browser QA at 1440 px and 390 px is owned by Claude and is recorded separately; Codex does not start the reserved 3100/8000 stack.
+The release QA runs each module through its controlled fixtures, C2 conformance and the generic PDF/report path where applicable. It also runs the complete backend suite, the production frontend build and the dependency audit. Scientific-review evidence is recorded in the ADRs; the repository currently has no `scripts/audit_project.py`, so a local scientific-auditor run must not be claimed unless that reproducible check is restored. Browser QA at 1440 px and 390 px is owned by Claude and is recorded separately; Codex does not start the reserved 3100/8000 stack.
