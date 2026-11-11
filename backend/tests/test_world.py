@@ -69,6 +69,27 @@ def test_gdacs_and_eonet_parsers_keep_only_complete_known_events():
     assert events[0]["latitude"] == 15.5 and events[0]["severity"] == "85 kts" and events[0]["url"] == "https://example.org/jtwc"
 
 
+def test_gdacs_combined_response_is_cached_when_either_query_is_cached():
+    connector = object.__new__(gdacs.GdacsConnector)
+    newer = datetime(2026, 11, 10, 12, tzinfo=timezone.utc)
+    older = datetime(2026, 11, 10, 11, tzinfo=timezone.utc)
+    responses = iter([
+        (gdacs.parse_events({"features": [GDACS_PAYLOAD["features"][0]]}), Provenance.REAL, newer, None),
+        (gdacs.parse_events({"features": [GDACS_PAYLOAD["features"][1]]}), Provenance.CACHED, older, None),
+    ])
+
+    async def search(_params):
+        return next(responses)
+
+    connector._search = search
+    events, provenance, downloaded_at, stale = asyncio.run(connector.events(TODAY, 60))
+
+    assert len(events) == 2
+    assert provenance == Provenance.CACHED
+    assert downloaded_at == older
+    assert stale is None
+
+
 def test_merge_marks_the_second_witness_and_lists_unmatched_nasa_events():
     alerts = world.merge_alerts(gdacs.parse_events(GDACS_PAYLOAD), eonet.parse_events(EONET_PAYLOAD))
     by_id = {alert.id: alert for alert in alerts}

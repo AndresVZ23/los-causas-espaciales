@@ -1222,3 +1222,23 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **QA visual acotado:** con API y web temporales en 18109/13109 se comprobó la selección de «Hidroeléctrica de pasada» y sus campos de toma/casa de máquinas en escritorio y 390 × 844: 0 errores de consola y 0 px de desbordamiento horizontal. No se envió un análisis remoto, por lo que no se consumió cuota de GloFAS/GEOGLOWS ni se consultó SIGDA. Ambos procesos temporales se cerraron.
 
 **Operación y publicación:** no se levantaron ni tocaron 3100/8000, Docker o `power-cache`; no se repitieron `baseline_ui` ni `demo_ensayo`. No se hizo push y no se creó `v0.1.0`, conforme al protocolo de aprobación de Christian.
+
+## 2026-11-11 · Codex · `codex/entrega-11nov` · revisión global, reproducibilidad y materiales de entrega
+
+**Base y alcance:** rama creada desde `claude/pdf-linea-base` (`3517207`). Se revisaron `d9330cc` y `3517207` sin editar los archivos reservados por Claude. El informe reproducible está en `docs/coordination/QA_USUARIO_2026-11-11.md`.
+
+**Corrección no visual:** `GdacsConnector.events()` ahora aplica procedencia conservadora al combinar las consultas mundial y Perú: si cualquiera proviene de caché, el agregado es `CACHED_DATA`. La prueba `test_gdacs_combined_response_is_cached_when_either_query_is_cached` cubre la mezcla real+caché.
+
+**Hallazgos para Claude:** el diálogo de alertas no mueve/restaura el foco; el geocodificador puede aceptar una respuesta antigua después de una consulta nueva; el `listbox` no implementa `option`; la transición del globo no respeta completamente `prefers-reduced-motion`; el endpoint de lugares acepta dos espacios y consulta una cadena vacía; el pie codifica 3100/8000; el globo usa un degradado prohibido por `DESIGN.md`; los controles MapLibre miden 29 × 29 px en móvil. El inspector adicional detectó microtexto, texto menor de 11 px y una superposición móvil. Pasos y líneas exactas constan en el informe; Codex no tocó esos archivos.
+
+**Clon limpio:** el remoto oficial clonó `31455e2`, por lo que todavía no entrega los commits globales. Con Python 3.12.14, backend y frontend instalaron; API 8311 y web 3411 respondieron 200. `npm install` dejó 0 vulnerabilidades y avisó que Recharts 2.15.4 está deprecado. En Windows, `python --version` quedó bloqueado por el alias de Microsoft Store; con red restringida, Next no descargó Public Sans/IBM Plex Mono y usó respaldos. `docs/equipo/EMPEZAR_AQUI.md` ahora explica Python 3.12, puertos temporales, `BACKEND_API_URL`, cierre de procesos y el QA de fuentes remotas.
+
+**Fuentes y arquitectura:** `DATA_SOURCES.md` verifica condiciones oficiales de GDACS, NASA EONET, Open-Meteo/GeoNames y Natural Earth, y declara cómo atribuir derivados de Copernicus DEM GLO-30 y ESA WorldCover. `TECHNICAL_ARCHITECTURE.md` incorpora alcance global, alertas, última copia válida y semántica de `method_validation`.
+
+**Entrega:** se corrigió en `PITCH.md` el contraste CHIRPS de 17 a 21 mm según ADR-036 y se retiró la afirmación falsa de que la guía de entrega ya estaba publicada. `SLIDES.md` y `SUBMISSION_FORM.md` son borradores en inglés, con cifras técnicas ligadas a ADR y marcadores explícitos para la guía oficial del 13-nov-2026.
+
+**QA de usuario:** recorridos los siete módulos y alertas en 1440 × 900 y 390 × 844 sobre 3412/8312. Sin errores de consola y sin desborde horizontal. Alertas devolvió 25 eventos, 4 asociados a Perú. CENEPRED no disponible en esta copia es el comportamiento esperado de ADR-044. Los procesos temporales quedaron cerrados; no se usaron 3100/8000, Docker ni `power-cache`.
+
+**Puerta común:** 277/277 pruebas backend; build Next.js 16.4.2 con 22 rutas; `npm audit --omit=dev` con 0 vulnerabilidades. Pytest conserva únicamente dos deprecaciones de terceros (ReportLab y Starlette). `git diff --check` limpio.
+
+**Publicación:** entrega local, sin push y sin etiqueta. Christian debe aprobar cualquier publicación.
