@@ -1,14 +1,35 @@
 from fastapi import APIRouter, HTTPException, Query
+from fastapi.responses import JSONResponse
 
 from ..connectors.http_json import JsonSourceError
 from ..connectors.openmeteo.geocoding import SOURCE as GEOCODING_SOURCE
 from ..connectors.openmeteo.geocoding import GeocodingConnector
+from ..missions.store import load_missions, load_terrain
 from ..orchestration.world_alerts import world_alerts
 from ..schemas.world import Place, PlaceSearchResponse, WorldAlertsResponse
+from ..schemas.missions import MissionsResponse
 from ..schemas.zones import Zone, ZoneSummary
 from ..zones.store import get_zone, list_zones
 
 router = APIRouter(prefix="/api/v1/world", tags=["world"])
+
+
+@router.get("/missions", response_model=MissionsResponse)
+def missions() -> MissionsResponse:
+    """Misiones del modo jugador: lugares del mundo con su tendencia climática real (NASA POWER y su segunda fuente)."""
+    found = load_missions()
+    if found is None:
+        raise HTTPException(status_code=503, detail="Las misiones todavía no están construidas. Ejecuta scripts/missions/build_missions.py con la API encendida.")
+    return found
+
+
+@router.get("/missions/{mission_id}/terrain")
+def mission_terrain(mission_id: str) -> JSONResponse:
+    """Terreno 3D de una misión: relieve Copernicus DEM GLO-30 (decímetros sobre el punto más bajo) y cobertura ESA WorldCover."""
+    found = load_terrain(mission_id)
+    if found is None:
+        raise HTTPException(status_code=404, detail="Ese terreno no está construido. Ejecuta scripts/missions/build_terrain.py.")
+    return JSONResponse(found, headers={"Cache-Control": "public, max-age=86400"})
 
 
 @router.get("/zones", response_model=list[ZoneSummary])
