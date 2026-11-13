@@ -46,6 +46,8 @@ CURATED = [
                  "Temperatura de la superficie terrestre de día (MODIS Terra); no es la temperatura del aire."),
     CuratedLayer("ndvi", "MODIS_Terra_L3_NDVI_16Day", "Vegetación (NDVI)", "Tierra",
                  "Índice de vegetación MODIS, compuesto de 16 días."),
+    CuratedLayer("fires", "VIIRS_NOAA20_Thermal_Anomalies_375m_All", "Focos de calor (VIIRS)", "Tierra",
+                 "Focos de calor detectados por VIIRS (NOAA-20) en un día: incendios, quemas y otras fuentes de calor; no todo foco es un incendio forestal."),
     CuratedLayer("soil-moisture", "SMAP_L4_Analyzed_Root_Zone_Soil_Moisture", "Humedad del suelo (SMAP)", "Tierra",
                  "Humedad de la zona de raíces, análisis SMAP L4 con modelo."),
 ]
