@@ -3,6 +3,24 @@
 export type Continent = "Sudamérica" | "Norteamérica" | "Europa" | "Asia" | "África" | "Oceanía" | "Antártida";
 export type HeatClass = "calienta" | "enfria" | "sin_evidencia";
 export type Direction = "increasing" | "decreasing" | "no_trend";
+/**
+ * Qué dice la segunda fuente (ERA5) de la tendencia de temperatura que clasifica al lugar. Lo calcula el backend:
+ * «confirmada» = las dos fuentes son significativas y van en el mismo sentido; «contradicha» = van en sentidos opuestos;
+ * «una_fuente» = solo NASA POWER la ve; «sin_segunda_fuente» = no hubo contraste. Es null si el lugar no tiene evidencia.
+ */
+export type HeatSupport = "confirmada" | "contradicha" | "una_fuente" | "sin_segunda_fuente";
+/** Año atípico de un índice de lluvia. `probable_artifact` aplica la regla de la plataforma (ADR-036), no una del juego. */
+export interface FlaggedExtreme {
+  variable: string;
+  label: string;
+  /** Unidad del índice: «mm» o «días». La calcula el backend; nunca se asume «mm por día». */
+  unit?: string | null;
+  year: number;
+  value: number | null;
+  countercheck_values: Record<string, number | null>;
+  /** Verdadero solo si el índice está en mm, hay contraste y el reanálisis supera al menos cinco veces a cada producto satelital. */
+  probable_artifact?: boolean;
+}
 
 export interface MissionTrend {
   label: string;
@@ -26,15 +44,19 @@ export interface Mission {
   latitude: number;
   longitude: number;
   context: string;
+  /** Fuentes externas que respaldan el texto de contexto (puede venir vacío: entonces es texto del equipo sin fuente enlazada). */
+  context_sources?: { title: string; url: string }[];
   not_measured: string;
   scale: "ciudad" | "paisaje";
   hazard?: "huaico" | "avalancha" | "inundacion" | "erupcion" | "calor" | null;
   heat: HeatClass;
+  /** Respaldo de la segunda fuente a la clase de `heat`; null si `heat` es «sin_evidencia». */
+  heat_support?: HeatSupport | null;
   temperature: MissionTrend | null;
   rain: MissionTrend | null;
   sun: MissionTrend | null;
   extremes: { variable: string; label: string; unit: string | null; direction: Direction; slope_per_year: number | null; significant: boolean }[];
-  flagged_extremes: { variable: string; label: string; year: number; value: number | null; countercheck_values: Record<string, number | null> }[];
+  flagged_extremes: FlaggedExtreme[];
   analysis: {
     analysis_id: string | null;
     generated_at: string | null;

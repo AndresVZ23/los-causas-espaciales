@@ -6,9 +6,9 @@
 // agua con reflejo, la nave que aterriza y el héroe animado que corre en tercera persona hasta los vecinos del pueblo.
 // Si el terreno no llega o WebGL falla, `onUnavailable` vuelve a la vista de mapa.
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type * as THREE_NS from "three";
-import type { Hero, Mission } from "./game-types";
+import type { Gender, Hero, Mission } from "./game-types";
 import type { Checkpoint } from "./mission-logic";
 import { CULTURE, drawFlag, nazcaHummingbird, volcanoPlume } from "./culture";
 import { ITEMS, buildHandItem, disposeHandItem, type HandItem, type ItemId } from "./hand-items";
@@ -315,9 +315,22 @@ function applyMute() {
   if (muted) track.audio.pause(); else void track.audio.play().catch(() => {});
 }
 // Voces grabadas: si existe /audio/voces/<clave>.mp3 se reproduce (por ejemplo, grabadas por el equipo).
+// Solo se piden las que figuran en /audio/voces/voces.json: antes se pedía cada .mp3 a ciegas y, como no hay ninguno,
+// la consola se llenaba de errores 404. El manifiesto se lee una sola vez por sesión.
+let voiceFiles: Set<string> | null = null; // null: el manifiesto aún no llegó y no se pide ninguna voz
+let voiceManifest: Promise<Set<string>> | null = null;
+function loadVoiceManifest(): Promise<Set<string>> {
+  voiceManifest = voiceManifest ?? fetch("/audio/voces/voces.json")
+    .then((response) => (response.ok ? response.json() : []))
+    .then((list: unknown) => new Set(Array.isArray(list) ? list.filter((name): name is string => typeof name === "string") : []))
+    .catch(() => new Set<string>())
+    .then((files) => (voiceFiles = files));
+  return voiceManifest;
+}
+let clipsOn = true; // el botón «Voces» en «no» también calla las voces grabadas
 const voiceCache = new Map<string, HTMLAudioElement | null>();
 function voiceClip(key: string) {
-  if (muted || typeof window === "undefined") return;
+  if (muted || !clipsOn || typeof window === "undefined" || !voiceFiles?.has(`${key}.mp3`)) return;
   const cached = voiceCache.get(key);
   if (cached === null) return;
   const audio = cached ?? new Audio(`/audio/voces/${key}.mp3`);
@@ -357,6 +370,15 @@ function sfx(kind: "boom" | "whoosh" | "powerup" | "fanfare") {
   } catch { /* sin audio */ }
 }
 
+/** Placas que ocupan sitio sobre el lienzo: los globos de diálogo y los carteles de los vecinos no se dibujan encima. */
+const ZONES = ".gamePanel, .gameBrand, .gameHeroTag, .gameWorld :is(.gameScanner, .gameVitals, .gameObjective, .gameAlertCard, .gamePickup, .gameHelp, .gameVehicle, .gameHint, .gameBag, .gameSound, .gameWorldCredit, .gameNinoTicker, .gameCineTitle, .gameWelcome, .gameSpeech, .gameJump, .gameLesson, .gameNino, .gameCredits)";
+
+/** Las teclas del juego solo se ignoran mientras la persona escribe en un campo de texto. */
+function typing(event: KeyboardEvent) {
+  const el = event.target as HTMLElement | null;
+  return !!el?.closest?.("input, textarea, select") || !!el?.isContentEditable;
+}
+
 /** Ruido determinista barato para variar colores y repartir árboles sin que cambien en cada visita. */
 function hash(x: number, y: number) {
   const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453;
@@ -385,7 +407,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
   const [prompt, setPrompt] = useState<Checkpoint | null>(null);
   const [savedCount, setSavedCount] = useState(0);
   const fireRef = useRef<() => void>(() => {});
-  const timeRef = useRef<{ hour: number; night: boolean; dawn: boolean }>({ hour: 12, night: false, dawn: false });
+  const timeRef = useRef<{ hour: number; night: boolean; dawn: boolean; fixed: boolean }>({ hour: 12, night: false, dawn: false, fixed: false });
   const weatherRef = useRef<string>("despejado");
   const [stoppedCount, setStoppedCount] = useState(0);
   const [trainedCount, setTrainedCount] = useState(0);
@@ -403,8 +425,14 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
   const [soundOn, setSoundOn] = useState(true);
   const [insideHouse, setInsideHouse] = useState(false);
   const [kitDone, setKitDone] = useState(false);
-  const [voices, setVoices] = useState(false);
-  useEffect(() => { voicesOn = voices; }, [voices]);
+  // Botón «Voces»: null = la persona aún no lo tocó; entonces dice «sí» solo si hay voces grabadas en el manifiesto.
+  const [voices, setVoices] = useState<boolean | null>(null);
+  const [recorded, setRecorded] = useState(0);
+  useEffect(() => { let alive = true; void loadVoiceManifest().then((files) => { if (alive) setRecorded(files.size); }); return () => { alive = false; }; }, []);
+  const voicesShown = voices ?? recorded > 0;
+  // La voz sintetizada del navegador reemplaza a las grabadas: solo habla si la persona activa las voces y no hay
+  // ninguna grabada (si no, sonarían las dos a la vez).
+  useEffect(() => { voicesOn = voices === true && recorded === 0; clipsOn = voices !== false; }, [voices, recorded]);
   useEffect(() => { muted = !soundOn; applyMute(); if (!soundOn && typeof window !== "undefined") window.speechSynthesis?.cancel(); }, [soundOn]);
   // Mochila: objetos recogidos y el que va en la mano (teclas 1–6; la misma tecla o G lo guarda).
   const [bag, setBag] = useState<{ counts: Partial<Record<ItemId, number>>; equipped: ItemId | null }>({ counts: {}, equipped: null });
@@ -422,6 +450,22 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
   const propsRef = useRef({ panelRight, panelBottom, checkpoints, onReach, onUnavailable, onLeave });
   useEffect(() => { propsRef.current = { panelRight, panelBottom, checkpoints, onReach, onUnavailable, onLeave }; }, [panelRight, panelBottom, checkpoints, onReach, onUnavailable, onLeave]);
   const leftRef = useRef(false);
+  // Ayuda de teclas: sale sola al aterrizar («auto») y se oculta a los pocos segundos; el botón «Teclas» la vuelve a
+  // mostrar («si») y entonces queda hasta que la persona la cierra («no»). Antes tapaba siempre el nombre del lugar.
+  const [hintOpen, setHintOpen] = useState<"auto" | "si" | "no">("auto");
+  useEffect(() => {
+    if (phase !== "suelo" || welcome || hintOpen !== "auto") return;
+    const t = window.setTimeout(() => setHintOpen((v) => (v === "auto" ? "no" : v)), 12000);
+    return () => window.clearTimeout(t);
+  }, [phase, welcome, hintOpen]);
+  // Créditos completos (licencias) en una hoja chica que se abre desde el pie, en cualquier tamaño de pantalla.
+  const [creditsOpen, setCreditsOpen] = useState(false);
+  // En pantallas angostas el escáner queda plegado en un botón para no tapar el mundo; en las grandes siempre está abierto.
+  const [scanOpen, setScanOpen] = useState(false);
+  // Las tarjetas que piden cerrar o elegir reciben el foco al abrirse: el lector de pantalla las anuncia y Tab cae
+  // en su botón. Al cerrarlas, el foco vuelve al lienzo para seguir jugando (el botón que lo tenía desaparece).
+  const focusOnOpen = useCallback((el: HTMLElement | null) => { el?.focus({ preventScroll: true }); }, []);
+  const backToCanvas = () => canvasRef.current?.focus({ preventScroll: true });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -430,16 +474,27 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
     let cleanup = () => {};
     const run = async () => {
       heroKind = hero?.gender === "mujer" ? "heroina" : "heroe";
+      // Los dos modelos de personaje empiezan a bajar ya, a la vez que three y el terreno: antes se pedían recién al
+      // crear el primer vecino, con el terreno ya construido.
+      const rigImport = import("./hero-rig");
+      void rigImport.then((module) => module.preloadHeroModels()).catch(() => undefined);
       const [T, { Sky }, rigModule, shipModule, response] = await Promise.all([
-        import("three"), import("three/addons/objects/Sky.js"), import("./hero-rig"), import("./hero-3d"),
+        import("three"), import("three/addons/objects/Sky.js"), rigImport, import("./hero-3d"),
         fetch(`/api/missions/${mission.id}/terrain`),
       ]);
+      // Todos los personajes del mundo van con descarte por cámara (ver `fitBounds` en hero-rig.ts).
+      const loadRig = (gender: Gender) => rigModule.loadHeroRig(T, gender, true);
       if (!response.ok) throw new Error("sin terreno");
       const terrain = (await response.json()) as Terrain;
       if (disposed) return;
       let renderer: THREE_NS.WebGLRenderer;
       try { renderer = new T.WebGLRenderer({ canvas, antialias: true }); } catch { throw new Error("sin WebGL"); }
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      // Desde aquí toda salida deja limpio: si la persona vuelve al globo mientras bajan los modelos, `run` termina en
+      // una salida temprana (`if (disposed) return`) sin llegar a la limpieza completa del final, y el renderer quedaba
+      // vivo. Cada misión abre un contexto WebGL nuevo y el navegador admite pocos: también se suelta el contexto.
+      cleanup = () => { renderer.dispose(); renderer.forceContextLoss(); };
+      // Tope de 1,5: en pantallas de alta densidad, 2 dibuja casi el doble de píxeles que 1,5 y apenas se nota.
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
       renderer.outputColorSpace = T.SRGBColorSpace;
       renderer.toneMapping = T.ACESFilmicToneMapping;
       renderer.toneMappingExposure = 0.8;
@@ -573,6 +628,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       const uniforms = sky.material.uniforms;
       uniforms.turbidity.value = 6; uniforms.rayleigh.value = 1.6; uniforms.mieCoefficient.value = 0.004; uniforms.mieDirectionalG.value = 0.85;
       uniforms.sunPosition.value.copy(sunDir);
+      // El cielo se dibuja al final de lo opaco: así su sombreador (caro) solo corre en los píxeles que el terreno,
+      // las casas y los personajes dejaron libres, y no en toda la pantalla.
+      sky.renderOrder = 10;
       scene.add(sky);
       const pmrem = new T.PMREMGenerator(renderer);
       const skyScene = new T.Scene();
@@ -592,11 +650,18 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       scene.add(new T.AmbientLight(0xffffff, 0.25));
 
       // Hora local real del lugar (hora solar por longitud): noche, amanecer, día o atardecer.
+      // Para una demo o una grabación la luz se puede fijar desde la dirección de la página, sin tocar el reloj:
+      //   /jugar?luz=dia     siempre de día        /jugar?luz=noche   siempre de noche (la escena más pesada)
+      //   /jugar?luz=real    la hora real del lugar (lo mismo que no poner nada)
+      // Con la luz fijada, la placa de salud dice «Luz de día (fijada)» o «Luz de noche (fijada)» en vez de la hora
+      // local, para no mostrar una hora que contradiga lo que se ve.
+      const luz = new URLSearchParams(window.location.search).get("luz");
+      const fixedLight = luz === "dia" || luz === "noche" ? luz : null;
       const now = new Date();
       const localHour = (now.getUTCHours() + now.getUTCMinutes() / 60 + mission.longitude / 15 + 48) % 24;
-      const night = localHour < 5.5 || localHour >= 19;
-      const dawn = !night && (localHour < 7.5 || localHour >= 17.5);
-      timeRef.current = { hour: localHour, night, dawn };
+      const night = fixedLight ? fixedLight === "noche" : localHour < 5.5 || localHour >= 19;
+      const dawn = !fixedLight && !night && (localHour < 7.5 || localHour >= 17.5);
+      timeRef.current = { hour: localHour, night, dawn, fixed: fixedLight !== null };
       if (night) {
         uniforms.sunPosition.value.set(0, -0.3, 1);
         sun.intensity = 0.35; sun.color.setHex(0x9fb4ff);
@@ -826,6 +891,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       const beamMaterial = new T.MeshBasicMaterial({ color: 0xffe08a, transparent: true, opacity: 0.28, depthWrite: false, blending: T.AdditiveBlending });
       // Vecinos en peligro: personas 3D con un aura (roja = en peligro, verde = ayudada) y un haz de luz para encontrarlas.
       const npcs: { id: string; rig: import("./hero-rig").HeroRig | null; aura: THREE_NS.Mesh; beam: THREE_NS.Mesh; saved: boolean }[] = [];
+      // Los personajes de cada grupo se piden a la vez (el orden no importa); antes se esperaba a cada uno antes de
+      // pedir el siguiente. Si uno falla queda en null y el resto sigue.
+      const npcRigs = await Promise.all(spots.map((_, index) => loadRig(index % 2 ? "mujer" : "hombre").catch(() => null)));
       for (const [index, spot] of spots.entries()) {
         const beam = new T.Mesh(new T.CylinderGeometry(2.2, 2.2, 140, 16, 1, true), beamMaterial.clone());
         beam.position.copy(spot.position).add(new T.Vector3(0, 70, 0));
@@ -834,29 +902,31 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         aura.rotation.x = -Math.PI / 2;
         aura.position.copy(spot.position).add(new T.Vector3(0, 0.15, 0));
         scene.add(aura);
-        let npcRig: import("./hero-rig").HeroRig | null = null;
-        try {
-          npcRig = await rigModule.loadHeroRig(T, index % 2 ? "mujer" : "hombre");
+        const npcRig = npcRigs[index]; // sin vecino 3D: queda el aura y el haz
+        if (npcRig) {
           npcRig.object.position.copy(spot.position);
           npcRig.object.rotation.y = hash(index, 9) * Math.PI * 2;
           npcRig.object.traverse((o) => { (o as THREE_NS.Mesh).castShadow = true; });
           scene.add(npcRig.object);
-        } catch { /* sin vecino 3D: queda el aura y el haz */ }
+        }
         npcs.push({ id: spot.item.id, rig: npcRig, aura, beam, saved: false });
       }
       // Proyectil del lanzador de ayuda.
       const shot = new T.Mesh(new T.SphereGeometry(0.6, 16, 12), new T.MeshBasicMaterial({ color: 0xffffff }));
       shot.visible = false;
       scene.add(shot);
-      const shotLight = new T.PointLight(0xffffff, 0, 30);
-      scene.add(shotLight);
+      // El resplandor del proyectil era una luz puntual que seguía encendida (con intensidad 0) toda la partida: cada luz
+      // puntual se calcula en cada píxel de la pantalla. Ahora es un halo que brilla solo, pegado al proyectil.
+      const shotGlow = new T.Sprite(new T.SpriteMaterial({ map: cloudTexture, color: 0xffffff, transparent: true, opacity: 0.8, depthWrite: false, blending: T.AdditiveBlending }));
+      shotGlow.scale.setScalar(14);
+      shot.add(shotGlow);
       let flying: { from: THREE_NS.Vector3; to: THREE_NS.Vector3; t: number; spotIndex: number; polluter: number } | null = null;
       const near = (position: THREE_NS.Vector3, radius: number) => Math.hypot(position.x - heroObj.position.x, position.z - heroObj.position.z) < radius;
       const fire = () => {
         if (!landed || flying) return;
         // Primero el perrito herido, luego un vecino en peligro y, si no hay, un contaminador cercano.
         if (dogState === "herido" && near(dog.position, 20)) {
-          (shot.material as THREE_NS.MeshBasicMaterial).color.setHex(0xff6b81); shotLight.color.setHex(0xff6b81);
+          (shot.material as THREE_NS.MeshBasicMaterial).color.setHex(0xff6b81); shotGlow.material.color.setHex(0xff6b81);
           flying = { from: heroObj.position.clone().add(new T.Vector3(0, 1.6, 0)), to: dog.position.clone().add(new T.Vector3(0, 0.8, 0)), t: 0, spotIndex: -2, polluter: -1 };
           heading = Math.atan2(dog.position.x - heroObj.position.x, dog.position.z - heroObj.position.z);
           return;
@@ -867,7 +937,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         const to = index !== -1 ? spots[index].position : polluters[polluter].position;
         const color = index !== -1 ? toolFor(spots[index].item).color : 0x5ee08a;
         (shot.material as THREE_NS.MeshBasicMaterial).color.setHex(color);
-        shotLight.color.setHex(color);
+        shotGlow.material.color.setHex(color);
         flying = { from: heroObj.position.clone().add(new T.Vector3(0, 1.6, 0)), to: to.clone().add(new T.Vector3(0, 1.2, 0)), t: 0, spotIndex: index, polluter };
         sfx("whoosh");
         // El héroe gira hacia quien ayuda o detiene.
@@ -877,8 +947,29 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       // ESPACIO salta; F ayuda a un vecino o detiene a un contaminador.
       let jumpY = 0, jumpV = 0, lastJump = 0, flyUntil = 0;
       let droneView = false; // V: cámara alta para ver venir el huaico o la avalancha
+      let tabFocus = false; // el foco actual llegó con Tab (un clic o toque en cualquier parte lo vuelve falso)
       const onAction = (event: KeyboardEvent) => {
-        if ((event.target as HTMLElement)?.closest?.("input, textarea, button")) return;
+        // Las teclas del juego solo se ignoran al escribir en un campo de texto (y en los atajos del navegador, como
+        // Ctrl+F). Antes también se ignoraban con el foco en un botón: tras un clic en «Sonido», Espacio apagaba el
+        // sonido en vez de saltar y F, E y 1 a 6 no respondían.
+        if (event.code === "Tab") { tabFocus = true; return; }
+        // Escape cierra las tarjetas abiertas (lección, mochila lista, noticias de El Niño, créditos) y devuelve el
+        // foco al lienzo si estaba en un botón del mundo: con el foco puesto por Tab, Espacio es del botón y no salta.
+        if (event.code === "Escape" && !typing(event)) {
+          setLesson(null); setKitDone(false); setNinoOpen(false); setCreditsOpen(false);
+          if ((event.target as HTMLElement)?.closest?.(".gameWorld")) { tabFocus = false; canvas.focus({ preventScroll: true }); }
+          return;
+        }
+        if (!/^(Space|Key[FEGV]|(Digit|Numpad)[1-6])$/.test(event.code) || typing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
+        // Botón al que se llegó con Tab: Espacio lo activa y el héroe no salta. Si el foco quedó en un botón por un
+        // clic del mouse (por ejemplo, en el panel), vuelve al lienzo y la tecla es del juego. No se usa
+        // «:focus-visible» porque Chrome lo enciende en cuanto se pulsa cualquier tecla.
+        const control = (event.target as HTMLElement)?.closest?.("button, a[href], summary");
+        if (control && tabFocus) { if (event.code === "Space") return; }
+        else if (control) canvas.focus({ preventScroll: true });
+        // Tecla mantenida: la autorrepetición no repite la acción (sostener Espacio activaba el vuelo y sostener E
+        // subía y bajaba del vehículo sin parar).
+        if (event.repeat) { event.preventDefault(); return; }
         if (event.code === "Space") {
           event.preventDefault();
           if (!landed) return;
@@ -892,7 +983,8 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         if (event.code === "KeyG") { event.preventDefault(); equipRef.current(null); }
         if (event.code === "KeyV") { event.preventDefault(); droneView = !droneView; setPickupNote(droneView ? "🛰 Vista desde el cielo (V para volver)" : "Vista normal"); }
       };
-      window.addEventListener("keydown", onAction);
+      // `onAction` se registra más abajo, junto al resto del teclado: aquí todavía faltan cargar modelos y declarar
+      // `elapsed` y `landed`, y pulsar Espacio o F durante la carga lanzaba «Cannot access 'landed' before initialization».
 
       // --- Nave y héroe -----------------------------------------------------------------------------------------
       const [sx, sz] = nearestLand(18, 30);
@@ -903,7 +995,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       scene.add(ship);
       const [lx, lz] = nearestLand(spawn.x - 14, spawn.z + 6);
       const landing = new T.Vector3(lx, heightAt(lx, lz) + 2.5, lz);
-      const rig = hero ? await rigModule.loadHeroRig(T, hero.gender) : null;
+      const rig = hero ? await loadRig(hero.gender) : null;
       if (disposed) return;
       const heroObj = new T.Group();
       if (rig) {
@@ -976,7 +1068,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       const smokeTexture = new T.CanvasTexture(smokeCanvas);
       const polluters: { position: THREE_NS.Vector3; rig: import("./hero-rig").HeroRig | null; aura: THREE_NS.Mesh; smoke: THREE_NS.Sprite[]; stopped: boolean }[] = [];
       // En la Antártida no hay pueblos que quemen basura: allí no aparecen contaminadores.
-      for (const [k, bearing] of (mission.continent === "Antártida" ? [] : [100, 225]).entries()) {
+      const polluterBearings = mission.continent === "Antártida" ? [] : [100, 225];
+      const polluterRigs = await Promise.all(polluterBearings.map((_, k) => loadRig(k % 2 ? "mujer" : "hombre").catch(() => null)));
+      for (const [k, bearing] of polluterBearings.entries()) {
         const b = (bearing * Math.PI) / 180;
         const [px, pz] = nearestLand(Math.sin(b) * spread * 0.75, -Math.cos(b) * spread * 0.75);
         const position = new T.Vector3(px, heightAt(px, pz), pz);
@@ -995,13 +1089,12 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         aura.rotation.x = -Math.PI / 2;
         aura.position.copy(position).add(new T.Vector3(0, 0.15, 0));
         scene.add(aura);
-        let prig: import("./hero-rig").HeroRig | null = null;
-        try {
-          prig = await rigModule.loadHeroRig(T, k % 2 ? "mujer" : "hombre");
+        const prig = polluterRigs[k]; // sin modelo: queda el humo y el aura
+        if (prig) {
           prig.object.position.copy(position);
           prig.object.rotation.y = Math.PI / 2;
           scene.add(prig.object);
-        } catch { /* sin modelo: queda el humo y el aura */ }
+        }
         polluters.push({ position, rig: prig, aura, smoke, stopped: false });
       }
 
@@ -1116,7 +1209,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       // --- Compañero: otra persona que te acompaña ---------------------------------------------------------------
       let buddy: import("./hero-rig").HeroRig | null = null;
       try {
-        buddy = await rigModule.loadHeroRig(T, hero?.gender === "mujer" ? "hombre" : "mujer");
+        buddy = await loadRig(hero?.gender === "mujer" ? "hombre" : "mujer");
         buddy.object.position.copy(spawn).add(new T.Vector3(-3, 0, 3));
         buddy.object.visible = false;
         buddy.object.traverse((o) => { (o as THREE_NS.Mesh).castShadow = true; });
@@ -1145,6 +1238,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           if (heroObj.position.distanceTo(temp.copy(inside.room.origin).add(inside.room.exit)) < 4) {
             heroObj.position.copy(inside.door).add(new T.Vector3(0, 0, 2));
             inside = null;
+            showRoom(null);
             precip.visible = true;
             setInsideHouse(false);
           }
@@ -1153,6 +1247,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         const doorNear = !driving ? doors.find((d) => Math.hypot(d.at.x - heroObj.position.x, d.at.z - heroObj.position.z) < 7) : undefined;
         if (doorNear) {
           inside = { door: doorNear.at.clone(), room: doorNear.room };
+          showRoom(doorNear.room);
           heroObj.position.copy(doorNear.room.origin).add(doorNear.room.exit).add(new T.Vector3(1.5, 0, 0));
           heading = Math.PI / 2;
           yaw = -Math.PI / 2;
@@ -1218,13 +1313,15 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       for (const x of [-6.4, 6.4]) { const post = new T.Mesh(new T.CylinderGeometry(0.1, 0.1, 4.2), new T.MeshStandardMaterial({ color: 0x5a4030 })); post.position.set(x, 2.1, -3); party.add(post); }
       if (night) { const partyLight = new T.PointLight(0xffc0e0, 60, 40); partyLight.position.set(0, 4, 0); party.add(partyLight); }
       const dancers: { object: THREE_NS.Object3D; update: (dt: number) => void }[] = [];
-      for (let i = 0; i < 2; i += 1) {
-        try { const d = await rigModule.loadDancer(T); d.object.position.set(-2 + i * 4, 0, -5); d.object.rotation.y = i ? -0.4 : 0.4; party.add(d.object); dancers.push(d); } catch { /* sin bailarina */ }
-      }
+      (await Promise.all([0, 1].map(() => rigModule.loadDancer(T).catch(() => null)))).forEach((d, i) => {
+        if (!d) return; // sin bailarina
+        d.object.position.set(-2 + i * 4, 0, -5); d.object.rotation.y = i ? -0.4 : 0.4; party.add(d.object); dancers.push(d);
+      });
       const eaters: import("./hero-rig").HeroRig[] = [];
-      for (let i = 0; i < 2; i += 1) {
-        try { const e = await rigModule.loadHeroRig(T, "hombre"); e.object.position.set(-1.5 + i * 3, 0, 1.6); e.object.rotation.y = Math.PI; party.add(e.object); eaters.push(e); } catch { /* sin comensal */ }
-      }
+      (await Promise.all([0, 1].map(() => loadRig("hombre").catch(() => null)))).forEach((e, i) => {
+        if (!e) return; // sin comensal
+        e.object.position.set(-1.5 + i * 3, 0, 1.6); e.object.rotation.y = Math.PI; party.add(e.object); eaters.push(e);
+      });
       // Faroles en las calles cercanas: se encienden de noche.
       if (night) {
         for (let i = 0; i < 8; i += 1) {
@@ -1281,18 +1378,27 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       scene.add(partyHouse);
       addDoorMarker(new T.Vector3(phx, heightAt(phx, phz + 5.2), phz + 5.2), partyRoom);
       const family: import("./hero-rig").HeroRig[] = [];
-      for (const [gender, fx, fz, ry] of [["hombre", 4.5, -2.2, 0.2], ["mujer", -2, 3.6, Math.PI]] as const) {
-        try { const f = await rigModule.loadHeroRig(T, gender); f.object.position.set(roomOrigin.x + fx, roomOrigin.y, roomOrigin.z + fz); f.object.rotation.y = ry; scene.add(f.object); family.push(f); } catch { /* sin familia */ }
-      }
+      const familySpots = [["hombre", 4.5, -2.2, 0.2], ["mujer", -2, 3.6, Math.PI]] as const;
+      (await Promise.all(familySpots.map(([gender]) => loadRig(gender).catch(() => null)))).forEach((f, i) => {
+        if (!f) return; // sin familia
+        const [, fx, fz, ry] = familySpots[i];
+        f.object.position.set(roomOrigin.x + fx, roomOrigin.y, roomOrigin.z + fz); f.object.rotation.y = ry; scene.add(f.object); family.push(f);
+      });
       // Invitados de la fiesta de adentro: tres bailan samba y dos conversan junto a la torta.
       const roomDancers: { object: THREE_NS.Object3D; update: (dt: number) => void }[] = [];
-      for (const [dx0, dz0, ry] of [[-1.5, -1.2, 0.5], [1.6, -0.8, -0.6], [0, 1.6, Math.PI]] as const) {
-        try { const d = await rigModule.loadDancer(T); d.object.position.set(partyRoom.origin.x + dx0, partyRoom.origin.y, partyRoom.origin.z + dz0); d.object.rotation.y = ry; scene.add(d.object); roomDancers.push(d); } catch { /* sin bailarina */ }
-      }
+      const dancerSpots = [[-1.5, -1.2, 0.5], [1.6, -0.8, -0.6], [0, 1.6, Math.PI]] as const;
+      (await Promise.all(dancerSpots.map(() => rigModule.loadDancer(T).catch(() => null)))).forEach((d, i) => {
+        if (!d) return; // sin bailarina
+        const [dx0, dz0, ry] = dancerSpots[i];
+        d.object.position.set(partyRoom.origin.x + dx0, partyRoom.origin.y, partyRoom.origin.z + dz0); d.object.rotation.y = ry; scene.add(d.object); roomDancers.push(d);
+      });
       const guests: import("./hero-rig").HeroRig[] = [];
-      for (const [gender, gx, gz] of [["hombre", 4.2, 2.6], ["mujer", 5.8, 2.6]] as const) {
-        try { const guest = await rigModule.loadHeroRig(T, gender); guest.object.position.set(partyRoom.origin.x + gx, partyRoom.origin.y, partyRoom.origin.z + gz); guest.object.rotation.y = gender === "hombre" ? Math.PI / 2 : -Math.PI / 2; scene.add(guest.object); guests.push(guest); } catch { /* sin invitado */ }
-      }
+      const guestSpots = [["hombre", 4.2, 2.6], ["mujer", 5.8, 2.6]] as const;
+      (await Promise.all(guestSpots.map(([gender]) => loadRig(gender).catch(() => null)))).forEach((guest, i) => {
+        if (!guest) return; // sin invitado
+        const [gender, gx, gz] = guestSpots[i];
+        guest.object.position.set(partyRoom.origin.x + gx, partyRoom.origin.y, partyRoom.origin.z + gz); guest.object.rotation.y = gender === "hombre" ? Math.PI / 2 : -Math.PI / 2; scene.add(guest.object); guests.push(guest);
+      });
       const KIT: { icon: string; name: string; id: ItemId }[] = [{ icon: "🔦", name: "Linterna", id: "linterna" }, { icon: "💧", name: "Agua", id: "agua" }, { icon: "🩹", name: "Botiquín", id: "botiquin" }, { icon: "📻", name: "Radio a pilas", id: "radio" }];
       const kitItems = KIT.map((item, i) => {
         const sp = new T.Sprite(new T.SpriteMaterial({ map: iconTexture(item.icon), depthWrite: false }));
@@ -1302,34 +1408,43 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         return { ...item, sprite: sp, taken: false };
       });
       let inside: { door: THREE_NS.Vector3; room: Room } | null = null;
+      // Las dos salas están bajo tierra y solo se ven desde adentro. Mientras el héroe está afuera quedan ocultas, con
+      // sus luces y su gente: antes sus 6 luces puntuales seguían encendidas siempre (cada píxel del mundo pagaba por
+      // ellas) y sus 7 personajes se dibujaban en cada cuadro. Se muestran al entrar y se ocultan al salir, no en cada
+      // cuadro: cambiar el número de luces obliga a three.js a cambiar de programa en todos los materiales.
+      const showRoom = (room: Room | null) => {
+        interior.group.visible = room === familyRoom;
+        partyRoomParts.group.visible = room === partyRoom;
+        for (const f of family) f.object.visible = room === familyRoom;
+        for (const item of kitItems) item.sprite.visible = room === familyRoom && !item.taken;
+        for (const d of roomDancers) d.object.visible = room === partyRoom;
+        for (const guest of guests) guest.object.visible = room === partyRoom;
+      };
+      showRoom(null);
 
       // --- Gente caminando por el lugar --------------------------------------------------------------------------
       // De a dos se encuentran, se saludan y conversan («¡Hola! ¿Cómo estás?» «¡Sí, todo bien!»); a veces dan un saltito.
       const crowd: { rig: import("./hero-rig").HeroRig; goal: THREE_NS.Vector3; pair: number; hopAt: number; nextHop: number }[] = [];
-      for (let i = 0; i < 4; i += 1) {
-        try {
-          const walker = await rigModule.loadHeroRig(T, i % 2 ? "mujer" : "hombre");
-          const a = hash(i, 41) * Math.PI * 2, r = 20 + hash(i, 42) * 90;
-          const [wx, wz] = nearestLand(spawn.x + Math.cos(a) * r, spawn.z + Math.sin(a) * r);
-          walker.object.position.set(wx, heightAt(wx, wz), wz);
-          walker.object.traverse((o) => { (o as THREE_NS.Mesh).castShadow = true; });
-          scene.add(walker.object);
-          crowd.push({ rig: walker, goal: walker.object.position.clone(), pair: Math.floor(i / 2), hopAt: -10, nextHop: 6 + hash(i, 43) * 10 });
-        } catch { /* sin peatón */ }
-      }
+      (await Promise.all([0, 1, 2, 3].map((i) => loadRig(i % 2 ? "mujer" : "hombre").catch(() => null)))).forEach((walker, i) => {
+        if (!walker) return; // sin peatón
+        const a = hash(i, 41) * Math.PI * 2, r = 20 + hash(i, 42) * 90;
+        const [wx, wz] = nearestLand(spawn.x + Math.cos(a) * r, spawn.z + Math.sin(a) * r);
+        walker.object.position.set(wx, heightAt(wx, wz), wz);
+        walker.object.traverse((o) => { (o as THREE_NS.Mesh).castShadow = true; });
+        scene.add(walker.object);
+        crowd.push({ rig: walker, goal: walker.object.position.clone(), pair: Math.floor(i / 2), hopAt: -10, nextHop: 6 + hash(i, 43) * 10 });
+      });
       // Personas que quedarán atrapadas cuando estalle el evento (se cargan desde ya, ocultas).
       const trapped: { rig: import("./hero-rig").HeroRig; aura: THREE_NS.Mesh; state: "atrapado" | "siguiendo" | "salvo" }[] = [];
-      for (let i = 0; i < 3; i += 1) {
-        try {
-          const person = await rigModule.loadHeroRig(T, i === 1 ? "mujer" : "hombre");
-          person.object.visible = false;
-          person.object.traverse((o) => { (o as THREE_NS.Mesh).castShadow = true; });
-          scene.add(person.object);
-          const aura = new T.Mesh(new T.RingGeometry(1.2, 2, 32), new T.MeshBasicMaterial({ color: 0xff3b3b, transparent: true, opacity: 0.9, side: T.DoubleSide, depthWrite: false }));
-          aura.rotation.x = -Math.PI / 2; aura.visible = false; scene.add(aura);
-          trapped.push({ rig: person, aura, state: "atrapado" });
-        } catch { /* sin persona */ }
-      }
+      (await Promise.all([0, 1, 2].map((i) => loadRig(i === 1 ? "mujer" : "hombre").catch(() => null)))).forEach((person) => {
+        if (!person) return; // sin persona
+        person.object.visible = false;
+        person.object.traverse((o) => { (o as THREE_NS.Mesh).castShadow = true; });
+        scene.add(person.object);
+        const aura = new T.Mesh(new T.RingGeometry(1.2, 2, 32), new T.MeshBasicMaterial({ color: 0xff3b3b, transparent: true, opacity: 0.9, side: T.DoubleSide, depthWrite: false }));
+        aura.rotation.x = -Math.PI / 2; aura.visible = false; scene.add(aura);
+        trapped.push({ rig: person, aura, state: "atrapado" });
+      });
       const boat = buildBoat(T);
       boat.visible = false;
       scene.add(boat);
@@ -1358,6 +1473,10 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       scene.add(safeBeam);
       const gradientAt = (x: number, z: number) => new T.Vector3(heightAt(x + 6, z) - heightAt(x - 6, z), 0, heightAt(x, z + 6) - heightAt(x, z - 6));
       const rocks: { mesh: THREE_NS.Mesh; v: number }[] = [];
+      // Las rocas de la erupción comparten una geometría y un material: antes cada roca creaba los suyos (unas tres
+      // por segundo durante el aviso) y ninguno se liberaba.
+      const rockGeometry = new T.SphereGeometry(1.2, 10, 8);
+      const rockMaterial = new T.MeshStandardMaterial({ color: 0x331d14, emissive: 0xff4a10, emissiveIntensity: 1.5 });
       const startEvent = () => {
         eventTriggered = true;
         const hp = heroObj.position.clone();
@@ -1484,8 +1603,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         speak(eventKind === "erupcion" ? "¡Ayuda! ¡El volcán! ¡Corran!" : eventKind === "avalancha" ? "¡Avalancha! ¡Ayuda!" : eventKind === "calor" ? "¡Ayuda! ¡Hace demasiado calor!" : "¡Ayuda! ¡Ayuda! ¡Viene el agua!", { pitch: 1.35, rate: 1.15 });
         sfx("boom");
         voiceClip("ayuda");
-        window.setTimeout(() => voiceClip("vamos-a-salir"), 2200);
-        window.setTimeout(() => speak("¡Tranquilos! ¡Vamos a salir de esto! ¡Síganme!", { pitch: 0.75, rate: 1.12, who: "heroe" }), 2400);
+        // (Si la persona ya salió de la misión, estas voces diferidas no deben sonar en el globo.)
+        window.setTimeout(() => { if (!disposed) voiceClip("vamos-a-salir"); }, 2200);
+        window.setTimeout(() => { if (!disposed) speak("¡Tranquilos! ¡Vamos a salir de esto! ¡Síganme!", { pitch: 0.75, rate: 1.12, who: "heroe" }); }, 2400);
         // Operación de rescate: 3 personas atrapadas alrededor, a rescatar y llevar a la zona segura.
         trapped.forEach((person, i) => {
           const a = (i / 3) * Math.PI * 2 + hash(i, 77) * 1.2, r = 45 + i * 25;
@@ -1544,14 +1664,18 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       const landDuration = reduced ? 0 : 6;
       const shipStart = landing.clone().add(new T.Vector3(-260, 420, 520));
       let elapsed = 0;
-      let landed = landDuration === 0;
+      // Siempre empieza en falso: con «reducir movimiento» (duración 0) aterriza en el primer cuadro. Antes empezaba
+      // en verdadero y nunca pasaba por el aterrizaje: el héroe quedaba invisible y la pantalla en «Aterrizando».
+      let landed = false;
       let heading = Math.PI;
       let yaw = 0; // la cámara mira al norte al empezar
       const held = new Set<string>();
       let target: THREE_NS.Vector3 | null = null;
-      const keys: Record<string, [number, number]> = { ArrowUp: [0, 1], KeyW: [0, 1], ArrowDown: [0, -1], KeyS: [0, -1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], KeyQ: [0, 0], ShiftLeft: [0, 0], ShiftRight: [0, 0] };
+      const keys: Record<string, [number, number]> = { ArrowUp: [0, 1], KeyW: [0, 1], ArrowDown: [0, -1], KeyS: [0, -1], ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0], KeyQ: [0, 0], KeyR: [0, 0], ShiftLeft: [0, 0], ShiftRight: [0, 0] };
       const onKey = (event: KeyboardEvent) => {
-        if (!(event.code in keys) || (event.target as HTMLElement)?.closest?.("input, textarea")) return;
+        if (!(event.code in keys) || typing(event)) return;
+        // Los atajos del navegador (Ctrl+S, Alt+←…) no son del juego; al soltar la tecla sí se atiende siempre.
+        if (event.type === "keydown" && (event.ctrlKey || event.metaKey || event.altKey)) return;
         event.preventDefault();
         if (event.type === "keydown") { held.add(event.code); target = null; } else held.delete(event.code);
       };
@@ -1566,7 +1690,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         dragMoved += Math.abs(dxp);
         yaw -= dxp * 0.006;
       };
-      const onPointerUp = () => { dragging = false; };
+      const onPointerUp = () => { dragging = false; tabFocus = false; };
       canvas.addEventListener("pointerdown", onPointerDown);
       window.addEventListener("pointermove", onPointerMove);
       window.addEventListener("pointerup", onPointerUp);
@@ -1579,6 +1703,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       };
       window.addEventListener("keydown", onKey);
       window.addEventListener("keyup", onKey);
+      window.addEventListener("keydown", onAction); // recién aquí: ya no quedan esperas y todo lo que usa existe
       canvas.addEventListener("click", onClick);
 
       const resize = () => {
@@ -1603,20 +1728,22 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       let lastScan = 0;
       let lastHud = 0;
       let lastAlert = 0;
+      let lastZones = -1;
+      let zones: [number, number, number, number][] = []; // izquierda, arriba, derecha, abajo (en píxeles del lienzo)
       let frame = 0;
       setStatus("listo");
       const tick = () => {
         const dt = Math.min(clock.getDelta(), 0.05);
         elapsed += dt;
         if (!landed) {
-          const t = Math.min(elapsed / landDuration, 1);
+          const t = landDuration ? Math.min(elapsed / landDuration, 1) : 1;
           const ease = 1 - Math.pow(1 - t, 3);
           ship.position.lerpVectors(shipStart, landing, ease);
           ship.rotation.set(0, Math.PI * 0.82, (1 - ease) * 0.25);
           camPos.copy(ship.position).add(temp.set(-60 * (1 - ease) + 30, 26 + 30 * (1 - ease), 70));
           camera.position.lerp(camPos, elapsed < 0.1 ? 1 : 0.08);
           camera.lookAt(ship.position);
-          if (t >= 1) { landed = true; heroObj.visible = true; setPhase("suelo"); setWelcome(true); sfx("fanfare"); }
+          if (t >= 1) { landed = true; heroObj.visible = true; setPhase("suelo"); setWelcome(true); sfx("fanfare"); voiceClip("bienvenido"); }
         } else {
           if (takeoff) {
             // Despegue: la nave sube y se aleja; luego se vuelve al globo para elegir otro lugar.
@@ -1656,8 +1783,11 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           }
           let dx = 0, dz = 0, right = 0, forward = 0;
           if (!driving) held.forEach((code) => { right += keys[code][0]; forward += keys[code][1]; });
-          // Movimiento relativo a la cámara (8 direcciones, respuesta inmediata); Q y E o arrastrar giran la vista.
+          // Movimiento relativo a la cámara (8 direcciones, respuesta inmediata); Q y R o arrastrar giran la vista.
+          // Q gira a la izquierda y R a la derecha (E, la tecla vecina, ya es del vehículo y de las puertas): antes
+          // con el teclado solo se podía girar hacia un lado.
           if (held.has("KeyQ")) yaw += dt * 2.2;
+          if (held.has("KeyR")) yaw -= dt * 2.2;
           if (right || forward) {
             dx = -Math.sin(yaw) * forward + Math.cos(yaw) * right;
             dz = -Math.cos(yaw) * forward - Math.sin(yaw) * right;
@@ -1870,8 +2000,6 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           shot.visible = true;
           shot.position.lerpVectors(flying.from, flying.to, flying.t);
           shot.position.y += Math.sin(flying.t * Math.PI) * 6;
-          shotLight.position.copy(shot.position);
-          shotLight.intensity = 60;
           if (flying.t >= 1 && flying.spotIndex === -2) {
             dogState = "amigo";
             dog.rotation.set(0, 0, 0);
@@ -1879,7 +2007,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             setPickupNote("🐶 ¡Curaste al perrito! Ahora es tu compañero. +100 XP");
             dogSound("ladrido");
             setPrompt(null); lastPrompt = "";
-            shot.visible = false; shotLight.intensity = 0; flying = null;
+            shot.visible = false; flying = null;
           } else if (flying.t >= 1 && flying.polluter !== -1) {
             const polluter = polluters[flying.polluter];
             polluter.stopped = true;
@@ -1891,7 +2019,6 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             setPrompt(null);
             lastPrompt = "";
             shot.visible = false;
-            shotLight.intensity = 0;
             flying = null;
           } else if (flying && flying.t >= 1) {
             const npc = npcs[flying.spotIndex];
@@ -1908,7 +2035,6 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             lastPrompt = "";
             propsRef.current.onReach(item.id);
             shot.visible = false;
-            shotLight.intensity = 0;
             flying = null;
           }
         }
@@ -1963,7 +2089,8 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             const frontGap = Math.hypot(fx - hp.x, fz - hp.z);
             if (fr.debris.visible) shake = 0.35 * Math.max(0, 1 - frontGap / 160);
           }
-          if (shake) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake * 0.7; }
+          // Con «reducir movimiento» el evento sigue igual, pero la cámara no se sacude.
+          if (shake && !reduced) { camera.position.x += (Math.random() - 0.5) * shake; camera.position.y += (Math.random() - 0.5) * shake * 0.7; }
           if (ev.kind === "inundacion" && ev.hazard) {
             // El agua sube rápido al principio y luego más despacio: hay que nadar o tomar el bote.
             ev.hazard.position.y = ev.from.y + Math.sqrt(Math.min(t, 1)) * 5.5;
@@ -1972,16 +2099,18 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           }
           if (ev.kind === "erupcion") {
             if (Math.random() < dt * 3) {
-              const rock = new T.Mesh(new T.SphereGeometry(1.2, 10, 8), new T.MeshStandardMaterial({ color: 0x331d14, emissive: 0xff4a10, emissiveIntensity: 1.5 }));
+              const rock = new T.Mesh(rockGeometry, rockMaterial);
               rock.position.set(hp.x + (Math.random() - 0.5) * 60, hp.y + 80, hp.z + (Math.random() - 0.5) * 60);
               scene.add(rock); rocks.push({ mesh: rock, v: 0 });
             }
             hit = false;
           }
-          for (const rock of rocks) {
+          // De atrás hacia adelante, porque la roca que toca el suelo se retira de la escena y de la lista.
+          for (let i = rocks.length - 1; i >= 0; i -= 1) {
+            const rock = rocks[i];
             rock.v += 30 * dt; rock.mesh.position.y -= rock.v * dt;
-            if (rock.mesh.visible && rock.mesh.position.y <= heightAt(rock.mesh.position.x, rock.mesh.position.z)) {
-              rock.mesh.visible = false;
+            if (rock.mesh.position.y <= heightAt(rock.mesh.position.x, rock.mesh.position.z)) {
+              scene.remove(rock.mesh); rocks.splice(i, 1);
               if (Math.hypot(rock.mesh.position.x - hp.x, rock.mesh.position.z - hp.z) < 4) { health = Math.max(1, health - 15); setPickupNote("¡Te golpeó una roca volcánica! −15 de salud"); }
             }
           }
@@ -2034,6 +2163,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             floodLevel = ev.kind === "inundacion" ? floodLevel : -Infinity;
             safeRing.visible = safeBeam.visible = false;
             stormRain.visible = false;
+            // Las rocas volcánicas que aún caían se retiran: al terminar el aviso quedaban quietas en el aire.
+            for (const rock of rocks) scene.remove(rock.mesh);
+            rocks.length = 0;
             // El lodo o la nieve quedan en el cauce (así queda una quebrada después de un huaico); se quitan las rocas.
             if (ev.flow) { ev.flow.debris.visible = false; ev.flow.splash.forEach((sp) => { sp.visible = false; }); ev.flow.geometry.setDrawRange(0, (ev.flow.path.length - 1) * ev.flow.quads * 6); }
             else if (ev.hazard && ev.kind !== "inundacion") scene.remove(ev.hazard);
@@ -2094,8 +2226,8 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           precip.position.set(camera.position.x, heroObj.position.y - 5, camera.position.z);
         }
         if (weatherKind === "lluvia") {
-          // Relámpagos de vez en cuando.
-          if (elapsed > nextLightning) { ambientFlash.intensity = 4; nextLightning = elapsed + 6 + hash(elapsed, 1) * 8; }
+          // Relámpagos de vez en cuando (con «reducir movimiento» no destella la pantalla; la lluvia sigue).
+          if (elapsed > nextLightning) { if (!reduced) ambientFlash.intensity = 4; nextLightning = elapsed + 6 + hash(elapsed, 1) * 8; }
           ambientFlash.intensity = Math.max(0, ambientFlash.intensity - dt * 9);
         }
         if (landed && elapsed - lastHud > 0.25) {
@@ -2164,11 +2296,31 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         const w = canvas.clientWidth, h = canvas.clientHeight;
         // Globos de diálogo sobre las personas cercanas que están en pantalla.
         const talk: { key: string; x: number; y: number; text: string; tone: string }[] = [];
+        // Zonas ocupadas: las placas del mundo, el panel de la misión y la barra del juego, medidas tres veces por
+        // segundo. Un globo o un cartel que caería encima de una placa o fuera del lienzo no se dibuja: antes se
+        // montaban sobre el objetivo y el panel y se salían de la pantalla.
+        if (elapsed - lastZones > 0.33) {
+          lastZones = elapsed;
+          const origin = canvas.getBoundingClientRect();
+          zones = [];
+          document.querySelectorAll<HTMLElement>(ZONES).forEach((el) => {
+            const r = el.getBoundingClientRect();
+            if (r.width > 0 && r.height > 0 && (el.checkVisibility?.({ checkOpacity: true, checkVisibilityCSS: true }) ?? true)) zones.push([r.left - origin.left, r.top - origin.top, r.right - origin.left, r.bottom - origin.top]);
+          });
+        }
+        // (cx, bottom) = punta del globo; bw × bh = su tamaño estimado por el largo del texto, con 6 px de aire.
+        const fits = (cx: number, bottom: number, bw: number, bh: number) => {
+          const left = cx - bw / 2 - 6, right = cx + bw / 2 + 6, top = bottom - bh - 6;
+          return left >= 0 && right <= w && top >= 0 && bottom + 6 <= h && !zones.some((z) => left < z[2] && right > z[0] && top < z[3] && bottom + 6 > z[1]);
+        };
         const say = (key: string, at: THREE_NS.Vector3, text: string, tone: string) => {
           if (camera.position.distanceTo(at) > 70) return;
           const p = temp.copy(at).add(new T.Vector3(0, 2.6, 0)).project(camera);
           if (p.z < -1 || p.z > 1) return;
-          talk.push({ key, x: ((p.x + 1) / 2) * w, y: ((1 - p.y) / 2) * h, text, tone });
+          const x = ((p.x + 1) / 2) * w, y = ((1 - p.y) / 2) * h;
+          // Globo de 210 px de ancho como máximo (ver `.gameTalk`): unas 26 letras por línea de 16 px.
+          if (!fits(x, y, Math.min(210, text.length * 7.4 + 28), Math.ceil(text.length / 26) * 16 + 24)) return;
+          talk.push({ key, x, y, text, tone });
         };
         const slot = Math.floor(elapsed / 6);
         if (landed) {
@@ -2195,7 +2347,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           }
           if (camera.position.distanceTo(peakFlag.position) < 1500) {
             const p = temp.copy(peakFlag.position).add(new T.Vector3(0, 16, 0)).project(camera);
-            if (p.z > -1 && p.z < 1) talk.push({ key: "peak", x: ((p.x + 1) / 2) * w, y: ((1 - p.y) / 2) * h, text: `⛰ Punto más alto: ${peakMeters.toLocaleString("es-PE")} m`, tone: "peak" });
+            if (p.z > -1 && p.z < 1 && fits(((p.x + 1) / 2) * w, ((1 - p.y) / 2) * h, 210, 56)) talk.push({ key: "peak", x: ((p.x + 1) / 2) * w, y: ((1 - p.y) / 2) * h, text: `⛰ Punto más alto: ${peakMeters.toLocaleString("es-PE")} m`, tone: "peak" });
           }
           if (dogState === "herido" || slot % 3 === 0) say("dog", dog.position, dogState === "herido" ? "Auuu… 🐶🩹" : "¡Guau! 🐾", dogState === "herido" ? "help" : "buddy");
           if (buddy && buddy.object.visible && slot % 2 === 0) say("buddy", buddy.object.position, buddyLines[slot % buddyLines.length], "buddy");
@@ -2203,7 +2355,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         setSpeakers(talk);
         setLabels(spots.map((spot) => {
           const p = temp.copy(spot.position).add(new T.Vector3(0, 30, 0)).project(camera);
-          return { id: spot.item.id, x: ((p.x + 1) / 2) * w, y: ((1 - p.y) / 2) * h, visible: p.z < 1 && p.z > -1 };
+          // El cartel (una línea, con el «!» encima) tampoco se dibuja sobre una placa ni fuera del lienzo.
+          const x = ((p.x + 1) / 2) * w, y = ((1 - p.y) / 2) * h;
+          return { id: spot.item.id, x, y, visible: p.z < 1 && p.z > -1 && fits(x, y, spot.item.quest.length * 7.6 + 56, 64) };
         }));
         if (landed) {
           const p = temp.copy(heroObj.position).add(new T.Vector3(0, 2.4, 0)).project(camera);
@@ -2223,6 +2377,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         window.removeEventListener("keydown", onKey);
         window.removeEventListener("keyup", onKey);
         setTrack(null);
+        // Las voces en curso (sintetizada o grabadas) no siguen sonando en el globo.
+        if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+        voiceCache.forEach((audio) => audio?.pause());
         putAway();
         window.removeEventListener("keydown", onAction);
         canvas.removeEventListener("pointerdown", onPointerDown);
@@ -2233,14 +2390,24 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           const mesh = object as THREE_NS.Mesh;
           mesh.geometry?.dispose();
           const material = mesh.material as THREE_NS.Material | THREE_NS.Material[] | undefined;
-          (Array.isArray(material) ? material : material ? [material] : []).forEach((item) => item.dispose());
+          (Array.isArray(material) ? material : material ? [material] : []).forEach((item) => {
+            // Texturas del material: las de lienzo (carteles, íconos, banderas, ventanas, televisor, ríos) y las de
+            // los modelos. Liberar el material no las libera, y cada una ocupa memoria de video.
+            for (const value of Object.values(item)) if ((value as THREE_NS.Texture | null)?.isTexture) (value as THREE_NS.Texture).dispose();
+            item.dispose();
+          });
         });
+        // Rocas de la erupción: si ya se retiraron de la escena, el recorrido de arriba no las alcanza.
+        rockGeometry.dispose();
+        rockMaterial.dispose();
         envMap.dispose();
         pmrem.dispose();
         cloudTexture.dispose();
         smokeTexture.dispose();
         grain.dispose();
         renderer.dispose();
+        // Cada misión abre un contexto WebGL nuevo: se suelta para que el navegador no acumule contextos.
+        renderer.forceContextLoss();
       };
     };
     run().catch(() => { if (!disposed) propsRef.current.onUnavailable(); });
@@ -2250,8 +2417,12 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
   }, [mission.id, hero?.gender]);
 
   return (
-    <div className="gameWorld">
-      <canvas ref={canvasRef} className="gameWorldCanvas" aria-label={`Mundo 3D de ${mission.name}: relieve Copernicus DEM y cobertura ESA WorldCover`} role="img" />
+    // Un clic con el mouse (detail > 0) en un botón del mundo no se queda con el foco: vuelve al lienzo, y así Espacio
+    // sigue siendo saltar. Quien activa el botón con el teclado (detail = 0) conserva el foco en él.
+    <div className="gameWorld" onClick={(event) => { if (event.detail > 0 && (event.target as HTMLElement).closest("button")) canvasRef.current?.focus({ preventScroll: true }); }}>
+      {/* tabIndex −1: el lienzo puede recibir el foco por código, pero no entra en el recorrido con Tab. La clave rehace
+          el lienzo si cambia la figura del héroe: el anterior ya soltó su contexto WebGL y no sirve para otro renderer. */}
+      <canvas key={hero?.gender ?? "sin-heroe"} ref={canvasRef} tabIndex={-1} style={{ outline: "none" }} className="gameWorldCanvas" aria-label={`Mundo 3D de ${mission.name}: relieve Copernicus DEM y cobertura ESA WorldCover`} role="img" />
       {alert?.kind === "calor" && <div className="gameHeat" aria-hidden />}
       {status === "cargando" && <p className="gameWorldLoading" role="status">Construyendo {mission.name} con datos satelitales…</p>}
       {labels.map((label) => {
@@ -2287,7 +2458,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       {phase === "suelo" && hero && (
         <div className="gameVitals" aria-label="Salud del héroe">
           <span>❤️</span><i style={{ width: `${hud.health}%` }} className={hud.health < 35 ? "low" : ""} /><b>{hud.health}</b>
-          <small>{timeRef.current.night ? "🌙" : timeRef.current.dawn ? "🌅" : "☀️"} {String(Math.floor(timeRef.current.hour)).padStart(2, "0")}:{String(Math.floor((timeRef.current.hour % 1) * 60)).padStart(2, "0")} hora local · {weatherRef.current === "lluvia" ? "🌧️ Lluvia" : weatherRef.current === "nieve" ? "❄️ Nieve" : weatherRef.current === "calor" ? "🔥 Calor" : "☀️ Despejado"}{hud.protectedFor === -1 ? " · protección puesta ✔" : hud.protectedFor ? ` · protegido ${hud.protectedFor} s` : weatherRef.current !== "despejado" ? " · ¡busca protección!" : ""}</small>
+          <small>{timeRef.current.night ? "🌙" : timeRef.current.dawn ? "🌅" : "☀️"} {timeRef.current.fixed ? (timeRef.current.night ? "Luz de noche (fijada)" : "Luz de día (fijada)") : `${String(Math.floor(timeRef.current.hour)).padStart(2, "0")}:${String(Math.floor((timeRef.current.hour % 1) * 60)).padStart(2, "0")} hora local`} ·{weatherRef.current === "lluvia" ? "🌧️ Lluvia" : weatherRef.current === "nieve" ? "❄️ Nieve" : weatherRef.current === "calor" ? "🔥 Calor" : "☀️ Despejado"}{hud.protectedFor === -1 ? " · protección puesta ✔" : hud.protectedFor ? ` · protegido ${hud.protectedFor} s` : weatherRef.current !== "despejado" ? " · ¡busca protección!" : ""}</small>
         </div>
       )}
       {pickupNote && <p className="gamePickup" role="status">{pickupNote}</p>}
@@ -2304,18 +2475,18 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         </div>
       )}
       {lesson && (
-        <div className="gameLesson" role="dialog" aria-labelledby="lesson-title">
+        <div className="gameLesson" role="dialog" aria-labelledby="lesson-title" tabIndex={-1} ref={focusOnOpen}>
           <b id="lesson-title">{lesson.saved ? `¡Aviso atendido! +${200 + (lesson.rescued ?? 0) * 100} XP` : lesson.rescued ? `Rescataste ${lesson.rescued}/${lesson.total}` : "Te alcanzó… pero aprendiste"} · {EVENT_INFO[lesson.kind].icon} {EVENT_INFO[lesson.kind].title}</b>
           {lesson.total != null && <p className="score">🛟 Rescataste {lesson.rescued}/{lesson.total} personas en {lesson.seconds} s</p>}
           <p>Qué hacer en la vida real:</p>
           <ul>{EVENT_INFO[lesson.kind].lesson.map((line) => <li key={line}>{line}</li>)}</ul>
           <p className="detect">🛰️ Cómo se detecta desde el espacio: <span>{EVENT_DETECT[lesson.kind]}</span></p>
           <small>Recomendaciones generales de defensa civil. Sigue siempre a las autoridades de tu zona.</small>
-          <button type="button" onClick={() => setLesson(null)}>Seguir la misión</button>
+          <button type="button" onClick={() => { setLesson(null); backToCanvas(); }}>Seguir la misión</button>
         </div>
       )}
       {kitDone && (
-        <div className="gameLesson" role="dialog" aria-labelledby="kit-title">
+        <div className="gameLesson" role="dialog" aria-labelledby="kit-title" tabIndex={-1} ref={focusOnOpen}>
           <b id="kit-title">🎒 ¡Mochila de emergencia lista! +150 XP</b>
           <p>Qué debe tener una mochila de emergencia de verdad:</p>
           <ul>
@@ -2325,23 +2496,33 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             <li>Ropa de abrigo, silbato y un punto de encuentro acordado con la familia.</li>
           </ul>
           <small>Recomendaciones generales de defensa civil. Revisa la mochila cada pocos meses.</small>
-          <button type="button" onClick={() => setKitDone(false)}>Seguir</button>
+          <button type="button" onClick={() => { setKitDone(false); backToCanvas(); }}>Seguir</button>
         </div>
       )}
       {welcome && (
         <div className="gameWelcome" role="status" lang="en"><small>Welcome to</small><b>{mission.name}</b><span lang="es">{mission.country}</span></div>
       )}
       {phase === "suelo" && objective && !welcome && (
-        <div className="gameObjective" role="status">
+        // La región viva es solo el texto del objetivo: la distancia cambia varias veces por segundo y, dentro de
+        // `role="status"`, el lector de pantalla la anunciaba sin parar. Ahora se anuncia cuando cambia la parada.
+        <div className="gameObjective">
           <span className="arrow" style={{ transform: `rotate(${objective.angle}deg)` }} aria-hidden>➤</span>
-          <p><small>Siguiente parada</small><b>{objective.text}</b><em>{objective.meters} m</em></p>
+          <p><small>Siguiente parada</small><b role="status">{objective.text}</b><em>{objective.meters} m</em></p>
         </div>
       )}
       {phase === "suelo" && vehicleHint && (
         <button type="button" className="gameVehicle" onClick={() => toggleRef.current()}>{vehicleHint}</button>
       )}
-      {phase === "suelo" && hero && !speech && !prompt && (
-        <p className="gameHint" role="note">W A S D para correr · Shift supervelocidad · ESPACIO salta (dos veces: ¡vuela!) · E vehículo o puerta · F ayuda · V vista desde el cielo · arrastra para girar. Sigue la flecha amarilla.</p>
+      {/* Pantalla táctil: no hay tecla Espacio; el botón envía la misma tecla y reutiliza el salto (dos toques: vuela). */}
+      {phase === "suelo" && hero && (
+        <button type="button" className="gameJump" onClick={() => window.dispatchEvent(new KeyboardEvent("keydown", { code: "Space" }))}>Saltar</button>
+      )}
+      {phase === "suelo" && hero && !speech && !prompt && !welcome && hintOpen !== "no" && (
+        <div className="gameHint" role="note">
+          <p className="keys">W A S D para correr · Shift supervelocidad · ESPACIO salta (dos veces: ¡vuela!) · E vehículo o puerta · F ayuda · V vista desde el cielo · Q y R giran la vista · arrastra para girar. Sigue la flecha amarilla.</p>
+          <p className="touch">Toca el suelo para caminar hasta ahí · arrastra para girar la vista · usa los botones para ayudar, subir a un vehículo y saltar. Sigue la flecha amarilla.</p>
+          <button type="button" aria-label="Cerrar la ayuda de teclas" onClick={() => setHintOpen("no")}>×</button>
+        </div>
       )}
       {phase === "suelo" && hero && prompt && (
         <div className="gameHelp" role="status">
@@ -2354,7 +2535,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         </div>
       )}
       {scan && phase === "suelo" && (
-        <aside className="gameScanner" aria-label="Escáner NASA del héroe">
+        <aside className={`gameScanner${scanOpen ? " open" : ""}`} aria-label="Escáner NASA del héroe">
+          {/* Solo se ve en pantallas angostas (CSS): pliega y despliega el escáner. */}
+          <button type="button" className="gameScannerMore" onClick={() => setScanOpen((v) => !v)} aria-expanded={scanOpen}>{scanOpen ? "Ocultar escáner" : "Escáner NASA"}</button>
           <b>Escáner NASA</b>
           <p className="gameSaved">Vecinos a salvo: <strong>{savedCount}/{checkpoints.length}</strong> · Contaminación detenida: <strong>{stoppedCount}/{mission.continent === "Antártida" ? 0 : 2}</strong> · Capacitados: <strong>{trainedCount}/{mission.continent === "Antártida" ? 0 : 2}</strong></p>
           <dl>
@@ -2367,7 +2550,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         </aside>
       )}
       {status === "listo" && phase === "suelo" && Object.values(bag.counts).some(Boolean) && (
-        <div className="gameBag" role="toolbar" aria-label="Mochila" style={{ right: panelRight + 16, bottom: panelBottom + 34 }}>
+        <div className="gameBag" role="toolbar" aria-label="Mochila">{/* su sitio (derecha y abajo) lo fija game.css según el panel */}
           <p>🎒 Mochila · {bag.equipped ? `en la mano: ${ITEMS.find((it) => it.id === bag.equipped)?.name} · pulsa ${ITEMS.findIndex((it) => it.id === bag.equipped) + 1} o G para guardarlo` : "pulsa el número para sacar un objeto; otra vez para guardarlo"}</p>
           <div>
             {ITEMS.map((item, i) => {
@@ -2385,8 +2568,9 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       )}
       <div className="gameSound">
         <button type="button" onClick={() => setSoundOn((v) => !v)} aria-pressed={soundOn}>{soundOn ? "🔊 Sonido" : "🔇 Sin sonido"}</button>
-        <button type="button" onClick={() => setVoices((v) => !v)} aria-pressed={voices}>{voices ? "🗣 Voces: sí" : "🗣 Voces: no"}</button>
+        <button type="button" onClick={() => setVoices(!voicesShown)} aria-pressed={voicesShown} title={recorded ? `Voces grabadas disponibles: ${recorded}` : "No hay voces grabadas. Al activarlas habla la voz sintetizada del navegador."}>{voicesShown ? "🗣 Voces: sí" : "🗣 Voces: no"}</button>
         {isNino && <button type="button" onClick={() => setNinoOpen((v) => !v)} aria-expanded={ninoOpen}>📰 El Niño hoy</button>}
+        {phase === "suelo" && hero && <button type="button" onClick={() => setHintOpen((v) => (v === "no" ? "si" : "no"))} aria-expanded={hintOpen !== "no"}>Teclas</button>}
       </div>
       {isNino && !ninoOpen && status === "listo" && (
         <button type="button" className="gameNinoTicker" onClick={() => setNinoOpen(true)}>
@@ -2394,7 +2578,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         </button>
       )}
       {ninoOpen && (
-        <div className="gameNino" role="dialog" aria-labelledby="nino-title">
+        <div className="gameNino" role="dialog" aria-labelledby="nino-title" tabIndex={-1} ref={focusOnOpen}>
           <b id="nino-title">📰 El Niño Costero 2026: lo que dicen las noticias</b>
           <p>Noticias de medios y entidades, con su fuente. Son contexto, no datos medidos por la plataforma.</p>
           <ul>
@@ -2402,10 +2586,28 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
               <li key={fact.text}>{fact.text} <a href={fact.url} target="_blank" rel="noreferrer">{ninoCredit(fact)}</a></li>
             ))}
           </ul>
-          <button type="button" onClick={() => setNinoOpen(false)}>Cerrar</button>
+          <button type="button" onClick={() => { setNinoOpen(false); backToCanvas(); }}>Cerrar</button>
         </div>
       )}
-      <p className="gameWorldCredit">Relieve: Copernicus DEM GLO-30 (dato adaptado, © DLR / Airbus, Copernicus). Cobertura: ESA WorldCover 2021 (CC BY 4.0). Mundo recreado: no es una foto; casas y calles se reparten en las celdas urbanas, no son las reales. Música: «Samba Isobel» y «Volatile Reaction», de Kevin MacLeod (incompetech.com), CC BY 4.0.</p>
+      {/* Créditos: al pie, un botón que abre la hoja con el texto completo de las licencias (en celular antes se
+          ocultaban todos) y, donde hay ancho, una línea corta con los nombres. */}
+      <div className="gameWorldCredit">
+        <button type="button" onClick={() => setCreditsOpen((v) => !v)} aria-expanded={creditsOpen}>Créditos</button>
+        <span>Copernicus DEM GLO-30 · ESA WorldCover 2021 (CC BY 4.0) · música de Kevin MacLeod (CC BY 4.0) · personajes de Mixamo · mundo recreado: no es una foto</span>
+      </div>
+      {creditsOpen && (
+        <div className="gameCredits" role="dialog" aria-labelledby="credits-title" tabIndex={-1} ref={focusOnOpen}>
+          <b id="credits-title">Créditos del mundo 3D</b>
+          <ul>
+            <li>Relieve: Copernicus DEM GLO-30 — dato adaptado, © DLR e.V. 2010-2014 y © Airbus Defence and Space GmbH 2014-2018, provisto bajo COPERNICUS por la Unión Europea y la ESA.</li>
+            <li>Cobertura del suelo: ESA WorldCover 2021, CC BY 4.0 — © ESA WorldCover project 2021 / contiene datos Copernicus Sentinel modificados (2021).</li>
+            <li>Música: «Samba Isobel» y «Volatile Reaction», Kevin MacLeod (incompetech.com). Licensed under Creative Commons: By Attribution 4.0 — <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noreferrer">https://creativecommons.org/licenses/by/4.0/</a></li>
+            <li>Personajes: Mixamo (Adobe), tomados de los ejemplos de three.js.</li>
+            <li>Mundo recreado: no es una foto; las casas y las calles se reparten en las celdas urbanas y no son las reales.</li>
+          </ul>
+          <button type="button" onClick={() => { setCreditsOpen(false); backToCanvas(); }}>Cerrar</button>
+        </div>
+      )}
     </div>
   );
 }

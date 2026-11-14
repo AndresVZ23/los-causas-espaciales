@@ -77,12 +77,13 @@ export function buildHandItem(T: Three, id: ItemId): HandItem {
   return { object: g, worn: id === "abrigo" };
 }
 
-/** Libera geometrías y materiales al guardar el objeto. */
+/** Libera geometrías, materiales y la textura de lienzo del poncho al guardar el objeto. */
 export function disposeHandItem(item: HandItem) {
   item.object.traverse((o) => {
     const mesh = o as THREE_NS.Mesh;
     mesh.geometry?.dispose();
     const m = mesh.material as THREE_NS.Material | THREE_NS.Material[] | undefined;
-    if (Array.isArray(m)) m.forEach((x) => x.dispose()); else m?.dispose();
+    // Liberar el material no libera su textura: el poncho crea una de lienzo cada vez que se saca el abrigo.
+    for (const x of Array.isArray(m) ? m : m ? [m] : []) { (x as THREE_NS.MeshStandardMaterial).map?.dispose(); x.dispose(); }
   });
 }

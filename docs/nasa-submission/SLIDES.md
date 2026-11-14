@@ -64,6 +64,7 @@ Visual: the two wind levels, model range and dated COES validation in one chart.
 - Wind and hydro publish dated real-production checks in `method_validation`; these are method-level evidence, not site-specific guarantees. [ADR-045]
 - Global alerts use provider-issued GDACS levels and NASA EONET as a second witness; the platform does not declare urgency itself. [ADR-046]
 - Two places can be entered and walked as a block model: Moquegua (Peru) and Taal volcano (Philippines). Terrain is Copernicus DEM GLO-30 and ground cover is ESA WorldCover; each beacon shows a real platform result with its second source. It is a scale model with a declared vertical exaggeration (×2 and ×3) and no real buildings or streets. [ADR-047]
+- A player mode for schools and the public, «Detectives de la Tierra» (`/jugar`), turns the same analyses into 56 missions around the world. It keeps the rules of the console: a rainfall record is called a false clue only where the platform's artefact rule holds (3 of 56 places), a warming place says whether the second source confirms it (15 of 35 do), and the mudflow, flood or heat events of the game are simulated, as their alert card states. [ADR-048]
 
 Visual: provenance ledger, a declared gap, one discovery and the PDF method section.
 

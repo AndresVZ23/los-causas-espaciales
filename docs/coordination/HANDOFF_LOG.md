@@ -1320,3 +1320,27 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Puerta común:** 285/285 pruebas backend; build Next.js 16.4.2 con 25 rutas; `npm audit` con 0 vulnerabilidades; `git diff --check` limpio. Pytest conserva dos deprecaciones de terceros (ReportLab y Starlette). El lint de zona terminó con 0 fallos y 7 avisos de sombras; el inspector confirmó 0 desborde/errores y la falta de `h1`; `impeccable detect` terminó con 0 hallazgos primarios. El repositorio sigue sin `scripts/audit_project.py`, por lo que no se declara una nueva ejecución del auditor científico.
 
 **Operación y publicación:** no se tocaron 3100/8000, Docker ni `power-cache`. No se hizo push ni se creó etiqueta; ambos requieren aprobación de Christian.
+
+## 2026-11-14 · Claude · claude/pdf-linea-base · modo jugador de Nikol corregido y con historia (ADR-048 ampliado, ADR-049)
+
+**Contexto:** Nikol subió el modo jugador «Detectives de la Tierra» (`/jugar`, PR #1, fusionado por Christian el 13-nov). Christian pidió traerlo, arreglarlo y mejorarlo, y después una narrativa: un futuro catastrófico a cinco años, volver en el tiempo y un final bueno o malo.
+
+**Decisiones de Christian durante el trabajo:** los eventos del juego (huaico y demás) se quedan como los hizo Nikol, sin rebautizarlos; el globo, la Luna y el héroe del menú no se tocan; en el final bueno el héroe no lo salva todo, la gente toma conciencia, y el cierre le dice a quien juega que con la plataforma tiene el conocimiento para hacer el cambio.
+
+**Qué entró:**
+- **Backend:** `backend/app/missions/rules.py` (regla de artefacto y respaldo de la segunda fuente, derivados siempre de los valores crudos), `schemas/missions.py` (campos `unit`, `probable_artifact`, `heat_support`, `context_sources`, modelo del terreno), `scripts/missions/build_missions.py` (modo `--textos` sin red, `CONTEXT_SOURCES` con 99 enlaces verificados, `built_at` honesto), `missions.json` reaplicado sin tocar los análisis, 23 pruebas nuevas.
+- **Juego:** `mission-logic.ts`, `mission-panel.tsx`, `game.tsx`, `nino-2026.ts` (honestidad de textos); `mission-world.tsx`, `hero-rig.ts`, `hand-items.ts` (errores, rendimiento, placas, créditos, accesibilidad); `frontend/public/audio/voces/voces.json`.
+- **Historia:** `story.ts` y `story-scene.tsx` nuevos, con enganches en `game.tsx` y `mission-panel.tsx`.
+- **QA versionado:** `scripts/qa/game_logic.cjs` (sin navegador, las 56 misiones y la historia), `game_ui.cjs` y `game_story_ui.cjs` (navegador con la tarjeta gráfica real).
+- **Documentos:** ADR-048 ampliado, ADR-049, `DATA_SOURCES.md` (qué es dato, texto del equipo o simulado, y licencias), escena C en `DEMO_SCENARIOS.md`, `SLIDES.md`, `SUBMISSION_FORM.md`, `EMPEZAR_AQUI.md`, `PROGRESS.md` y la tarea F9 de `pipeline.html`.
+
+**Para Nikol y Codex cuando revisen:**
+- El juego no tiene reglas propias sobre los datos: `artifactFlag`, `heatSupport` y `heatSupportPhrase` de `mission-logic.ts` son la única puerta. Si se agrega un texto con «se calienta» o «pista falsa», pasa por ahí, y `node scripts/qa/game_logic.cjs` debe seguir en cero.
+- `MissionWorld` y `MissionPanel` son hermanos en `game.tsx`: deben llevar claves distintas (con la misma, el mundo no se desmontaba).
+- Para juzgar el juego en QA hay que usar Chromium con la tarjeta gráfica (`game_ui.cjs` ya lo hace); el headless normal va a 1 cuadro por segundo.
+- `?luz=dia` en la dirección fija la luz para grabar.
+- Después de cambiar un texto de contexto o una fuente en `build_missions.py`: `python scripts/missions/build_missions.py --textos` (una prueba lo exige).
+
+**Abierto:** licencia de los personajes de Mixamo antes de publicar el repositorio; alcance de la regla «sin gamificación» de `PRODUCT.md`; manejar el vehículo en pantalla táctil; `role="alert"` del aviso con cuenta regresiva; contextos WebGL de las vistas previas del héroe y la Luna.
+
+**Verificación:** 316 pruebas backend, build con 28 rutas, `npm audit` en 0, auditor científico sin errores (dos advertencias por líneas largas del juego), `game_logic.cjs` en cero y regresión en navegador del juego, la historia, las zonas y las alertas contra 3100. Sin push ni etiqueta.

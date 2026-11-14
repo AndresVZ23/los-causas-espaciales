@@ -5,7 +5,7 @@ import re
 from functools import lru_cache
 from pathlib import Path
 
-from ..schemas.missions import MissionsResponse
+from ..schemas.missions import MissionsResponse, MissionTerrain
 
 MISSIONS_FILE = Path(__file__).resolve().parents[2] / "data" / "missions" / "missions.json"
 
@@ -27,8 +27,16 @@ MISSION_ID = re.compile(r"^[a-z0-9-]{1,40}$")
 
 
 def load_terrain(mission_id: str, directory: Path = TERRAIN_DIR) -> dict | None:
-    """Terreno 3D ya construido de una misión (scripts/missions/build_terrain.py), o None. El id se valida antes del disco."""
+    """Terreno 3D ya construido de una misión (scripts/missions/build_terrain.py), o None. El id se valida antes del disco.
+
+    El archivo se valida contra `MissionTerrain` (ValueError si no cumple) y se devuelve tal cual se leyó: la ruta lo
+    sirve sin volver a serializarlo, y la respuesta no cambia.
+    """
     if not MISSION_ID.match(mission_id):
         return None
     path = directory / f"{mission_id}.json"
-    return json.loads(path.read_text(encoding="utf-8")) if path.is_file() else None
+    if not path.is_file():
+        return None
+    found = json.loads(path.read_text(encoding="utf-8"))
+    MissionTerrain.model_validate(found)
+    return found

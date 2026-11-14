@@ -13,8 +13,31 @@ const cache = new Map<string, Promise<Loaded>>();
 async function load(url: string): Promise<Loaded> {
   if (!cache.has(url)) {
     cache.set(url, import("three/addons/loaders/GLTFLoader.js").then(({ GLTFLoader }) => new GLTFLoader().loadAsync(url)).then((gltf) => ({ scene: gltf.scene, animations: gltf.animations })));
+    // Un fallo (por ejemplo, un corte de red) no debe quedar guardado: si no, el modelo no vuelve a pedirse hasta
+    // recargar la página y todas las misiones siguientes caen a la vista de mapa.
+    cache.get(url)!.catch(() => cache.delete(url));
   }
   return cache.get(url)!;
+}
+
+/** Empieza a bajar los dos modelos a la vez, sin esperar: `hombre.glb` hace falta siempre porque trae las animaciones. */
+export function preloadHeroModels(): void {
+  for (const gender of ["hombre", "mujer"]) void load(`/models/heroes/${gender}.glb`).catch(() => undefined);
+}
+
+// Descarte por cámara: una malla con esqueleto no puede usar la esfera de su geometría (los huesos la mueven), y por eso
+// antes iba con `frustumCulled = false` y todos los personajes se dibujaban siempre, también los que quedaban a la
+// espalda de la cámara. Se mide una vez la esfera del cuerpo ya escalado y se agranda para que cubra correr y bailar.
+function fitBounds(object: THREE_NS.Object3D) {
+  object.updateMatrixWorld(true);
+  object.traverse((node) => {
+    const mesh = node as THREE_NS.SkinnedMesh;
+    if (!mesh.isSkinnedMesh) return;
+    mesh.skeleton.update();
+    mesh.computeBoundingSphere();
+    if (mesh.boundingSphere) mesh.boundingSphere.radius *= 1.6;
+    mesh.frustumCulled = true;
+  });
 }
 
 export interface HeroRig {
@@ -27,7 +50,8 @@ export interface HeroRig {
   bone: (name: string) => THREE_NS.Bone | undefined;
 }
 
-export async function loadHeroRig(T: Three, gender: Gender): Promise<HeroRig> {
+/** `cull`: activa el descarte por cámara (lo pide el mundo 3D, que tiene muchos personajes; el héroe del menú va como estaba). */
+export async function loadHeroRig(T: Three, gender: Gender, cull = false): Promise<HeroRig> {
   const [{ clone }, body, moves] = await Promise.all([
     import("three/addons/utils/SkeletonUtils.js"),
     load(`/models/heroes/${gender}.glb`),
@@ -36,7 +60,7 @@ export async function loadHeroRig(T: Three, gender: Gender): Promise<HeroRig> {
   const object = clone(body.scene);
   object.traverse((node) => {
     const mesh = node as THREE_NS.SkinnedMesh;
-    if (mesh.isMesh) { mesh.frustumCulled = false; mesh.castShadow = false; }
+    if (mesh.isMesh) { mesh.frustumCulled = false; mesh.castShadow = false; } // con `cull`, el descarte se activa al final (`fitBounds`)
   });
   // Los dos modelos vienen a escalas distintas: se llevan a 1,8 unidades de alto con los pies en el suelo.
   // Altura medida entre los huesos de la cabeza y del pie (más fiable que la caja de la malla con piel).
@@ -135,14 +159,17 @@ export async function loadHeroRig(T: Three, gender: Gender): Promise<HeroRig> {
   const sourceWorld = new T.Quaternion();
   const tmpPos = new T.Vector3();
   const tmpScale = new T.Vector3();
+  // Giro en el mundo ya resuelto de cada hueso. Un cuaternión fijo por hueso: antes se creaba uno nuevo por hueso y por
+  // cuadro (unos 65 por personaje), basura que el navegador tenía que recoger en plena partida. Como los pares van de
+  // la cadera hacia las puntas, el del padre siempre queda escrito antes de que lo lea el hijo.
   const computed = new Map<THREE_NS.Object3D, THREE_NS.Quaternion>();
+  for (const pair of pairs) computed.set(pair.target, new T.Quaternion());
   const update = (dt: number) => {
     mixer.update(dt);
     if (!pairs.length) return;
     // Una sola actualización de matrices por cuadro; luego cada hueso se resuelve una vez, de la cadera hacia las puntas.
     driver.updateMatrixWorld(true);
     object.updateMatrixWorld(true);
-    computed.clear();
     for (const pair of pairs) {
       pair.source.matrixWorld.decompose(tmpPos, sourceWorld, tmpScale);
       // Giro del hueso respecto de su reposo, llevado al frente del otro modelo: (giro · Δ · giro⁻¹) · reposo de la mujer.
@@ -153,7 +180,7 @@ export async function loadHeroRig(T: Three, gender: Gender): Promise<HeroRig> {
       else if (parent) parent.matrixWorld.decompose(tmpPos, parentWorld, tmpScale);
       else parentWorld.identity();
       pair.target.quaternion.copy(parentWorld.invert().multiply(world));
-      computed.set(pair.target, world.clone());
+      computed.get(pair.target)!.copy(world);
     }
   };
   let current: THREE_NS.AnimationAction | null = null;
@@ -165,6 +192,7 @@ export async function loadHeroRig(T: Three, gender: Gender): Promise<HeroRig> {
     current = next;
   };
   play("Idle");
+  if (cull) fitBounds(object);
   const bones = new Map<string, THREE_NS.Bone>();
   object.traverse((node) => { if ((node as THREE_NS.Bone).isBone) bones.set(node.name.replace("mixamorig:", "").replace("mixamorig", ""), node as THREE_NS.Bone); });
   return { object, update, play, bone: (name) => bones.get(name) };
@@ -186,5 +214,6 @@ export async function loadDancer(T: Three): Promise<{ object: THREE_NS.Object3D;
   const mixer = new T.AnimationMixer(object);
   const dance = body.animations.find((clip) => clip.name === "SambaDance");
   if (dance) mixer.clipAction(dance).play();
+  fitBounds(object);
   return { object, update: (dt) => mixer.update(dt) };
 }

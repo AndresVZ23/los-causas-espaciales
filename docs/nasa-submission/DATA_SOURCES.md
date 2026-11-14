@@ -93,6 +93,30 @@ Each zone file carries the adapted-data notice in its `sources` list. The grid v
 
 The findings shown inside each model («balizas») are not new data: they are results of the platform's own modules, requested from the local API when the zone is built, and they carry the build date.
 
+### Player mode «Detectives de la Tierra» (ADR-048): missions, terrains and third-party assets
+
+The player mode (`/jugar`) adds no new measurement. It reuses the platform's climate screening for 56 places and wraps it in a game. What is data, what is the team's text and what is simulated:
+
+- **Mission analyses** (`backend/data/missions/missions.json`, built by `scripts/missions/build_missions.py`): one `/projects/climate-screening` request per place, NASA POWER from 2001, with ERA5 as second source for temperature. The file stores each analysis with its own generation date. Two fields are derived by the API when the missions are served, never trusted from the file: `probable_artifact` on each atypical rainfall year (the platform's rule of ADR-036: index in mm, a satellite value for the same year, and the reanalysis at least five times above it) and `heat_support` (whether ERA5 confirms the temperature class). In the current file all atypical years carry a single contrast product, GPM IMERG; three places meet the artefact rule (Lake Poopó, Jacobabad and Mount Etna), and in 20 of the 35 places with a temperature class ERA5 does not confirm it. The game shows both facts instead of hiding them.
+- **Context texts** are written by the team and are not measured by the platform. Each one links one or two external sources (`context_sources`) that were opened and read on **13-Nov-2026**; four texts were corrected to match what the sources support (Nazca, King George Island, Chosica and Merapi).
+- **Mission terrains** (`backend/data/missions/terrain/*.json`, 56 files of about 260 KB, built by `scripts/missions/build_terrain.py`): a window of **Copernicus DEM GLO-30** (relief in decimetres above the lowest cell) and **ESA WorldCover 2021** (cover class) per place, 4 km at 20 m cells for towns and 8 km at about 31 m for landscapes. They are derived grids under the same terms as the block models above and carry the same two notices in their `sources` list. No file has missing elevation cells; one declares sea painted by assumption where cover is absent at sea level. Houses, streets, people and vehicles are scattered over urban cells for play: they are not real objects, and the screen says so.
+- **Disaster events in the game are simulated, not data and not forecasts.** The kind of event for each place (mudflow, flood, heat, eruption or avalanche) was chosen by the team from the place's known hazards (table `HAZARDS` in the build script) and starts at a fixed time; only the path of a mudflow or avalanche follows the real relief. The alert card of the game states that the event is simulated.
+- **El Niño Costero news** shown in Peruvian missions (`nino-2026.ts`) quote press and official pages with outlet, date and link. Every figure was checked against its page on 13-Nov-2026. They are news context, not platform data.
+
+Third-party assets of the player mode and their terms, checked on **13-Nov-2026** against the pages listed:
+
+| Asset | Terms | Credit shown |
+|---|---|---|
+| [Sentinel-2 cloudless 2016](https://eox.at/2019/02/sentinel-2-cloudless-2018/) by EOX (layer `s2cloudless_3857`) | CC BY 4.0 for the 2016 version; the 2018 and later versions are CC BY-NC-SA and are not used | «Sentinel-2 cloudless – https://s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2016 & 2017)» |
+| [AWS Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Mapzen / Tilezen) | Open data; [attribution](https://github.com/tilezen/joerd/blob/master/docs/attribution.md) to Mapzen and the elevation sources | «Mapzen Terrain Tiles; SRTM and GMTED2010 courtesy of the U.S. Geological Survey; ETOPO1, NOAA» |
+| [OpenFreeMap](https://openfreemap.org/), OpenMapTiles and OpenStreetMap | MIT tiles service; OpenMapTiles and OpenStreetMap (ODbL) attribution is mandatory and must stay reachable on small screens | «OpenFreeMap © OpenMapTiles Data from OpenStreetMap» |
+| Music by Kevin MacLeod, [incompetech.com](https://incompetech.com/music/royalty-free/licenses/): «Samba Isobel» and «Volatile Reaction» | CC BY 4.0; credit with title, author, licence and licence URL | As required, in the game credits and in `frontend/public/audio/musica/LEEME.md` |
+| Moon textures, [NASA SVS CGI Moon Kit](https://svs.gsfc.nasa.gov/4720) | Public domain; credit requested; the colour map is aesthetic, not scientific; no NASA insignia or endorsement | «NASA's Scientific Visualization Studio (LRO: LROC colour, LOLA elevation)» |
+| NASA GIBS imagery | Free use; NASA [asks](https://www.earthdata.nasa.gov/engage/open-data-services-software/earthdata-developer-portal/gibs-api) for the GIBS/ESDIS acknowledgement | «NASA EOSDIS GIBS» on the map |
+| Characters `hombre.glb` and `mujer.glb`: Mixamo (Adobe) characters and animations, taken from the three.js examples (`Soldier.glb`, `Michelle.glb`) | **Open item.** The licensing FAQ reposted on Adobe's community forum allows Mixamo characters in games and forbids distributing the raw character files; the official Adobe FAQ page could not be opened (HTTP 403), and neither text covers a web game whose files a browser downloads, or a public repository. Credit is not required. | «Characters: Mixamo (Adobe), via the three.js examples» |
+
+**Before the repository is made public or the game is hosted openly, the team must decide on the two character files**: confirm the Mixamo terms on Adobe's official page, or replace the characters with models under an explicit open licence (for example CC0). Until then they are a known licensing risk, not a cleared asset.
+
 ## Run-of-river hydropower discharge inputs
 
 ### Copernicus EMS GloFAS v4 via Open-Meteo

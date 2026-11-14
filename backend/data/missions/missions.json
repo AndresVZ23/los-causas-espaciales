@@ -1,6 +1,6 @@
 {
  "built_at": "2026-11-13T02:15:10.782833+00:00",
- "method": "Una consulta /projects/climate-screening por lugar, 2001 hasta dos días antes de construir. Tendencia: Mann–Kendall con corrección de Hamed–Rao y pendiente de Sen sobre medias anuales; significancia tras Benjamini–Hochberg entre las variables del lugar.",
+ "method": "Una consulta /projects/climate-screening por lugar, 2001 hasta dos días antes de construir. Tendencia: Mann–Kendall con corrección de Hamed–Rao y pendiente de Sen sobre medias anuales; significancia tras Benjamini–Hochberg entre las variables del lugar. Segunda fuente de la temperatura: ERA5, donde la API la devolvió. Años atípicos de lluvia extrema: se guardan con el valor del mismo año en cada producto de contraste que devolvió la API; en este archivo: GPM IMERG (NASA POWER · IMERG_PRECTOT). La regla de «artefacto probable» (ADR-036) se aplica al servir las misiones. «built_at» es la última escritura del archivo con análisis nuevos; la fecha de cada análisis está en «analysis.generated_at» de su misión.",
  "missions": [
   {
    "id": "nazca",
@@ -9,7 +9,17 @@
    "name": "Líneas de Nazca",
    "latitude": -14.74,
    "longitude": -75.13,
-   "context": "Geoglifos del desierto costero, Patrimonio Mundial de la UNESCO. Las lluvias raras, sobre todo en años de El Niño, y la erosión son su mayor amenaza física.",
+   "context": "Geoglifos del desierto costero, Patrimonio Mundial de la UNESCO. Las lluvias, raras en este desierto, y la erosión que provocan están entre sus principales amenazas físicas, junto con la actividad humana.",
+   "context_sources": [
+    {
+     "title": "Climatic & Anthropogenic Hazards to the Nasca World Heritage: Application of Remote Sensing, AI, and Flood Modelling (arXiv 2405.11814, IGARSS 2024)",
+     "url": "https://arxiv.org/html/2405.11814v1"
+    },
+    {
+     "title": "Rare heavy rains damage Peru's Nazca lines (NBC News)",
+     "url": "https://www.nbcnews.com/news/amp/wbna28739302"
+    }
+   ],
    "not_measured": "El estado de los geoglifos ni la erosión del suelo.",
    "heat": "calienta",
    "temperature": {
@@ -462,6 +472,16 @@
    "latitude": -18.78,
    "longitude": -67.08,
    "context": "Fue el segundo lago más grande de Bolivia y quedó prácticamente seco a fines de 2015, entre sequía, El Niño y el uso del agua de los ríos que lo alimentan.",
+   "context_sources": [
+    {
+     "title": "Lake Poopó: why Bolivia's second largest lake disappeared – and how to bring it back (Smart Water Magazine, republicación de The Conversation)",
+     "url": "https://smartwatermagazine.com/blogs/juan-torres-batllo/lake-poopo-why-bolivias-second-largest-lake-disappeared-and-how-bring-it"
+    },
+    {
+     "title": "Lake Poopó, Bolivia (NASA/JPL, PIA21546)",
+     "url": "https://www.jpl.nasa.gov/images/pia21546-lake-poopo-bolivia/"
+    }
+   ],
    "not_measured": "La superficie del lago ni el caudal de sus ríos.",
    "heat": "calienta",
    "temperature": {
@@ -914,6 +934,16 @@
    "latitude": -3.12,
    "longitude": -60.02,
    "context": "Puerta de la Amazonía. En 2023 el río Negro bajó en Manaos a su nivel más bajo registrado.",
+   "context_sources": [
+    {
+     "title": "Drought on the Rio Negro (NASA Earth Observatory)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/drought-on-the-rio-negro-151961"
+    },
+    {
+     "title": "Drought parches central Amazon in October 2023 (NOAA Climate.gov)",
+     "url": "https://content-drupal.climate.gov/news-features/event-tracker/drought-parches-central-amazon-october-2023"
+    }
+   ],
    "not_measured": "El nivel del río ni la pérdida de bosque.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -1347,6 +1377,12 @@
    "latitude": -33.45,
    "longitude": -70.67,
    "context": "Chile central vive desde 2010 una sequía prolongada que los científicos chilenos llaman «megasequía».",
+   "context_sources": [
+    {
+     "title": "Informe a la Nación: La megasequía en Chile | Centro de Ciencia del Clima y la Resiliencia - CR2",
+     "url": "https://www.cr2.cl/megasequia/"
+    }
+   ],
    "not_measured": "La nieve de la cordillera ni el agua de los embalses.",
    "heat": "calienta",
    "temperature": {
@@ -1780,6 +1816,16 @@
    "latitude": -50.47,
    "longitude": -73.03,
    "context": "Uno de los glaciares más visitados de la Patagonia; los campos de hielo patagónicos, en conjunto, pierden hielo.",
+   "context_sources": [
+    {
+     "title": "Melting Beauty: The Patagonian Icefields (NASA Sea Level Change)",
+     "url": "https://sealevel.nasa.gov/news/133/melting-beauty-the-patagonian-icefields"
+    },
+    {
+     "title": "Día Nacional de los Glaciares: cuáles son los más importantes de la Argentina (La Nación)",
+     "url": "https://www.lanacion.com.ar/sociedad/dia-nacional-de-los-glaciares-cuales-son-los-mas-importantes-de-la-argentina-nid15022025/"
+    }
+   ],
    "not_measured": "El espesor ni el avance o retroceso del glaciar.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -2213,6 +2259,16 @@
    "latitude": -2.19,
    "longitude": -79.89,
    "context": "El puerto más grande de Ecuador, golpeado por inundaciones en los años de El Niño fuerte, como 1997-1998.",
+   "context_sources": [
+    {
+     "title": "GUAYAQUIL Port - Ports Directory (MarineLink)",
+     "url": "https://ports.marinelink.com/ports/port/guayaquil"
+    },
+    {
+     "title": "Climate Change, El Niño, and the State of Emergency in Ecuador (Pacific Standard)",
+     "url": "https://psmag.com/?p=24298"
+    }
+   ],
    "not_measured": "El nivel del río Guayas ni las mareas.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -2646,6 +2702,16 @@
    "latitude": 1.15,
    "longitude": -76.65,
    "context": "En 2017 una avenida torrencial de lodo y piedras arrasó barrios enteros tras una noche de lluvias intensas.",
+   "context_sources": [
+    {
+     "title": "The Mocoa Event on March 31 (2017) (repositorio TU Delft)",
+     "url": "https://repository.tudelft.nl/record/uuid:cb3c34d3-2c10-4382-9989-d716f48bd4d6"
+    },
+    {
+     "title": "Sube a 320 el número de muertos por avalancha de Mocoa (El Heraldo, Colombia)",
+     "url": "https://www.elheraldo.co/colombia/2017/04/13/sube-a-320-el-numero-de-muertos-por-avalancha-de-mocoa-347907/"
+    }
+   ],
    "not_measured": "La inestabilidad de las laderas ni el caudal de los ríos.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -3079,6 +3145,16 @@
    "latitude": -30.03,
    "longitude": -51.23,
    "context": "En 2024 Rio Grande do Sul sufrió las peores inundaciones de su historia; buena parte de Porto Alegre quedó bajo el agua.",
+   "context_sources": [
+    {
+     "title": "Climate change made devastating Brazil floods twice as likely, scientists say (Reuters, en The Star)",
+     "url": "https://thestar.com.my/news/world/2024/06/04/climate-change-made-devastating-brazil-floods-twice-as-likely-scientists-say"
+    },
+    {
+     "title": "Floods Engulf Porto Alegre (NASA Earth Observatory)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/floods-engulf-porto-alegre-152795/"
+    }
+   ],
    "not_measured": "El nivel del lago Guaíba ni de los ríos.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -3512,6 +3588,12 @@
    "latitude": 36.15,
    "longitude": -114.45,
    "context": "El mayor embalse de Estados Unidos. En 2022 llegó a su nivel más bajo desde que se llenó, tras años de sequía en el río Colorado.",
+   "context_sources": [
+    {
+     "title": "Lake Mead Keeps Dropping (NASA Earth Observatory, 22 de julio de 2022)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/lake-mead-keeps-dropping-150111"
+    }
+   ],
    "not_measured": "El nivel del embalse ni el caudal del río.",
    "heat": "calienta",
    "temperature": {
@@ -3945,6 +4027,16 @@
    "latitude": 19.43,
    "longitude": -99.13,
    "context": "Una metrópoli de más de veinte millones de personas construida sobre un antiguo lago; enfrenta escasez de agua y hundimiento del suelo.",
+   "context_sources": [
+    {
+     "title": "Mexico City is sinking so quickly, it can be seen from space (AP, en WTOP)",
+     "url": "https://wtop.com/funny-weird-news/2026/05/mexico-city-is-sinking-so-quickly-it-can-be-seen-from-space/"
+    },
+    {
+     "title": "NASA-ISRO satellite maps Mexico City's rapid sinking as water crisis deepens (Smart Water Magazine)",
+     "url": "https://smartwatermagazine.com/news/smart-water-magazine/nasa-isro-satellite-maps-mexico-citys-rapid-sinking-water-crisis-deepens"
+    }
+   ],
    "not_measured": "El agua subterránea ni el hundimiento.",
    "heat": "calienta",
    "temperature": {
@@ -4378,6 +4470,16 @@
    "latitude": 62.45,
    "longitude": -114.37,
    "context": "En agosto de 2023 toda la ciudad fue evacuada por incendios forestales.",
+   "context_sources": [
+    {
+     "title": "City of Yellowknife ordered to evacuate due to nearby N.W.T. wildfires (Global News, 16 de agosto de 2023)",
+     "url": "https://globalnews.ca/news/9901527/yellowknife-evacuation-order-wildfires"
+    },
+    {
+     "title": "Wildfires force entire capital city of Canada's Northwest Territories to evacuate (CBS News, 17 de agosto de 2023)",
+     "url": "https://www.cbsnews.com/miami/news/wildfires-force-entire-capital-city-of-canadas-northwest-territories-to-evacuate/"
+    }
+   ],
    "not_measured": "Los incendios ni el área quemada.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -4811,6 +4913,16 @@
    "latitude": 69.22,
    "longitude": -51.1,
    "context": "Patrimonio Mundial donde desemboca uno de los glaciares más rápidos de Groenlandia.",
+   "context_sources": [
+    {
+     "title": "Ilulissat Icefjord (IUCN World Heritage Outlook)",
+     "url": "https://worldheritageoutlook.iucn.org/node/1134"
+    },
+    {
+     "title": "Ilulissat Icefjord - A world heritage site (GEUS, Servicio Geológico de Dinamarca y Groenlandia)",
+     "url": "https://eng.geus.dk/products-services-facilities/publications/popular-geology/books/ilulissat-icefjord"
+    }
+   ],
    "not_measured": "El hielo del glaciar ni el nivel del mar.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -5244,6 +5356,16 @@
    "latitude": 13.3,
    "longitude": -87.19,
    "context": "En el Corredor Seco centroamericano, donde las sequías repetidas afectan las cosechas de maíz y frijol.",
+   "context_sources": [
+    {
+     "title": "Orocuina se declara en emergencia por sequía (El Heraldo, Honduras, 31 de julio de 2018)",
+     "url": "https://www.elheraldo.hn/honduras/orocuina-se-declara-en-emergencia-por-sequia-KXEH1202954"
+    },
+    {
+     "title": "Honduras, segunda afectada en Centroamérica por sequía en el corredor seco (El Heraldo, Honduras, 2 de junio de 2023)",
+     "url": "https://www.elheraldo.hn/honduras/honduras-segunda-afectada-centroamerica-por-sequia-corredor-seco-crisis-alimento-DA13750704"
+    }
+   ],
    "not_measured": "Las cosechas ni la humedad del suelo.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -5687,6 +5809,12 @@
    "latitude": 29.95,
    "longitude": -90.07,
    "context": "En 2005 el huracán Katrina rompió los diques y la mayor parte de la ciudad se inundó.",
+   "context_sources": [
+    {
+     "title": "Hurricane Katrina - August 2005 (National Weather Service, NOAA)",
+     "url": "https://weather.gov/mob/katrina"
+    }
+   ],
    "not_measured": "Los huracanes ni la marea de tormenta.",
    "heat": "calienta",
    "temperature": {
@@ -6120,6 +6248,16 @@
    "latitude": 18.47,
    "longitude": -66.11,
    "context": "En 2017 el huracán María dejó a toda la isla sin electricidad, en muchos lugares durante meses.",
+   "context_sources": [
+    {
+     "title": "Hurricane Maria leaves entire island of Puerto Rico without power - ABC13 Houston",
+     "url": "https://abc13.com/post/maria-leaves-entire-island-of-puerto-rico-without-power/2435282/"
+    },
+    {
+     "title": "Puerto Rico officials say all of island now has power again - ABC13 Houston",
+     "url": "https://abc13.com/post/puerto-rico-officials-say-all-of-island-now-has-power-again/3965934/"
+    }
+   ],
    "not_measured": "Los huracanes ni la marea de tormenta.",
    "heat": "calienta",
    "temperature": {
@@ -6553,6 +6691,16 @@
    "latitude": 18.54,
    "longitude": -72.34,
    "context": "Una de las ciudades más expuestas del Caribe: el terremoto de 2010 y huracanes frecuentes.",
+   "context_sources": [
+    {
+     "title": "Haiti | World Bank Group",
+     "url": "https://www.worldbank.org/en/country/haiti/overview"
+    },
+    {
+     "title": "On Shaky Ground (NASA Earthdata)",
+     "url": "https://www.earthdata.nasa.gov/news/feature-articles/shaky-ground"
+    }
+   ],
    "not_measured": "Los terremotos ni los huracanes.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -7005,6 +7153,16 @@
    "latitude": 37.39,
    "longitude": -5.98,
    "context": "Andalucía atravesó entre 2022 y 2024 una sequía severa, con embalses muy bajos.",
+   "context_sources": [
+    {
+     "title": "La sequía pone a prueba el modelo económico de Andalucía (Público, 03/02/2024)",
+     "url": "https://www.publico.es/politica/sequia-pone-prueba-modelo-economico-andalucia.html"
+    },
+    {
+     "title": "Sequía en Andalucía: haciendo frente a una crisis hídrica en escalada (iAgua, 06/02/2024)",
+     "url": "https://www.iagua.es/noticias/redaccion-iagua/sequia-andalucia-haciendo-frente-crisis-hidrica-escalada"
+    }
+   ],
    "not_measured": "El agua de los embalses.",
    "heat": "calienta",
    "temperature": {
@@ -7438,6 +7596,12 @@
    "latitude": 45.44,
    "longitude": 12.33,
    "context": "Una ciudad sobre una laguna; desde 2020 la protegen compuertas móviles (MOSE) frente al «agua alta».",
+   "context_sources": [
+    {
+     "title": "Venice, for the first time MoSE is raised against high water and succeeds in blocking the tide (Campaign for a Living Venice, 05/10/2020)",
+     "url": "https://campaignforalivingvenice.org/2020/10/05/venice-for-the-first-time-mose-is-raised-against-high-water-and-succeeds-in-blocking-the-tide/"
+    }
+   ],
    "not_measured": "El nivel del mar ni las mareas.",
    "heat": "calienta",
    "temperature": {
@@ -7871,6 +8035,16 @@
    "latitude": 46.44,
    "longitude": 8.08,
    "context": "El glaciar más grande de los Alpes; los glaciares suizos pierden hielo año tras año.",
+   "context_sources": [
+    {
+     "title": "Record-low snow accumulation on biggest Alpine glacier: study (Phys.org/AFP, 16/10/2020)",
+     "url": "https://www.phys.org/news/2020-10-record-low-accumulation-biggest-alpine-glacier.html"
+    },
+    {
+     "title": "And Swiss glaciers continue to melt (Swiss Academy of Sciences, SCNAT, 01/10/2025)",
+     "url": "https://scnat.ch/en/id/wLLYv"
+    }
+   ],
    "not_measured": "El hielo del glaciar.",
    "heat": "calienta",
    "temperature": {
@@ -8304,6 +8478,16 @@
    "latitude": 78.22,
    "longitude": 15.65,
    "context": "Archipiélago del Ártico, una de las regiones del planeta que más rápido se calientan.",
+   "context_sources": [
+    {
+     "title": "Norwegian Arctic archipelago feels the heat of climate change (AFP vía The Local, 22/06/2022)",
+     "url": "https://www.thelocal.no/20220622/norwegian-arctic-archipelago-feeling-the-heat-of-climate-change"
+    },
+    {
+     "title": "Svalbard: The race to save the fastest-warming place on Earth (RNZ, 27/10/2022)",
+     "url": "https://www.rnz.co.nz/news/world/477514/svalbard-the-race-to-save-the-fastest-warming-place-on-earth"
+    }
+   ],
    "not_measured": "El hielo marino ni el permafrost.",
    "heat": "calienta",
    "temperature": {
@@ -8729,6 +8913,16 @@
    "latitude": 51.92,
    "longitude": 4.48,
    "context": "Buena parte del país está bajo el nivel del mar; la protegen diques y barreras móviles como Maeslant.",
+   "context_sources": [
+    {
+     "title": "Maeslant Barrier (Rijkswaterstaat)",
+     "url": "https://www.rijkswaterstaat.nl/en/projects/iconic-structures/maeslant-barrier"
+    },
+    {
+     "title": "Resilient to sea level rise: more sand, more safety (Rijkswaterstaat)",
+     "url": "https://www.rijkswaterstaat.nl/en/news/archive/2025/12/resilient-to-sea-level-rise-more-sand-more-safety"
+    }
+   ],
    "not_measured": "El nivel del mar.",
    "heat": "calienta",
    "temperature": {
@@ -9162,6 +9356,16 @@
    "latitude": 37.98,
    "longitude": 23.73,
    "context": "Grecia vive incendios forestales cada verano; en 2023 hubo evacuaciones masivas en Rodas y en los alrededores de Atenas.",
+   "context_sources": [
+    {
+     "title": "Greece conducts country's largest wildfire evacuation as island of Rhodes burns (PBS News/AP, 23/07/2023)",
+     "url": "https://www.pbs.org/newshour/world/greece-conducts-countrys-largest-wildfire-evacuation-as-island-of-rhodes-burns"
+    },
+    {
+     "title": "Photos: Greece wildfires force thousands to flee seaside resorts (Al Jazeera, 18/07/2023)",
+     "url": "https://www.aljazeera.com/gallery/2023/7/18/photos-greece-wildfires-force-thousands-to-flee-seaside-resorts"
+    }
+   ],
    "not_measured": "Los incendios ni el área quemada.",
    "heat": "calienta",
    "temperature": {
@@ -9595,6 +9799,12 @@
    "latitude": 50.54,
    "longitude": 7.11,
    "context": "En julio de 2021 lluvias extremas desbordaron el río Ahr en una de las peores inundaciones de Alemania en décadas.",
+   "context_sources": [
+    {
+     "title": "Heavy rainfall which led to severe flooding in Western Europe made more likely by climate change (World Weather Attribution)",
+     "url": "https://www.worldweatherattribution.org/heavy-rainfall-which-led-to-severe-flooding-in-western-europe-made-more-likely-by-climate-change/"
+    }
+   ],
    "not_measured": "El caudal del río.",
    "heat": "calienta",
    "temperature": {
@@ -10028,6 +10238,16 @@
    "latitude": 39.47,
    "longitude": -0.38,
    "context": "En octubre de 2024 una DANA (gota fría) descargó lluvias torrenciales y causó inundaciones devastadoras al sur de la ciudad.",
+   "context_sources": [
+    {
+     "title": "Devastating rainfall hits Spain in yet another flood-related disaster (OMM/WMO, 31/10/2024)",
+     "url": "https://wmo.int/media/news/devastating-rainfall-hits-spain-yet-another-flood-related-disaster"
+    },
+    {
+     "title": "621 mm de agua en seis horas en Turís: AEMET ha publicado un informe en el que analiza la DANA de octubre (Xataka)",
+     "url": "https://www.xataka.com/ecologia-y-naturaleza/621-mm-agua-seis-horas-turis-aemet-ha-publicado-informe-que-analiza-dana-octubre"
+    }
+   ],
    "not_measured": "El caudal de los barrancos.",
    "heat": "calienta",
    "temperature": {
@@ -10461,6 +10681,16 @@
    "latitude": 28.61,
    "longitude": 77.21,
    "context": "Una de las ciudades más pobladas del mundo, con olas de calor y un aire muy contaminado.",
+   "context_sources": [
+    {
+     "title": "68% of the world population projected to live in urban areas by 2050, says UN | UN DESA",
+     "url": "https://www.un.org/development/desa/en/news/population/2018-revision-of-world-urbanization-prospects.html"
+    },
+    {
+     "title": "India had 13 of 20 most polluted world cities in 2024: Study (Scroll.in, 11/03/2025)",
+     "url": "https://scroll.in/latest/1080178/india-had-13-of-20-most-polluted-cities-in-2024-study"
+    }
+   ],
    "not_measured": "La contaminación del aire.",
    "heat": "enfria",
    "temperature": {
@@ -10894,6 +11124,16 @@
    "latitude": 14.0,
    "longitude": 120.99,
    "context": "Volcán activo dentro de un lago; su erupción de enero de 2020 obligó a evacuar a miles de personas.",
+   "context_sources": [
+    {
+     "title": "Sulfur Spews from Taal (NASA Earth Observatory)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/sulfur-spews-from-taal-146142/"
+    },
+    {
+     "title": "Taal Volcano remains on Level 4 alert, but what does that mean? (NASA Science)",
+     "url": "https://science.nasa.gov/?p=1068206"
+    }
+   ],
    "not_measured": "La actividad del volcán.",
    "heat": "calienta",
    "temperature": {
@@ -11327,6 +11567,12 @@
    "latitude": 46.0,
    "longitude": 60.5,
    "context": "Fue uno de los lagos más grandes del mundo; se redujo drásticamente desde los años sesenta, cuando se desviaron sus ríos para regar algodón.",
+   "context_sources": [
+    {
+     "title": "World of Change: Shrinking Aral Sea (NASA Earth Observatory)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/world-of-change/aral-sea"
+    }
+   ],
    "not_measured": "La superficie del agua ni el polvo salino.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -11760,6 +12006,16 @@
    "latitude": 23.81,
    "longitude": 90.41,
    "context": "Capital de un país en el delta más grande del mundo, expuesto a inundaciones y ciclones.",
+   "context_sources": [
+    {
+     "title": "Ganges River Delta | NASA Jet Propulsion Laboratory (JPL)",
+     "url": "https://www.jpl.nasa.gov/images/ganges-river-delta"
+    },
+    {
+     "title": "Earth from Space: Ganges' dazzling delta (ESA)",
+     "url": "https://www.esa.int/Applications/Observing_the_Earth/Earth_from_Space_Ganges_dazzling_delta"
+    }
+   ],
    "not_measured": "Las inundaciones de los ríos ni el nivel del mar.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -12193,6 +12449,16 @@
    "latitude": 28.28,
    "longitude": 68.44,
    "context": "Una de las ciudades más calurosas del planeta. En 2022 Pakistán sufrió inundaciones históricas.",
+   "context_sources": [
+    {
+     "title": "In Jacobabad, One of the Hottest Cities on the Planet, a Heat Wave Is Pushing the Limits of Human Livability (Inside Climate News)",
+     "url": "https://insideclimatenews.org/news/20062022/jacobabad-pakistan-heat-health/"
+    },
+    {
+     "title": "Eight million may still be exposed to Pakistan floodwaters: UN (Al Jazeera)",
+     "url": "https://www.aljazeera.com/news/2022/12/7/8-million-still-potentially-exposed-to-pakistan-floodwaters-un"
+    }
+   ],
    "not_measured": "La humedad combinada con el calor ni las inundaciones.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -12681,6 +12947,16 @@
    "latitude": 38.27,
    "longitude": 140.87,
    "context": "En 2011 un terremoto y un tsunami golpearon esta costa y provocaron el accidente nuclear de Fukushima.",
+   "context_sources": [
+    {
+     "title": "On This Day: 2011 Tohoku Earthquake and Tsunami (NOAA NCEI)",
+     "url": "https://www.ncei.noaa.gov/news/day-2011-japan-earthquake-and-tsunami"
+    },
+    {
+     "title": "Earthquake and Tsunami near Sendai, Japan (NASA Earth Observatory)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/earthquake-and-tsunami-near-sendai-japan-49621"
+    }
+   ],
    "not_measured": "Los terremotos ni los tsunamis.",
    "heat": "calienta",
    "temperature": {
@@ -13114,6 +13390,16 @@
    "latitude": -6.21,
    "longitude": 106.85,
    "context": "Una de las ciudades que más rápido se hunden en el mundo; Indonesia construye una nueva capital.",
+   "context_sources": [
+    {
+     "title": "Why Indonesia is moving its capital from Jakarta to Borneo (PBS News)",
+     "url": "https://www.pbs.org/newshour/world/why-indonesia-is-moving-its-capital-from-jakarta-to-borneo"
+    },
+    {
+     "title": "From Jakarta to Nusantara: Land subsidence and other pressing water challenges in a sinking mega city (Space4Water, UNOOSA)",
+     "url": "https://www.space4water.org/news/jakarta-nusantara-land-subsidence-and-other-pressing-water-challenges-sinking-mega-city"
+    }
+   ],
    "not_measured": "El hundimiento del suelo ni el nivel del mar.",
    "heat": "calienta",
    "temperature": {
@@ -13547,6 +13833,16 @@
    "latitude": 34.75,
    "longitude": 113.63,
    "context": "En julio de 2021 lluvias récord inundaron la ciudad, incluido su metro.",
+   "context_sources": [
+    {
+     "title": "State of Climate in 2021: Extreme events and major impacts (OMM)",
+     "url": "https://wmo.int/news/media-centre/state-of-climate-2021-extreme-events-and-major-impacts"
+    },
+    {
+     "title": "Cover Story: How Historic Rainfall Overwhelmed Zhengzhou (Caixin Global)",
+     "url": "https://www.caixinglobal.com/2021-07-27/cover-story-how-historic-rainfall-overwhelmed-zhengzhou-101745293.html"
+    }
+   ],
    "not_measured": "El caudal de los ríos.",
    "heat": "calienta",
    "temperature": {
@@ -14008,6 +14304,16 @@
    "latitude": 3.12,
    "longitude": 35.6,
    "context": "En el Cuerno de África, que entre 2020 y 2023 vivió varias temporadas de lluvia fallidas seguidas.",
+   "context_sources": [
+    {
+     "title": "Vulnerable children in the Horn of Africa have been living through insecurity for years (UNICEF Eastern and Southern Africa)",
+     "url": "https://www.unicef.org/esa/stories/crisis-horn-of-africa"
+    },
+    {
+     "title": "Meteorological and humanitarian agencies sound alert on East Africa (OMM, 30 de mayo de 2022)",
+     "url": "https://wmo.int/node/15001"
+    }
+   ],
    "not_measured": "Las cosechas ni el ganado.",
    "heat": "calienta",
    "temperature": {
@@ -14441,6 +14747,12 @@
    "latitude": 31.2,
    "longitude": 29.92,
    "context": "Una costa baja en el delta del Nilo, expuesta a la subida del mar y a la entrada de agua salada.",
+   "context_sources": [
+    {
+     "title": "Coastal case study: West Nile Delta, Egypt (Climatic Research Unit, University of East Anglia, proyecto CIRCE)",
+     "url": "https://crudata.uea.ac.uk/projects/circe/WestNileDelta.html"
+    }
+   ],
    "not_measured": "El nivel del mar ni la salinidad.",
    "heat": "calienta",
    "temperature": {
@@ -14893,6 +15205,12 @@
    "latitude": 0.05,
    "longitude": 18.26,
    "context": "En el corazón de la selva del Congo, la segunda gran selva tropical del planeta.",
+   "context_sources": [
+    {
+     "title": "OFAC - Forest Ecosystem (Observatoire des Forêts d'Afrique Centrale, COMIFAC)",
+     "url": "https://www.observatoire-comifac.net/africa/forest_ecosystems?lang=en"
+    }
+   ],
    "not_measured": "La pérdida de bosque.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -15326,6 +15644,12 @@
    "latitude": -25.17,
    "longitude": 46.08,
    "context": "El sur de Madagascar sufrió en 2021 una sequía que provocó una grave crisis de hambre.",
+   "context_sources": [
+    {
+     "title": "Madagascar edges toward famine, UN food agency appeals for assistance (UN News, 29 de abril de 2021)",
+     "url": "https://news.un.org/en/story/2021/04/1090922"
+    }
+   ],
    "not_measured": "Las cosechas ni la humedad del suelo.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -15769,6 +16093,12 @@
    "latitude": 13.51,
    "longitude": 2.11,
    "context": "En el Sahel, la franja entre el Sahara y la sabana, donde la lluvia cambia mucho de un año a otro.",
+   "context_sources": [
+    {
+     "title": "Bioclimatic Regions Map (USGS EROS, West Africa: Land Use and Land Cover Dynamics)",
+     "url": "https://www.usgs.gov/centers/eros/science/bioclimatic-regions-map"
+    }
+   ],
    "not_measured": "El avance del desierto ni las inundaciones del río Níger.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -16202,6 +16532,16 @@
    "latitude": 32.77,
    "longitude": 22.64,
    "context": "En septiembre de 2023 la tormenta Daniel rompió dos presas y la riada arrasó parte de la ciudad.",
+   "context_sources": [
+    {
+     "title": "Storm Daniel leads to extreme rain and floods in Mediterranean, heavy loss of life in Libya (OMM)",
+     "url": "https://wmo.int/media/news/storm-daniel-leads-extreme-rain-and-floods-mediterranean-heavy-loss-of-life-libya"
+    },
+    {
+     "title": "UN launches flash appeal to aid 250,000 Libyans hit by devastating floods (UN News)",
+     "url": "https://news.un.org/en/story/2023/09/1140767"
+    }
+   ],
    "not_measured": "El estado de las presas.",
    "heat": "calienta",
    "temperature": {
@@ -16645,6 +16985,16 @@
    "latitude": -19.84,
    "longitude": 34.84,
    "context": "En 2019 el ciclón Idai golpeó la ciudad y provocó grandes inundaciones en Mozambique.",
+   "context_sources": [
+    {
+     "title": "WHO sending urgent health assistance after Cyclone Idai displaces thousands of people in Southern Africa (OMS África)",
+     "url": "https://www.afro.who.int/news/who-sending-urgent-health-assistance-after-cyclone-idai-displaces-thousands-people-southern"
+    },
+    {
+     "title": "Tropical Cyclone Idai affects 1.5 million across Mozambique and Malawi, as UN ramps up response (UN News, 15 de marzo de 2019)",
+     "url": "https://news.un.org/en/node/1034741"
+    }
+   ],
    "not_measured": "Los ciclones ni la marea de tormenta.",
    "heat": "calienta",
    "temperature": {
@@ -17078,6 +17428,16 @@
    "latitude": 2.05,
    "longitude": 45.32,
    "context": "Somalia sufrió entre 2020 y 2023 la peor sequía en décadas del Cuerno de África.",
+   "context_sources": [
+    {
+     "title": "Meteorological and humanitarian agencies sound alert on East Africa (OMM, 30 de mayo de 2022)",
+     "url": "https://wmo.int/node/15001"
+    },
+    {
+     "title": "Somalia in need of humanitarian aid as it faces worst drought in decades (PBS News, 11 de abril de 2023)",
+     "url": "https://www.pbs.org/newshour/show/somalia-in-need-of-humanitarian-aid-as-it-faces-worst-drought-in-decades"
+    }
+   ],
    "not_measured": "Las cosechas ni el agua de los pozos.",
    "heat": "calienta",
    "temperature": {
@@ -17511,6 +17871,16 @@
    "latitude": -16.92,
    "longitude": 145.77,
    "context": "Puerta de la Gran Barrera de Coral, que ha sufrido varios blanqueamientos masivos de coral en los últimos años.",
+   "context_sources": [
+    {
+     "title": "Aerial Surveys Reveal Mass Coral Bleaching Event Unfolding on Great Barrier Reef (ECO Magazine, comunicado de AIMS y la Reef Authority)",
+     "url": "https://ecomagazine.com/news/coastal/aerial-surveys-reveal-mass-coral-bleaching-event-unfolding-on-great-barrier-reef/"
+    },
+    {
+     "title": "Travel Guide to Cairns, Queensland - Tourism Australia",
+     "url": "https://www.australia.com/en/places/cairns.html"
+    }
+   ],
    "not_measured": "La temperatura del mar ni el estado del coral.",
    "heat": "calienta",
    "temperature": {
@@ -17944,6 +18314,16 @@
    "latitude": -8.52,
    "longitude": 179.2,
    "context": "Capital de Tuvalu, un atolón de pocos metros de altura frente a la subida del nivel del mar.",
+   "context_sources": [
+    {
+     "title": "Funafuti, Tuvalu - City Scan (City Resilience Program, Banco Mundial, mayo de 2025)",
+     "url": "https://wbcrp.quarto.pub/tuvalu-funafuti/"
+    },
+    {
+     "title": "Funafuti Atoll, Tuvalu (NASA Earth Observatory)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/funafuti-atoll-tuvalu-153047"
+    }
+   ],
    "not_measured": "El nivel del mar.",
    "heat": "calienta",
    "temperature": {
@@ -18387,6 +18767,16 @@
    "latitude": -28.81,
    "longitude": 153.28,
    "context": "En 2022 la ciudad sufrió la mayor inundación de su historia registrada.",
+   "context_sources": [
+    {
+     "title": "Flood history - Lismore City Council",
+     "url": "https://www.lismore.nsw.gov.au/Community/Natural-hazards-and-emergency-information/Flood-information-for-Lismore1/Flood-history"
+    },
+    {
+     "title": "New South Wales, 22 February onwards (flood 2022) - Australian Institute for Disaster Resilience",
+     "url": "https://knowledge.aidr.org.au/resources/flood-flooding-new-south-wales-2022/"
+    }
+   ],
    "not_measured": "El caudal del río Wilsons.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -18820,6 +19210,16 @@
    "latitude": 20.88,
    "longitude": -156.68,
    "context": "En agosto de 2023 un incendio impulsado por el viento destruyó casi todo el pueblo histórico de Lahaina.",
+   "context_sources": [
+    {
+     "title": "Wildfire blazes through Maui, killing at least 53 people and destroying historic Hawaiian town - PBS NewsHour / Associated Press (10-ago-2023)",
+     "url": "https://www.pbs.org/newshour/nation/wildfire-blazes-through-hawaii-killing-at-least-36-people-on-maui-and-destroying-historic-town"
+    },
+    {
+     "title": "Lahaina, Hawaii Fire Timeline Report - U.S. Fire Administration (FEMA)",
+     "url": "https://www.usfa.fema.gov/blog/lahaina-hawaii-fire-timeline-report/"
+    }
+   ],
    "not_measured": "Los incendios ni la sequedad de la vegetación.",
    "heat": "calienta",
    "temperature": {
@@ -19263,6 +19663,16 @@
    "latitude": -75.5,
    "longitude": -106.75,
    "context": "Llamado «el glaciar del fin del mundo»: si se deshace, el nivel del mar subiría en todo el planeta. Los científicos lo vigilan de cerca.",
+   "context_sources": [
+    {
+     "title": "Grim outlook for Antarctica's Thwaites Glacier - International Thwaites Glacier Collaboration",
+     "url": "https://thwaitesglacier.org/node/834"
+    },
+    {
+     "title": "Antarctica's \"Doomsday Glacier\" is set to retreat \"further and faster,\" scientists warn - CBS News",
+     "url": "https://www.cbsnews.com/news/antarcticas-doomsday-glacier-thwaites"
+    }
+   ],
    "not_measured": "El hielo del glaciar ni el nivel del mar.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -19687,7 +20097,17 @@
    "name": "Isla Rey Jorge, estación Machu Picchu",
    "latitude": -62.09,
    "longitude": -58.47,
-   "context": "Junto a la estación científica del Perú en la Antártida, en la península Antártica, una de las zonas que más se han calentado en el último medio siglo.",
+   "context": "Junto a la estación científica del Perú en la Antártida, frente a la península Antártica, una de las zonas que más se han calentado en el último medio siglo.",
+   "context_sources": [
+    {
+     "title": "¿Sabías que Perú tiene otro Machu Picchu en la Antártida? Conoce su ubicación e importancia para el país - Infobae",
+     "url": "https://www.infobae.com/peru/2024/09/03/sabias-que-peru-tiene-otro-machu-picchu-en-la-antartida-conoce-su-ubicacion-e-importancia-para-el-pais/"
+    },
+    {
+     "title": "New climate history adds to understanding of recent Antarctic Peninsula warming - British Antarctic Survey (vía EurekAlert!)",
+     "url": "https://www.eurekalert.org/news-releases/481699"
+    }
+   ],
    "not_measured": "El hielo marino ni los glaciares.",
    "heat": "sin_evidencia",
    "temperature": {
@@ -20112,7 +20532,17 @@
    "name": "Chosica, Lurigancho",
    "latitude": -11.94,
    "longitude": -76.7,
-   "context": "Cada temporada de lluvias en la sierra, los huaicos bajan por las quebradas que cruzan Chosica.",
+   "context": "En la temporada de lluvias de la sierra, los huaicos suelen bajar por las quebradas que cruzan Chosica.",
+   "context_sources": [
+    {
+     "title": "Ministra del Ambiente inspecciona quebradas en Lurigancho ante lluvias - Caretas (27-feb-2026)",
+     "url": "https://caretas.pe/politica/ministra-del-ambiente-inspecciona-quebradas-en-lurigancho-ante-lluvias/"
+    },
+    {
+     "title": "Alerta por huaicos en Chosica: Senamhi advierte posible activación de quebradas por lluvias - La República (12-feb-2025)",
+     "url": "https://larepublica.pe/sociedad/2025/02/12/senamhi-emite-alerta-por-huaicos-en-chosica-posible-activacion-de-quebradas-por-lluvias-al-este-de-lima-949608"
+    }
+   ],
    "not_measured": "La inestabilidad de las laderas ni el caudal de las quebradas.",
    "scale": "ciudad",
    "hazard": "huaico",
@@ -20556,6 +20986,16 @@
    "latitude": -5.19,
    "longitude": -80.63,
    "context": "En 2017 el Niño Costero desbordó el río Piura e inundó buena parte de la ciudad.",
+   "context_sources": [
+    {
+     "title": "A tres años del desborde del río Piura - Universidad de Piura",
+     "url": "https://www.udep.edu.pe/hoy/2020/03/a-tres-anos-del-desborde-del-rio-piura/"
+    },
+    {
+     "title": "Desborde de río Piura llegó hasta a Plaza de Armas y el Amazonas se encuentra en alerta roja - Actualidad Ambiental (SPDA), 27-mar-2017",
+     "url": "https://www.actualidadambiental.pe/desborde-de-rio-piura-llego-hasta-a-plaza-de-armas-y-el-amazonas-se-encuentra-en-alerta-roja/"
+    }
+   ],
    "not_measured": "El caudal del río ni la temperatura del mar.",
    "scale": "ciudad",
    "hazard": "inundacion",
@@ -20999,6 +21439,12 @@
    "latitude": -9.12,
    "longitude": -77.6,
    "context": "En 1970 un terremoto desprendió hielo y roca del Huascarán y el aluvión sepultó la ciudad de Yungay.",
+   "context_sources": [
+    {
+     "title": "Geological aspects of the May 31, 1970, Perú earthquake - U.S. Geological Survey",
+     "url": "https://www.usgs.gov/publications/geological-aspects-may-31-1970-peru-earthquake"
+    }
+   ],
    "not_measured": "El hielo del nevado ni las lagunas glaciares.",
    "scale": "paisaje",
    "hazard": "avalancha",
@@ -21432,6 +21878,12 @@
    "latitude": -39.42,
    "longitude": -71.93,
    "context": "Uno de los volcanes más activos de Chile, con un lago de lava en su cráter.",
+   "context_sources": [
+    {
+     "title": "Chile's Villarrica Sputters - NASA Earth Observatory",
+     "url": "https://science.nasa.gov/earth/earth-observatory/chiles-villarrica-sputters-150898/"
+    }
+   ],
    "not_measured": "La actividad del volcán.",
    "scale": "paisaje",
    "hazard": "erupcion",
@@ -21865,6 +22317,16 @@
    "latitude": 19.02,
    "longitude": -98.62,
    "context": "Volcán activo muy cerca de Ciudad de México; sus emisiones de ceniza son vigiladas a diario.",
+   "context_sources": [
+    {
+     "title": "Another Puff of Ash from Popocatépetl - NASA Earth Observatory (31-ene-2024)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/another-puff-of-ash-from-popocatepetl-152388"
+    },
+    {
+     "title": "Popocatépetl hoy: volcán registró 14 exhalaciones este 27 de enero - Infobae México",
+     "url": "https://www.infobae.com/mexico/2026/01/27/popocatepetl-hoy-volcan-registro-14-exhalaciones-este-27-de-enero/"
+    }
+   ],
    "not_measured": "La actividad del volcán ni la ceniza.",
    "scale": "paisaje",
    "hazard": "erupcion",
@@ -22298,6 +22760,12 @@
    "latitude": 33.45,
    "longitude": -112.07,
    "context": "Una de las ciudades más calurosas de Estados Unidos; en 2023 sufrió una ola de calor récord.",
+   "context_sources": [
+    {
+     "title": "Assessing the U.S. Climate in July 2023 - NOAA National Centers for Environmental Information",
+     "url": "https://www.ncei.noaa.gov/news/national-climate-202307"
+    }
+   ],
    "not_measured": "El calor de las calles ni la sombra urbana.",
    "scale": "ciudad",
    "hazard": "calor",
@@ -22731,6 +23199,16 @@
    "latitude": 37.75,
    "longitude": 14.99,
    "context": "El volcán activo más alto de Europa; entra en erupción con frecuencia.",
+   "context_sources": [
+    {
+     "title": "ETNA FABRIC - Istituto Nazionale di Geofisica e Vulcanologia (INGV)",
+     "url": "https://www.ingv.it/en/etna"
+    },
+    {
+     "title": "Steaming Mount Etna - NASA Earth Observatory (1-oct-2010)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/steaming-mount-etna-46212/"
+    }
+   ],
    "not_measured": "La actividad del volcán.",
    "scale": "paisaje",
    "hazard": "erupcion",
@@ -23183,6 +23661,16 @@
    "latitude": 45.92,
    "longitude": 6.87,
    "context": "Valle al pie del Mont Blanc, famoso por el montañismo y vigilado por el riesgo de avalanchas.",
+   "context_sources": [
+    {
+     "title": "Mont Blanc & Mountaineering - Office de Tourisme de la Vallée de Chamonix-Mont-Blanc",
+     "url": "https://en.chamonix.com/node/273"
+    },
+    {
+     "title": "Avalanche risk assessment bulletin - Office de Tourisme de la Vallée de Chamonix-Mont-Blanc (boletín de Météo-France)",
+     "url": "https://en.chamonix.com/bulletin-avalanche"
+    }
+   ],
    "not_measured": "La nieve acumulada ni el riesgo de avalanchas.",
    "scale": "paisaje",
    "hazard": "avalancha",
@@ -23615,7 +24103,17 @@
    "name": "Volcán Merapi",
    "latitude": -7.54,
    "longitude": 110.45,
-   "context": "Uno de los volcanes más activos de Indonesia; en 2010 una gran erupción obligó a evacuar a miles de personas.",
+   "context": "Uno de los volcanes más activos de Indonesia; en 2010 una gran erupción obligó a evacuar a cientos de miles de personas.",
+   "context_sources": [
+    {
+     "title": "Volcano Watch — Thousands saved by accurate eruption forecasts of Mount Merapi, Indonesia - USGS Hawaiian Volcano Observatory (3-feb-2011)",
+     "url": "https://www.usgs.gov/center-news/volcano-watch-thousands-saved-accurate-eruption-forecasts-mount-merapi-indonesia"
+    },
+    {
+     "title": "Eruption at Mount Merapi, Indonesia - NASA Earth Observatory (6-nov-2010)",
+     "url": "https://science.nasa.gov/earth/earth-observatory/eruption-at-mount-merapi-indonesia-46837/"
+    }
+   ],
    "not_measured": "La actividad del volcán.",
    "scale": "paisaje",
    "hazard": "erupcion",
@@ -24049,6 +24547,16 @@
    "latitude": 19.41,
    "longitude": -155.28,
    "context": "Uno de los volcanes más activos del planeta; en 2018 la lava destruyó cientos de casas.",
+   "context_sources": [
+    {
+     "title": "Kīlauea - U.S. Geological Survey, Hawaiian Volcano Observatory",
+     "url": "https://www.usgs.gov/volcanoes/kilauea"
+    },
+    {
+     "title": "2018 lower East Rift Zone eruption and summit collapse - U.S. Geological Survey",
+     "url": "https://www.usgs.gov/volcanoes/kilauea/science/2018-lower-east-rift-zone-eruption-and-summit-collapse"
+    }
+   ],
    "not_measured": "La actividad del volcán ni la lava.",
    "scale": "paisaje",
    "hazard": "erupcion",

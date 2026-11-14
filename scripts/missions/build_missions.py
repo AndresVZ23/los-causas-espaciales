@@ -1,15 +1,22 @@
 """Construye las misiones del «modo jugador» y las guarda en backend/data/missions/missions.json.
 
 Cada misión es un lugar del mundo con su análisis climático real, pedido a la API local en el momento de construir
-(NASA POWER desde 2001, con ERA5 como segunda fuente y GPM IMERG / CHIRPS para la lluvia extrema). El texto de
-«contexto» es cualitativo y está marcado como tal: no lleva cifras ni sale de la plataforma. Si el análisis de un lugar
-no llega, la misión no se crea y el guion lo dice.
+(NASA POWER desde 2001, con ERA5 como segunda fuente de la temperatura). Los años atípicos de lluvia extrema se guardan
+con el valor del mismo año en los productos de contraste que devuelva la API: en el archivo actual las 26 marcas traen
+uno solo, GPM IMERG, y ninguna trae CHIRPS (revisado el 13-nov-2026). El texto de «contexto» lo escribe el equipo y no
+sale de la plataforma; puede llevar años y sus fuentes externas van en CONTEXT_SOURCES. Si el análisis de un lugar no
+llega, la misión no se crea y el guion lo dice.
 
     python3 scripts/missions/build_missions.py              # todas
     python3 scripts/missions/build_missions.py nazca taal   # algunas
+    python3 scripts/missions/build_missions.py --textos     # sin red: reaplica los textos del guion al archivo que ya existe
 
-Requiere la API en http://localhost:8000 (variable MISSIONS_API para otra dirección). Un sitio por consulta, para que la
-familia de Benjamini–Hochberg sea siempre la de las variables de ese sitio y no dependa de con quién se agrupe.
+Construir requiere la API en http://localhost:8000 (variable MISSIONS_API para otra dirección). Un sitio por consulta,
+para que la familia de Benjamini–Hochberg sea siempre la de las variables de ese sitio y no dependa de con quién se agrupe.
+
+«built_at» es la última vez que este guion escribió el archivo con análisis nuevos, no la fecha de cada análisis: al
+construir solo algunos lugares, los demás se conservan tal cual y su fecha sigue en «analysis.generated_at». El modo
+--textos no consulta nada y por eso no toca «built_at» ni «analysis».
 """
 
 import json
@@ -30,7 +37,7 @@ WORKERS = 3
 # (id, continente, país, lugar, lat, lon, contexto cualitativo, lo que la plataforma no mide aquí)
 PLACES = [
     ("nazca", "Sudamérica", "Perú", "Líneas de Nazca", -14.74, -75.13,
-     "Geoglifos del desierto costero, Patrimonio Mundial de la UNESCO. Las lluvias raras, sobre todo en años de El Niño, y la erosión son su mayor amenaza física.",
+     "Geoglifos del desierto costero, Patrimonio Mundial de la UNESCO. Las lluvias, raras en este desierto, y la erosión que provocan están entre sus principales amenazas físicas, junto con la actividad humana.",
      "El estado de los geoglifos ni la erosión del suelo."),
     ("poopo", "Sudamérica", "Bolivia", "Lago Poopó", -18.78, -67.08,
      "Fue el segundo lago más grande de Bolivia y quedó prácticamente seco a fines de 2015, entre sequía, El Niño y el uso del agua de los ríos que lo alimentan.",
@@ -165,10 +172,10 @@ PLACES = [
      "Llamado «el glaciar del fin del mundo»: si se deshace, el nivel del mar subiría en todo el planeta. Los científicos lo vigilan de cerca.",
      "El hielo del glaciar ni el nivel del mar."),
     ("rey-jorge", "Antártida", "Antártida (estación peruana)", "Isla Rey Jorge, estación Machu Picchu", -62.09, -58.47,
-     "Junto a la estación científica del Perú en la Antártida, en la península Antártica, una de las zonas que más se han calentado en el último medio siglo.",
+     "Junto a la estación científica del Perú en la Antártida, frente a la península Antártica, una de las zonas que más se han calentado en el último medio siglo.",
      "El hielo marino ni los glaciares."),
     ("chosica", "Sudamérica", "Perú", "Chosica, Lurigancho", -11.94, -76.70,
-     "Cada temporada de lluvias en la sierra, los huaicos bajan por las quebradas que cruzan Chosica.",
+     "En la temporada de lluvias de la sierra, los huaicos suelen bajar por las quebradas que cruzan Chosica.",
      "La inestabilidad de las laderas ni el caudal de las quebradas."),
     ("piura", "Sudamérica", "Perú", "Piura", -5.19, -80.63,
      "En 2017 el Niño Costero desbordó el río Piura e inundó buena parte de la ciudad.",
@@ -192,7 +199,7 @@ PLACES = [
      "Valle al pie del Mont Blanc, famoso por el montañismo y vigilado por el riesgo de avalanchas.",
      "La nieve acumulada ni el riesgo de avalanchas."),
     ("merapi", "Asia", "Indonesia", "Volcán Merapi", -7.54, 110.45,
-     "Uno de los volcanes más activos de Indonesia; en 2010 una gran erupción obligó a evacuar a miles de personas.",
+     "Uno de los volcanes más activos de Indonesia; en 2010 una gran erupción obligó a evacuar a cientos de miles de personas.",
      "La actividad del volcán."),
     ("kilauea", "Oceanía", "Estados Unidos (Hawái)", "Volcán Kīlauea", 19.41, -155.28,
      "Uno de los volcanes más activos del planeta; en 2018 la lava destruyó cientos de casas.",
@@ -224,7 +231,236 @@ HAZARDS = {
     "cairns": "inundacion", "funafuti": "inundacion", "lismore": "inundacion", "lahaina": "calor", "kilauea": "erupcion", "thwaites": None, "rey-jorge": None,
 }
 
+# Fuentes externas del texto de contexto de cada lugar: {id: [{"title": ..., "url": ...}]}. Solo fuentes verificadas
+# (la página dice lo que dice el contexto); un lugar sin entrada queda con la lista vacía y el juego lo trata como
+# texto del equipo sin fuente enlazada. Después de editarlo: python3 scripts/missions/build_missions.py --textos
+CONTEXT_SOURCES: dict[str, list[dict[str, str]]] = {
+    "nazca": [
+        {"title": "Climatic & Anthropogenic Hazards to the Nasca World Heritage: Application of Remote Sensing, AI, and Flood Modelling (arXiv 2405.11814, IGARSS 2024)", "url": "https://arxiv.org/html/2405.11814v1"},
+        {"title": "Rare heavy rains damage Peru's Nazca lines (NBC News)", "url": "https://www.nbcnews.com/news/amp/wbna28739302"},
+    ],
+    "poopo": [
+        {"title": "Lake Poopó: why Bolivia's second largest lake disappeared – and how to bring it back (Smart Water Magazine, republicación de The Conversation)", "url": "https://smartwatermagazine.com/blogs/juan-torres-batllo/lake-poopo-why-bolivias-second-largest-lake-disappeared-and-how-bring-it"},
+        {"title": "Lake Poopó, Bolivia (NASA/JPL, PIA21546)", "url": "https://www.jpl.nasa.gov/images/pia21546-lake-poopo-bolivia/"},
+    ],
+    "manaos": [
+        {"title": "Drought on the Rio Negro (NASA Earth Observatory)", "url": "https://science.nasa.gov/earth/earth-observatory/drought-on-the-rio-negro-151961"},
+        {"title": "Drought parches central Amazon in October 2023 (NOAA Climate.gov)", "url": "https://content-drupal.climate.gov/news-features/event-tracker/drought-parches-central-amazon-october-2023"},
+    ],
+    "santiago": [
+        {"title": "Informe a la Nación: La megasequía en Chile | Centro de Ciencia del Clima y la Resiliencia - CR2", "url": "https://www.cr2.cl/megasequia/"},
+    ],
+    "perito-moreno": [
+        {"title": "Melting Beauty: The Patagonian Icefields (NASA Sea Level Change)", "url": "https://sealevel.nasa.gov/news/133/melting-beauty-the-patagonian-icefields"},
+        {"title": "Día Nacional de los Glaciares: cuáles son los más importantes de la Argentina (La Nación)", "url": "https://www.lanacion.com.ar/sociedad/dia-nacional-de-los-glaciares-cuales-son-los-mas-importantes-de-la-argentina-nid15022025/"},
+    ],
+    "guayaquil": [
+        {"title": "GUAYAQUIL Port - Ports Directory (MarineLink)", "url": "https://ports.marinelink.com/ports/port/guayaquil"},
+        {"title": "Climate Change, El Niño, and the State of Emergency in Ecuador (Pacific Standard)", "url": "https://psmag.com/?p=24298"},
+    ],
+    "mocoa": [
+        {"title": "The Mocoa Event on March 31 (2017) (repositorio TU Delft)", "url": "https://repository.tudelft.nl/record/uuid:cb3c34d3-2c10-4382-9989-d716f48bd4d6"},
+        {"title": "Sube a 320 el número de muertos por avalancha de Mocoa (El Heraldo, Colombia)", "url": "https://www.elheraldo.co/colombia/2017/04/13/sube-a-320-el-numero-de-muertos-por-avalancha-de-mocoa-347907/"},
+    ],
+    "porto-alegre": [
+        {"title": "Climate change made devastating Brazil floods twice as likely, scientists say (Reuters, en The Star)", "url": "https://thestar.com.my/news/world/2024/06/04/climate-change-made-devastating-brazil-floods-twice-as-likely-scientists-say"},
+        {"title": "Floods Engulf Porto Alegre (NASA Earth Observatory)", "url": "https://science.nasa.gov/earth/earth-observatory/floods-engulf-porto-alegre-152795/"},
+    ],
+    "lago-mead": [
+        {"title": "Lake Mead Keeps Dropping (NASA Earth Observatory, 22 de julio de 2022)", "url": "https://science.nasa.gov/earth/earth-observatory/lake-mead-keeps-dropping-150111"},
+    ],
+    "cdmx": [
+        {"title": "Mexico City is sinking so quickly, it can be seen from space (AP, en WTOP)", "url": "https://wtop.com/funny-weird-news/2026/05/mexico-city-is-sinking-so-quickly-it-can-be-seen-from-space/"},
+        {"title": "NASA-ISRO satellite maps Mexico City's rapid sinking as water crisis deepens (Smart Water Magazine)", "url": "https://smartwatermagazine.com/news/smart-water-magazine/nasa-isro-satellite-maps-mexico-citys-rapid-sinking-water-crisis-deepens"},
+    ],
+    "yellowknife": [
+        {"title": "City of Yellowknife ordered to evacuate due to nearby N.W.T. wildfires (Global News, 16 de agosto de 2023)", "url": "https://globalnews.ca/news/9901527/yellowknife-evacuation-order-wildfires"},
+        {"title": "Wildfires force entire capital city of Canada's Northwest Territories to evacuate (CBS News, 17 de agosto de 2023)", "url": "https://www.cbsnews.com/miami/news/wildfires-force-entire-capital-city-of-canadas-northwest-territories-to-evacuate/"},
+    ],
+    "ilulissat": [
+        {"title": "Ilulissat Icefjord (IUCN World Heritage Outlook)", "url": "https://worldheritageoutlook.iucn.org/node/1134"},
+        {"title": "Ilulissat Icefjord - A world heritage site (GEUS, Servicio Geológico de Dinamarca y Groenlandia)", "url": "https://eng.geus.dk/products-services-facilities/publications/popular-geology/books/ilulissat-icefjord"},
+    ],
+    "choluteca": [
+        {"title": "Orocuina se declara en emergencia por sequía (El Heraldo, Honduras, 31 de julio de 2018)", "url": "https://www.elheraldo.hn/honduras/orocuina-se-declara-en-emergencia-por-sequia-KXEH1202954"},
+        {"title": "Honduras, segunda afectada en Centroamérica por sequía en el corredor seco (El Heraldo, Honduras, 2 de junio de 2023)", "url": "https://www.elheraldo.hn/honduras/honduras-segunda-afectada-centroamerica-por-sequia-corredor-seco-crisis-alimento-DA13750704"},
+    ],
+    "nueva-orleans": [
+        {"title": "Hurricane Katrina - August 2005 (National Weather Service, NOAA)", "url": "https://weather.gov/mob/katrina"},
+    ],
+    "san-juan": [
+        {"title": "Hurricane Maria leaves entire island of Puerto Rico without power - ABC13 Houston", "url": "https://abc13.com/post/maria-leaves-entire-island-of-puerto-rico-without-power/2435282/"},
+        {"title": "Puerto Rico officials say all of island now has power again - ABC13 Houston", "url": "https://abc13.com/post/puerto-rico-officials-say-all-of-island-now-has-power-again/3965934/"},
+    ],
+    "puerto-principe": [
+        {"title": "Haiti | World Bank Group", "url": "https://www.worldbank.org/en/country/haiti/overview"},
+        {"title": "On Shaky Ground (NASA Earthdata)", "url": "https://www.earthdata.nasa.gov/news/feature-articles/shaky-ground"},
+    ],
+    "sevilla": [
+        {"title": "La sequía pone a prueba el modelo económico de Andalucía (Público, 03/02/2024)", "url": "https://www.publico.es/politica/sequia-pone-prueba-modelo-economico-andalucia.html"},
+        {"title": "Sequía en Andalucía: haciendo frente a una crisis hídrica en escalada (iAgua, 06/02/2024)", "url": "https://www.iagua.es/noticias/redaccion-iagua/sequia-andalucia-haciendo-frente-crisis-hidrica-escalada"},
+    ],
+    "venecia": [
+        {"title": "Venice, for the first time MoSE is raised against high water and succeeds in blocking the tide (Campaign for a Living Venice, 05/10/2020)", "url": "https://campaignforalivingvenice.org/2020/10/05/venice-for-the-first-time-mose-is-raised-against-high-water-and-succeeds-in-blocking-the-tide/"},
+    ],
+    "aletsch": [
+        {"title": "Record-low snow accumulation on biggest Alpine glacier: study (Phys.org/AFP, 16/10/2020)", "url": "https://www.phys.org/news/2020-10-record-low-accumulation-biggest-alpine-glacier.html"},
+        {"title": "And Swiss glaciers continue to melt (Swiss Academy of Sciences, SCNAT, 01/10/2025)", "url": "https://scnat.ch/en/id/wLLYv"},
+    ],
+    "svalbard": [
+        {"title": "Norwegian Arctic archipelago feels the heat of climate change (AFP vía The Local, 22/06/2022)", "url": "https://www.thelocal.no/20220622/norwegian-arctic-archipelago-feeling-the-heat-of-climate-change"},
+        {"title": "Svalbard: The race to save the fastest-warming place on Earth (RNZ, 27/10/2022)", "url": "https://www.rnz.co.nz/news/world/477514/svalbard-the-race-to-save-the-fastest-warming-place-on-earth"},
+    ],
+    "rotterdam": [
+        {"title": "Maeslant Barrier (Rijkswaterstaat)", "url": "https://www.rijkswaterstaat.nl/en/projects/iconic-structures/maeslant-barrier"},
+        {"title": "Resilient to sea level rise: more sand, more safety (Rijkswaterstaat)", "url": "https://www.rijkswaterstaat.nl/en/news/archive/2025/12/resilient-to-sea-level-rise-more-sand-more-safety"},
+    ],
+    "atenas": [
+        {"title": "Greece conducts country's largest wildfire evacuation as island of Rhodes burns (PBS News/AP, 23/07/2023)", "url": "https://www.pbs.org/newshour/world/greece-conducts-countrys-largest-wildfire-evacuation-as-island-of-rhodes-burns"},
+        {"title": "Photos: Greece wildfires force thousands to flee seaside resorts (Al Jazeera, 18/07/2023)", "url": "https://www.aljazeera.com/gallery/2023/7/18/photos-greece-wildfires-force-thousands-to-flee-seaside-resorts"},
+    ],
+    "ahr": [
+        {"title": "Heavy rainfall which led to severe flooding in Western Europe made more likely by climate change (World Weather Attribution)", "url": "https://www.worldweatherattribution.org/heavy-rainfall-which-led-to-severe-flooding-in-western-europe-made-more-likely-by-climate-change/"},
+    ],
+    "valencia": [
+        {"title": "Devastating rainfall hits Spain in yet another flood-related disaster (OMM/WMO, 31/10/2024)", "url": "https://wmo.int/media/news/devastating-rainfall-hits-spain-yet-another-flood-related-disaster"},
+        {"title": "621 mm de agua en seis horas en Turís: AEMET ha publicado un informe en el que analiza la DANA de octubre (Xataka)", "url": "https://www.xataka.com/ecologia-y-naturaleza/621-mm-agua-seis-horas-turis-aemet-ha-publicado-informe-que-analiza-dana-octubre"},
+    ],
+    "delhi": [
+        {"title": "68% of the world population projected to live in urban areas by 2050, says UN | UN DESA", "url": "https://www.un.org/development/desa/en/news/population/2018-revision-of-world-urbanization-prospects.html"},
+        {"title": "India had 13 of 20 most polluted world cities in 2024: Study (Scroll.in, 11/03/2025)", "url": "https://scroll.in/latest/1080178/india-had-13-of-20-most-polluted-cities-in-2024-study"},
+    ],
+    "taal": [
+        {"title": "Sulfur Spews from Taal (NASA Earth Observatory)", "url": "https://science.nasa.gov/earth/earth-observatory/sulfur-spews-from-taal-146142/"},
+        {"title": "Taal Volcano remains on Level 4 alert, but what does that mean? (NASA Science)", "url": "https://science.nasa.gov/?p=1068206"},
+    ],
+    "aral": [
+        {"title": "World of Change: Shrinking Aral Sea (NASA Earth Observatory)", "url": "https://science.nasa.gov/earth/earth-observatory/world-of-change/aral-sea"},
+    ],
+    "daca": [
+        {"title": "Ganges River Delta | NASA Jet Propulsion Laboratory (JPL)", "url": "https://www.jpl.nasa.gov/images/ganges-river-delta"},
+        {"title": "Earth from Space: Ganges' dazzling delta (ESA)", "url": "https://www.esa.int/Applications/Observing_the_Earth/Earth_from_Space_Ganges_dazzling_delta"},
+    ],
+    "jacobabad": [
+        {"title": "In Jacobabad, One of the Hottest Cities on the Planet, a Heat Wave Is Pushing the Limits of Human Livability (Inside Climate News)", "url": "https://insideclimatenews.org/news/20062022/jacobabad-pakistan-heat-health/"},
+        {"title": "Eight million may still be exposed to Pakistan floodwaters: UN (Al Jazeera)", "url": "https://www.aljazeera.com/news/2022/12/7/8-million-still-potentially-exposed-to-pakistan-floodwaters-un"},
+    ],
+    "sendai": [
+        {"title": "On This Day: 2011 Tohoku Earthquake and Tsunami (NOAA NCEI)", "url": "https://www.ncei.noaa.gov/news/day-2011-japan-earthquake-and-tsunami"},
+        {"title": "Earthquake and Tsunami near Sendai, Japan (NASA Earth Observatory)", "url": "https://science.nasa.gov/earth/earth-observatory/earthquake-and-tsunami-near-sendai-japan-49621"},
+    ],
+    "yakarta": [
+        {"title": "Why Indonesia is moving its capital from Jakarta to Borneo (PBS News)", "url": "https://www.pbs.org/newshour/world/why-indonesia-is-moving-its-capital-from-jakarta-to-borneo"},
+        {"title": "From Jakarta to Nusantara: Land subsidence and other pressing water challenges in a sinking mega city (Space4Water, UNOOSA)", "url": "https://www.space4water.org/news/jakarta-nusantara-land-subsidence-and-other-pressing-water-challenges-sinking-mega-city"},
+    ],
+    "zhengzhou": [
+        {"title": "State of Climate in 2021: Extreme events and major impacts (OMM)", "url": "https://wmo.int/news/media-centre/state-of-climate-2021-extreme-events-and-major-impacts"},
+        {"title": "Cover Story: How Historic Rainfall Overwhelmed Zhengzhou (Caixin Global)", "url": "https://www.caixinglobal.com/2021-07-27/cover-story-how-historic-rainfall-overwhelmed-zhengzhou-101745293.html"},
+    ],
+    "turkana": [
+        {"title": "Vulnerable children in the Horn of Africa have been living through insecurity for years (UNICEF Eastern and Southern Africa)", "url": "https://www.unicef.org/esa/stories/crisis-horn-of-africa"},
+        {"title": "Meteorological and humanitarian agencies sound alert on East Africa (OMM, 30 de mayo de 2022)", "url": "https://wmo.int/node/15001"},
+    ],
+    "alejandria": [
+        {"title": "Coastal case study: West Nile Delta, Egypt (Climatic Research Unit, University of East Anglia, proyecto CIRCE)", "url": "https://crudata.uea.ac.uk/projects/circe/WestNileDelta.html"},
+    ],
+    "mbandaka": [
+        {"title": "OFAC - Forest Ecosystem (Observatoire des Forêts d'Afrique Centrale, COMIFAC)", "url": "https://www.observatoire-comifac.net/africa/forest_ecosystems?lang=en"},
+    ],
+    "ambovombe": [
+        {"title": "Madagascar edges toward famine, UN food agency appeals for assistance (UN News, 29 de abril de 2021)", "url": "https://news.un.org/en/story/2021/04/1090922"},
+    ],
+    "niamey": [
+        {"title": "Bioclimatic Regions Map (USGS EROS, West Africa: Land Use and Land Cover Dynamics)", "url": "https://www.usgs.gov/centers/eros/science/bioclimatic-regions-map"},
+    ],
+    "derna": [
+        {"title": "Storm Daniel leads to extreme rain and floods in Mediterranean, heavy loss of life in Libya (OMM)", "url": "https://wmo.int/media/news/storm-daniel-leads-extreme-rain-and-floods-mediterranean-heavy-loss-of-life-libya"},
+        {"title": "UN launches flash appeal to aid 250,000 Libyans hit by devastating floods (UN News)", "url": "https://news.un.org/en/story/2023/09/1140767"},
+    ],
+    "beira": [
+        {"title": "WHO sending urgent health assistance after Cyclone Idai displaces thousands of people in Southern Africa (OMS África)", "url": "https://www.afro.who.int/news/who-sending-urgent-health-assistance-after-cyclone-idai-displaces-thousands-people-southern"},
+        {"title": "Tropical Cyclone Idai affects 1.5 million across Mozambique and Malawi, as UN ramps up response (UN News, 15 de marzo de 2019)", "url": "https://news.un.org/en/node/1034741"},
+    ],
+    "mogadiscio": [
+        {"title": "Meteorological and humanitarian agencies sound alert on East Africa (OMM, 30 de mayo de 2022)", "url": "https://wmo.int/node/15001"},
+        {"title": "Somalia in need of humanitarian aid as it faces worst drought in decades (PBS News, 11 de abril de 2023)", "url": "https://www.pbs.org/newshour/show/somalia-in-need-of-humanitarian-aid-as-it-faces-worst-drought-in-decades"},
+    ],
+    "cairns": [
+        {"title": "Aerial Surveys Reveal Mass Coral Bleaching Event Unfolding on Great Barrier Reef (ECO Magazine, comunicado de AIMS y la Reef Authority)", "url": "https://ecomagazine.com/news/coastal/aerial-surveys-reveal-mass-coral-bleaching-event-unfolding-on-great-barrier-reef/"},
+        {"title": "Travel Guide to Cairns, Queensland - Tourism Australia", "url": "https://www.australia.com/en/places/cairns.html"},
+    ],
+    "funafuti": [
+        {"title": "Funafuti, Tuvalu - City Scan (City Resilience Program, Banco Mundial, mayo de 2025)", "url": "https://wbcrp.quarto.pub/tuvalu-funafuti/"},
+        {"title": "Funafuti Atoll, Tuvalu (NASA Earth Observatory)", "url": "https://science.nasa.gov/earth/earth-observatory/funafuti-atoll-tuvalu-153047"},
+    ],
+    "lismore": [
+        {"title": "Flood history - Lismore City Council", "url": "https://www.lismore.nsw.gov.au/Community/Natural-hazards-and-emergency-information/Flood-information-for-Lismore1/Flood-history"},
+        {"title": "New South Wales, 22 February onwards (flood 2022) - Australian Institute for Disaster Resilience", "url": "https://knowledge.aidr.org.au/resources/flood-flooding-new-south-wales-2022/"},
+    ],
+    "lahaina": [
+        {"title": "Wildfire blazes through Maui, killing at least 53 people and destroying historic Hawaiian town - PBS NewsHour / Associated Press (10-ago-2023)", "url": "https://www.pbs.org/newshour/nation/wildfire-blazes-through-hawaii-killing-at-least-36-people-on-maui-and-destroying-historic-town"},
+        {"title": "Lahaina, Hawaii Fire Timeline Report - U.S. Fire Administration (FEMA)", "url": "https://www.usfa.fema.gov/blog/lahaina-hawaii-fire-timeline-report/"},
+    ],
+    "thwaites": [
+        {"title": "Grim outlook for Antarctica's Thwaites Glacier - International Thwaites Glacier Collaboration", "url": "https://thwaitesglacier.org/node/834"},
+        {"title": "Antarctica's \"Doomsday Glacier\" is set to retreat \"further and faster,\" scientists warn - CBS News", "url": "https://www.cbsnews.com/news/antarcticas-doomsday-glacier-thwaites"},
+    ],
+    "rey-jorge": [
+        {"title": "¿Sabías que Perú tiene otro Machu Picchu en la Antártida? Conoce su ubicación e importancia para el país - Infobae", "url": "https://www.infobae.com/peru/2024/09/03/sabias-que-peru-tiene-otro-machu-picchu-en-la-antartida-conoce-su-ubicacion-e-importancia-para-el-pais/"},
+        {"title": "New climate history adds to understanding of recent Antarctic Peninsula warming - British Antarctic Survey (vía EurekAlert!)", "url": "https://www.eurekalert.org/news-releases/481699"},
+    ],
+    "chosica": [
+        {"title": "Ministra del Ambiente inspecciona quebradas en Lurigancho ante lluvias - Caretas (27-feb-2026)", "url": "https://caretas.pe/politica/ministra-del-ambiente-inspecciona-quebradas-en-lurigancho-ante-lluvias/"},
+        {"title": "Alerta por huaicos en Chosica: Senamhi advierte posible activación de quebradas por lluvias - La República (12-feb-2025)", "url": "https://larepublica.pe/sociedad/2025/02/12/senamhi-emite-alerta-por-huaicos-en-chosica-posible-activacion-de-quebradas-por-lluvias-al-este-de-lima-949608"},
+    ],
+    "piura": [
+        {"title": "A tres años del desborde del río Piura - Universidad de Piura", "url": "https://www.udep.edu.pe/hoy/2020/03/a-tres-anos-del-desborde-del-rio-piura/"},
+        {"title": "Desborde de río Piura llegó hasta a Plaza de Armas y el Amazonas se encuentra en alerta roja - Actualidad Ambiental (SPDA), 27-mar-2017", "url": "https://www.actualidadambiental.pe/desborde-de-rio-piura-llego-hasta-a-plaza-de-armas-y-el-amazonas-se-encuentra-en-alerta-roja/"},
+    ],
+    "huascaran": [
+        {"title": "Geological aspects of the May 31, 1970, Perú earthquake - U.S. Geological Survey", "url": "https://www.usgs.gov/publications/geological-aspects-may-31-1970-peru-earthquake"},
+    ],
+    "villarrica": [
+        {"title": "Chile's Villarrica Sputters - NASA Earth Observatory", "url": "https://science.nasa.gov/earth/earth-observatory/chiles-villarrica-sputters-150898/"},
+    ],
+    "popocatepetl": [
+        {"title": "Another Puff of Ash from Popocatépetl - NASA Earth Observatory (31-ene-2024)", "url": "https://science.nasa.gov/earth/earth-observatory/another-puff-of-ash-from-popocatepetl-152388"},
+        {"title": "Popocatépetl hoy: volcán registró 14 exhalaciones este 27 de enero - Infobae México", "url": "https://www.infobae.com/mexico/2026/01/27/popocatepetl-hoy-volcan-registro-14-exhalaciones-este-27-de-enero/"},
+    ],
+    "phoenix": [
+        {"title": "Assessing the U.S. Climate in July 2023 - NOAA National Centers for Environmental Information", "url": "https://www.ncei.noaa.gov/news/national-climate-202307"},
+    ],
+    "etna": [
+        {"title": "ETNA FABRIC - Istituto Nazionale di Geofisica e Vulcanologia (INGV)", "url": "https://www.ingv.it/en/etna"},
+        {"title": "Steaming Mount Etna - NASA Earth Observatory (1-oct-2010)", "url": "https://science.nasa.gov/earth/earth-observatory/steaming-mount-etna-46212/"},
+    ],
+    "chamonix": [
+        {"title": "Mont Blanc & Mountaineering - Office de Tourisme de la Vallée de Chamonix-Mont-Blanc", "url": "https://en.chamonix.com/node/273"},
+        {"title": "Avalanche risk assessment bulletin - Office de Tourisme de la Vallée de Chamonix-Mont-Blanc (boletín de Météo-France)", "url": "https://en.chamonix.com/bulletin-avalanche"},
+    ],
+    "merapi": [
+        {"title": "Volcano Watch — Thousands saved by accurate eruption forecasts of Mount Merapi, Indonesia - USGS Hawaiian Volcano Observatory (3-feb-2011)", "url": "https://www.usgs.gov/center-news/volcano-watch-thousands-saved-accurate-eruption-forecasts-mount-merapi-indonesia"},
+        {"title": "Eruption at Mount Merapi, Indonesia - NASA Earth Observatory (6-nov-2010)", "url": "https://science.nasa.gov/earth/earth-observatory/eruption-at-mount-merapi-indonesia-46837/"},
+    ],
+    "kilauea": [
+        {"title": "Kīlauea - U.S. Geological Survey, Hawaiian Volcano Observatory", "url": "https://www.usgs.gov/volcanoes/kilauea"},
+        {"title": "2018 lower East Rift Zone eruption and summit collapse - U.S. Geological Survey", "url": "https://www.usgs.gov/volcanoes/kilauea/science/2018-lower-east-rift-zone-eruption-and-summit-collapse"},
+    ],
+}
+
 VARIABLES = {"T2M": "temperature", "PRECTOTCORR": "rain", "ALLSKY_SFC_SW_DWN": "sun"}
+
+
+
+def method_text(missions: list[dict]) -> str:
+    """El campo «method» del archivo. Los productos de contraste se leen de las propias marcas: se nombra lo que hay, no lo que se esperaba."""
+    products = sorted({source for mission in missions for flag in mission.get("flagged_extremes", []) for source in flag.get("countercheck_values", {})})
+    return ("Una consulta /projects/climate-screening por lugar, 2001 hasta dos días antes de construir. Tendencia: Mann–Kendall con corrección "
+            "de Hamed–Rao y pendiente de Sen sobre medias anuales; significancia tras Benjamini–Hochberg entre las variables del lugar. "
+            "Segunda fuente de la temperatura: ERA5, donde la API la devolvió. Años atípicos de lluvia extrema: se guardan con el valor del "
+            "mismo año en cada producto de contraste que devolvió la API; en este archivo: " + ("; ".join(products) if products else "ninguno") + ". "
+            "La regla de «artefacto probable» (ADR-036) se aplica al servir las misiones. «built_at» es la última escritura del archivo con "
+            "análisis nuevos; la fecha de cada análisis está en «analysis.generated_at» de su misión.")
 
 
 def call(path: str, body: dict) -> dict:
@@ -257,8 +493,29 @@ def heat_class(temperature: dict | None) -> str:
     return "calienta" if temperature["direction"] == "increasing" else "enfria" if temperature["direction"] == "decreasing" else "sin_evidencia"
 
 
+KEY_ORDER = ("id", "continent", "country", "name", "latitude", "longitude", "context", "context_sources", "not_measured", "scale", "hazard")
+
+
+def with_texts(mission: dict, place: tuple) -> dict:
+    """La misión con los campos estáticos del guion encima (no salen del análisis).
+
+    Es el único lugar donde se arman: lo usan la construcción y el modo --textos, para que no puedan divergir. Las claves
+    que la misión ya tiene conservan su lugar; una clave nueva entra detrás de su vecina en KEY_ORDER, así reaplicar
+    textos a un archivo existente no mueve líneas.
+    """
+    pid, continent, country, name, _lat, _lon, context, not_measured = place
+    texts = {"continent": continent, "country": country, "name": name, "context": context, "context_sources": CONTEXT_SOURCES.get(pid, []),
+             "not_measured": not_measured, "scale": "paisaje" if pid in LANDSCAPES else "ciudad", "hazard": HAZARDS.get(pid)}
+    merged = {**mission, **texts}
+    keys = list(mission)
+    for index, key in enumerate(KEY_ORDER):
+        if key not in keys:
+            keys.insert(keys.index(KEY_ORDER[index - 1]) + 1 if index else 0, key)
+    return {key: merged[key] for key in keys}
+
+
 def build(place: tuple) -> dict:
-    pid, continent, country, name, lat, lon, context, not_measured = place
+    pid, _continent, _country, name, lat, lon, _context, _not_measured = place
     response = call("/projects/climate-screening", {"sites": [{"latitude": lat, "longitude": lon, "label": name}], "territories": [], "start_date": START, "end_date": END})
     site = response["sites"][0]
     data = {key: None for key in VARIABLES.values()}
@@ -272,13 +529,14 @@ def build(place: tuple) -> dict:
          "slope_per_year": item["trend"].get("slope_per_year"), "significant": bool(item.get("significant_after_bh"))}
         for item in site.get("extremes", [])
     ]
+    # La unidad va en cada marca: CDD y R10MM se miden en días, y R95P y PRCPTOT son mm del año, no de un día.
     flagged = [
-        {"variable": item["variable"], "label": item["label"], "year": odd["year"], "value": odd.get("value"), "countercheck_values": odd.get("countercheck_values") or {}}
+        {"variable": item["variable"], "label": item["label"], "unit": item.get("display_unit"), "year": odd["year"], "value": odd.get("value"),
+         "countercheck_values": odd.get("countercheck_values") or {}}
         for item in site.get("extremes", []) for odd in item.get("atypical_years", []) if odd.get("countercheck_values")
     ]
-    return {
-        "id": pid, "continent": continent, "country": country, "name": name, "latitude": lat, "longitude": lon,
-        "context": context, "not_measured": not_measured, "scale": "paisaje" if pid in LANDSCAPES else "ciudad", "hazard": HAZARDS.get(pid),
+    return with_texts({
+        "id": pid, "latitude": lat, "longitude": lon,
         "heat": heat_class(data["temperature"]),
         **data,
         "extremes": extremes, "flagged_extremes": flagged,
@@ -288,7 +546,39 @@ def build(place: tuple) -> dict:
             "downloaded_at": source.get("downloaded_at") if source else None, "provenance": source.get("provenance") if source else "DATA_UNAVAILABLE",
             "source_url": source.get("source_url") if source else None,
         },
-    }
+    }, place)
+
+
+def write(payload: dict) -> None:
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(json.dumps(payload, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
+def reapply_texts(selected: list[str]) -> None:
+    """Modo --textos: reaplica al archivo existente los campos estáticos del guion, sin red.
+
+    No consulta la API, así que no cambia «built_at», «analysis» ni ningún valor medido de ninguna misión.
+    """
+    if not OUT.exists():
+        sys.exit(f"No existe {OUT}: primero hay que construir las misiones con la API encendida.")
+    payload = json.loads(OUT.read_text(encoding="utf-8"))
+    places = {place[0]: place for place in PLACES}
+    for pid in sorted(set(CONTEXT_SOURCES) - set(places)):
+        print(f"  ! CONTEXT_SOURCES tiene «{pid}», que no está en PLACES: no se aplica a ninguna misión.")
+    missions, changed = [], 0
+    for mission in payload["missions"]:
+        place = places.get(mission["id"])
+        if place is None or (selected and mission["id"] not in selected):
+            missions.append(mission)
+            continue
+        if (mission["latitude"], mission["longitude"]) != (place[4], place[5]):
+            # Las coordenadas no son un texto: si cambiaron en el guion, el análisis guardado es de otro punto.
+            print(f"  ! {mission['id']}: las coordenadas del guion no son las del archivo; se conservan las del archivo. Reconstruya ese lugar.")
+        updated = with_texts(mission, place)
+        changed += updated != mission
+        missions.append(updated)
+    write({**payload, "method": method_text(missions), "missions": missions})
+    print(f"Textos reaplicados: {changed} de {len(missions)} misiones cambiaron en {OUT}. built_at y analysis quedan como estaban.")
 
 
 def main(selected: list[str]) -> None:
@@ -303,18 +593,22 @@ def main(selected: list[str]) -> None:
                 print(f"  ✓ {pid}: {built[pid]['heat']}")
             except Exception as error:  # noqa: BLE001 — un lugar caído no detiene a los demás
                 print(f"  ✗ {pid}: no se creó la misión ({error})")
+    if not built:
+        # Sin ningún análisis nuevo no se escribe: reescribir solo renovaría «built_at» sobre análisis que no cambiaron.
+        print("Ninguna misión se construyó: el archivo queda como estaba.")
+        return
+    # Las misiones que no se pidieron o cuyo análisis no llegó se conservan tal cual, con su «analysis» y su fecha.
     merged = {**previous, **built}
     order = [place[0] for place in PLACES]
     missions = [merged[pid] for pid in order if pid in merged]
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(json.dumps({
-        "built_at": datetime.now(timezone.utc).isoformat(),
-        "method": "Una consulta /projects/climate-screening por lugar, 2001 hasta dos días antes de construir. Tendencia: Mann–Kendall con corrección "
-                  "de Hamed–Rao y pendiente de Sen sobre medias anuales; significancia tras Benjamini–Hochberg entre las variables del lugar.",
-        "missions": missions,
-    }, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"{len(missions)} misiones en {OUT.relative_to(ROOT)}")
+    # «built_at» es la fecha de esta escritura, no la de cada análisis (esa va en «analysis.generated_at» de cada misión).
+    write({"built_at": datetime.now(timezone.utc).isoformat(), "method": method_text(missions), "missions": missions})
+    print(f"{len(missions)} misiones en {OUT.relative_to(ROOT)} ({len(built)} con análisis nuevo, {len(missions) - len(built)} conservadas)")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    arguments = sys.argv[1:]
+    if "--textos" in arguments:
+        reapply_texts([item for item in arguments if item != "--textos"])
+    else:
+        main(arguments)

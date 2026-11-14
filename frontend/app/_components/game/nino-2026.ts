@@ -88,11 +88,14 @@ export function ninoCredit(fact: NinoFact): string {
   return fact.date ? `${fact.source}, ${fact.date}` : fact.source;
 }
 
-/** Conversaciones de la gente en el Perú: lo que dicen sale de las mismas fuentes. */
+/**
+ * Conversaciones de la gente en el Perú: lo que dicen sale de las mismas fuentes de NINO_FACTS. Cada cifra o fecha
+ * lleva su fuente en la misma frase, igual que allá; un vecino tampoco repite un número sin decir de dónde sale.
+ */
 export const NINO_CHATS: string[][] = [
-  ["¡Hola! ¿Cómo estás?", "¡Sí, todo bien! ¿Y tú?", "Bien. ¿Viste? Declararon emergencia en 1.380 distritos por El Niño.", "Sí… hay que tener lista la mochila de emergencia."],
-  ["¡Hola, vecina! ¿Cómo estás?", "Todo bien, gracias. Aunque el choclo subió 45,3 % en octubre…", "¡Uf! Y dicen que llega menos pescado por el oleaje.", "Así es. Cuidémonos mucho estos meses."],
-  ["¡Buenas! ¿Todo bien?", "¡Sí, todo bien! ¿Escuchaste? El ENFEN mantiene la alerta de El Niño Costero.", "Sí, hasta febrero de 2027, dicen.", "Entonces a prepararse. ¡Nos vemos!"],
+  ["¡Hola! ¿Cómo estás?", "¡Sí, todo bien! ¿Y tú?", "Bien. ¿Viste? Según AFP, declararon emergencia en 1.380 distritos por El Niño.", "Sí… hay que tener lista la mochila de emergencia."],
+  ["¡Hola, vecina! ¿Cómo estás?", "Todo bien, gracias. Aunque, según el INEI, el choclo subió 45,3 % en octubre…", "¡Uf! Y leí en Infomercado que llega menos pescado por el oleaje.", "Así es. Cuidémonos mucho estos meses."],
+  ["¡Buenas! ¿Todo bien?", "¡Sí, todo bien! ¿Escuchaste? El ENFEN mantiene la alerta de El Niño Costero.", "Sí: según el ENFEN, seguiría hasta febrero de 2027.", "Entonces a prepararse. ¡Nos vemos!"],
 ];
 export const PLAIN_CHATS: string[][] = [
   ["¡Hola! ¿Cómo estás?", "¡Sí, todo bien! ¿Y tú?", "Todo tranquilo, aquí paseando 😊", "¡Qué bueno! Nos vemos luego 👋"],

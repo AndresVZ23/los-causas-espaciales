@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { HEAT_LABEL, type Mission, type MissionTrend, type Role } from "./game-types";
-import { missionSteps, percentPerDecade, perDecade, secondSourceSentence, temperatureSentence, type Checkpoint, type Option } from "./mission-logic";
+import { flagNotes, heatSupportPhrase, heatUnconfirmed, missionSteps, percentPerDecade, perDecade, secondSourceSentence, temperatureSentence, type Checkpoint, type Option } from "./mission-logic";
+import { missionOutcome, missionPage, STORY_NOTICE, type Outcome } from "./story";
 
 const fmt = (value: number, digits = 1) => value.toLocaleString("es-PE", { minimumFractionDigits: digits, maximumFractionDigits: digits });
 const dateOf = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString("es-PE", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }) : "sin fecha");
@@ -23,12 +24,13 @@ function Sparkline({ trend, label }: { trend: MissionTrend; label: string }) {
   const sorted = [...values].sort((a, b) => a - b);
   const median = sorted[Math.floor(sorted.length / 2)];
   const midYear = (x0 + x1) / 2;
-  const slope = trend.slope_per_year ?? 0;
+  // Sin pendiente no se dibuja la recta: una pendiente faltante no es una recta plana.
+  const slope = trend.slope_per_year;
   return (
     <figure className="gameSpark">
       <svg viewBox="0 0 300 80" role="img" aria-label={`${label}: ${points.length} años, de ${fmt(values[0])} a ${fmt(values[values.length - 1])} ${trend.unit ?? ""}`}>
         <path d={path} className="line" />
-        {trend.significant && <path d={`M${x(x0)} ${y(median + slope * (x0 - midYear))} L${x(x1)} ${y(median + slope * (x1 - midYear))}`} className={`fit dir-${trend.direction}`} />}
+        {trend.significant && slope != null && <path d={`M${x(x0)} ${y(median + slope * (x0 - midYear))} L${x(x1)} ${y(median + slope * (x1 - midYear))}`} className={`fit dir-${trend.direction}`} />}
       </svg>
       <figcaption><span>{x0}</span><span>{x1}</span></figcaption>
     </figure>
@@ -41,7 +43,9 @@ function TrendRow({ title, trend, kind }: { title: string; trend: MissionTrend |
   const pct = percentPerDecade(trend);
   const value = !trend.significant || decade == null ? "Sin evidencia suficiente"
     : kind === "temp" ? `${decade > 0 ? "+" : "−"}${fmt(Math.abs(decade), 2)} °C por década`
-      : `${(pct ?? 0) > 0 ? "+" : "−"}${fmt(Math.abs(pct ?? 0))} % por década`;
+      // Sin promedio no hay porcentaje: se dice el sentido y que falta el dato, nunca «0 %».
+      : pct == null ? `${decade > 0 ? "Aumenta" : "Disminuye"} · sin dato de porcentaje`
+        : `${pct > 0 ? "+" : "−"}${fmt(Math.abs(pct))} % por década`;
   return (
     <div className={`gameTrend ${trend.significant ? `dir-${trend.direction}` : "dir-none"}`}>
       <b>{title}</b>
@@ -73,9 +77,12 @@ function Step({ title, situation, options, chosen, onChoose, locked }: {
 
 const VOICE = "Voz del pueblo";
 
-export function MissionPanel({ mission, role, heroName, onComplete, onBack, done, checkpoints, visited }: {
+export function MissionPanel({ mission, role, heroName, onComplete, onBack, done, checkpoints, visited, pageSaved = false, onOutcome }: {
   mission: Mission; role: Role; heroName: string; onComplete: (badges: string[]) => void; onBack: () => void; done: boolean;
   checkpoints: Checkpoint[]; visited: Set<string>;
+  /** Historia: la hoja del cuaderno de este lugar ya cambió en una partida anterior. */
+  pageSaved?: boolean;
+  onOutcome?: (id: string, outcome: Outcome) => void;
 }) {
   const steps = missionSteps(mission);
   const [answers, setAnswers] = useState<(string | null)[]>(steps.map(() => null));
@@ -86,27 +93,55 @@ export function MissionPanel({ mission, role, heroName, onComplete, onBack, done
   const quizBadges = steps.filter((step, index) => step.options.find((option) => option.id === answers[index])?.correct).map((step) => step.badge);
   const earned = [...quizBadges, ...(allWarned ? [VOICE] : [])];
   const earnedKey = earned.join("|");
+  const support = heatSupportPhrase(mission);
+  // Años atípicos de lluvia como dato neutro; primero los que la plataforma considera artefacto probable. Se muestran tres.
+  const notes = flagNotes(mission).sort((a, b) => Number(b.artifact) - Number(a.artifact));
 
   const choose = (index: number, id: string) => setAnswers(answers.map((item, i) => (i === index ? id : item)));
 
   // Se guarda el progreso cuando termina el cuestionario o cuando avisa a todo el pueblo.
+  // Sin insignias no se guarda nada: cero insignias no es una misión completada (las ya ganadas las conserva game.tsx).
   useEffect(() => {
-    if (spectator || (!finished && !allWarned)) return;
-    onComplete(earnedKey ? earnedKey.split("|") : []);
+    if (spectator || (!finished && !allWarned) || !earnedKey) return;
+    onComplete(earnedKey.split("|"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [earnedKey, finished, allWarned, spectator]);
 
+  // Historia: la hoja de este lugar cambia solo si el héroe leyó bien los datos y avisó a todo el pueblo.
+  const outcome = spectator ? null : missionOutcome(quizBadges.length === steps.length, finished, allWarned);
+  const saved = pageSaved || outcome === "salvado";
+  useEffect(() => {
+    if (outcome) onOutcome?.(mission.id, outcome);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [outcome, mission.id]);
+  const page = !spectator && (
+    <section className={`gamePage ${saved ? "saved" : outcome === "perdido" ? "lost" : ""}`} aria-label="Hoja del cuaderno de este lugar">
+      <h3>El cuaderno de 2031 · hoja de {mission.name}</h3>
+      <blockquote className="gameLetter still">{missionPage(mission, saved).map((line) => <p key={line}>{line}</p>)}</blockquote>
+      {saved ? <p className="gamePageNote" role="status">La hoja cambió. Lo que venía, vino igual; esta vez alguien avisó a tiempo.</p>
+        : outcome === "perdido" ? <><p className="gamePageNote" role="status">La hoja no cambió. Todavía estás en 2026: puedes volver a leer los datos.</p><button type="button" onClick={() => setAnswers(steps.map(() => null))}>Intentar de nuevo</button></>
+          : finished ? <p className="gamePageNote" role="status">Leíste bien los datos, pero la hoja aún no cambia: aquí nadie lo sabe todavía. Llega a cada «!» para avisar.</p>
+            : <p className="gamePageNote">Así está escrita hoy. Cambia si lees bien los datos y avisas a todo el pueblo.</p>}
+      <small>{STORY_NOTICE}</small>
+    </section>
+  );
   return (
     <aside className="gamePanel" aria-labelledby="mission-title">
       <button type="button" className="gameBack" onClick={onBack}>← Volver al globo</button>
       <p className="gameEyebrow">{mission.continent} · {mission.country}</p>
       <h2 id="mission-title">{mission.name}</h2>
-      <p className={`gameHeat heat-${mission.heat}`}><i />{HEAT_LABEL[mission.heat]}</p>
+      {/* «gamePanelHeat» y no «gameHeat»: ese nombre es también el velo de calor del mundo 3D, que la volvía una capa absoluta encima de la tarjeta «Temperatura». */}
+      <p className={`gamePanelHeat heat-${mission.heat}${heatUnconfirmed(mission) ? " hollow" : ""}`}><i />{HEAT_LABEL[mission.heat]}{support && <small> · {support}</small>}</p>
 
       <div className="gameContext">
         <b>Contexto del lugar</b>
         <p>{mission.context}</p>
-        <small>Texto de referencia del equipo, sin cifras; no es un dato medido por la plataforma.</small>
+        <small>Texto de referencia del equipo: no lo midió la plataforma y puede no coincidir con lo que miden los datos de abajo.</small>
+        {mission.context_sources?.length ? (
+          <small>Fuentes del contexto: {mission.context_sources.map((source, index) => (
+            <span key={source.url}>{index > 0 && " · "}<a href={source.url} target="_blank" rel="noreferrer">{source.title} ↗</a></span>
+          ))}</small>
+        ) : <small>Sin fuente enlazada.</small>}
       </div>
 
       <section className="gameData" aria-label="Lo que miden los datos">
@@ -115,6 +150,10 @@ export function MissionPanel({ mission, role, heroName, onComplete, onBack, done
         <TrendRow title="Temperatura" trend={mission.temperature} kind="temp" />
         <TrendRow title="Lluvia" trend={mission.rain} kind="ratio" />
         <TrendRow title="Sol que llega al suelo" trend={mission.sun} kind="ratio" />
+        {notes.slice(0, 3).map((note) => (
+          <div key={note.id} className="gameTrend dir-none"><b>{note.title}</b><strong>{note.value}</strong><small>{note.detail}</small></div>
+        ))}
+        {notes.length > 3 && <p className="gameMuted">Y {notes.length - 3} {notes.length - 3 === 1 ? "año atípico más" : "años atípicos más"} en este lugar, que no se listan aquí.</p>}
         <p className="gameGap"><b>Lo que esta misión no mide:</b> {mission.not_measured} Es una brecha, no un «sin problema».</p>
       </section>
 
@@ -129,6 +168,8 @@ export function MissionPanel({ mission, role, heroName, onComplete, onBack, done
         </section>
       ) : (
         <>
+          {/* La hoja va antes de los pasos mientras se juega (lo que está en juego) y al final cuando ya se decidió. */}
+          {!finished && page}
           {steps.map((step, index) => (index <= (finished ? steps.length : current)) && (
             <Step key={step.id} title={step.title} situation={step.situation} options={step.options}
               chosen={answers[index]} onChoose={(id) => choose(index, id)} locked={index !== current} />
@@ -148,11 +189,13 @@ export function MissionPanel({ mission, role, heroName, onComplete, onBack, done
           </section>
           {finished && (
             <section className="gameReward" role="status">
-              <h3>{earned.length ? `¡Misión cumplida, ${heroName}!` : `Misión terminada, ${heroName}`}</h3>
-              <p>{earned.length ? `Ganaste: ${earned.join(" y ")}.` : "Esta vez no ganaste insignias; puedes volver a intentarlo."}</p>
+              {/* Con una respuesta equivocada la hoja del lugar no cambia: se conservan las insignias, pero no se celebra. */}
+              <h3>{earned.length && outcome !== "perdido" ? `¡Misión cumplida, ${heroName}!` : `Misión terminada, ${heroName}`}</h3>
+              <p>{earned.length ? `Ganaste: ${earned.join(" y ")}.` : done ? "Esta vez no ganaste insignias; conservas las que ya tenías y puedes volver a intentarlo." : "Esta vez no ganaste insignias; puedes volver a intentarlo."}</p>
               {!earned.length && <button type="button" onClick={() => setAnswers(steps.map(() => null))}>Intentar de nuevo</button>}
             </section>
           )}
+          {finished && page}
           {done && !finished && <p className="gameMuted">Ya completaste esta misión antes; puedes repetirla.</p>}
         </>
       )}

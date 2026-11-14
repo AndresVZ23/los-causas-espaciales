@@ -125,9 +125,10 @@ Están completas en [AGENTS.md](../../AGENTS.md). Las que no se negocian:
 | `backend/app/schemas/` | Contratos de datos. `screening.py` es el **contrato común C2** que comparten todos los módulos. |
 | `backend/app/reports/` | PDF ejecutivo. |
 | `backend/tests/` | Pruebas. `conftest.py` impide que salgan a internet. |
-| `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. `zone/` es la maqueta en bloques (three.js, se carga solo al entrar). |
+| `frontend/app/_components/` | La consola: `workspace.tsx` (pantalla principal) y un archivo `*-panels.tsx` por módulo. `zone/` es la maqueta en bloques (three.js, se carga solo al entrar). `game/` es el modo jugador de `/jugar`: las reglas de los textos están en `mission-logic.ts` y la historia en `story.ts`. |
 | `backend/app/zones/`, `backend/data/zones/`, `scripts/zones/` | Zonas para recorrer: lector de relieve y cobertura, las dos zonas ya construidas y el guion que las arma con resultados reales de la API local. |
-| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-047). Léela antes de cambiar un método. |
+| `backend/app/missions/`, `backend/data/missions/`, `scripts/missions/` | Modo jugador: las 56 misiones con su análisis real y sus terrenos. Tras cambiar un texto o una fuente del guion: `python scripts/missions/build_missions.py --textos`. Para revisar los textos del juego sin navegador: `node scripts/qa/game_logic.cjs`. |
+| `docs/architecture/DECISION_LOG.md` | Cada decisión importante (ADR-001 a ADR-049). Léela antes de cambiar un método. |
 | `docs/nasa-submission/` | Materiales de la entrega: fuentes (`DATA_SOURCES.md`), metodología, arquitectura, pitch y escenarios de demo. |
 
 ## Receta: agregar una fuente de datos

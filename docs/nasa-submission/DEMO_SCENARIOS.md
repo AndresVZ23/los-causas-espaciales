@@ -58,6 +58,18 @@ A one-minute scene that shows the findings where they are. It needs no live sour
 
 If the computer cannot start 3D graphics, the screen shows the same findings as a list. Do not describe the model as a view of the place or as a simulation of the eruption.
 
+### Opening or closing option C · The player mode and its story («Detectives de la Tierra», ADR-048 and ADR-049)
+
+For schools and a general audience. Open `http://localhost:3100/jugar?luz=dia`. The parameter fixes daylight: without it the game uses the real local hour of each place, and an evening recording comes out dark and slower (`?luz=noche` and `?luz=real` also exist). Needs no live source except map tiles.
+
+1. Choose «Jugador», pick a figure and a name. **The prologue starts: year 2031.** Let it play; it is six short screens. The hero arrives late to a destroyed town and finds a child's notebook: «Si lo estaban viendo, ¿por qué nadie vino a decirnos? … Lo necesito para el lunes.» Then: the data were there since 2001; what was missing was someone to read them in time, check them with a second source and go and warn. The ship can jump once: five years back.
+2. On the Moon, press «Despegar hacia la Tierra». On the globe pick «Sudamérica» → «Chosica, Lurigancho».
+3. The mission panel shows the page of this place as written in 2031, then the real data: +0.32 °C per decade since 2001, and the honest note that ERA5 does not confirm it. Answer step 1 and step 2, then run to the three «!» marks (`W A S D`; `F` helps a neighbour; `E` enters a vehicle). A mudflow event starts after about 25 seconds.
+4. When the answers are right and the whole town is warned, the page changes. Say it: the mudflow came anyway; this time someone warned in time.
+5. Back on the globe, press «Volver a 2031». With three places warned the good ending plays: the hero did not save everything, people did the rest, and the last page changes. The closing screen speaks to the player: «Tú no tienes una nave para volver cinco años atrás. No la necesitas. Todavía es hoy», and links to the platform. With fewer than three places the bad ending plays and the hero can jump again.
+
+To show the good ending without playing three missions, play it beforehand on the demo computer: the result is stored in the browser. The story is fiction and every screen says so; the figures of each mission are real data. Do not present the 2031 scenes or the in-game mudflow as a forecast.
+
 ### Act 1 · Territory, trend and extremes (module «Clima»)
 
 1. Left menu → «Clima».
