@@ -1,0 +1,308 @@
+{
+  "titulo": "TERRA 2045 · demo de 30 segundos para NASA Space Apps 2026 (reto «Be An Earth System Trend Detective!»)",
+  "reglas": [
+    "Project Submission Guide 2026: «30-second or less video»; lo que se pasa no entra al jurado global. Este video dura 29,5 s (885 cuadros), medio segundo menos que el límite, para que ningún reproductor lo muestre como 0:31.",
+    "Idioma: inglés en la página y en los materiales enlazados; un video hablado en otro idioma DEBE llevar subtítulos en inglés.",
+    "Mensaje (pedido de Nikol, 15-nov): el problema, la necesidad y la solución se entienden sin nombrarlos. En 2045 la Tierra está en caos; la pregunta «¿y si pudieras volver a 2026?»; las señales ya estaban en los datos de la NASA; la plataforma las lee (vista general con los datos, las cuatro preguntas del reto y la segunda fuente); y el videojuego enseña a avisar a tiempo.",
+    "Uso de SI (IA): marca visible todo el video («hecho con asistencia de IA»: guion, código de la animación en 3D, edición y textos); audio sintético declarado en texto y metadatos. Sin logotipos de NASA.",
+    "Las cinemáticas en 3D son animación hecha para el video (rótulo «Cinemática»); los desastres son eventos simulados sobre el relieve real. El año 2045 es la historia del juego, no un pronóstico. Las cifras en pantalla salen de la aplicación o de una fuente citada."
+  ],
+  "fps": 30,
+  "cuadros": 885,
+  "planos": [
+    {
+      "id": "luna",
+      "desde": 0,
+      "hasta": 108
+    },
+    {
+      "id": "salto",
+      "desde": 108,
+      "hasta": 198
+    },
+    {
+      "id": "llegada",
+      "desde": 198,
+      "hasta": 291
+    },
+    {
+      "id": "preguntas",
+      "desde": 291,
+      "hasta": 477
+    },
+    {
+      "id": "fuentes",
+      "desde": 477,
+      "hasta": 546
+    },
+    {
+      "id": "desastres",
+      "desde": 546,
+      "hasta": 674
+    },
+    {
+      "id": "sana",
+      "desde": 674,
+      "hasta": 759
+    },
+    {
+      "id": "cierre",
+      "desde": 759,
+      "hasta": 885
+    }
+  ],
+  "base": [
+    {
+      "plano": "luna",
+      "tipo": "cine",
+      "escena": "luna",
+      "desde_s": 0.0,
+      "cuadros": 108
+    },
+    {
+      "plano": "salto",
+      "tipo": "cine",
+      "escena": "salto",
+      "desde_s": 0.9,
+      "cuadros": 90
+    },
+    {
+      "plano": "llegada",
+      "tipo": "cine",
+      "escena": "llegada",
+      "desde_s": 0.9,
+      "cuadros": 93
+    },
+    {
+      "plano": "preguntas",
+      "tipo": "negro",
+      "cuadros": 255
+    },
+    {
+      "plano": "desastres",
+      "tipo": "cine",
+      "escena": "huaico",
+      "desde_s": 0.9,
+      "cuadros": 32,
+      "titulo": {
+        "es": "Huaico",
+        "en": "Mudflow"
+      },
+      "lugar": {
+        "es": "Chosica, Perú",
+        "en": "Chosica, Peru"
+      },
+      "paso": {
+        "es": "1 · Lee la tendencia",
+        "en": "1 · Read the trend"
+      }
+    },
+    {
+      "plano": "desastres",
+      "tipo": "cine",
+      "escena": "inundacion",
+      "desde_s": 0.9,
+      "cuadros": 32,
+      "titulo": {
+        "es": "Inundación",
+        "en": "Flood"
+      },
+      "lugar": {
+        "es": "Piura, Perú",
+        "en": "Piura, Peru"
+      },
+      "paso": {
+        "es": "2 · Resuelve el reto",
+        "en": "2 · Solve the challenge"
+      }
+    },
+    {
+      "plano": "desastres",
+      "tipo": "cine",
+      "escena": "erupcion",
+      "desde_s": 0.5,
+      "cuadros": 32,
+      "titulo": {
+        "es": "Erupción",
+        "en": "Eruption"
+      },
+      "lugar": {
+        "es": "Volcán Taal, Filipinas",
+        "en": "Taal Volcano, Philippines"
+      },
+      "paso": {
+        "es": "3 · Decide con recursos limitados",
+        "en": "3 · Decide with limited resources"
+      }
+    },
+    {
+      "plano": "desastres",
+      "tipo": "cine",
+      "escena": "avalancha",
+      "desde_s": 0.9,
+      "cuadros": 32,
+      "titulo": {
+        "es": "Avalancha",
+        "en": "Avalanche"
+      },
+      "lugar": {
+        "es": "Huascarán, Perú",
+        "en": "Huascarán, Peru"
+      },
+      "paso": {
+        "es": "4 · Avisa al pueblo",
+        "en": "4 · Warn the town"
+      }
+    },
+    {
+      "plano": "sana",
+      "tipo": "cine",
+      "escena": "sana",
+      "desde_s": 0.0,
+      "cuadros": 85
+    },
+    {
+      "plano": "cierre",
+      "tipo": "clip",
+      "src": "terra2045_trailer_{lang}.mp4",
+      "desde_s": 85.3,
+      "cuadros": 126
+    }
+  ],
+  "voz": [
+    {
+      "id": "v1",
+      "en_s": 0.3,
+      "es": "Año 2045. La Tierra está en caos.",
+      "en": "The year 2045. The Earth is in chaos."
+    },
+    {
+      "id": "v2",
+      "en_s": 3.75,
+      "es": "¿Y si pudieras volver a 2026 y cambiarlo?",
+      "en": "What if you could go back to 2026 and change it?"
+    },
+    {
+      "id": "v3",
+      "en_s": 6.8,
+      "es": "Las señales ya estaban en los datos de la NASA.",
+      "en": "The signs were already in NASA data."
+    },
+    {
+      "id": "v4",
+      "en_s": 10.3,
+      "es": "Nuestra plataforma las lee: qué cambia, dónde, cuánto y si es significativo.",
+      "en": "Our platform reads them: what is changing, where, how much, and is it significant."
+    },
+    {
+      "id": "v5",
+      "en_s": 16.0,
+      "es": "Si dos fuentes no coinciden, lo decimos.",
+      "en": "If two sources disagree, we say so."
+    },
+    {
+      "id": "v6",
+      "en_s": 18.6,
+      "es": "En el juego enfrentas huaicos, inundaciones, erupciones y avalanchas, y avisas a tiempo.",
+      "en": "In the game, you face mudflows, floods, eruptions and avalanches, and warn people in time."
+    },
+    {
+      "id": "v7",
+      "en_s": 25.7,
+      "es": "TERRA 2045. Los Causas Espaciales.",
+      "en": "This is TERRA 2045.",
+      "sub": "TERRA 2045. By Los Causas Espaciales."
+    }
+  ],
+  "cortes": {
+    "es": {
+      "preguntas": [
+        0.34,
+        0.525,
+        0.67,
+        0.752
+      ]
+    },
+    "en": {
+      "preguntas": [
+        0.325,
+        0.545,
+        0.64,
+        0.784
+      ]
+    }
+  },
+  "musica": {
+    "pista": "musica/Heroic Age.mp3",
+    "termina_s": 90.5,
+    "credito": "«Heroic Age», Kevin MacLeod (incompetech.com), CC BY 4.0"
+  },
+  "textos": {
+    "es": {
+      "marca_si": "Video hecho con asistencia de IA (SI) · voz sintética",
+      "tag_cine": "Cinemática",
+      "tag_desastre": "Animación sobre el relieve real · evento simulado",
+      "k_presenta": "Los Causas Espaciales · NASA Space Apps 2026 · presenta",
+      "h_2045": "2045",
+      "sub_2045": "La Tierra está en caos.",
+      "h_vuelves": "¿Y si pudieras volver a 2026?",
+      "h_herramienta": "Las señales<br>ya estaban<br>en los datos",
+      "k_mar": "Dato real · NASA GIBS · 14 nov 2026",
+      "k_mar2": "Anomalía de temperatura del mar: así se ve El Niño",
+      "src_emergencia": "Perú: 1.380 distritos en emergencia<br>Fuente: Primicias (AFP), 3 nov 2026",
+      "k_reto": "Reto NASA · Be An Earth System Trend Detective!",
+      "chips": [
+        "Qué cambia",
+        "Dónde",
+        "Cuánto",
+        "¿Es significativo?"
+      ],
+      "k_para": "Para escolares, familias y autoridades",
+      "h_futuro": "Avisar a tiempo salva vidas.",
+      "fin_titulo": "TERRA 2045",
+      "fin_sub": "El último viaje",
+      "fin_lema": "Un videojuego con datos reales de la NASA",
+      "fin_equipo": "Los Causas Espaciales · Moquegua, Perú",
+      "fin_nombres": "Christian Venegas Calderon · Nikol Estefany Borja Ugarte · Abel Andres Valle · Mario Alaluna",
+      "fin_reto": "NASA Space Apps Challenge 2026 · Be An Earth System Trend Detective!",
+      "fin_creditos": "Datos: NASA POWER (MERRA-2) · NASA GIBS (Blue Marble, Black Marble) · GPM IMERG · ERA5 · CHIRPS · Copernicus DEM · ESA WorldCover &nbsp;|&nbsp; Música: «Heroic Age», Kevin MacLeod (CC BY 4.0)",
+      "k_plataforma": "Nuestra plataforma · datos reales de la NASA · 2001–2025",
+      "k_lugares": "57 lugares reales · cada misión tiene cuatro pasos",
+      "k_artefacto": "Lluvia de un día, 2022 · MERRA-2: 300 mm · IMERG: 12 mm · CHIRPS: 17 mm",
+      "h_decimos": "Si dos fuentes no coinciden,<br>lo decimos."
+    },
+    "en": {
+      "marca_si": "Video made with AI (SI) assistance · synthetic voice",
+      "tag_cine": "Cinematic",
+      "tag_desastre": "Animation over real terrain · simulated event",
+      "k_presenta": "Los Causas Espaciales · NASA Space Apps 2026 · presents",
+      "h_2045": "2045",
+      "sub_2045": "The Earth is in chaos.",
+      "h_vuelves": "What if you could go back to 2026?",
+      "h_herramienta": "The signs<br>were already<br>in the data",
+      "k_mar": "Real data · NASA GIBS · 14 Nov 2026",
+      "k_mar2": "Sea surface temperature anomaly: this is El Niño",
+      "src_emergencia": "Peru: 1,380 districts under emergency<br>Source: Primicias (AFP), 3 Nov 2026",
+      "k_reto": "NASA challenge · Be An Earth System Trend Detective!",
+      "chips": [
+        "What is changing",
+        "Where",
+        "How much",
+        "Is it significant?"
+      ],
+      "k_para": "For students, families and authorities",
+      "h_futuro": "Early warning saves lives.",
+      "fin_titulo": "TERRA 2045",
+      "fin_sub": "The Last Journey",
+      "fin_lema": "A video game built on real NASA data",
+      "fin_equipo": "Los Causas Espaciales · Moquegua, Peru",
+      "fin_nombres": "Christian Venegas Calderon · Nikol Estefany Borja Ugarte · Abel Andres Valle · Mario Alaluna",
+      "fin_reto": "NASA Space Apps Challenge 2026 · Be An Earth System Trend Detective!",
+      "fin_creditos": "Data: NASA POWER (MERRA-2) · NASA GIBS (Blue Marble, Black Marble) · GPM IMERG · ERA5 · CHIRPS · Copernicus DEM · ESA WorldCover &nbsp;|&nbsp; Music: “Heroic Age”, Kevin MacLeod (CC BY 4.0)",
+      "k_plataforma": "Our platform · real NASA data · 2001–2025",
+      "k_lugares": "57 real places · every mission has four steps",
+      "k_artefacto": "One-day rainfall, 2022 · MERRA-2: 300 mm · IMERG: 12 mm · CHIRPS: 17 mm",
+      "h_decimos": "If two sources disagree,<br>we say so."
+    }
+  }
+}

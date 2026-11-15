@@ -1,0 +1,28 @@
+1
+00:00:00,300 --> 00:00:03,399
+The year 2045. The Earth is in chaos.
+
+2
+00:00:03,750 --> 00:00:06,834
+What if you could go back to 2026 and change it?
+
+3
+00:00:06,844 --> 00:00:09,832
+The signs were already in NASA data.
+
+4
+00:00:10,300 --> 00:00:15,539
+Our platform reads them: what is changing, where, how much, and is it significant.
+
+5
+00:00:16,000 --> 00:00:18,584
+If two sources disagree, we say so.
+
+6
+00:00:18,600 --> 00:00:24,409
+In the game, you face mudflows, floods, eruptions and avalanches, and warn people in time.
+
+7
+00:00:25,700 --> 00:00:28,949
+TERRA 2045. By Los Causas Espaciales.
+
