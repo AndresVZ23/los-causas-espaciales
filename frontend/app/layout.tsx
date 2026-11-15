@@ -22,5 +22,5 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="es" className={`${publicSans.variable} ${dataMono.variable}`}><body>{children}</body></html>;
+  return <html lang="es" className={`${publicSans.variable} ${dataMono.variable}`}><body suppressHydrationWarning>{children}</body></html>;
 }

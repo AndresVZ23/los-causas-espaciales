@@ -109,7 +109,7 @@ export function CineScene({ name, label, skipLabel = "Saltar", onEnd, onUnavaila
 
   const src = `${BASE}/${name}_${pref.lang}`;
   return (
-    <section ref={box} tabIndex={-1} className={`gameCine${idle ? " idle" : ""}`} role="dialog" aria-modal="true" aria-label={label}>
+    <section ref={box} tabIndex={-1} className={`gameCinePlayer${idle ? " idle" : ""}`} role="dialog" aria-modal="true" aria-label={label}>
       <video
         ref={video}
         key={src}

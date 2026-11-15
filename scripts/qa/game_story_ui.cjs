@@ -46,9 +46,9 @@ const HERO = { name: "Ayelén", gender: "mujer" };
   // Cinemática en video (cine-scene.tsx): si está, anota cuál corre y la salta; si el video no está, el juego cae a la
   // historia en texto (prólogo, regreso, finales) o directo a la Tierra (viaje), y se devuelve { video: null }.
   const cine = async (page, prefix) => {
-    const appeared = await page.locator(".gameCine").waitFor({ timeout: 8000 }).then(() => true, () => false);
+    const appeared = await page.locator(".gameCinePlayer").waitFor({ timeout: 8000 }).then(() => true, () => false);
     if (appeared) await page.waitForTimeout(2500);
-    if (!appeared || !(await page.locator(".gameCine").count())) return { video: null };
+    if (!appeared || !(await page.locator(".gameCinePlayer").count())) return { video: null };
     const video = await page.locator(".gameCineVideo").evaluate((element) => ({ src: element.currentSrc.replace(/^.*\/cine\//, ""), segundo: +element.currentTime.toFixed(1),
       pausado: element.paused, error: element.error ? element.error.code : null, subtitulos: element.textTracks.length }));
     await shot(page, `${prefix}-video`);
