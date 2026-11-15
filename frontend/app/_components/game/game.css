@@ -792,16 +792,18 @@
 }
 .gameCard.moon { max-height: calc(100vh - 110px); overflow: auto; }
 
-/* TERRA 2045 · cinemáticas en video (cine-scene.tsx): pantalla completa, controles que se esconden al mirar. */
-.gameCine { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #000; outline: none; }
-.gameCine.idle { cursor: none; }
+/* TERRA 2045 · cinemáticas en video (cine-scene.tsx): pantalla completa, controles que se esconden al mirar.
+   Se llama «gameCinePlayer» y no «gameCine»: ese nombre ya es de las franjas de la llegada dentro de la misión, y
+   compartirlo les ponía fondo negro encima del mundo 3D (la misión se veía negra). */
+.gameCinePlayer { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #000; outline: none; }
+.gameCinePlayer.idle { cursor: none; }
 .gameCineVideo { width: 100%; height: 100%; object-fit: contain; background: #000; }
 .gameCineVideo::cue { font-family: Inter, system-ui, sans-serif; font-size: clamp(15px, 2vw, 22px); line-height: 1.35; color: #f5f2ec; background: rgba(0, 0, 0, .62); }
 .gameCinePlay { position: absolute; padding: 14px 22px; border: 0; border-radius: 12px; background: var(--accent); color: #04110f; font-size: 17px; font-weight: 700; cursor: pointer; }
 .gameCineBar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255, 255, 255, .08); }
 .gameCineBar span { display: block; height: 100%; background: var(--accent); transition: width .25s linear; }
 .gameCineControls { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 18px; background: linear-gradient(rgba(0, 0, 0, .7), transparent); transition: opacity .4s ease; }
-.gameCine.idle .gameCineControls { opacity: 0; pointer-events: none; }
+.gameCinePlayer.idle .gameCineControls { opacity: 0; pointer-events: none; }
 .gameCineLabel { margin-right: auto; color: #c9c3b8; font: 600 12px/1.2 var(--font-data-mono), monospace; letter-spacing: .1em; text-transform: uppercase; }
 .gameCineControls button { padding: 7px 11px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 9px; background: rgba(10, 12, 14, .55); color: #ece7df; font-size: 13px; cursor: pointer; }
 .gameCineControls button:hover { border-color: var(--accent); }
