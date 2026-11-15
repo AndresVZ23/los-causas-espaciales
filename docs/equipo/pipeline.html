@@ -275,7 +275,7 @@
       <p class="lede">Cuatro preguntas antes del jueves 12.</p>
       <div class="asks">
         <div class="ask"><b>¿Quién toma qué?</b>Cada uno se anota en el grupo y abre una rama con su nombre: abel/red-electrica, nikol/demo…</div>
-        <div class="ask"><b>¿Qué pide la entrega?</b>Duración del video, láminas y si el repositorio debe ser público: revisarlo en las bases.</div>
+        <div class="ask"><b>¿Qué pide la entrega?</b>Leído en la guía oficial el 15-nov: demo de 30 segundos o menos (o 7 láminas), todo en inglés (un video en otro idioma lleva subtítulos en inglés), enlaces que abran sin registro y declarar el uso de IA. Detalle en docs/nasa-submission/SUBMISSION_FORM.md.</div>
         <div class="ask"><b>¿Repositorio público?</b>Antes: revisar la licencia de cada fuente en DATA_SOURCES.md y que no haya secretos en el historial.</div>
         <div class="ask"><b>¿Pedimos acceso a CENEPRED?</b>Su servicio exige token desde el 10-nov. Hoy la aplicación muestra la última copia válida, con su fecha, solo donde ya se había consultado.</div>
       </div>
@@ -357,6 +357,10 @@
         detail: "Hecho el 15-nov: tráiler de 1:39 (1080p) con imágenes reales del juego desde el salto a 2026 (los cinco desastres rotulados con su lugar real), prólogo de 1:56 y el resto de las cinemáticas del juego (viaje, regreso a 2045 y tres finales), en español y en inglés, con las voces neuronales de Edge y subtítulos. Se montan con scripts/video/ a partir de un solo guion; las imágenes son propias, con NASA Blue Marble, la Luna de LRO y el relieve real de las misiones (ADR-050). Dentro del juego se ven como video (cine-scene.tsx) desde frontend/public/cine/; si faltan, el juego muestra la historia en texto.",
         profile: "Comunicación", size: 2, start: "scripts/video/guion.py, VOCES.bat y videos/ (después de PREPARAR.bat)",
         done: "Siete videos por idioma, con subtítulos y créditos de cada fuente y licencia, y su versión web en frontend/public/cine/." },
+      { id: "F10", now: true, finished: "15-nov", icon: "cam", days: [5, 5], name: "Demo de 30 s y anteproyecto", touches: ["o-nasa", "o-reports"],
+        detail: "Hecho el 15-nov (ADR-051): el video de demostración que pide la entrega, de 29,5 s, en inglés y en español con subtítulos en inglés. Deja claros el problema, la necesidad y la solución sin nombrarlos: en 2045 la Tierra está en caos; la pregunta «¿y si pudieras volver a 2026?»; las señales ya estaban en los datos de la NASA (El Niño en la anomalía de temperatura del mar de NASA GIBS); la plataforma las lee, con su vista general, las preguntas del reto y la segunda fuente; y el videojuego, con cuatro desastres sobre el relieve real (huaico, inundación, erupción y avalancha), los cuatro pasos de la misión y a quién va dirigido. Las cinemáticas en 3D se hicieron para el video y lo dicen en pantalla. Voz libre de Piper, sin internet, y marca visible de uso de IA. El anteproyecto de la sede quedó centrado en el videojuego: objetivo, alcance y para qué ayuda.",
+        profile: "Comunicación", size: 2, start: "scripts/video/demo30/LEEME.md y docs/nasa-submission/anteproyecto/",
+        done: "Cada video mide 885 cuadros (29,5 s), deja claros el problema, la necesidad y la solución, lleva la marca de uso de IA y los créditos, y cada cifra en pantalla sale de la aplicación o de una fuente citada." },
       { id: "F6", now: true, icon: "flag", days: [5, 5], name: "Cierre y v0.1.0", touches: ["o-reports", "o-nasa"],
         detail: "Pruebas, build, auditoría y etiqueta de la versión entregada.", profile: "Christian con Codex", size: 1,
         start: "docs/coordination/RELEASE_2026-11-15.md", done: "La puerta pasa sobre el commit final y la etiqueta está publicada." },

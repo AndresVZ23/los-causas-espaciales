@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>TERRA 2045 · demo de 30 segundos · cinemáticas en 3D</title>
+<!-- Dibuja un cuadro de una cinemática para un instante dado: await window.draw(escena, segundos).
+     Se sirve por HTTP desde cine_frames.cjs (/repo/ es la raíz del repositorio y /cine/ esta carpeta). -->
+<style>html, body { margin: 0; background: #000; } canvas { display: block; width: 1920px; height: 1080px; }</style>
+<script type="importmap">
+{ "imports": { "three": "/repo/frontend/node_modules/three/build/three.module.js", "three/addons/": "/repo/frontend/node_modules/three/examples/jsm/" } }
+</script>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script type="module" src="/cine/cine.js"></script>
+</body>
+</html>

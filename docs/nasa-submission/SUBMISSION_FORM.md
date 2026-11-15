@@ -2,6 +2,8 @@
 
 > Working English copy prepared on 11-Nov-2026. **The official 2026 Project Submission Guide and form fields are expected on 13-Nov-2026.** Field names, limits, required links, eligibility declarations and media rules below are placeholders only. Map each section to the official form before submission; do not shorten text to an invented character limit.
 
+> **Update, 15-Nov-2026.** The official Project Submission Guide and Judging & Awards Guide were read on the live site. What they confirm is listed under «Official rules confirmed on 15-Nov-2026»; anything still open keeps its `[PENDING]` marker. The text sections above that list were written on 11-Nov-2026, before the game became the front page (ADR-050), and have not been rewritten here.
+
 ## Project title
 
 Los Causas Espaciales
@@ -73,7 +75,9 @@ Each output distinguishes real data, cached data, model estimates, user assumpti
 
 Claude Code and Codex assisted with code, tests, reviews and documentation under team direction. The product does not use generative AI to create or alter observations, calculations or deterministic discoveries. Classical statistics performs trend analysis. The rules-based assistant is the default; an optional Gemini action runs only after an explicit user request and is constrained to the current analysis. NASA LHASA is itself a published machine-learning product and remains labelled as provider model output. [ADR-007, ADR-023, ADR-037]
 
-Pending 13-Nov-2026: copy the exact disclosure terminology and any mandatory AI label from the official guide. Confirm this statement with every team member before submission.
+The 30-second demo (ADR-051) was scripted, animated and edited with AI assistance (Claude) and reviewed by the team; its narration is a synthetic text-to-speech voice (Piper, voices `en_US-ljspeech-high` and `es_MX-claude-high`). A visible mark states this throughout the video («Video made with AI (SI) assistance · synthetic voice») and the file metadata repeats it. The video combines three kinds of footage: 3D animation made for the video, whose code was written with AI assistance and which is drawn with three.js from NASA Blue Marble and Black Marble imagery and from the real terrain of four missions (Copernicus DEM GLO-30 and ESA WorldCover), labelled on screen «Cinematic» or «Animation over real terrain · simulated event»; real screen captures of the application; and a closing shot from the team's trailer. No image-generation model was used and no NASA logo appears.
+
+The official form calls this field «Use of Super Intelligence (SI)»; see the confirmed rules below. Confirm this statement with every team member before submission.
 
 ## Team
 
@@ -84,20 +88,35 @@ Pending 13-Nov-2026: copy the exact disclosure terminology and any mandatory AI 
 
 Pending 13-Nov-2026: confirm spelling, roles, affiliations, contact details and any required consent fields directly with each member.
 
+## Official rules confirmed on 15-Nov-2026
+
+Read on 15-Nov-2026 in the [Project Submission Guide](https://www.spaceappschallenge.org/resources/project-submission-guide/) and the [Judging & Awards Guide](https://www.spaceappschallenge.org/resources/judging-awards-guide/).
+
+- **Form fields:** Project Name; High-Level Project Summary; Link to Project Demo; Link to Final Project; Detailed Project Description; Use of Super Intelligence (SI); NASA Data; Space Agency Partner Data and Other References.
+- **Project Demo:** a 7-slide presentation (title and intro slides included) or a video of **30 seconds or less**. «Projects that exceed these limits will not be eligible for Global Judging.»
+- **Language:** English on the project page and in any linked materials. A demo video may be spoken in another language only if it includes English subtitles; slide decks must be in English.
+- **Links:** publicly accessible, with no login, permission or registration. The site does not host videos or slides.
+- **Use of SI** (the 2026 name for AI tools): images and videos «must include a visible watermark to indicate SI generation»; audio, code and data must be acknowledged «in descriptive text and metadata»; generated content may not use NASA branding or design elements. The answer to the SI question is not shown to the judges, but the watermarks, text and metadata are.
+- **NASA data:** at least one NASA data or resource is required for Global Award eligibility.
+- **Persons under 18:** no images, video, audio or likeness in demos or final projects.
+- **Deadline:** «Submit for Judging» before Sunday 15 November 2026, 11:59 p.m., local time of the Local Event.
+- **Judging criteria:** Impact, Creativity, Validity, Relevance and Presentation.
+- **Suggested structure of the 30-second video:** [0:00] who you are; [0:02] the challenge and why; [0:05] project title and tagline; [0:10] how it works, with NASA and partner data; [0:20–0:30] the future.
+
 ## Links and media
 
 - Live project: `[PENDING — official public URL and guide requirements]`
 - Source repository: `[PENDING — approved public repository URL]`
-- Demo video or slide deck: `[PENDING — official format and hosting rules on 13-Nov-2026]`
+- Project Demo: `videos/terra2045_demo30_en.mp4`, English, 29.5 s; the problem, the need and the solution are told through the game's story, a question and the platform's data views (ADR-051). `[PENDING — upload it to a public host and paste the link]`. A Spanish version with English subtitles is in `videos/terra2045_demo30_es.mp4`. The trailer runs 1:39 and cannot be the Project Demo.
 - Supporting documentation: `[PENDING — decide which repository paths the form accepts]`
 
 ## Final guide-dependent checklist
 
 - [ ] Map these headings to the official form fields and character limits.
-- [ ] Confirm required language, media duration/slide count, aspect ratio, file type and maximum size.
-- [ ] Confirm whether public hosting, repository visibility, licences or source-code access are mandatory.
+- [x] Confirm required language and media duration/slide count: English; 30 seconds or less, or seven slides (15-Nov-2026). The guide states no aspect ratio, file type or size limit.
+- [x] Confirm whether public hosting is mandatory: yes, for the demo and the final project, with no login. The guide does not require a public code repository.
 - [ ] Confirm accessibility requirements for captions, subtitles, alt text and colour.
 - [ ] Confirm team eligibility, consent, location and contact declarations.
-- [ ] Confirm the required AI-use disclosure wording.
+- [x] Confirm the required AI-use disclosure wording: the field is «Use of Super Intelligence (SI)»; rules listed above (15-Nov-2026).
 - [ ] Reproduce every numeric claim from the release candidate and retain its cited ADR.
 - [ ] Run the common quality gate and final browser QA before replacing any `[PENDING]` marker.
