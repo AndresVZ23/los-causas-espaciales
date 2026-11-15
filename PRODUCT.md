@@ -37,8 +37,9 @@ El primer flujo funcional compara Moquegua y Arequipa para un screening solar. C
 
 - Nombre: Los Causas Espaciales.
 - Idioma actual de producto y documentación: español.
-- Carácter: científico, territorial, sobrio, preciso y comercialmente útil; sin estética infantil, gamificación ni afirmaciones grandilocuentes.
-- La pantalla principal debe funcionar como un espacio de inteligencia terrestre, no como una landing page de marketing.
+- Carácter de la plataforma (`/plataforma`): científico, territorial, sobrio, preciso y comercialmente útil; sin estética infantil, gamificación ni afirmaciones grandilocuentes.
+- Carácter del juego (portada, ADR-050): educativo para público general, cinematográfico y esperanzador. La gamificación es explícita y se declara (estado del planeta, regresos, decisiones simuladas); nunca reemplaza ni maquilla una cifra medida.
+- La portada es el juego TERRA 2045; la consola de la plataforma debe seguir funcionando como un espacio de inteligencia terrestre, no como una landing page de marketing.
 
 ## Evidencia disponible
 

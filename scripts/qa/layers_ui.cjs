@@ -25,7 +25,7 @@ async function run(viewport, tag) {
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   await page.locator(".layerToggle").click();
   await page.locator(".layerOption").nth(1).waitFor({ timeout: 90000 });
   const catalog = await page.locator(".layerOption").allInnerTexts();

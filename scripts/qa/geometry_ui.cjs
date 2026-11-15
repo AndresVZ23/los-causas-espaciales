@@ -32,7 +32,7 @@ async function run(viewport, tag) {
   // El corbatín se rechaza a propósito con 422 en la inspección; el navegador lo anota en consola y no es un defecto.
   let expectedRejections = 0;
   page.on("response", (response) => { if (response.status() === 422 && response.url().includes("geometry-inspect")) expectedRejections += 1; });
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   const nav = isCompact(viewport) ? ".mobileBottomNav button" : ".moduleNav button";
   if (isCompact(viewport)) {
     await page.getByRole("button", { name: /Más/ }).click();

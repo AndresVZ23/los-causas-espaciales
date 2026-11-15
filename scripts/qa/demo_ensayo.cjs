@@ -43,7 +43,7 @@ const PROVENANCE = ["REAL_DATA", "CACHED_DATA", "MODEL_ESTIMATE", "USER_ASSUMPTI
   };
 
   let started = Date.now();
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   acts.push({ act: "0 · apertura", seconds: (Date.now() - started) / 1000 });
   await shot("0-apertura");
 

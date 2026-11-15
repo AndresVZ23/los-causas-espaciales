@@ -1,12 +1,6 @@
-import type { Metadata } from "next";
-import GameEntry from "./game-entry";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Detectives de la Tierra · Los Causas Espaciales",
-  description: "Modo jugador: un superhéroe viaja de la Luna a la Tierra y resuelve misiones con datos reales de NASA.",
-};
-
-/** Modo jugador y espectador. La consola técnica sigue en «/». */
+/** Dirección anterior del modo jugador: desde ADR-050 el juego es la portada. Se conserva para enlaces viejos. */
 export default function JugarPage() {
-  return <GameEntry />;
+  redirect("/");
 }

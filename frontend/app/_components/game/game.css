@@ -166,7 +166,7 @@
 .gameReward button { padding: 8px 12px; border: 0; border-radius: 8px; background: var(--warning); color: #1a1405; font-weight: 700; }
 .gameSource { color: var(--subtle); font-size: 11px; line-height: 1.45; }
 
-/* --- La historia (story.ts): prólogo de 2031, hoja del cuaderno de cada lugar y regreso final ----------------------- */
+/* --- La historia (story.ts): prólogo de 2045, hoja del cuaderno de cada lugar, regresos y finales ----------------------- */
 /* Escena a pantalla completa, por encima de todo el juego. Texto grande y lento; nada más en pantalla. */
 .gameStory { position: absolute; inset: 0; z-index: 20; display: grid; grid-template-rows: 1fr auto auto; justify-items: center; gap: 18px; padding: 9vh 24px 18px; overflow: auto; background: #050506; color: #e9e2d8; }
 .gameStory.tone-salvado { background: #07121c; color: #eef4f6; }
@@ -196,7 +196,7 @@
 .gamePageNote { margin: 0 0 8px; font-size: 13px; line-height: 1.45; }
 .gamePage button { margin-bottom: 8px; padding: 8px 12px; border: 0; border-radius: 8px; background: var(--warning); color: #1a1405; font-weight: 700; }
 .gamePage small { display: block; color: var(--subtle); font-size: 11px; line-height: 1.4; }
-/* Nota de la historia en la tarjeta de la Luna y regreso a 2031 en el menú de la Tierra. */
+/* Nota de la historia en la tarjeta de la colonia lunar y regreso a 2045 en el menú de la Tierra. */
 .gameCard p.gameStoryNote { padding: 10px 12px; border-left: 3px solid #c9785c; background: #17120d; color: #e9e2d8; font-size: 14px; }
 .gameReturn { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid #4a3a2c; border-radius: 10px; background: #17120d; }
 .gameReturn p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.4; }
@@ -718,3 +718,96 @@
   .gameWorld :is(.gameLesson, .gameNino, .gameCredits, .gameHelp) { animation: none; }
   .gameWorld .gameCine.out .gameCineTitle, .gameWorld .gameCine.out .gameCineTitle b { transition: none; }
 }
+
+/* --- TERRA 2045 (ADR-050): transmisiones, estado del planeta, regresos y decisiones con recursos ----------------- */
+.gameTagline { margin: -4px 0 12px; color: #e6c9a8; font-style: italic; }
+/* El menú de la Tierra apila transmisión, planeta, fundamentales y regreso en una sola columna. */
+.gameReturn { grid-template-columns: 1fr; align-items: stretch; }
+.gameReturn > button { justify-self: start; }
+.gameReturn > button.primary { border-color: var(--accent); background: var(--accent); color: #04110f; }
+.gameRadio { padding: 8px 10px; border-left: 3px solid #74a0ff; border-radius: 6px; background: #0d1424; color: #cfdaf5 !important; }
+.gameRadio b { color: #9cbaff !important; font-size: 12px !important; margin-bottom: 2px; }
+.gamePlanet p { display: flex; justify-content: space-between; gap: 8px; }
+.gamePlanet p b { display: inline; }
+.gamePlanet p span { color: var(--text); font-weight: 600; font-size: 12px; }
+.gamePlanet i { display: block; height: 8px; margin: 6px 0 4px; border-radius: 99px; background: linear-gradient(90deg, #5a1e14, #7a5a1c 40%, #2f6d5f 70%, #2f7fc4); opacity: .35; position: relative; overflow: hidden; }
+.gamePlanet i em { position: absolute; inset: 0 auto 0 0; display: block; border-radius: 99px; background: linear-gradient(90deg, #c2412c, #e0a83c 40%, #3fbf8f 70%, #4aa3ff); }
+.gamePlanet small { color: var(--subtle); font-size: 11px; }
+.gameFundamentals { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.gameFundamentals li { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border: 1px solid #3a3226; border-radius: 99px; color: var(--muted); font-size: 12px; }
+.gameFundamentals li.done { border-color: var(--positive); background: #12281b; color: #c9f3d6; }
+.gameConfirm { display: grid; gap: 6px; padding: 8px; border: 1px dashed #c9785c; border-radius: 8px; }
+.gameConfirm p { color: #f0d3c5 !important; }
+.gameConfirm button { justify-self: start; padding: 7px 11px; border: 1px solid #c9785c; border-radius: 8px; background: transparent; color: #f0d3c5; font-size: 13px; font-weight: 600; }
+.gameConfirm button:first-of-type { background: #c9785c; color: #1a0d07; }
+
+/* Voz del lugar: Christian en el Perú o la doctora Nikol por radio. */
+.gameVoice { margin-bottom: 12px; padding: 10px 12px; border-left: 3px solid #e0a83c; border-radius: 8px; background: #1a160c; }
+.gameVoice b { display: block; margin-bottom: 4px; color: #f1c84b; font-size: 12px; }
+.gameVoice p { margin: 0; color: #eadfc4; line-height: 1.5; font-style: italic; }
+
+/* Paso 3: decidir con recursos limitados. */
+.gameDecision { border-color: #2c4a6a; background: #0c1520; }
+.gameIndifference { padding: 8px 10px; border-radius: 8px; background: #241417; color: #f0c4ca !important; font-size: 13px; }
+.gameBudget { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted) !important; }
+.gameBudget i { width: 14px; height: 14px; border: 1px solid #4aa3ff; border-radius: 50%; }
+.gameBudget i.on { background: #4aa3ff; }
+.gameBudget span { margin-left: 6px; }
+.gameMeasures { display: grid; gap: 6px; margin-bottom: 10px; }
+.gameMeasures button { display: flex; justify-content: space-between; gap: 10px; padding: 9px 11px; text-align: left; border: 1px solid #34454a; border-radius: 9px; background: #111b1d; color: var(--text); line-height: 1.35; }
+.gameMeasures button small { flex: none; color: var(--subtle); font-size: 11px; }
+.gameMeasures button.on { border-color: #4aa3ff; background: #102236; }
+.gameMeasures button:disabled:not(.on) { opacity: .45; cursor: default; }
+.gameMeasures button:not(:disabled):hover, .gameMeasures button:focus-visible { border-color: #4aa3ff; }
+.gamePlan { margin: 6px 0 8px; padding: 10px; border-radius: 9px; background: #12281b; }
+.gamePlan.ko { background: #2a1418; }
+.gamePlan ul { margin: 6px 0; padding-left: 18px; color: #d2d9dd; font-size: 13px; line-height: 1.45; }
+.gamePlan em { color: var(--subtle); }
+.gamePlan button { margin-top: 4px; padding: 7px 11px; border: 1px solid #4aa3ff; border-radius: 8px; background: transparent; color: #cfe4ff; font-size: 13px; }
+.gameAxes { display: grid; gap: 4px; margin: 8px 0; }
+.gameAxes div { display: grid; grid-template-columns: 1fr 120px; gap: 8px; align-items: center; font-size: 12px; }
+.gameAxes dt { color: var(--muted); }
+.gameAxes dd { position: relative; margin: 0; height: 14px; border-radius: 99px; background: #1b2427; }
+.gameAxes dd i { position: absolute; inset: 0 auto 0 0; border-radius: 99px; background: #3fbf8f; }
+.gameAxes dd i.neg { background: #c2412c; width: 12% !important; }
+.gameAxes dd span { position: absolute; right: 6px; top: -1px; font-size: 11px; color: #fff; }
+.gameDecision > small { display: block; margin-top: 6px; font-size: 11px; }
+
+/* El planeta cambia con el avance del jugador (gamificación declarada, planet.ts): el globo visto desde la colonia
+   lunar y en la vista de la Tierra, nunca la foto de cerca de una misión. Va del humo y el ocre del 2045 crítico al azul y verde en equilibrio. */
+.gameShell.stage-tierra .gameGlobe canvas, .gameShell.stage-luna .gameGlobe canvas { transition: filter 1.6s ease; }
+/* Desde la colonia, la Tierra de 2045 la dibuja planet-2045.tsx (naranja y negra en crisis, sana al final): el globo de
+   MapLibre queda debajo, invisible, mientras ese lienzo está listo. */
+.gamePlanet2045 { position: absolute; z-index: 1; transform: translate(-50%, -50%); pointer-events: none; }
+.gameGlobe.under2045 .maplibregl-canvas { opacity: 0; }
+.gameShell.planet-t0.stage-tierra .gameGlobe canvas, .gameShell.planet-t0.stage-luna .gameGlobe canvas { filter: sepia(.55) saturate(.55) hue-rotate(-14deg) brightness(.78) contrast(1.08); }
+.gameShell.planet-t1.stage-tierra .gameGlobe canvas, .gameShell.planet-t1.stage-luna .gameGlobe canvas { filter: sepia(.35) saturate(.75) hue-rotate(-8deg) brightness(.86); }
+.gameShell.planet-t2.stage-tierra .gameGlobe canvas, .gameShell.planet-t2.stage-luna .gameGlobe canvas { filter: sepia(.15) saturate(.92) brightness(.94); }
+.gameShell.planet-t3.stage-tierra .gameGlobe canvas, .gameShell.planet-t3.stage-luna .gameGlobe canvas { filter: saturate(1.05); }
+.gameShell.planet-t4.stage-tierra .gameGlobe canvas, .gameShell.planet-t4.stage-luna .gameGlobe canvas { filter: saturate(1.18) brightness(1.04); }
+.gameShell.planet-t0.stage-tierra .gameHalo, .gameShell.planet-t0.stage-luna .gameHalo { filter: hue-rotate(160deg) saturate(.6); opacity: .8; }
+.gameShell.planet-t1.stage-tierra .gameHalo, .gameShell.planet-t1.stage-luna .gameHalo { filter: hue-rotate(120deg) saturate(.7); }
+@media (prefers-reduced-motion: reduce) {
+  .gameShell.stage-tierra .gameGlobe canvas { transition: none; }
+}
+.gameCard.moon { max-height: calc(100vh - 110px); overflow: auto; }
+
+/* TERRA 2045 · cinemáticas en video (cine-scene.tsx): pantalla completa, controles que se esconden al mirar. */
+.gameCine { position: absolute; inset: 0; z-index: 30; display: grid; place-items: center; background: #000; outline: none; }
+.gameCine.idle { cursor: none; }
+.gameCineVideo { width: 100%; height: 100%; object-fit: contain; background: #000; }
+.gameCineVideo::cue { font-family: Inter, system-ui, sans-serif; font-size: clamp(15px, 2vw, 22px); line-height: 1.35; color: #f5f2ec; background: rgba(0, 0, 0, .62); }
+.gameCinePlay { position: absolute; padding: 14px 22px; border: 0; border-radius: 12px; background: var(--accent); color: #04110f; font-size: 17px; font-weight: 700; cursor: pointer; }
+.gameCineBar { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: rgba(255, 255, 255, .08); }
+.gameCineBar span { display: block; height: 100%; background: var(--accent); transition: width .25s linear; }
+.gameCineControls { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 14px 18px; background: linear-gradient(rgba(0, 0, 0, .7), transparent); transition: opacity .4s ease; }
+.gameCine.idle .gameCineControls { opacity: 0; pointer-events: none; }
+.gameCineLabel { margin-right: auto; color: #c9c3b8; font: 600 12px/1.2 var(--font-data-mono), monospace; letter-spacing: .1em; text-transform: uppercase; }
+.gameCineControls button { padding: 7px 11px; border: 1px solid rgba(255, 255, 255, .22); border-radius: 9px; background: rgba(10, 12, 14, .55); color: #ece7df; font-size: 13px; cursor: pointer; }
+.gameCineControls button:hover { border-color: var(--accent); }
+.gameCineControls button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.gameCineLang { display: flex; gap: 4px; }
+.gameCineControls .gameCineSkip { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.gameStartLinks { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 22px; }
+.gameTrailer { padding: 0; border: 0; background: none; color: var(--accent); font-size: 14px; font-weight: 600; cursor: pointer; }
+.gameTrailer:hover { text-decoration: underline; }

@@ -22,7 +22,7 @@ const viewports = [
     const errors = [];
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
     page.on("pageerror", (e) => errors.push(String(e)));
-    await page.goto(BASE_URL, { waitUntil: "networkidle" });
+    await page.goto(`${BASE_URL}/plataforma`, { waitUntil: "networkidle" });
     await page.screenshot({ path: path.join(out, `${vp.name}-antes.png`) });
     await page.locator("button.runAnalysis").first().click();
     await page.waitForSelector(resultSelector, { timeout: 180000 });

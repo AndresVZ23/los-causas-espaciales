@@ -10,7 +10,7 @@ const out = process.argv[2];
   const errors = [];
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.goto(BASE_URL, { waitUntil: "networkidle" });
+  await page.goto(`${BASE_URL}/plataforma`, { waitUntil: "networkidle" });
   const checks = {};
   checks.h1 = await page.locator("h1").count();
   await page.locator("button.runAnalysis").click();

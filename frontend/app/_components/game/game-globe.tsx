@@ -7,6 +7,7 @@ import { HeroAvatar } from "./hero-avatar";
 import { Ship } from "./ship";
 import { Hero3D } from "./hero-3d";
 import { metersBetween, offset, type Checkpoint } from "./mission-logic";
+import { Planet2045 } from "./planet-2045";
 
 maplibregl.setWorkerUrl("/maplibre-gl-worker.mjs");
 
@@ -100,7 +101,7 @@ const KEYS: Record<string, [number, number]> = { ArrowUp: [0, 1], KeyW: [0, 1], 
 
 export interface LiveAlert { id: string; kind: string; kind_label: string; level: string; title: string; place: string; started: string; updated: string; latitude: number; longitude: number; severity?: string; url?: string; also_seen_by?: string[] }
 
-export function GameGlobe({ missions, stage, continent, mission, hero, panelWidth, completed, checkpoints, visited, vision, immersive, alerts, onAlert, onPick, onReach }: {
+export function GameGlobe({ missions, stage, continent, mission, hero, panelWidth, completed, checkpoints, visited, vision, immersive, alerts, onAlert, onPick, onReach, planetHealth = null }: {
   missions: Mission[];
   stage: Stage;
   continent: Continent | null;
@@ -118,12 +119,17 @@ export function GameGlobe({ missions, stage, continent, mission, hero, panelWidt
   alerts: LiveAlert[];
   onAlert: (alert: LiveAlert) => void;
   onPick: (mission: Mission) => void;
+  /** Estado del planeta en 2045, de 0 (crisis) a 1 (sano): desde la Luna se dibuja la Tierra de 2045 (planet-2045.tsx). Nulo: el globo de siempre. */
+  planetHealth?: number | null;
   onReach: (id: string) => void;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<Map<string, { marker: maplibregl.Marker; element: HTMLButtonElement }>>(new Map());
   const [halo, setHalo] = useState<Halo | null>(null);
+  const [planetReady, setPlanetReady] = useState(false);
+  const show2045 = planetHealth != null && (stage === "luna" || stage === "viaje");
+  useEffect(() => { if (!show2045) setPlanetReady(false); }, [show2045]);
   const onPickRef = useRef(onPick);
   const onReachRef = useRef(onReach);
   useEffect(() => { onPickRef.current = onPick; onReachRef.current = onReach; }, [onPick, onReach]);
@@ -375,8 +381,9 @@ export function GameGlobe({ missions, stage, continent, mission, hero, panelWidt
 
   return (
     <>
-      {halo && <div className="gameHalo" aria-hidden style={{ left: halo.x, top: halo.y, width: halo.r * 3, height: halo.r * 3 }} />}
-      <div ref={container} className="gameGlobe" aria-label="La Tierra vista desde el espacio: imagen Blue Marble de NASA y, de cerca, foto satelital Sentinel-2 con relieve" role="region" />
+      {halo && !(show2045 && planetReady) && <div className="gameHalo" aria-hidden style={{ left: halo.x, top: halo.y, width: halo.r * 3, height: halo.r * 3 }} />}
+      {halo && show2045 && <Planet2045 x={halo.x} y={halo.y} r={halo.r} health={planetHealth ?? 0} onReady={setPlanetReady} />}
+      <div ref={container} className={`gameGlobe${show2045 && planetReady ? " under2045" : ""}`} aria-label="La Tierra vista desde el espacio: imagen Blue Marble de NASA y, de cerca, foto satelital Sentinel-2 con relieve" role="region" />
       {halo && (
         // La órbita del cometa: el planeta mide 130 unidades de radio en este dibujo.
         <svg className="gameOrbit" aria-hidden viewBox="-195 -195 390 390" style={{ left: halo.x, top: halo.y, width: halo.r * 3, height: halo.r * 3 }}>

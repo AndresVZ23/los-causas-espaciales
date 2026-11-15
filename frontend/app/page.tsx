@@ -1,10 +1,12 @@
-import Workspace from "./_components/workspace";
+import type { Metadata } from "next";
+import GameEntry from "./jugar/game-entry";
 
-// La dirección pública de la API se lee al atender cada visita, no al compilar: así el pie enlaza la documentación
-// correcta también cuando la aplicación corre en puertos temporales (variable API_PUBLIC_URL).
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "TERRA 2045 · El último viaje · Los Causas Espaciales",
+  description: "Videojuego educativo: desde la colonia lunar de 2045, una persona viaja a 2026 para cambiar el futuro con datos reales de observación de la Tierra de NASA.",
+};
 
+/** Portada: el juego TERRA 2045 (ADR-050). La consola técnica de la plataforma está en «/plataforma». */
 export default function Home() {
-  const api = (process.env.API_PUBLIC_URL || "http://localhost:8000").replace(/\/+$/, "");
-  return <Workspace apiDocsUrl={`${api}/docs`} />;
+  return <GameEntry />;
 }

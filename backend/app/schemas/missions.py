@@ -43,6 +43,16 @@ class MissionTrend(BaseModel):
     second_source: SecondSource | None = None
 
 
+class AirTrend(MissionTrend):
+    """Aerosoles en la columna de aire sobre la celda de NASA POWER (AOD_55, adimensional). No es la calidad del aire a nivel de calle."""
+
+    dataset: str = Field(description="Producto y fuente, p. ej. «NASA POWER · AOD_55 (fuente CERES SYN1deg)».")
+    provenance: Literal["REAL_DATA", "CACHED_DATA", "MODEL_ESTIMATE", "USER_ASSUMPTION", "ILLUSTRATIVE_DEMO", "DATA_UNAVAILABLE"]
+    source_url: str = Field(pattern=r"^https?://\S+$")
+    downloaded_at: datetime | None = None
+    note: str | None = None
+
+
 class MissionExtreme(BaseModel):
     variable: str
     label: str
@@ -100,7 +110,9 @@ class Mission(BaseModel):
     context_sources: list[ContextSource] = Field(default_factory=list, description="Fuentes externas del texto de contexto. Vacía: texto del equipo sin fuente enlazada.")
     not_measured: str = Field(description="Lo que la plataforma no mide en este lugar: una brecha declarada, nunca un cero.")
     scale: Literal["ciudad", "paisaje"] = Field(default="ciudad", description="Ciudad: se baja a nivel de calle con edificios; paisaje: vista amplia.")
-    hazard: Literal["huaico", "avalancha", "inundacion", "erupcion", "calor"] | None = Field(default=None, description="Peligro principal del juego (evento simulado inspirado en el riesgo real del lugar).")
+    hazard: Literal["huaico", "avalancha", "inundacion", "erupcion", "calor", "aire"] | None = Field(default=None, description=(
+        "Peligro principal del juego (evento simulado inspirado en el riesgo real del lugar). «aire»: calidad del aire; el mundo 3D no "
+        "simula un evento y el reto es la contaminación cotidiana (ADR-050)."))
     heat: HeatClass
     heat_support: HeatSupport | None = Field(default=None, description=(
         "Respaldo de la segunda fuente a la clase de `heat`, según `temperature.second_source.agreement`: coincide → confirmada; "
@@ -108,6 +120,9 @@ class Mission(BaseModel):
     temperature: MissionTrend | None
     rain: MissionTrend | None
     sun: MissionTrend | None
+    air: AirTrend | None = Field(default=None, description=(
+        "Solo en misiones de aire: aerosoles en la columna (AOD a 550 nm) de NASA POWER. Se prueba aparte de las variables de clima "
+        "(familia de una prueba, alfa 0,05), así no cambia la significancia de temperatura, lluvia ni sol."))
     extremes: list[MissionExtreme] = Field(default_factory=list)
     flagged_extremes: list[FlaggedExtreme] = Field(default_factory=list)
     analysis: MissionAnalysis

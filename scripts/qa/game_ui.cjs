@@ -48,7 +48,7 @@ const viewport = { 1440: { width: 1440, height: 900 }, 768: { width: 768, height
   const out = { prefix, width: +width, scene, base: BASE };
   out.webgl = await page.evaluate(() => { const gl = document.createElement("canvas").getContext("webgl2"); const info = gl && gl.getExtension("WEBGL_debug_renderer_info"); return info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : "?"; });
 
-  await page.goto(`${BASE}/jugar${process.env.QA_QUERY || ""}`, { waitUntil: "networkidle", timeout: 120000 });   // QA_QUERY="?luz=noche" fija la luz del mundo
+  await page.goto(`${BASE}/${process.env.QA_QUERY || ""}`, { waitUntil: "networkidle", timeout: 120000 });   // QA_QUERY="?luz=noche" fija la luz del mundo
   await page.getByRole("button", { name: /Jugador/ }).click();
   await page.getByRole("radio", { name: /Mujer/ }).click();
   await page.locator(".gameName input").fill("Detective Andina");

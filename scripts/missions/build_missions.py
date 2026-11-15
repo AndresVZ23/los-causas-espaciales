@@ -180,6 +180,9 @@ PLACES = [
     ("piura", "Sudamérica", "Perú", "Piura", -5.19, -80.63,
      "En 2017 el Niño Costero desbordó el río Piura e inundó buena parte de la ciudad.",
      "El caudal del río ni la temperatura del mar."),
+    ("lima", "Sudamérica", "Perú", "Lima Metropolitana", -12.05, -77.04,
+     "En septiembre de 2025 el SENAMHI alertó niveles insalubres de partículas finas en el aire de varios distritos de Lima; más de la mitad de esas emisiones viene de los vehículos.",
+     "El aire que se respira en la calle (PM2.5 de las estaciones del SENAMHI): aquí solo se ven los aerosoles de toda la columna de aire sobre una celda grande."),
     ("huascaran", "Sudamérica", "Perú", "Huascarán y Yungay", -9.12, -77.60,
      "En 1970 un terremoto desprendió hielo y roca del Huascarán y el aluvión sepultó la ciudad de Yungay.",
      "El hielo del nevado ni las lagunas glaciares."),
@@ -214,7 +217,7 @@ LANDSCAPES = {"nazca", "poopo", "perito-moreno", "lago-mead", "ilulissat", "alet
 HAZARDS = {
     # Sudamérica
     "nazca": "huaico", "poopo": "calor", "manaos": "inundacion", "santiago": "calor", "perito-moreno": "avalancha", "guayaquil": "inundacion",
-    "mocoa": "huaico", "porto-alegre": "inundacion", "chosica": "huaico", "piura": "inundacion", "huascaran": "avalancha", "villarrica": "erupcion",
+    "mocoa": "huaico", "porto-alegre": "inundacion", "chosica": "huaico", "piura": "inundacion", "lima": "aire", "huascaran": "avalancha", "villarrica": "erupcion",
     # Norteamérica
     "lago-mead": "calor", "cdmx": "inundacion", "yellowknife": "calor", "ilulissat": None, "choluteca": "calor", "nueva-orleans": "inundacion",
     "san-juan": "inundacion", "puerto-principe": "huaico", "popocatepetl": "erupcion", "phoenix": "calor",
@@ -235,6 +238,10 @@ HAZARDS = {
 # (la página dice lo que dice el contexto); un lugar sin entrada queda con la lista vacía y el juego lo trata como
 # texto del equipo sin fuente enlazada. Después de editarlo: python3 scripts/missions/build_missions.py --textos
 CONTEXT_SOURCES: dict[str, list[dict[str, str]]] = {
+    "lima": [
+        {"title": "Alerta: Lima registra niveles insalubres de contaminación en el aire (Actualidad Ambiental, 22-sep-2025)", "url": "https://www.actualidadambiental.pe/lima-registra-niveles-insalubres-en-el-aire/"},
+        {"title": "SENAMHI alerta que aire en Lima alcanzó niveles insalubres (América Noticias, 19-sep-2025)", "url": "https://www.americatv.com.pe/noticias/actualidad/senamhi-alerta-que-aire-lima-alcanzo-niveles-insalubres-n511103"},
+    ],
     "nazca": [
         {"title": "Climatic & Anthropogenic Hazards to the Nasca World Heritage: Application of Remote Sensing, AI, and Flood Modelling (arXiv 2405.11814, IGARSS 2024)", "url": "https://arxiv.org/html/2405.11814v1"},
         {"title": "Rare heavy rains damage Peru's Nazca lines (NBC News)", "url": "https://www.nbcnews.com/news/amp/wbna28739302"},
@@ -450,6 +457,46 @@ CONTEXT_SOURCES: dict[str, list[dict[str, str]]] = {
 
 VARIABLES = {"T2M": "temperature", "PRECTOTCORR": "rain", "ALLSKY_SFC_SW_DWN": "sun"}
 
+# Misiones de aire (ADR-050): aerosoles en la columna de aire, AOD a 550 nm de NASA POWER (comunidad RE, fuente CERES
+# SYN1deg, que combina satélites con un modelo de transporte de aerosoles: por eso MODEL_ESTIMATE). Medias anuales que
+# entrega la propia API (mes «13»), de 2001 al último año completo. Se prueba aparte de las variables de clima, con la
+# misma función de la plataforma (Mann–Kendall con Hamed–Rao y pendiente de Sen), familia de una prueba y alfa 0,05.
+AIR_PLACES = {"lima"}
+POWER_MONTHLY = os.environ.get("POWER_API_BASE", "https://power.larc.nasa.gov/api") + "/temporal/monthly/point"
+AIR_NOTE = "Estimación de NASA POWER (CERES SYN1deg): combina satélites y un modelo. No es una medición de estación."
+
+
+def air_trend(lat: float, lon: float) -> dict:
+    """Tendencia de AOD_55 en el punto, con su serie anual, procedencia y fecha de descarga."""
+    sys.path.insert(0, str(ROOT))
+    from backend.app.schemas.analysis import Observation  # noqa: PLC0415 — solo hace falta en misiones de aire
+    from backend.app.statistics.trends import analyze_trend  # noqa: PLC0415
+
+    last_year = date.today().year - 1
+    url = f"{POWER_MONTHLY}?parameters=AOD_55&community=RE&longitude={lon}&latitude={lat}&start=2001&end={last_year}&format=JSON"
+    with urllib.request.urlopen(url, timeout=120) as response:
+        payload = json.loads(response.read().decode("utf-8"))
+    downloaded = datetime.now(timezone.utc).isoformat()
+    fill = payload.get("header", {}).get("fill_value", -999.0)
+    raw = payload["properties"]["parameter"]["AOD_55"]
+    series = []
+    for year in range(2001, last_year + 1):
+        value = raw.get(f"{year}13")
+        series.append({"year": year, "value": None if value is None or value == fill else float(value)})
+    valid = [item for item in series if item["value"] is not None]
+    result = analyze_trend([Observation(timestamp=date(item["year"], 1, 1), value=item["value"]) for item in valid], already_annual=True)
+    sources = ", ".join(payload.get("header", {}).get("sources", [])) or "sin fuente declarada"
+    return {
+        "label": "Aerosoles en la columna de aire (AOD a 550 nm)", "unit": None,
+        "mean": round(sum(item["value"] for item in valid) / len(valid), 4) if valid else None,
+        "direction": result.direction, "slope_per_year": result.slope_per_year,
+        "confidence_interval": list(result.confidence_interval) if result.confidence_interval else None,
+        "p_value_adjusted": result.p_value_modified, "significant": bool(result.significant), "valid_years": result.valid_observations,
+        "annual_series": series, "second_source": None,
+        "dataset": f"NASA POWER · AOD_55 (fuente {sources})", "provenance": "MODEL_ESTIMATE", "source_url": url, "downloaded_at": downloaded,
+        "note": AIR_NOTE,
+    }
+
 
 
 def method_text(missions: list[dict]) -> str:
@@ -535,10 +582,12 @@ def build(place: tuple) -> dict:
          "countercheck_values": odd.get("countercheck_values") or {}}
         for item in site.get("extremes", []) for odd in item.get("atypical_years", []) if odd.get("countercheck_values")
     ]
+    air = air_trend(lat, lon) if pid in AIR_PLACES else None
     return with_texts({
         "id": pid, "latitude": lat, "longitude": lon,
         "heat": heat_class(data["temperature"]),
         **data,
+        **({"air": air} if air else {}),
         "extremes": extremes, "flagged_extremes": flagged,
         "analysis": {
             "analysis_id": response.get("analysis_id"), "generated_at": response.get("generated_at"), "period": response.get("period"),

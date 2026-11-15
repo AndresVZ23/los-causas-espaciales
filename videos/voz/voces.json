@@ -1,0 +1,667 @@
+﻿[
+    {
+        "id":  "t01",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t02",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t03",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t04",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t05",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t06",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t07",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t08",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t09",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t10",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t11",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t12",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "t13",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p01",
+        "lang":  "es",
+        "who":  "radio",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p02",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p03",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p04",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p05",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p06",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p07",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p08",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p09",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p10",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p11",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p12",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p13",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p14",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p15",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p16",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p17",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p18",
+        "lang":  "es",
+        "who":  "killa",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p19",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p20",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p21",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p22",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p23",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "p24",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "v01",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "v02",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "v03",
+        "lang":  "es",
+        "who":  "radio",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "v04",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "v05",
+        "lang":  "es",
+        "who":  "radio",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r01",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r02",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r03",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r04",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r05",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r06",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "r07",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b01",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b02",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b03",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b04",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b05",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b06",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b07",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b08",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b09",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b10",
+        "lang":  "es",
+        "who":  "killa",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b11",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b12",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b13",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b14",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b15",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b16",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "b17",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i01",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i02",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i03",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i04",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i05",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i06",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i07",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i08",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i09",
+        "lang":  "es",
+        "who":  "killa",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i10",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i11",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i12",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i13",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i14",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "i15",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l01",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l02",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l03",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l04",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l05",
+        "lang":  "es",
+        "who":  "nikol",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l06",
+        "lang":  "es",
+        "who":  "andres",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l07",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l08",
+        "lang":  "es",
+        "who":  "mario",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l09",
+        "lang":  "es",
+        "who":  "viajero",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l10",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l11",
+        "lang":  "es",
+        "who":  "killa",
+        "voice":  "Microsoft Sabina",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l12",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l13",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    },
+    {
+        "id":  "l14",
+        "lang":  "es",
+        "who":  "narrador",
+        "voice":  "Microsoft Raul",
+        "voice_lang":  "es-MX"
+    }
+]
