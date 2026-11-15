@@ -1,5 +1,5 @@
 {
- "built_at": "2026-11-13T02:15:10.782833+00:00",
+ "built_at": "2026-11-14T23:33:49.941751+00:00",
  "method": "Una consulta /projects/climate-screening por lugar, 2001 hasta dos días antes de construir. Tendencia: Mann–Kendall con corrección de Hamed–Rao y pendiente de Sen sobre medias anuales; significancia tras Benjamini–Hochberg entre las variables del lugar. Segunda fuente de la temperatura: ERA5, donde la API la devolvió. Años atípicos de lluvia extrema: se guardan con el valor del mismo año en cada producto de contraste que devolvió la API; en este archivo: GPM IMERG (NASA POWER · IMERG_PRECTOT). La regla de «artefacto probable» (ADR-036) se aplica al servir las misiones. «built_at» es la última escritura del archivo con análisis nuevos; la fecha de cada análisis está en «analysis.generated_at» de su misión.",
  "missions": [
   {
@@ -21427,6 +21427,582 @@
     "dataset": "NASA POWER Daily Point",
     "version": "v2.10.3",
     "downloaded_at": "2026-11-13T02:12:09.758569Z",
+    "provenance": "REAL_DATA",
+    "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point"
+   }
+  },
+  {
+   "id": "lima",
+   "continent": "Sudamérica",
+   "country": "Perú",
+   "name": "Lima Metropolitana",
+   "latitude": -12.05,
+   "longitude": -77.04,
+   "context": "En septiembre de 2025 el SENAMHI alertó niveles insalubres de partículas finas en el aire de varios distritos de Lima; más de la mitad de esas emisiones viene de los vehículos.",
+   "context_sources": [
+    {
+     "title": "Alerta: Lima registra niveles insalubres de contaminación en el aire (Actualidad Ambiental, 22-sep-2025)",
+     "url": "https://www.actualidadambiental.pe/lima-registra-niveles-insalubres-en-el-aire/"
+    },
+    {
+     "title": "SENAMHI alerta que aire en Lima alcanzó niveles insalubres (América Noticias, 19-sep-2025)",
+     "url": "https://www.americatv.com.pe/noticias/actualidad/senamhi-alerta-que-aire-lima-alcanzo-niveles-insalubres-n511103"
+    }
+   ],
+   "not_measured": "El aire que se respira en la calle (PM2.5 de las estaciones del SENAMHI): aquí solo se ven los aerosoles de toda la columna de aire sobre una celda grande.",
+   "scale": "ciudad",
+   "hazard": "aire",
+   "heat": "calienta",
+   "temperature": {
+    "label": "Temperatura del aire a 2 m",
+    "unit": "°C",
+    "mean": 18.326149042023925,
+    "direction": "increasing",
+    "slope_per_year": 0.0317071118865415,
+    "confidence_interval": [
+     0.004462709284626875,
+     0.04935792349726794
+    ],
+    "p_value_adjusted": 0.020769866768182377,
+    "significant": true,
+    "valid_years": 25,
+    "annual_series": [
+     {
+      "year": 2001,
+      "value": 17.858192
+     },
+     {
+      "year": 2002,
+      "value": 18.383205
+     },
+     {
+      "year": 2003,
+      "value": 18.306055
+     },
+     {
+      "year": 2004,
+      "value": 18.055301
+     },
+     {
+      "year": 2005,
+      "value": 17.98337
+     },
+     {
+      "year": 2006,
+      "value": 18.099863
+     },
+     {
+      "year": 2007,
+      "value": 17.624
+     },
+     {
+      "year": 2008,
+      "value": 17.690492
+     },
+     {
+      "year": 2009,
+      "value": 18.192
+     },
+     {
+      "year": 2010,
+      "value": 17.985233
+     },
+     {
+      "year": 2011,
+      "value": 17.777616
+     },
+     {
+      "year": 2012,
+      "value": 18.341667
+     },
+     {
+      "year": 2013,
+      "value": 18.025014
+     },
+     {
+      "year": 2014,
+      "value": 18.407178
+     },
+     {
+      "year": 2015,
+      "value": 19.017014
+     },
+     {
+      "year": 2016,
+      "value": 18.900792
+     },
+     {
+      "year": 2017,
+      "value": 18.526548
+     },
+     {
+      "year": 2018,
+      "value": 18.232164
+     },
+     {
+      "year": 2019,
+      "value": 18.666192
+     },
+     {
+      "year": 2020,
+      "value": 18.482459
+     },
+     {
+      "year": 2021,
+      "value": 18.098164
+     },
+     {
+      "year": 2022,
+      "value": 17.614137
+     },
+     {
+      "year": 2023,
+      "value": 19.359836
+     },
+     {
+      "year": 2024,
+      "value": 18.933962
+     },
+     {
+      "year": 2025,
+      "value": 18.417014
+     }
+    ],
+    "second_source": {
+     "source": "ERA5 (ECMWF) vía PVGIS (JRC)",
+     "agreement": "sin_respaldo",
+     "period": "2005–2023"
+    }
+   },
+   "rain": {
+    "label": "Precipitación corregida",
+    "unit": "mm/día",
+    "mean": 0.09800148195194242,
+    "direction": "no_trend",
+    "slope_per_year": 0.00384200009138253,
+    "confidence_interval": [
+     0.0006369863013698613,
+     0.006070776255707761
+    ],
+    "p_value_adjusted": 0.06648084114565012,
+    "significant": false,
+    "valid_years": 25,
+    "annual_series": [
+     {
+      "year": 2001,
+      "value": 0.092438
+     },
+     {
+      "year": 2002,
+      "value": 0.042164
+     },
+     {
+      "year": 2003,
+      "value": 0.032767
+     },
+     {
+      "year": 2004,
+      "value": 0.07418
+     },
+     {
+      "year": 2005,
+      "value": 0.02863
+     },
+     {
+      "year": 2006,
+      "value": 0.054795
+     },
+     {
+      "year": 2007,
+      "value": 0.02611
+     },
+     {
+      "year": 2008,
+      "value": 0.03112
+     },
+     {
+      "year": 2009,
+      "value": 0.031178
+     },
+     {
+      "year": 2010,
+      "value": 0.02737
+     },
+     {
+      "year": 2011,
+      "value": 0.031808
+     },
+     {
+      "year": 2012,
+      "value": 0.038689
+     },
+     {
+      "year": 2013,
+      "value": 0.026192
+     },
+     {
+      "year": 2014,
+      "value": 0.020932
+     },
+     {
+      "year": 2015,
+      "value": 0.140493
+     },
+     {
+      "year": 2016,
+      "value": 0.093989
+     },
+     {
+      "year": 2017,
+      "value": 0.155151
+     },
+     {
+      "year": 2018,
+      "value": 0.192658
+     },
+     {
+      "year": 2019,
+      "value": 0.074932
+     },
+     {
+      "year": 2020,
+      "value": 0.073579
+     },
+     {
+      "year": 2021,
+      "value": 0.087534
+     },
+     {
+      "year": 2022,
+      "value": 0.100219
+     },
+     {
+      "year": 2023,
+      "value": 0.120795
+     },
+     {
+      "year": 2024,
+      "value": 0.096803
+     },
+     {
+      "year": 2025,
+      "value": 0.451973
+     }
+    ],
+    "second_source": null
+   },
+   "sun": {
+    "label": "Irradiancia solar superficial",
+    "unit": "kWh/m²/día",
+    "mean": 4.924776456155324,
+    "direction": "no_trend",
+    "slope_per_year": 0.003073769935731008,
+    "confidence_interval": [
+     -0.003750765027322478,
+     0.010083068493150904
+    ],
+    "p_value_adjusted": 0.3382878549727657,
+    "significant": false,
+    "valid_years": 25,
+    "annual_series": [
+     {
+      "year": 2001,
+      "value": 4.888316
+     },
+     {
+      "year": 2002,
+      "value": 4.834393
+     },
+     {
+      "year": 2003,
+      "value": 5.016166
+     },
+     {
+      "year": 2004,
+      "value": 4.943228
+     },
+     {
+      "year": 2005,
+      "value": 4.879208
+     },
+     {
+      "year": 2006,
+      "value": 4.964458
+     },
+     {
+      "year": 2007,
+      "value": 4.842919
+     },
+     {
+      "year": 2008,
+      "value": 4.908096
+     },
+     {
+      "year": 2009,
+      "value": 4.71147
+     },
+     {
+      "year": 2010,
+      "value": 4.895818
+     },
+     {
+      "year": 2011,
+      "value": 4.969386
+     },
+     {
+      "year": 2012,
+      "value": 4.816155
+     },
+     {
+      "year": 2013,
+      "value": 5.138104
+     },
+     {
+      "year": 2014,
+      "value": 4.753429
+     },
+     {
+      "year": 2015,
+      "value": 4.624541
+     },
+     {
+      "year": 2016,
+      "value": 5.224416
+     },
+     {
+      "year": 2017,
+      "value": 5.001971
+     },
+     {
+      "year": 2018,
+      "value": 4.932243
+     },
+     {
+      "year": 2019,
+      "value": 4.928971
+     },
+     {
+      "year": 2020,
+      "value": 5.081667
+     },
+     {
+      "year": 2021,
+      "value": 4.937019
+     },
+     {
+      "year": 2022,
+      "value": 5.052386
+     },
+     {
+      "year": 2023,
+      "value": 4.919224
+     },
+     {
+      "year": 2024,
+      "value": 4.868213
+     },
+     {
+      "year": 2025,
+      "value": 4.988824
+     }
+    ],
+    "second_source": {
+     "source": "ERA5 (ECMWF) vía PVGIS (JRC)",
+     "agreement": "sin_tendencia",
+     "period": "2005–2023"
+    }
+   },
+   "air": {
+    "label": "Aerosoles en la columna de aire (AOD a 550 nm)",
+    "unit": null,
+    "mean": 0.2044,
+    "direction": "no_trend",
+    "slope_per_year": -0.0008012820512820519,
+    "confidence_interval": [
+     -0.002666666666666667,
+     0.0009999999999999996
+    ],
+    "p_value_adjusted": 0.5876716018594044,
+    "significant": false,
+    "valid_years": 25,
+    "annual_series": [
+     {
+      "year": 2001,
+      "value": 0.21
+     },
+     {
+      "year": 2002,
+      "value": 0.19
+     },
+     {
+      "year": 2003,
+      "value": 0.22
+     },
+     {
+      "year": 2004,
+      "value": 0.25
+     },
+     {
+      "year": 2005,
+      "value": 0.23
+     },
+     {
+      "year": 2006,
+      "value": 0.23
+     },
+     {
+      "year": 2007,
+      "value": 0.24
+     },
+     {
+      "year": 2008,
+      "value": 0.2
+     },
+     {
+      "year": 2009,
+      "value": 0.19
+     },
+     {
+      "year": 2010,
+      "value": 0.2
+     },
+     {
+      "year": 2011,
+      "value": 0.19
+     },
+     {
+      "year": 2012,
+      "value": 0.2
+     },
+     {
+      "year": 2013,
+      "value": 0.17
+     },
+     {
+      "year": 2014,
+      "value": 0.18
+     },
+     {
+      "year": 2015,
+      "value": 0.17
+     },
+     {
+      "year": 2016,
+      "value": 0.16
+     },
+     {
+      "year": 2017,
+      "value": 0.19
+     },
+     {
+      "year": 2018,
+      "value": 0.17
+     },
+     {
+      "year": 2019,
+      "value": 0.17
+     },
+     {
+      "year": 2020,
+      "value": 0.19
+     },
+     {
+      "year": 2021,
+      "value": 0.19
+     },
+     {
+      "year": 2022,
+      "value": 0.21
+     },
+     {
+      "year": 2023,
+      "value": 0.24
+     },
+     {
+      "year": 2024,
+      "value": 0.29
+     },
+     {
+      "year": 2025,
+      "value": 0.23
+     }
+    ],
+    "second_source": null,
+    "dataset": "NASA POWER · AOD_55 (fuente SYN1DEG)",
+    "provenance": "MODEL_ESTIMATE",
+    "source_url": "https://power.larc.nasa.gov/api/temporal/monthly/point?parameters=AOD_55&community=RE&longitude=-77.04&latitude=-12.05&start=2001&end=2025&format=JSON",
+    "downloaded_at": "2026-11-14T23:33:49.939751+00:00",
+    "note": "Estimación de NASA POWER (CERES SYN1deg): combina satélites y un modelo. No es una medición de estación."
+   },
+   "extremes": [
+    {
+     "variable": "RX1DAY",
+     "label": "Lluvia máxima en 1 día",
+     "unit": "mm",
+     "direction": "increasing",
+     "slope_per_year": 0.09583333333333344,
+     "significant": true
+    },
+    {
+     "variable": "RX5DAY",
+     "label": "Lluvia máxima en 5 días",
+     "unit": "mm",
+     "direction": "no_trend",
+     "slope_per_year": 0.19777272727272727,
+     "significant": false
+    },
+    {
+     "variable": "R95P",
+     "label": "Lluvia de días muy húmedos",
+     "unit": "mm",
+     "direction": "no_trend",
+     "slope_per_year": 0.0,
+     "significant": false
+    },
+    {
+     "variable": "PRCPTOT",
+     "label": "Lluvia anual en días húmedos",
+     "unit": "mm",
+     "direction": "increasing",
+     "slope_per_year": 0.506,
+     "significant": true
+    },
+    {
+     "variable": "R10MM",
+     "label": "Días de lluvia intensa",
+     "unit": "días",
+     "direction": "no_trend",
+     "slope_per_year": 0.0,
+     "significant": false
+    },
+    {
+     "variable": "CDD",
+     "label": "Racha seca más larga",
+     "unit": "días",
+     "direction": "decreasing",
+     "slope_per_year": -7.333333333333333,
+     "significant": true
+    }
+   ],
+   "flagged_extremes": [
+    {
+     "variable": "PRCPTOT",
+     "label": "Lluvia anual en días húmedos",
+     "unit": "mm",
+     "year": 2025,
+     "value": 127.8,
+     "countercheck_values": {
+      "GPM IMERG (NASA POWER · IMERG_PRECTOT)": 96.77
+     }
+    }
+   ],
+   "analysis": {
+    "analysis_id": "2890d13f68fbb657",
+    "generated_at": "2026-11-14T23:33:48.929753Z",
+    "period": "2001-01-01/2026-11-12",
+    "dataset": "NASA POWER Daily Point",
+    "version": "v2.10.3",
+    "downloaded_at": "2026-11-14T23:33:03.810754Z",
     "provenance": "REAL_DATA",
     "source_url": "https://power.larc.nasa.gov/api/temporal/daily/point"
    }

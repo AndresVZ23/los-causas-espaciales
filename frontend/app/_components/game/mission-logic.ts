@@ -53,7 +53,7 @@ export interface Option {
 
 export interface Challenge {
   id: string;
-  kind: "calor" | "frio" | "agua" | "lluvia" | "sol" | "pista_falsa" | "detective";
+  kind: "calor" | "frio" | "agua" | "lluvia" | "sol" | "aire" | "pista_falsa" | "detective";
   title: string;
   situation: string;
   options: Option[];
@@ -231,6 +231,24 @@ export function heroChallenge(mission: Mission): Challenge {
       badge: "Cazador de pistas falsas",
     };
   }
+  // Misión de aire (Lima, ADR-050): el reto es el aire de todos los días. La columna de aerosoles de NASA POWER es una
+  // estimación de una celda grande; el aire de la calle (PM2.5 de estaciones) no lo mide la misión y se dice.
+  if (mission.hazard === "aire") {
+    const air = mission.air;
+    const columna = air?.significant && air.direction === "increasing" ? "los aerosoles sobre la ciudad aumentan según la estimación de NASA"
+      : air?.significant && air.direction === "decreasing" ? "los aerosoles sobre la ciudad bajan según la estimación de NASA"
+        : "la estimación de aerosoles de NASA sobre la ciudad no muestra una tendencia clara";
+    return {
+      id: "aire", kind: "aire", title: "Paso 2 · El aire que se respira",
+      situation: `En ${mission.name} ${columna}, pero el satélite no mide el aire que se respira en la calle. Los niños ya casi no salen al patio. ¿Qué haces primero?`,
+      options: [
+        { id: "a", text: "Pedir los datos de las estaciones de calidad del aire y avisar en los días malos", correct: true, feedback: "La columna de una celda grande no es el aire del patio: las estaciones lo miden de cerca, y avisar a tiempo protege a los niños." },
+        { id: "b", text: "Decir que el aire está bien porque el satélite no ve una tendencia", correct: false, feedback: "«Sin tendencia» en la columna no quiere decir «aire limpio»: es una brecha que hay que nombrar." },
+        { id: "c", text: "Quemar la basura para que no se acumule", correct: false, feedback: "Las quemas suman humo y partículas finas justo al aire del barrio." },
+      ],
+      badge: "Detective del aire",
+    };
+  }
   const temp = mission.temperature;
   if (temp?.significant && temp.direction === "increasing") {
     return {
@@ -398,7 +416,15 @@ export function missionCheckpoints(mission: Mission): Checkpoint[] {
     list.push({ id: "sol", title: "Sol", quest: "El sol se esconde", icon: "☀️", ask: "Siento que el sol ya no brilla como antes… ¿por qué?", tone: "alerta", bearing: 280,
       message: `Aquí llega ${sunPct != null ? `${fmt(Math.abs(sunPct))} % menos sol al suelo por década` : "menos sol al suelo que antes"}. Puede ser humo o polvo en el aire: pidan medir la calidad del aire.` });
   }
-  list.push({ id: "brecha", title: "Lo que no medimos", quest: "Zona sin datos", icon: "❓", ask: "¿Y tú sabes todo lo que pasa aquí?", tone: "brecha", bearing: list.length === 3 ? 220 : 280,
+  // Misión de aire (ADR-050): la columna de aerosoles es una estimación de una celda grande, no el aire de la calle.
+  const air = mission.air;
+  if (mission.hazard === "aire" && air) {
+    const trend = air.significant && air.direction === "increasing" ? "aumenta" : air.significant && air.direction === "decreasing" ? "baja" : "no muestra una tendencia clara";
+    list.push({ id: "aire", title: "Aire", quest: "El patio vacío", icon: "😷", ask: "¿Por qué ya casi no nos dejan salir al recreo?", tone: air.significant && air.direction === "increasing" ? "alerta" : "calma",
+      bearing: list.some((item) => item.bearing === 280) ? 330 : 280,
+      message: `En ${where}, la estimación de NASA de aerosoles en toda la columna de aire ${trend} desde 2001. Eso no es el aire que se respira en la calle: pidan los datos de las estaciones de calidad del aire y, en los días malos, cuiden a niños y abuelos.` });
+  }
+  list.push({ id: "brecha", title: "Lo que no medimos", quest: "Zona sin datos", icon: "❓", ask: "¿Y tú sabes todo lo que pasa aquí?", tone: "brecha", bearing: list.length === 2 ? 280 : list.length === 3 ? 220 : 100,
     message: `Esto no lo mide esta misión: ${mission.not_measured.replace(/\.$/, "")}. Pregunten a las autoridades locales; que no lo midamos no significa que no haya riesgo.` });
   return list;
 }

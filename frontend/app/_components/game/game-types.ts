@@ -36,6 +36,16 @@ export interface MissionTrend {
   second_source: { source: string; agreement: string | null; period: string | null } | null;
 }
 
+export interface AirTrend extends MissionTrend {
+  /** Producto y procedencia del dato (p. ej. «NASA POWER · AOD_55 · CERES SYN1deg»). */
+  dataset: string;
+  provenance: string;
+  source_url: string;
+  downloaded_at: string | null;
+  /** Aclaración corta que acompaña la cifra. */
+  note?: string | null;
+}
+
 export interface Mission {
   id: string;
   continent: Continent;
@@ -48,13 +58,18 @@ export interface Mission {
   context_sources?: { title: string; url: string }[];
   not_measured: string;
   scale: "ciudad" | "paisaje";
-  hazard?: "huaico" | "avalancha" | "inundacion" | "erupcion" | "calor" | null;
+  hazard?: "huaico" | "avalancha" | "inundacion" | "erupcion" | "calor" | "aire" | null;
   heat: HeatClass;
   /** Respaldo de la segunda fuente a la clase de `heat`; null si `heat` es «sin_evidencia». */
   heat_support?: HeatSupport | null;
   temperature: MissionTrend | null;
   rain: MissionTrend | null;
   sun: MissionTrend | null;
+  /**
+   * Aerosoles en la columna de aire (AOD a 550 nm de NASA POWER), solo en misiones de aire. Se prueba aparte de las
+   * variables de clima (familia de una prueba, alfa 0,05). Null o ausente si la misión no es de aire.
+   */
+  air?: AirTrend | null;
   extremes: { variable: string; label: string; unit: string | null; direction: Direction; slope_per_year: number | null; significant: boolean }[];
   flagged_extremes: FlaggedExtreme[];
   analysis: {

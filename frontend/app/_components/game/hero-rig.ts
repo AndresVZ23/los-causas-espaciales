@@ -164,16 +164,21 @@ export async function loadHeroRig(T: Three, gender: Gender, cull = false): Promi
   // la cadera hacia las puntas, el del padre siempre queda escrito antes de que lo lea el hijo.
   const computed = new Map<THREE_NS.Object3D, THREE_NS.Quaternion>();
   for (const pair of pairs) computed.set(pair.target, new T.Quaternion());
+  const base = new T.Quaternion();
   const update = (dt: number) => {
     mixer.update(dt);
     if (!pairs.length) return;
     // Una sola actualización de matrices por cuadro; luego cada hueso se resuelve una vez, de la cadera hacia las puntas.
     driver.updateMatrixWorld(true);
     object.updateMatrixWorld(true);
+    // Los reposos se midieron con el modelo suelto (sin padre). En el juego el modelo cuelga del héroe, que gira hacia
+    // donde corre: ese giro se aplica aquí. Sin esto, la mujer mantenía siempre el mismo frente en el mundo y parecía
+    // correr de espaldas o de lado según la dirección.
+    if (object.parent) object.parent.getWorldQuaternion(base); else base.identity();
     for (const pair of pairs) {
       pair.source.matrixWorld.decompose(tmpPos, sourceWorld, tmpScale);
       // Giro del hueso respecto de su reposo, llevado al frente del otro modelo: (giro · Δ · giro⁻¹) · reposo de la mujer.
-      world.copy(sourceWorld).premultiply(yawFixInv).multiply(pair.sourceRestInv).premultiply(turnInv).multiply(turn).multiply(pair.targetRest);
+      world.copy(sourceWorld).premultiply(yawFixInv).multiply(pair.sourceRestInv).premultiply(turnInv).multiply(turn).multiply(pair.targetRest).premultiply(base);
       const parent = pair.target.parent;
       const known = parent ? computed.get(parent) : undefined;
       if (known) parentWorld.copy(known);

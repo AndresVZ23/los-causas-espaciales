@@ -1344,3 +1344,29 @@ Fusionar con la puerta común; push solo con aprobación de Christian.
 **Abierto:** licencia de los personajes de Mixamo antes de publicar el repositorio; alcance de la regla «sin gamificación» de `PRODUCT.md`; manejar el vehículo en pantalla táctil; `role="alert"` del aviso con cuenta regresiva; contextos WebGL de las vistas previas del héroe y la Luna.
 
 **Verificación:** 316 pruebas backend, build con 28 rutas, `npm audit` en 0, auditor científico sin errores (dos advertencias por líneas largas del juego), `game_logic.cjs` en cero y regresión en navegador del juego, la historia, las zonas y las alertas contra 3100. Sin push ni etiqueta.
+
+## 2026-11-14 · Claude · carpeta de Andrés (sin rama propia) · TERRA 2045: el juego es la portada, con regresos, decisiones y cinemáticas en video (ADR-050)
+
+**Contexto:** Andrés pidió convertir la plataforma en el videojuego educativo TERRA 2045 · El último viaje, sobre el juego de Nikol, con tráiler y cinemáticas. Él aprueba las decisiones; el trabajo lo hizo Claude en su carpeta (`D:\ANDRES\…\los-causas-espaciales`). Andrés sube los cambios al repositorio.
+
+**Decisiones de Andrés durante el trabajo:** fusionar con `/jugar` y mantener las misiones con el Perú como protagonista; tres regresos que solo sirven si el futuro mejoró; final bueno con un lugar a salvo de cada peligro; decisiones con recursos limitados sin respuesta única; misión de aire en Lima con datos gratuitos de NASA; el juego en `/` y la plataforma en `/plataforma`; tráiler de 2 minutos y todas las cinemáticas; voz sintética; inglés solo en videos y subtítulos; personajes Andrés, Christian, Mario y Nikol. Al ver el prólogo en texto: «esos diálogos deben ser cinematográficos, deben ser videos»; desde entonces el prólogo, el viaje, cada regreso y los finales se ven como video dentro del juego. Después pidió un inicio más fluido, voces más reales (eligió las voces neuronales de Edge sabiendo el límite de licencia) y que la Tierra vista desde 2045 empiece naranja y negra y mejore con las misiones.
+
+**Qué entró:**
+- **Juego:** `planet.ts`, `decisions.ts`, `decision-step.tsx`, `cine-scene.tsx` y `planet-2045.tsx` (la Tierra de 2045 desde la colonia, con el sombreador de las cinemáticas y texturas en `frontend/public/textures/earth/`) nuevos; `story.ts` reescrito (queda como respaldo en texto y para los resúmenes después de cada video); `game.tsx`, `mission-panel.tsx`, `mission-world.tsx`, `mission-logic.ts` (reto y punto de aviso de aire para Lima), `game-types.ts`, `game.css`. Rutas: `/` juego, `/plataforma` consola, `/jugar` redirige.
+- **Datos:** misión de Lima (`build_missions.py`, `missions.json` con 57 misiones, `terrain/lima.json`), esquema `AirTrend` en el backend.
+- **Videos:** `scripts/video/` (guion, motor WebGL propio, render con voces, música, subtítulos y versión web), `VOCES.bat` (voces neuronales de Edge con `voces_edge.py`; respaldo sin internet: Windows y Piper), `PREPARAR.bat` y `scripts/preparar_equipo.ps1` (todo en D:, nada en C:). Versiones web en `frontend/public/cine/`.
+- **QA versionado:** `game_logic.cjs` (sin navegador, con `QA_OFFLINE=1`) y `game_story_ui.cjs` (anota y salta cada cinemática; sin video, lee las láminas).
+- **Documentos:** ADR-050, `DATA_SOURCES.md`, `pipeline.html` (F9 y F3), `README.md`, `PRODUCT.md`, `EMPEZAR_AQUI.md`.
+
+**Para quien revise:**
+- Si falta `frontend/public/cine/`, el juego no se rompe: cae a la historia en texto. Las cinemáticas pesan decenas de MB; subirlas al repositorio o servirlas desde otro lugar lo decide el equipo.
+- Después de cambiar una línea del guion: `python scripts/video/guion.py`, `VOCES.bat`, `python scripts/video/render.py` y copiar `videos/web/*` a `frontend/public/cine/`.
+- El recorte de silencio de las voces solo quita el principio y el final (la primera versión cortaba cada línea en su primera pausa).
+
+**Abierto:** licencia de los personajes de Mixamo; las voces de Edge no tienen licencia explícita para publicar el audio (para algo más que la demo, pasar a Azure Speech con las mismas voces); el juego sigue en español (el inglés cubre videos y subtítulos).
+
+**Verificación (15-nov, `VERIFICAR.bat` en el equipo de Andrés):** 316 pruebas backend, `tsc` sin errores, build correcto, `npm audit` en 0, `game_logic.cjs` en 0 con 57 misiones; recorrido en navegador de las cinemáticas dentro del juego, la misión de Lima y la Tierra de 2045. Videos: 7 por idioma en `videos/` (con subtítulos quemados y `.srt`) y su versión web en `frontend/public/cine/` (unos 78 MB). Sin push: lo sube Andrés.
+
+**Ajuste final (15-nov, madrugada):** a pedido de Andrés, el tráiler (1:42) muestra desde el salto a 2026 imágenes reales del juego grabadas del navegador (`videos/captura/`, ruta de desarrollo `frontend/app/api/captura`, `?grabar` para lanzar el evento) y la música llega hasta el título («Lightless Dawn» y luego «Heroic Age», alineada a su final real). El prólogo quedó en 1:59. Ver ADR-050.
+
+**Ajuste (15-nov, 03:00–04:00):** a pedido de Andrés («que se vean los desastres naturales», «no narres lo de 3 intentos»): arreglo de la heroína que corría hacia atrás (`hero-rig.ts`, rotación del padre); cámara de cine para grabar (`?grabar` + tecla C) y efectos de desastre más visibles en `mission-world.tsx` (inundación con agua turbia, lluvia y objetos flotando; erupción con columna oscura, cráter y bombas de lava; nube de nieve en la avalancha; lodo más ancho). Tráiler rehecho con los cinco desastres rotulados (`videos/captura/*_cine.webm`), sin los tramos viejos del héroe; prólogo sin la mención de los tres regresos (línea p16, voz regenerada con `VOCES.bat`, que ahora solo rehace lo que cambió). Ver ADR-050.

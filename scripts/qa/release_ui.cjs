@@ -77,7 +77,7 @@ async function run(viewport, tag) {
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   const out = { tag, clipped: {}, overflow: {} };
   for (const name of MODULES) {
     await openModule(page, viewport, name);

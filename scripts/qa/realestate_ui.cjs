@@ -24,7 +24,7 @@ async function run(viewport, tag, withTerritory) {
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   if (isCompact(viewport)) {
     await page.locator(".mobileBottomNav button", { hasText: "Inversión" }).click();
   } else {

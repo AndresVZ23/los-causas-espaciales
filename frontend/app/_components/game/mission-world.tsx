@@ -385,7 +385,7 @@ function hash(x: number, y: number) {
   return s - Math.floor(s);
 }
 
-export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, panelBottom, onReach, onUnavailable, onLeave }: {
+export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, panelBottom, onReach, onUnavailable, onLeave, damage = null, onCollapse }: {
   mission: Mission;
   hero: Hero | null;
   checkpoints: Checkpoint[];
@@ -396,7 +396,24 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
   onUnavailable: () => void;
   /** El héroe subió a su nave y despegó: volver al globo. */
   onLeave: () => void;
+  /** Mala decisión en el panel (ADR-050): cada `id` nuevo resta `amount` de salud. */
+  damage?: { id: number; amount: number } | null;
+  /** La salud llegó a cero: Génesis activa el regreso de emergencia a 2045. Sin esta función, el héroe vuelve a la nave. */
+  onCollapse?: () => void;
 }) {
+  // Daño pendiente de las malas decisiones: se suma aquí y el bucle del mundo lo descuenta en el siguiente cuadro.
+  // Peligro con evento simulado en el mundo. El aire (ADR-050) no tiene evento: allí el reto es la contaminación cotidiana.
+  const eventHazard: EventKind | null = mission.hazard && mission.hazard !== "aire" ? mission.hazard : null;
+  const pendingDamage = useRef(0);
+  const seenDamage = useRef<number | null>(damage?.id ?? null);
+  useEffect(() => {
+    if (!damage || damage.id === seenDamage.current) return;
+    seenDamage.current = damage.id;
+    pendingDamage.current += damage.amount;
+  }, [damage]);
+  const collapseRef = useRef(onCollapse);
+  useEffect(() => { collapseRef.current = onCollapse; }, [onCollapse]);
+  const collapsedRef = useRef(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [status, setStatus] = useState<"cargando" | "listo">("cargando");
   const [phase, setPhase] = useState<"aterriza" | "suelo">("aterriza");
@@ -947,6 +964,12 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       // ESPACIO salta; F ayuda a un vecino o detiene a un contaminador.
       let jumpY = 0, jumpV = 0, lastJump = 0, flyUntil = 0;
       let droneView = false; // V: cámara alta para ver venir el huaico o la avalancha
+      // Cámara de cine, solo para grabar el tráiler (?grabar en la dirección y la tecla C): gira despacio y de lejos
+      // alrededor del desastre para que se vea entero (el huaico bajando, el agua subiendo, la avalancha, la erupción).
+      const recording = new URLSearchParams(window.location.search).has("grabar");
+      let cineCam = false;
+      let cineAngle = 0;
+      const cineFocus = new T.Vector3();
       let tabFocus = false; // el foco actual llegó con Tab (un clic o toque en cualquier parte lo vuelve falso)
       const onAction = (event: KeyboardEvent) => {
         // Las teclas del juego solo se ignoran al escribir en un campo de texto (y en los atajos del navegador, como
@@ -960,7 +983,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           if ((event.target as HTMLElement)?.closest?.(".gameWorld")) { tabFocus = false; canvas.focus({ preventScroll: true }); }
           return;
         }
-        if (!/^(Space|Key[FEGV]|(Digit|Numpad)[1-6])$/.test(event.code) || typing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
+        if (!/^(Space|Key[CFEGV]|(Digit|Numpad)[1-6])$/.test(event.code) || typing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
         // Botón al que se llegó con Tab: Espacio lo activa y el héroe no salta. Si el foco quedó en un botón por un
         // clic del mouse (por ejemplo, en el panel), vuelve al lienzo y la tecla es del juego. No se usa
         // «:focus-visible» porque Chrome lo enciende en cuanto se pulsa cualquier tecla.
@@ -981,6 +1004,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         const digit = /^(?:Digit|Numpad)([1-6])$/.exec(event.code);
         if (digit) { event.preventDefault(); equipRef.current(ITEMS[Number(digit[1]) - 1].id); }
         if (event.code === "KeyG") { event.preventDefault(); equipRef.current(null); }
+        if (recording && event.code === "KeyC") { event.preventDefault(); cineCam = !cineCam; cineAngle = yaw; if (!cineCam) for (const npc of npcs) npc.beam.visible = true; return; }
         if (event.code === "KeyV") { event.preventDefault(); droneView = !droneView; setPickupNote(droneView ? "🛰 Vista desde el cielo (V para volver)" : "Vista normal"); }
       };
       // `onAction` se registra más abajo, junto al resto del teclado: aquí todavía faltan cargar modelos y declarar
@@ -1344,7 +1368,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       const addDoorMarker = (at: THREE_NS.Vector3, room: Room) => { const sp = new T.Sprite(new T.SpriteMaterial({ map: room.name === "fiesta" ? partySprite : doorSprite, depthWrite: false })); sp.position.copy(at).add(new T.Vector3(0, 3.6, 0)); sp.scale.setScalar(2.2); scene.add(sp); doors.push({ at: at.clone(), room }); };
       let minGround = Infinity;
       for (let i = 0; i < n * n; i += 2) minGround = Math.min(minGround, heights[i]);
-      const interiorNews = mission.hazard ? `${EVENT_INFO[mission.hazard].title} en ${mission.name}. ${EVENT_INFO[mission.hazard].order}` : `Hoy en ${mission.name}: un día tranquilo. Revisa que tu familia tenga su mochila de emergencia.`;
+      const interiorNews = eventHazard ? `${EVENT_INFO[eventHazard].title} en ${mission.name}. ${EVENT_INFO[eventHazard].order}` : `Hoy en ${mission.name}: un día tranquilo. Revisa que tu familia tenga su mochila de emergencia.`;
       const interior = buildInterior(T, night, interiorNews);
       interior.group.position.set(spawn.x, minGround - 260, spawn.z);
       scene.add(interior.group);
@@ -1455,7 +1479,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       // --- Evento extremo según el lugar ------------------------------------------------------------------------
       const reliefRange = terrain.max_elevation_m - terrain.base_elevation_m;
       // Cada lugar tiene su peligro real (o ninguno): no se inventan huaicos donde no ocurren.
-      const eventKind: EventKind | null = mission.hazard ?? null;
+      const eventKind: EventKind | null = eventHazard;
       // El aviso de El Niño solo va en el Perú: es de lo que tratan las fuentes citadas (nino-2026.ts).
       const nino = mission.country === NINO_COUNTRY && (eventKind === "huaico" || eventKind === "inundacion");
       // Huaico y avalancha bajan por el camino del agua en el relieve: la cinta de lodo o nieve se revela tramo a tramo.
@@ -1473,10 +1497,17 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
       scene.add(safeBeam);
       const gradientAt = (x: number, z: number) => new T.Vector3(heightAt(x + 6, z) - heightAt(x - 6, z), 0, heightAt(x, z + 6) - heightAt(x, z - 6));
       const rocks: { mesh: THREE_NS.Mesh; v: number }[] = [];
+      // Erupción: bombas de lava que salen del cráter en arco; inundación: cosas que flotan y se van con el agua.
+      const bombs: { mesh: THREE_NS.Mesh; vel: THREE_NS.Vector3 }[] = [];
+      const floating: THREE_NS.Object3D[] = [];
+      let plumeT = 0;
+      let erupting = false;
+      let crater: THREE_NS.Mesh | null = null;
       // Las rocas de la erupción comparten una geometría y un material: antes cada roca creaba los suyos (unas tres
       // por segundo durante el aviso) y ninguno se liberaba.
       const rockGeometry = new T.SphereGeometry(1.2, 10, 8);
       const rockMaterial = new T.MeshStandardMaterial({ color: 0x331d14, emissive: 0xff4a10, emissiveIntensity: 1.5 });
+      const bombMaterial = new T.MeshStandardMaterial({ color: 0x2a140c, emissive: 0xff6a1a, emissiveIntensity: 2.4 });
       const startEvent = () => {
         eventTriggered = true;
         const hp = heroObj.position.clone();
@@ -1530,11 +1561,12 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           // Limitar a ~1,2 km para que el lodo llegue en el tiempo del aviso.
           path = path.slice(0, 300);
           const m = path.length;
-          const width = eventKind === "huaico" ? (k: number) => 12 + 14 * (k / m) : (k: number) => 24 + 20 * (k / m);
-          const texture = eventKind === "huaico" ? flowTexture(T, [74, 54, 36], [122, 94, 64], false) : flowTexture(T, [236, 241, 247], [206, 215, 228], false);
+          // Lodo oscuro y brillante, más ancho que antes: sobre la tierra seca de la sierra el huaico casi no se distinguía.
+          const width = eventKind === "huaico" ? (k: number) => 16 + 18 * (k / m) : (k: number) => 28 + 24 * (k / m);
+          const texture = eventKind === "huaico" ? flowTexture(T, [48, 33, 22], [98, 70, 44], false) : flowTexture(T, [246, 250, 255], [178, 196, 222], false);
           flowTextures.push(texture);
           const material = new T.MeshStandardMaterial({ map: texture, color: 0xffffff, roughness: eventKind === "huaico" ? 0.3 : 0.85, metalness: eventKind === "huaico" ? 0.05 : 0 });
-          const ribbon = buildRibbon(T, path, width, heightAt, eventKind === "huaico" ? 1.4 : 1.8, material);
+          const ribbon = buildRibbon(T, path, width, heightAt, eventKind === "huaico" ? 2.0 : 2.4, material);
           ribbon.mesh.geometry.setDrawRange(0, 0);
           scene.add(ribbon.mesh);
           hazard = ribbon.mesh;
@@ -1575,16 +1607,63 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           }
         }
         if (eventKind === "inundacion") {
-          const flood = new T.Mesh(new T.PlaneGeometry(size * 2, size * 2), new T.MeshStandardMaterial({ color: 0x7a6a4c, roughness: 0.25, metalness: 0.1, transparent: true, opacity: 0.8 }));
+          // Agua de río desbordado: marrón, con vetas que corren y reflejo del cielo (antes era un plano liso).
+          const floodTex = flowTexture(T, [88, 68, 44], [128, 104, 74], true);
+          floodTex.wrapS = floodTex.wrapT = T.RepeatWrapping;
+          floodTex.repeat.set(size / 40, size / 40);
+          flowTextures.push(floodTex);
+          const flood = new T.Mesh(new T.PlaneGeometry(size * 2, size * 2), new T.MeshStandardMaterial({ map: floodTex, color: 0xffffff, roughness: 0.3, metalness: 0, envMap, envMapIntensity: 0.22, transparent: true, opacity: 0.95 }));
           flood.rotation.x = -Math.PI / 2;
           flood.position.y = hp.y - 1.2;
           scene.add(flood);
+          // Tablas, barriles y ramas que el agua arrastra por las calles.
+          const plankMat = new T.MeshStandardMaterial({ color: 0x7a5a3a, roughness: 0.9 });
+          const barrelMat = new T.MeshStandardMaterial({ color: 0x2f6fb0, roughness: 0.6 });
+          const branchMat = new T.MeshStandardMaterial({ color: 0x4f6b2e, roughness: 1, flatShading: true });
+          for (let i = 0; i < 46; i += 1) {
+            const kind = i % 3;
+            const obj = kind === 0 ? new T.Mesh(new T.BoxGeometry(3.2, 0.3, 0.8), plankMat)
+              : kind === 1 ? new T.Mesh(new T.CylinderGeometry(0.6, 0.6, 1.4, 10), barrelMat)
+              : new T.Mesh(new T.IcosahedronGeometry(1.3, 0), branchMat);
+            if (kind === 1) obj.rotation.z = Math.PI / 2;
+            const a = hash(i, 11) * Math.PI * 2, r = 12 + hash(i, 13) * 150;
+            obj.position.set(hp.x + Math.cos(a) * r, -999, hp.z + Math.sin(a) * r);
+            obj.rotation.y = hash(i, 17) * Math.PI;
+            obj.userData.seed = i;
+            obj.visible = false;
+            scene.add(obj); floating.push(obj);
+          }
+          stormRain.visible = true;
+          sun.intensity *= 0.7;
           hazard = flood;
           from = new T.Vector3(0, hp.y - 1.2, 0);
         }
         if (eventKind === "erupcion") {
-          scene.fog = new T.Fog(0x6d625c, 60, 900);
+          // Ceniza en el aire, pero el volcán se sigue viendo: la columna crece, se oscurece y el cráter brilla.
+          scene.fog = new T.Fog(0x5e514a, 90, 1900);
           uniforms.turbidity.value = 20; uniforms.rayleigh.value = 0.2;
+          sun.intensity *= 0.6;
+          erupting = true;
+          if (plume && Math.hypot(plume.position.x - hp.x, plume.position.z - hp.z) > 900) {
+            // La cumbre más alta del mapa queda lejos (a veces es otra montaña): la erupción sale del punto más alto
+            // cercano al héroe, para que el volcán se vea desde donde está la gente.
+            let best = -Infinity, vx = plume.position.x, vz = plume.position.z;
+            for (let r = 80; r <= 760; r += 40) for (let k = 0; k < 36; k += 1) {
+              const x = hp.x + Math.cos((k / 36) * Math.PI * 2) * r, z = hp.z + Math.sin((k / 36) * Math.PI * 2) * r;
+              if (Math.abs(x) > size / 2 - 20 || Math.abs(z) > size / 2 - 20) continue;
+              const y = heightAt(x, z);
+              if (y > best) { best = y; vx = x; vz = z; }
+            }
+            plume.position.set(vx, best, vz);
+          }
+          if (plume) {
+            plume.scale.setScalar(1.9);
+            plume.children.forEach((puff, i) => { const mat = (puff as THREE_NS.Mesh).material as THREE_NS.MeshStandardMaterial | undefined; if (mat?.color) { mat.color.setHex(i < 5 ? 0x2a2320 : 0x5a504b); mat.opacity = Math.min(0.85, mat.opacity + 0.25); } });
+            crater = new T.Mesh(new T.ConeGeometry(16, 26, 18, 1, true), new T.MeshStandardMaterial({ color: 0x3a1408, emissive: 0xff5a14, emissiveIntensity: 2.2, side: T.DoubleSide, transparent: true, opacity: 0.9 }));
+            crater.rotation.x = Math.PI;
+            crater.position.copy(plume.position).add(new T.Vector3(0, 10, 0));
+            scene.add(crater);
+          }
         }
         if (eventKind === "calor") {
           // Ola de calor: aire caliente y luz anaranjada; la reverberación se ve en pantalla (sin temblor).
@@ -1638,6 +1717,8 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         setAlert({ kind, left: ev.duration, nino, rescued: 0, total: trapped.length });
       };
       startEventRef.current = () => { if (eventKind && !eventTriggered && landed) startEvent(); };
+      // Para grabar el tráiler (?grabar en la dirección, como ?luz=dia): lanza el evento sin esperar los 25 s.
+      if (new URLSearchParams(window.location.search).has("grabar")) (window as unknown as { terraEvento?: () => void }).terraEvento = () => startEventRef.current();
 
       // --- Lo que dicen las personas (frases del juego; las que tienen cifras salen de los datos de la misión) -----
       const fmt1 = (v: number, d = 1) => v.toLocaleString("es-PE", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -1969,10 +2050,22 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           // Protegido mientras lleva en la mano (o puesto) el objeto que pide el clima.
           const exposed = protectionFor && equipped !== protectionFor && !((protectedUntil[protectionFor] ?? 0) > elapsed);
           if (exposed) health = Math.max(0, health - 0.8 * dt);
+          // Malas decisiones del panel (respuesta equivocada o plan débil): restan salud (ADR-050).
+          if (pendingDamage.current > 0) {
+            const amount = pendingDamage.current;
+            pendingDamage.current = 0;
+            health = Math.max(0, health - amount);
+            setPickupNote(`Mala decisión: −${amount} de salud`);
+          }
           if (health === 0) {
-            health = 100;
-            heroObj.position.copy(spawn);
-            setPickupNote("Te desmayaste por el clima: vuelves a la nave. Busca protección.");
+            // Con TERRA 2045, la salud en cero activa el regreso de emergencia a 2045; sin él, se vuelve a la nave.
+            if (collapseRef.current) {
+              if (!collapsedRef.current) { collapsedRef.current = true; collapseRef.current(); }
+            } else {
+              health = 100;
+              heroObj.position.copy(spawn);
+              setPickupNote("Te desmayaste por el clima: vuelves a la nave. Busca protección.");
+            }
           }
           // Cámara en tercera persona, detrás y arriba del héroe.
           const drone = droneView && !inside;
@@ -1984,9 +2077,38 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             camPos.z = Math.min(Math.max(camPos.z, origin.z - half.d - 0.2), origin.z + half.d + 0.2);
             camPos.y = Math.min(camPos.y, origin.y + (inside.room.name === "fiesta" ? 4.2 : 3.9));
           } else camPos.y = Math.max(camPos.y, heightAt(camPos.x, camPos.z) + 2.5, floodLevel + 2.5);
-          camera.position.lerp(camPos, 0.12);
-          lookAt.copy(heroObj.position).add(temp.set(0, 2.2, 0));
-          camera.lookAt(lookAt);
+          if (cineCam && !inside) {
+            const ev = liveEvent;
+            cineFocus.copy(heroObj.position);
+            let radius = 80, lift = 0.45;
+            if (ev?.flow) {
+              // Huaico o avalancha: se sigue el frente del flujo (la ola con rocas y troncos); antes de que baje, su origen.
+              const { path, front } = ev.flow;
+              const [fx, fz] = path[Math.max(front, Math.min(12, path.length - 1))];
+              cineFocus.set(fx, heightAt(fx, fz), fz);
+              radius = 62; lift = 0.5;
+            } else if (ev?.kind === "inundacion") { radius = 46; lift = 0.16; }
+            // En la toma de cine no se dibuja la columna de luz de la zona segura (tapa el desastre).
+            safeBeam.visible = false;
+            for (const npc of npcs) npc.beam.visible = false;
+            cineAngle += dt * 0.08;
+            camPos.set(cineFocus.x + Math.sin(cineAngle) * radius, cineFocus.y + radius * lift, cineFocus.z + Math.cos(cineAngle) * radius);
+            if (ev?.kind === "erupcion" && plume) {
+              // Erupción: cámara detrás del héroe mirando al volcán, con un vaivén lateral lento.
+              const hx = heroObj.position.x, hz = heroObj.position.z;
+              const dx = plume.position.x - hx, dz = plume.position.z - hz, d = Math.hypot(dx, dz) || 1;
+              const ux = dx / d, uz = dz / d, side = Math.sin(cineAngle * 2) * 40;
+              cineFocus.set(hx + ux * d * 0.55, heroObj.position.y + (plume.position.y + 160 - heroObj.position.y) * 0.45, hz + uz * d * 0.55);
+              camPos.set(hx - ux * 120 - uz * side, heroObj.position.y + 40, hz - uz * 120 + ux * side);
+            }
+            camPos.y = Math.max(camPos.y, heightAt(camPos.x, camPos.z) + 18, floodLevel + 10);
+            camera.position.lerp(camPos, 0.04);
+            camera.lookAt(cineFocus);
+          } else {
+            camera.position.lerp(camPos, 0.12);
+            lookAt.copy(heroObj.position).add(temp.set(0, 2.2, 0));
+            camera.lookAt(lookAt);
+          }
           // Vecinos en peligro: cerca de uno aparece el aviso para usar el lanzador de ayuda.
           if (dogState === "herido" && near(dog.position, 20)) { if (lastPrompt !== "perro") { lastPrompt = "perro"; setPrompt(DOG); dogSound("gemido"); } }
           const nearIndex = dogState === "herido" && near(dog.position, 20) ? -1 : spots.findIndex((spot, i) => !npcs[i].saved && near(spot.position, 34));
@@ -2076,11 +2198,12 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             });
             fr.splash.forEach((sp, i) => {
               const life = (elapsed * 0.9 + i / fr.splash.length) % 1;
-              sp.position.set(fx + (hash(i, 4) - 0.5) * w, fy + 1 + life * 6, fz + (hash(i, 6) - 0.5) * 6);
-              sp.scale.setScalar(2 + life * 3);
+              sp.position.set(fx + (hash(i, 4) - 0.5) * w, fy + 1 + life * (ev.kind === "avalancha" ? 12 : 6), fz + (hash(i, 6) - 0.5) * 6);
+              // Avalancha: nube de nieve en polvo grande; huaico: salpicadura de lodo.
+              sp.scale.setScalar(ev.kind === "avalancha" ? 7 + life * 14 : 3 + life * 5);
               const tooClose = camera.position.distanceTo(sp.position) < 12;
               sp.visible = fr.debris.visible && !tooClose;
-              (sp.material as THREE_NS.SpriteMaterial).opacity = 0.55 * (1 - life);
+              (sp.material as THREE_NS.SpriteMaterial).opacity = (ev.kind === "avalancha" ? 0.8 : 0.6) * (1 - life);
             });
             // Peligro: estar dentro del cauce por donde ya pasó el flujo (volando o en la zona segura no cuenta).
             const inFlow = distanceToPath(fr.path, hp.x, hp.z, fr.front + 1);
@@ -2096,6 +2219,27 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             ev.hazard.position.y = ev.from.y + Math.sqrt(Math.min(t, 1)) * 5.5;
             floodLevel = ev.hazard.position.y;
             hit = false;
+            for (const obj of floating) {
+              const seed = obj.userData.seed as number;
+              obj.position.x += dt * (1.2 + hash(seed, 19) * 1.6);
+              obj.position.z += dt * Math.sin(elapsed * 0.3 + seed) * 0.6;
+              obj.rotation.y += dt * 0.25;
+              obj.visible = floodLevel > heightAt(obj.position.x, obj.position.z) + 0.3;
+              obj.position.y = floodLevel + 0.12 + Math.sin(elapsed * 2.2 + seed) * 0.12;
+            }
+          }
+          if (ev.kind === "erupcion" && plume) {
+            // Bombas de lava: salen del cráter, dibujan un arco y caen en la ladera.
+            if (bombs.length < 60 && Math.random() < dt * 10) {
+              const bomb = new T.Mesh(rockGeometry, bombMaterial);
+              bomb.scale.setScalar(1.6 + Math.random() * 2.6);
+              bomb.position.copy(plume.position).add(temp.set(0, 14, 0));
+              const a = Math.random() * Math.PI * 2, h = 12 + Math.random() * 50;
+              scene.add(bomb); bombs.push({ mesh: bomb, vel: new T.Vector3(Math.cos(a) * h, 70 + Math.random() * 70, Math.sin(a) * h) });
+            }
+            if (crater) { const pulse = 1 + Math.sin(elapsed * 7) * 0.12; crater.scale.set(pulse, 1 + Math.sin(elapsed * 5) * 0.2, pulse); }
+            const glow = plume.children.find((c) => (c as THREE_NS.PointLight).isPointLight) as THREE_NS.PointLight | undefined;
+            if (glow) glow.intensity = 2200 + Math.sin(elapsed * 6) * 800;
           }
           if (ev.kind === "erupcion") {
             if (Math.random() < dt * 3) {
@@ -2105,16 +2249,23 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             }
             hit = false;
           }
+          for (let i = bombs.length - 1; i >= 0; i -= 1) {
+            const bomb = bombs[i];
+            bomb.vel.y -= 40 * dt;
+            bomb.mesh.position.addScaledVector(bomb.vel, dt);
+            bomb.mesh.rotation.x += dt * 3;
+            if (bomb.vel.y < 0 && bomb.mesh.position.y <= heightAt(bomb.mesh.position.x, bomb.mesh.position.z)) { scene.remove(bomb.mesh); bombs.splice(i, 1); }
+          }
           // De atrás hacia adelante, porque la roca que toca el suelo se retira de la escena y de la lista.
           for (let i = rocks.length - 1; i >= 0; i -= 1) {
             const rock = rocks[i];
             rock.v += 30 * dt; rock.mesh.position.y -= rock.v * dt;
             if (rock.mesh.position.y <= heightAt(rock.mesh.position.x, rock.mesh.position.z)) {
               scene.remove(rock.mesh); rocks.splice(i, 1);
-              if (Math.hypot(rock.mesh.position.x - hp.x, rock.mesh.position.z - hp.z) < 4) { health = Math.max(1, health - 15); setPickupNote("¡Te golpeó una roca volcánica! −15 de salud"); }
+              if (Math.hypot(rock.mesh.position.x - hp.x, rock.mesh.position.z - hp.z) < 4) { health = Math.max(0, health - 15); setPickupNote("¡Te golpeó una roca volcánica! −15 de salud"); }
             }
           }
-          if (ev.kind === "calor" && !inSafe) health = Math.max(1, health - 4 * dt);
+          if (ev.kind === "calor" && !inSafe) health = Math.max(0, health - 4 * dt);
           // Rescate: al acercarte (a pie, en vehículo o en bote) la persona te sigue; en la zona segura queda a salvo.
           for (const person of trapped) {
             if (person.state === "salvo") continue;
@@ -2146,7 +2297,8 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
           const survived = inSafe && savedNow === trapped.length && t > 0.1;
           if (hit) {
             ev.done = true;
-            health = Math.max(1, health - 60);
+            // Alcanzado por el evento: exposición a un peligro, puede dejar la salud en cero (ADR-050).
+            health = Math.max(0, health - 60);
             heroObj.position.copy(ev.safe);
             setAlert(null);
             setLesson({ kind: ev.kind, saved: false, rescued: savedNow, total: trapped.length, seconds: Math.round(elapsed - rescueStart) });
@@ -2166,6 +2318,10 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             // Las rocas volcánicas que aún caían se retiran: al terminar el aviso quedaban quietas en el aire.
             for (const rock of rocks) scene.remove(rock.mesh);
             rocks.length = 0;
+            for (const bomb of bombs) scene.remove(bomb.mesh);
+            bombs.length = 0;
+            if (crater) { scene.remove(crater); crater.geometry.dispose(); (crater.material as THREE_NS.Material).dispose(); crater = null; }
+            if (erupting && plume) { plume.scale.setScalar(1.3); erupting = false; }
             // El lodo o la nieve quedan en el cauce (así queda una quebrada después de un huaico); se quitan las rocas.
             if (ev.flow) { ev.flow.debris.visible = false; ev.flow.splash.forEach((sp) => { sp.visible = false; }); ev.flow.geometry.setDrawRange(0, (ev.flow.path.length - 1) * ev.flow.quads * 6); }
             else if (ev.hazard && ev.kind !== "inundacion") scene.remove(ev.hazard);
@@ -2193,7 +2349,8 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
         }
         // Molinos que giran y humo volcánico que sube despacio.
         for (const blades of spinners) blades.rotation.z += dt * 0.8;
-        if (plume) plume.children.forEach((puff, i) => { puff.position.y = ((i * 22 + elapsed * 6) % 320); puff.scale.setScalar(1 + puff.position.y / 320); });
+        plumeT += dt * (erupting ? 26 : 6);
+        if (plume) plume.children.forEach((puff, i) => { puff.position.y = ((i * 22 + plumeT) % 320); puff.scale.setScalar(1 + puff.position.y / 320); });
         // Humo de los contaminadores que siguen quemando basura.
         for (const polluter of polluters) {
           polluter.rig?.play("Idle");
@@ -2285,7 +2442,7 @@ export function MissionWorld({ mission, hero, checkpoints, visited, panelRight, 
             // Radio: en el Perú, las noticias de El Niño con su fuente; en otros lugares, el aviso del lugar.
             radioNext = elapsed + 8;
             if (mission.country === NINO_COUNTRY) { radioIndex = (radioIndex + 1) % NINO_FACTS.length; setPickupNote(`📻 ${NINO_FACTS[radioIndex].text} (${ninoCredit(NINO_FACTS[radioIndex])})`); }
-            else setPickupNote(mission.hazard ? `📻 ${EVENT_INFO[mission.hazard].title}: ${EVENT_INFO[mission.hazard].order}` : `📻 Radio: hoy en ${mission.name} todo está tranquilo.`);
+            else setPickupNote(eventHazard ? `📻 ${EVENT_INFO[eventHazard].title}: ${EVENT_INFO[eventHazard].order}` : `📻 Radio: hoy en ${mission.name} todo está tranquilo.`);
           }
         }
         renderer.render(scene, camera);

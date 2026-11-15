@@ -1,6 +1,6 @@
 "use client";
 
-// Escena de la historia (prólogo de 2031 y regreso final): texto a pantalla completa, una lámina a la vez.
+// Escena de la historia (prólogo de 2045, regresos y finales): texto a pantalla completa, una lámina a la vez.
 // Cada línea aparece con una pausa para que se lea despacio; con «reducir movimiento» aparece todo de una vez.
 // Se avanza con el botón (Enter o Espacio) y siempre se puede saltar.
 

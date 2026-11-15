@@ -14,7 +14,7 @@ async function run(viewport, tag) {
   const errors = [];
   page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
   page.on("pageerror", (err) => errors.push(String(err)));
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   if (isCompact(viewport)) {
     await page.getByRole("button", { name: /Más/ }).click();
     await page.locator(".moduleNav button", { hasText: "Infraestructura" }).click();

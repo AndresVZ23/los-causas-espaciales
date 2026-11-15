@@ -41,7 +41,7 @@ async function run(viewport, tag) {
   const out = { tag };
 
   // 1 · Del globo a la zona: lista de zonas, marcadores y entrada.
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
   await page.waitForFunction(() => document.querySelectorAll('input[name="tecnologia"]').length === 3, null, { timeout: 60000 });
   await page.locator(".alertsToggle").click();
   await page.locator(".zoneRow").first().waitFor({ timeout: 60000 });

@@ -7,5 +7,5 @@ const ZoneExplorer = dynamic(() => import("../../_components/zone/zone-explorer"
 
 export default function ZoneEntry({ zoneId }: { zoneId: string }) {
   const router = useRouter();
-  return <ZoneExplorer zoneId={zoneId} onExit={() => router.push("/")} />;
+  return <ZoneExplorer zoneId={zoneId} onExit={() => router.push("/plataforma")} />;
 }

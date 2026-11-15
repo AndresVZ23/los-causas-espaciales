@@ -27,6 +27,12 @@ Funciona en cualquier lugar del mundo con las fuentes globales; el detalle ofici
 | 6 · Infraestructura | Piloto vial funcional | Corredor por tramos: lluvia, capas oficiales y VAN de mitigación. |
 | 7 · Inversión | Piloto inmobiliario funcional | Terrenos o territorios IGN: lluvia, relieve, capas y VAN. |
 
+## TERRA 2045 en la portada (14-nov)
+
+Desde ADR-050 la portada (`http://localhost:3100`) es el juego TERRA 2045 y la consola técnica está en `http://localhost:3100/plataforma`. En Windows, sin Docker y sin instalar nada en C:, basta un doble clic en `PREPARAR.bat`: deja Python 3.12, `.venv`, las dependencias del frontend y sus cachés dentro de `.herramientas/`, baja los recursos de los videos, genera las voces, construye la misión de Lima, corre la puerta común y enciende la API y la web.
+
+Las cinemáticas (prólogo, viaje, regreso a 2045, tres finales y tráiler) se ven como video dentro del juego desde `frontend/public/cine/` (`<video>_<es|en>.mp4` y `.vtt`). Para rehacerlas: `VOCES.bat` (voces neuronales de Microsoft Edge con `scripts/video/voces_edge.py`; necesita internet), luego `python scripts/video/render.py` (necesita Chrome, ffmpeg con libass y rubberband) y copiar `videos/web/*` a `frontend/public/cine/`. Sin esos archivos el juego muestra la historia en texto. Las voces de Edge (`videos/voz/*.mp3`), la música, las texturas, las grabaciones del juego que usa el tráiler (`videos/captura/`) y los videos finales (`videos/*.mp4`) vienen en el repositorio, así que `render.py` funciona sin volver a generar voces; `VOCES.bat` solo hace falta si cambia una línea del guion. Antes de subir cambios, `VERIFICAR.bat` corre la puerta común (pytest, tipos, build, audit y la comprobación del juego) y deja los resultados en `.herramientas/registros/`.
+
 ## Ponerlo en marcha
 
 Necesitas Git, Docker Desktop y, si quieres correrlo sin Docker, Python 3.12 y Node 22.

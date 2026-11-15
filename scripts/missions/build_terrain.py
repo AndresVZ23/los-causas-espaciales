@@ -11,6 +11,8 @@ Se ejecuta dentro del contenedor de la API, que tiene las dependencias:
     docker compose -p los-causas-espaciales exec api python /app/build_terrain.py nazca taal # algunas
 
 Escribe en /app/backend/data/missions/terrain/<id>.json (copiar de vuelta al repositorio con `docker cp`).
+Fuera del contenedor, con el entorno local: `.venv/Scripts/python.exe scripts/missions/build_terrain.py lima` escribe
+directo en backend/data/missions/terrain/ del repositorio.
 """
 
 import asyncio
@@ -23,10 +25,12 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, "/app")
+# Dentro del contenedor el repositorio está en /app; fuera (venv local, ADR-050) se usa la raíz del repositorio.
+APP = Path("/app") if Path("/app/backend").is_dir() else Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(APP))
 from backend.app.zones.builder import WATER, Frame, read_window  # noqa: E402
 
-DATA = Path("/app/backend/data/missions")
+DATA = APP / "backend" / "data" / "missions"
 OUT = DATA / "terrain"
 # Ciudad: 4 km de lado en celdas de 20 m. Paisaje (lago, glaciar, desierto): 8 km en celdas de ~31 m.
 SIZES = {"ciudad": (4.0, 200), "paisaje": (8.0, 256)}

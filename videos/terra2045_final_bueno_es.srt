@@ -1,0 +1,112 @@
+1
+00:00:00,350 --> 00:00:05,058
+Año 2045. Génesis se activa por última vez.
+
+2
+00:00:05,683 --> 00:00:08,158
+¡No puede ser! ¡Volviste!
+
+3
+00:00:08,178 --> 00:00:09,453
+Lo conseguimos.
+
+4
+00:00:09,473 --> 00:00:10,359
+¿Y la Tierra?
+
+5
+00:00:11,150 --> 00:00:18,188
+Se acercan a la ventana. Los océanos vuelven a
+ser azules. Las regiones de bosque recuperaron
+
+6
+00:00:18,208 --> 00:00:21,201
+su verde. La atmósfera se ve más limpia.
+
+7
+00:00:21,221 --> 00:00:23,232
+¿Ese… es nuestro planeta?
+
+8
+00:00:23,252 --> 00:00:25,629
+Sí. Nuestro hogar.
+
+9
+00:00:35,550 --> 00:00:40,362
+Los registros históricos cambiaron. Las
+comunidades lograron adaptarse, proteger sus
+
+10
+00:00:40,382 --> 00:00:43,777
+ecosistemas y reducir los riesgos que
+amenazaban su futuro.
+
+11
+00:00:45,383 --> 00:00:51,444
+En los pueblos de las quebradas ensayaron por
+dónde subir. En las ciudades junto al río
+
+12
+00:00:51,464 --> 00:00:57,594
+dejaron libre el cauce. En las escuelas, los
+niños volvieron al patio. En la montaña, la
+
+13
+00:00:57,614 --> 00:00:59,082
+sirena sonó a tiempo.
+
+14
+00:01:07,383 --> 00:01:14,470
+Hoy el río creció. Sonó la sirena y subimos
+todos al cerro, como en los ensayos. Mi abuela
+
+15
+00:01:14,490 --> 00:01:20,492
+dice que antes el río avisaba. Ahora avisamos
+nosotros. El lunes hay clases.
+
+16
+00:01:24,683 --> 00:01:31,889
+No lo salvaste todo. Nadie puede. Hay casas
+que ya no están. Pero la gente está.
+
+17
+00:01:37,683 --> 00:01:39,124
+¿Entonces podemos ir?
+
+18
+00:01:39,144 --> 00:01:40,272
+Esta vez sí.
+
+19
+00:01:41,317 --> 00:01:46,632
+El planeta nunca necesitó héroes capaces de
+viajar en el tiempo. Necesitaba personas
+
+20
+00:01:46,652 --> 00:01:48,748
+dispuestas a cambiar el presente.
+
+21
+00:01:49,148 --> 00:01:55,425
+Tú no tienes una máquina para volver al
+pasado. No la necesitas. Todavía es hoy.
+
+22
+00:01:55,445 --> 00:02:00,905
+Los datos de la Tierra ya existen: satélites
+que miran el planeta cada día, una segunda
+
+23
+00:02:00,925 --> 00:02:06,385
+fuente que los comprueba y, dicho en voz alta,
+lo que aún no se sabe. El cambio empieza
+
+24
+00:02:06,405 --> 00:02:07,916
+cuando sales a contarlo.
+
+25
+00:02:17,950 --> 00:02:25,477
+TERRA 2045. Un proyecto de Los Causas
+Espaciales para el NASA Space Apps Challenge 2026.

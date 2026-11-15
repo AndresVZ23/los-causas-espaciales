@@ -14,7 +14,7 @@ const base = BASE_URL;
     const errors = [];
     page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
     page.on("pageerror", (e) => errors.push(String(e)));
-    await page.goto(base, { waitUntil: "networkidle", timeout: 180000 });
+    await page.goto(`${base}/plataforma`, { waitUntil: "networkidle", timeout: 180000 });
     await page.locator("button.runAnalysis").click();
     await page.waitForSelector(".verdict", { timeout: 180000 });
     await page.waitForFunction(() => !document.querySelector(".pipelineStrip.isRunning"), null, { timeout: 180000 });

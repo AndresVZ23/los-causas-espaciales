@@ -11,7 +11,7 @@ const out = process.argv[2];
   const errors = [];
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", (e) => errors.push(String(e)));
-  await page.goto(BASE_URL, { waitUntil: "networkidle" });
+  await page.goto(`${BASE_URL}/plataforma`, { waitUntil: "networkidle" });
   // Antes de ejecutar: el inspector explica la etapa 4.
   await page.locator(".pipelineStrip li button").nth(3).click();
   checks.guideBefore = await page.locator(".inspectorSummary").textContent();
@@ -46,7 +46,7 @@ const out = process.argv[2];
   await page.close();
 
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await mobile.goto(BASE_URL, { waitUntil: "networkidle" });
+  await mobile.goto(`${BASE_URL}/plataforma`, { waitUntil: "networkidle" });
   await mobile.locator("button.runAnalysis").click();
   await mobile.waitForSelector(".mobileVerdict .verdict");
   await mobile.waitForFunction(() => !document.querySelector(".pipelineStrip.isRunning"));

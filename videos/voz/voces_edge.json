@@ -1,0 +1,1532 @@
+[
+ {
+  "id": "t01",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Año 2045. La humanidad perdió la Tierra."
+ },
+ {
+  "id": "t01",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The year 2045. Humanity has lost the Earth."
+ },
+ {
+  "id": "t02",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Los últimos supervivientes viven en una colonia en la Luna, mirando cómo muere el planeta que fue su hogar."
+ },
+ {
+  "id": "t02",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The last survivors live in a colony on the Moon, watching the planet that was once their home die."
+ },
+ {
+  "id": "t03",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¿Crees que algún día podremos ir?"
+ },
+ {
+  "id": "t03",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "Do you think we'll ever get to go there?"
+ },
+ {
+  "id": "t04",
+  "lang": "es",
+  "who": "andres",
+  "voice": "es-PE-AlexNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "No pasó de un día para otro. Todos pensaron que todavía había tiempo."
+ },
+ {
+  "id": "t04",
+  "lang": "en",
+  "who": "andres",
+  "voice": "en-US-BrianNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "It didn't happen overnight. Everyone thought there was still time."
+ },
+ {
+  "id": "t05",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Podemos enviar a una persona al pasado. Solo una. Y solo una vez."
+ },
+ {
+  "id": "t05",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "We can send one person into the past. Only one. And only once."
+ },
+ {
+  "id": "t06",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Destino: 2026."
+ },
+ {
+  "id": "t06",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Destination: 2026."
+ },
+ {
+  "id": "t07",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Con datos reales de observación de la Tierra de la NASA, recorre lugares reales del Perú y de todo el mundo."
+ },
+ {
+  "id": "t07",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "With real NASA Earth observation data, travel to real places in Peru and around the world."
+ },
+ {
+  "id": "t08",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Lee los datos. Compruébalos con una segunda fuente. Y di en voz alta lo que todavía no se sabe."
+ },
+ {
+  "id": "t08",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Read the data. Check it against a second source. And say out loud what is still unknown."
+ },
+ {
+  "id": "t09",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Decide con recursos limitados. No hay una única respuesta correcta."
+ },
+ {
+  "id": "t09",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Decide with limited resources. There is no single right answer."
+ },
+ {
+  "id": "t10",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "No tienes que salvar el planeta por tu cuenta. Tienes que conseguir que la gente quiera salvarlo contigo."
+ },
+ {
+  "id": "t10",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "You don't have to save the planet alone. You have to make people want to save it with you."
+ },
+ {
+  "id": "t12",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "TERRA 2045. El último viaje."
+ },
+ {
+  "id": "t12",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "TERRA 2045. The Last Journey."
+ },
+ {
+  "id": "t13",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "El futuro no está escrito. Pero cada decisión deja una huella."
+ },
+ {
+  "id": "t13",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The future is not written. But every decision leaves a mark."
+ },
+ {
+  "id": "p01",
+  "lang": "es",
+  "who": "radio",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "text": "Registro de la colonia New Horizon. Año 2045."
+ },
+ {
+  "id": "p01",
+  "lang": "en",
+  "who": "radio",
+  "voice": "en-US-AvaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "text": "New Horizon colony log. The year 2045."
+ },
+ {
+  "id": "p02",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "La humanidad lleva doce años viviendo fuera de la Tierra. En la colonia lunar New Horizon, los recursos alcanzan cada vez para menos."
+ },
+ {
+  "id": "p02",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Humanity has lived off the Earth for twelve years. In the New Horizon lunar colony, resources stretch thinner every day."
+ },
+ {
+  "id": "p04",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¿Crees que algún día podremos ir?"
+ },
+ {
+  "id": "p04",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "Do you think we'll ever get to go there?"
+ },
+ {
+  "id": "p08",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "¿Cómo llegamos a esto?"
+ },
+ {
+  "id": "p08",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "How did we end up like this?"
+ },
+ {
+  "id": "p09",
+  "lang": "es",
+  "who": "andres",
+  "voice": "es-PE-AlexNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "No ocurrió de un día para otro. Cada generación heredó un planeta un poco peor que el anterior. Y todos pensaron que todavía había tiempo para cambiarlo."
+ },
+ {
+  "id": "p09",
+  "lang": "en",
+  "who": "andres",
+  "voice": "en-US-BrianNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "It didn't happen overnight. Every generation inherited a planet a little worse than the one before. And everyone thought there was still time to change it."
+ },
+ {
+  "id": "p10",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Esa noche, la doctora Nikol reúne a la colonia."
+ },
+ {
+  "id": "p10",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "That night, Doctor Nikol gathers the colony."
+ },
+ {
+  "id": "p11",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Mi equipo logró activar el Proyecto Génesis. Puede enviar a un ser humano a través del tiempo. Pero necesita una cantidad de energía extraordinaria."
+ },
+ {
+  "id": "p11",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "My team has activated Project Genesis. It can send a human being through time. But it needs an extraordinary amount of energy."
+ },
+ {
+  "id": "p15",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¿Y si falla?"
+ },
+ {
+  "id": "p15",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "And if it fails?"
+ },
+ {
+  "id": "p16",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Génesis solo podrá devolverte a 2026 si el futuro mejora. Si no, no habrá otra oportunidad."
+ },
+ {
+  "id": "p16",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Genesis can only send you back to 2026 if the future improves. If not, there will be no other chance."
+ },
+ {
+  "id": "p18",
+  "lang": "es",
+  "who": "killa",
+  "voice": "es-BO-SofiaNeural",
+  "rate": "-2%",
+  "pitch": "+45Hz",
+  "text": "Me llamo Killa y tengo nueve años. Mi abuela dice que antes el río avisaba. Esa noche no avisó nadie. Después, en la radio, dijeron que los satélites lo estaban viendo desde hacía años. Si lo estaban viendo, ¿por qué nadie vino a decirnos?"
+ },
+ {
+  "id": "p18",
+  "lang": "en",
+  "who": "killa",
+  "voice": "en-US-AnaNeural",
+  "rate": "-4%",
+  "pitch": "+4Hz",
+  "text": "My name is Killa and I'm nine years old. My grandma says the river used to warn us. That night, nobody warned us. Later, on the radio, they said the satellites had been watching for years. If they were watching, why didn't anyone come to tell us?"
+ },
+ {
+  "id": "p19",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "No faltaron datos. Estaban ahí desde 2001. Faltó quien los leyera a tiempo, los comprobara con una segunda fuente y saliera a avisar."
+ },
+ {
+  "id": "p19",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Data was never missing. It had been there since 2001. What was missing was someone to read it in time, check it against a second source, and go out and warn people."
+ },
+ {
+  "id": "p21",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "Toma. Es una foto de la Tierra cuando todavía era verde. Quiero que la mires cuando llegues. Para que recuerdes por qué vale la pena salvarla."
+ },
+ {
+  "id": "p21",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "Here. It's a photo of the Earth when it was still green. I want you to look at it when you get there. So you remember why it's worth saving."
+ },
+ {
+  "id": "p22",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Destino temporal: año 2026. Misión: evitar el colapso ambiental."
+ },
+ {
+  "id": "p22",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Temporal destination: the year 2026. Mission: prevent the environmental collapse."
+ },
+ {
+  "id": "p23",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Recuerda: no tienes que salvar el planeta por tu cuenta. Tienes que conseguir que las personas quieran salvarlo contigo."
+ },
+ {
+  "id": "p23",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Remember: you don't have to save the planet alone. You have to make people want to save it with you."
+ },
+ {
+  "id": "p24",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "El futuro no está escrito. Pero cada decisión deja una huella."
+ },
+ {
+  "id": "p24",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The future is not written. But every decision leaves a mark."
+ },
+ {
+  "id": "v01",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Génesis a plena potencia. Iniciando el salto."
+ },
+ {
+  "id": "v01",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Genesis at full power. Starting the jump."
+ },
+ {
+  "id": "v02",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "¿Doctora? ¿Me escucha?"
+ },
+ {
+  "id": "v02",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Doctor? Can you hear me?"
+ },
+ {
+  "id": "v03",
+  "lang": "es",
+  "who": "radio",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "text": "¡Te recibimos! La señal es débil, pero estás ahí. ¿En qué año estás?"
+ },
+ {
+  "id": "v03",
+  "lang": "en",
+  "who": "radio",
+  "voice": "en-US-AvaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "text": "We hear you! The signal is weak, but you're there. What year is it?"
+ },
+ {
+  "id": "v04",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "2026. Lo conseguimos."
+ },
+ {
+  "id": "v04",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "2026. We made it."
+ },
+ {
+  "id": "v05",
+  "lang": "es",
+  "who": "radio",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "text": "Escúchame. Tenemos los datos de observación de la Tierra. Investiga, identifica los riesgos y ayuda a la gente a decidir. Aquí empieza todo."
+ },
+ {
+  "id": "v05",
+  "lang": "en",
+  "who": "radio",
+  "voice": "en-US-AvaNeural",
+  "rate": "+4%",
+  "pitch": "+0Hz",
+  "text": "Listen to me. We have the Earth observation data. Investigate, identify the risks and help people decide. This is where it all begins."
+ },
+ {
+  "id": "r01",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Génesis te trae de vuelta a 2045."
+ },
+ {
+  "id": "r01",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Genesis brings you back to 2045."
+ },
+ {
+  "id": "r02",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¡Volviste! ¿Estás bien?"
+ },
+ {
+  "id": "r02",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "You're back! Are you okay?"
+ },
+ {
+  "id": "r03",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Estoy bien. ¿Cambió algo?"
+ },
+ {
+  "id": "r03",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "I'm fine. Did anything change?"
+ },
+ {
+  "id": "r04",
+  "lang": "es",
+  "who": "andres",
+  "voice": "es-PE-AlexNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Mira. El humo bajó en algunas regiones. Hay un poco más de azul."
+ },
+ {
+  "id": "r04",
+  "lang": "en",
+  "who": "andres",
+  "voice": "en-US-BrianNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Look. The smoke has cleared in some regions. There's a little more blue."
+ },
+ {
+  "id": "r05",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Los registros cambiaron. Lo que hiciste allá está llegando hasta aquí."
+ },
+ {
+  "id": "r05",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "The records have changed. What you did back there is reaching us here."
+ },
+ {
+  "id": "r06",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Génesis tiene energía para otro salto. Pero solo podrás volver si el futuro sigue mejorando."
+ },
+ {
+  "id": "r06",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Genesis has energy for another jump. But you can only go back if the future keeps improving."
+ },
+ {
+  "id": "r07",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Prepárate. Todavía quedan lugares por salvar."
+ },
+ {
+  "id": "r07",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Get ready. There are still places to save."
+ },
+ {
+  "id": "b01",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Año 2045. Génesis se activa por última vez."
+ },
+ {
+  "id": "b01",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The year 2045. Genesis activates for the last time."
+ },
+ {
+  "id": "b02",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¡No puede ser! ¡Volviste!"
+ },
+ {
+  "id": "b02",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "No way! You're back!"
+ },
+ {
+  "id": "b03",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Lo conseguimos."
+ },
+ {
+  "id": "b03",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "We did it."
+ },
+ {
+  "id": "b04",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¿Y la Tierra?"
+ },
+ {
+  "id": "b04",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "And the Earth?"
+ },
+ {
+  "id": "b05",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Se acercan a la ventana. Los océanos vuelven a ser azules. Las regiones de bosque recuperaron su verde. La atmósfera se ve más limpia."
+ },
+ {
+  "id": "b05",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "They move closer to the window. The oceans are blue again. The forests have regained their green. The atmosphere looks cleaner."
+ },
+ {
+  "id": "b06",
+  "lang": "es",
+  "who": "andres",
+  "voice": "es-PE-AlexNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "¿Ese… es nuestro planeta?"
+ },
+ {
+  "id": "b06",
+  "lang": "en",
+  "who": "andres",
+  "voice": "en-US-BrianNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Is that… our planet?"
+ },
+ {
+  "id": "b07",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Sí. Nuestro hogar."
+ },
+ {
+  "id": "b07",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Yes. Our home."
+ },
+ {
+  "id": "b08",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Los registros históricos cambiaron. Las comunidades lograron adaptarse, proteger sus ecosistemas y reducir los riesgos que amenazaban su futuro."
+ },
+ {
+  "id": "b08",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "The historical records have changed. Communities managed to adapt, protect their ecosystems and reduce the risks that threatened their future."
+ },
+ {
+  "id": "b09",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "En los pueblos de las quebradas ensayaron por dónde subir. En las ciudades junto al río dejaron libre el cauce. En las escuelas, los niños volvieron al patio. En la montaña, la sirena sonó a tiempo."
+ },
+ {
+  "id": "b09",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "In the ravine towns, people rehearsed which way to climb. In the river cities, they kept the riverbed clear. In the schools, children went back to the playground. In the mountains, the siren sounded in time."
+ },
+ {
+  "id": "b10",
+  "lang": "es",
+  "who": "killa",
+  "voice": "es-BO-SofiaNeural",
+  "rate": "-2%",
+  "pitch": "+45Hz",
+  "text": "Hoy el río creció. Sonó la sirena y subimos todos al cerro, como en los ensayos. Mi abuela dice que antes el río avisaba. Ahora avisamos nosotros. El lunes hay clases."
+ },
+ {
+  "id": "b10",
+  "lang": "en",
+  "who": "killa",
+  "voice": "en-US-AnaNeural",
+  "rate": "-4%",
+  "pitch": "+4Hz",
+  "text": "Today the river rose. The siren sounded and we all climbed the hill, just like we practiced. My grandma says the river used to warn us. Now we warn each other. There's school on Monday."
+ },
+ {
+  "id": "b11",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "No lo salvaste todo. Nadie puede. Hay casas que ya no están. Pero la gente está."
+ },
+ {
+  "id": "b11",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "You didn't save everything. Nobody can. Some houses are gone. But the people are still here."
+ },
+ {
+  "id": "b12",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¿Entonces podemos ir?"
+ },
+ {
+  "id": "b12",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "So can we go?"
+ },
+ {
+  "id": "b13",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Esta vez sí."
+ },
+ {
+  "id": "b13",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "This time, yes."
+ },
+ {
+  "id": "b14",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "El planeta nunca necesitó héroes capaces de viajar en el tiempo. Necesitaba personas dispuestas a cambiar el presente."
+ },
+ {
+  "id": "b14",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The planet never needed heroes who could travel through time. It needed people willing to change the present."
+ },
+ {
+  "id": "b15",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Tú no tienes una máquina para volver al pasado. No la necesitas. Todavía es hoy."
+ },
+ {
+  "id": "b15",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "You don't have a machine to go back in time. You don't need one. It's still today."
+ },
+ {
+  "id": "b16",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Los datos de la Tierra ya existen: satélites que miran el planeta cada día, una segunda fuente que los comprueba y, dicho en voz alta, lo que aún no se sabe. El cambio empieza cuando sales a contarlo."
+ },
+ {
+  "id": "b16",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The Earth's data already exists: satellites watching the planet every day, a second source to check them and, said out loud, what is still unknown. Change begins when you go out and share it."
+ },
+ {
+  "id": "b17",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "TERRA 2045. Un proyecto de Los Causas Espaciales para el NASA Space Apps Challenge 2026."
+ },
+ {
+  "id": "b17",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "TERRA 2045. A Los Causas Espaciales project for the NASA Space Apps Challenge 2026."
+ },
+ {
+  "id": "i01",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Año 2045. Génesis ya no tiene energía para otro viaje."
+ },
+ {
+  "id": "i01",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The year 2045. Genesis has no energy left for another journey."
+ },
+ {
+  "id": "i02",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¿Lo lograste?"
+ },
+ {
+  "id": "i02",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "Did you do it?"
+ },
+ {
+  "id": "i03",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "No lo sé. Mira."
+ },
+ {
+  "id": "i03",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "I don't know. Look."
+ },
+ {
+  "id": "i04",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Desde la ventana, la Tierra se ve distinta. Hay regiones que recuperaron su verde y mares que volvieron a ser azules. Y hay otras que siguen cubiertas de humo."
+ },
+ {
+  "id": "i04",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "From the window, the Earth looks different. Some regions have regained their green and some seas are blue again. And others are still covered in smoke."
+ },
+ {
+  "id": "i05",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Los registros cambiaron en muchos lugares. Pero no fue suficiente para evitar el colapso en todas partes."
+ },
+ {
+  "id": "i05",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "The records changed in many places. But it wasn't enough to prevent the collapse everywhere."
+ },
+ {
+  "id": "i06",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "¿Todo lo que hicimos no sirvió?"
+ },
+ {
+  "id": "i06",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Was everything we did for nothing?"
+ },
+ {
+  "id": "i07",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Sí sirvió. Cada lugar que llegó a tiempo es una hoja que cambió. Pero la recuperación necesita acciones sostenidas y colectivas, en todos los frentes."
+ },
+ {
+  "id": "i07",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "It wasn't for nothing. Every place that was reached in time is a page that changed. But recovery needs sustained, collective action, on every front."
+ },
+ {
+  "id": "i08",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Algunas hojas del cuaderno cambiaron. La última, la de Killa, sigue igual."
+ },
+ {
+  "id": "i08",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Some pages of the notebook changed. The last one, Killa's, is still the same."
+ },
+ {
+  "id": "i09",
+  "lang": "es",
+  "who": "killa",
+  "voice": "es-BO-SofiaNeural",
+  "rate": "-2%",
+  "pitch": "+45Hz",
+  "text": "Mi abuela dice que antes el río avisaba. Esa noche no avisó nadie."
+ },
+ {
+  "id": "i09",
+  "lang": "en",
+  "who": "killa",
+  "voice": "en-US-AnaNeural",
+  "rate": "-4%",
+  "pitch": "+4Hz",
+  "text": "My grandma says the river used to warn us. That night, nobody warned us."
+ },
+ {
+  "id": "i10",
+  "lang": "es",
+  "who": "andres",
+  "voice": "es-PE-AlexNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Algún día."
+ },
+ {
+  "id": "i10",
+  "lang": "en",
+  "who": "andres",
+  "voice": "en-US-BrianNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Someday."
+ },
+ {
+  "id": "i11",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "Algún día iremos."
+ },
+ {
+  "id": "i11",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "Someday we'll go."
+ },
+ {
+  "id": "i12",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Cada decisión importa. Pero ninguna basta sola."
+ },
+ {
+  "id": "i12",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Every decision matters. But none is enough on its own."
+ },
+ {
+  "id": "i13",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "En el juego, el último regreso ya pasó. Afuera no hay máquina del tiempo. Hay datos, y todavía es hoy."
+ },
+ {
+  "id": "i13",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "In the game, the last return is gone. Out here there is no time machine. There is data, and it's still today."
+ },
+ {
+  "id": "i14",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Puedes leerlos antes de que sea tarde, comprobarlos con una segunda fuente y salir a contarlo."
+ },
+ {
+  "id": "i14",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "You can read it before it's too late, check it against a second source, and go out and share it."
+ },
+ {
+  "id": "i15",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "TERRA 2045. El futuro no está escrito. Pero cada decisión deja una huella."
+ },
+ {
+  "id": "i15",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "TERRA 2045. The future is not written. But every decision leaves a mark."
+ },
+ {
+  "id": "l01",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Año 2045. Génesis te devuelve a la colonia."
+ },
+ {
+  "id": "l01",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The year 2045. Genesis brings you back to the colony."
+ },
+ {
+  "id": "l02",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "¡Volviste! ¿Qué pasó? ¿Lo conseguimos?"
+ },
+ {
+  "id": "l02",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "You're back! What happened? Did we do it?"
+ },
+ {
+  "id": "l03",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "No… ¿verdad?"
+ },
+ {
+  "id": "l03",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "No… right?"
+ },
+ {
+  "id": "l04",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Lo intenté. Pero no fue suficiente."
+ },
+ {
+  "id": "l04",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "I tried. But it wasn't enough."
+ },
+ {
+  "id": "l05",
+  "lang": "es",
+  "who": "nikol",
+  "voice": "es-PE-CamilaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Regresaste, pero los registros no cambiaron. Génesis ya no tiene energía para volver."
+ },
+ {
+  "id": "l05",
+  "lang": "en",
+  "who": "nikol",
+  "voice": "en-US-AvaNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "You came back, but the records didn't change. Genesis has no energy left to go back."
+ },
+ {
+  "id": "l06",
+  "lang": "es",
+  "who": "andres",
+  "voice": "es-PE-AlexNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "¡Alerta! ¡La atmósfera de la Tierra está en estado crítico!"
+ },
+ {
+  "id": "l06",
+  "lang": "en",
+  "who": "andres",
+  "voice": "en-US-BrianNeural",
+  "rate": "+0%",
+  "pitch": "+0Hz",
+  "text": "Alert! The Earth's atmosphere is in a critical state!"
+ },
+ {
+  "id": "l07",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Una cadena de catástrofes ambientales se desata sobre el planeta."
+ },
+ {
+  "id": "l07",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "A chain of environmental catastrophes is unleashed across the planet."
+ },
+ {
+  "id": "l08",
+  "lang": "es",
+  "who": "mario",
+  "voice": "es-CO-SalomeNeural",
+  "rate": "+6%",
+  "pitch": "+38Hz",
+  "text": "Era nuestro hogar…"
+ },
+ {
+  "id": "l08",
+  "lang": "en",
+  "who": "mario",
+  "voice": "en-US-AnaNeural",
+  "rate": "+4%",
+  "pitch": "-14Hz",
+  "text": "It was our home…"
+ },
+ {
+  "id": "l09",
+  "lang": "es",
+  "who": "viajero",
+  "voice": "es-MX-DaliaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "Tuvimos tantas oportunidades…"
+ },
+ {
+  "id": "l09",
+  "lang": "en",
+  "who": "viajero",
+  "voice": "en-US-EmmaNeural",
+  "rate": "+2%",
+  "pitch": "+0Hz",
+  "text": "We had so many chances…"
+ },
+ {
+  "id": "l10",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "El cuaderno de Killa sigue en el archivo. La última hoja dice lo mismo."
+ },
+ {
+  "id": "l10",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "Killa's notebook is still in the archive. The last page says the same thing."
+ },
+ {
+  "id": "l11",
+  "lang": "es",
+  "who": "killa",
+  "voice": "es-BO-SofiaNeural",
+  "rate": "-2%",
+  "pitch": "+45Hz",
+  "text": "Si lo estaban viendo, ¿por qué nadie vino a decirnos?"
+ },
+ {
+  "id": "l11",
+  "lang": "en",
+  "who": "killa",
+  "voice": "en-US-AnaNeural",
+  "rate": "-4%",
+  "pitch": "+4Hz",
+  "text": "If they were watching, why didn't anyone come to tell us?"
+ },
+ {
+  "id": "l12",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "El futuro que intentamos evitar se convirtió en nuestra última realidad."
+ },
+ {
+  "id": "l12",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The future we tried to prevent became our last reality."
+ },
+ {
+  "id": "l13",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "Pero esto es una historia. Afuera, todavía es hoy. Los datos existen, y alguien tiene que leerlos a tiempo, comprobarlos y salir a avisar."
+ },
+ {
+  "id": "l13",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "But this is a story. Out here, it's still today. The data exists, and someone has to read it in time, check it, and go out and warn people."
+ },
+ {
+  "id": "l14",
+  "lang": "es",
+  "who": "narrador",
+  "voice": "es-MX-JorgeNeural",
+  "rate": "+2%",
+  "pitch": "-2Hz",
+  "text": "El futuro no está escrito. Pero cada decisión deja una huella."
+ },
+ {
+  "id": "l14",
+  "lang": "en",
+  "who": "narrador",
+  "voice": "en-US-ChristopherNeural",
+  "rate": "+0%",
+  "pitch": "-2Hz",
+  "text": "The future is not written. But every decision leaves a mark."
+ }
+]

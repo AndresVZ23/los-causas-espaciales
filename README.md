@@ -1,5 +1,11 @@
 # Los Causas Espaciales
 
+**Portada: TERRA 2045 · El último viaje** (ADR-050). Un videojuego educativo 3D para público general: desde la colonia lunar de 2045, una persona viaja a 2026 y, misión por misión, lee datos reales de observación de la Tierra de NASA, decide con recursos limitados junto a la gente y avisa a tiempo. Tiene tres regresos y tres finales; el planeta cambia con cada decisión. Se juega en `http://localhost:3100`. El tráiler y las cinemáticas (español e inglés) se montan con `scripts/video/`.
+
+Para preparar un equipo Windows sin instalar nada en C: doble clic en `PREPARAR.bat` (Python, dependencias, voces, recursos de video, la misión de Lima, la puerta común y la web; todo queda en `.herramientas/`).
+
+La consola técnica de la plataforma está en `http://localhost:3100/plataforma`:
+
 Plataforma de inteligencia territorial para convertir datos de observación de la Tierra en decisiones de inversión trazables. Tiene siete módulos: clima, energía (solar, eólica e hidroeléctrica), amenazas, ambiente, patrimonio, infraestructura vial e inversión inmobiliaria. Cada dato se contrasta con una segunda fuente independiente.
 
 **¿Eres del equipo?** Empieza por [`docs/equipo/EMPEZAR_AQUI.md`](docs/equipo/EMPEZAR_AQUI.md), con la puesta en marcha, la forma de trabajo y las reglas. Lo hecho, lo que falta y las ideas para agregar están en la red del proyecto, `docs/equipo/pipeline.html`: ábrela con doble clic después de clonar.
@@ -46,7 +52,8 @@ Copy-Item .env.example .env
 docker compose -p los-causas-espaciales up -d --build
 ```
 
-- Aplicación: http://localhost:3100
+- Juego (portada): http://localhost:3100
+- Plataforma: http://localhost:3100/plataforma
 - OpenAPI: http://localhost:8000/docs
 
 Los documentos internos de seguimiento no forman parte de la aplicación; se abren como archivo local:

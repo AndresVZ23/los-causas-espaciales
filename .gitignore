@@ -19,3 +19,23 @@ frontend/tsconfig.tsbuildinfo
 # Archivos descargados a mano de fuentes oficiales (se documentan en datos-externos/LEEME.md)
 datos-externos/*/*
 !datos-externos/LEEME.md
+
+# TERRA 2045 (ADR-050): herramientas locales instaladas por PREPARAR.bat y cachés de render
+.herramientas/
+videos/render/
+videos/web/
+# La producción de los videos sí se sube (pedido de Andrés, 15-nov): videos finales, música, voces de Edge,
+# texturas y las grabaciones del juego que usa el tráiler. No se suben las voces Piper viejas (.wav) ni las
+# grabaciones descartadas (las del héroe antes del arreglo de hero-rig).
+videos/voz/**/*.wav
+videos/captura/*
+!videos/captura/globo.webm
+!videos/captura/llegada.webm
+!videos/captura/chamonix_llegada.webm
+!videos/captura/huascaran_llegada.webm
+!videos/captura/piura_llegada.webm
+!videos/captura/huaico_cine.webm
+!videos/captura/mocoa_cine.webm
+!videos/captura/erupcion_cine.webm
+!videos/captura/avalancha_cine.webm
+!videos/captura/inundacion_cine.webm

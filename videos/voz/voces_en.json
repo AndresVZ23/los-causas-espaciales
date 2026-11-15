@@ -1,0 +1,572 @@
+﻿[
+    {
+        "id":  "t01",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t02",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t03",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "t04",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "t05",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "t06",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t07",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t08",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t09",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t10",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "t11",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t12",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "t13",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p01",
+        "lang":  "en",
+        "who":  "radio",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p02",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p03",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p04",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p05",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "p06",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p07",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "p08",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "p09",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "p10",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p11",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p12",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p13",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "p14",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p15",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p16",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p17",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p18",
+        "lang":  "en",
+        "who":  "killa",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "p19",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p20",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "p21",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p22",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p23",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "p24",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "v01",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "v02",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "v03",
+        "lang":  "en",
+        "who":  "radio",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "v04",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "v05",
+        "lang":  "en",
+        "who":  "radio",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "r01",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "r02",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "r03",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "r04",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "r05",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "r06",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "r07",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "b01",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b02",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "b03",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "b04",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "b05",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b06",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "b07",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "b08",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "b09",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b10",
+        "lang":  "en",
+        "who":  "killa",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "b11",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b12",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "b13",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "b14",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b15",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b16",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "b17",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i01",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i02",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "i03",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "i04",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i05",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "i06",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "i07",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "i08",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i09",
+        "lang":  "en",
+        "who":  "killa",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "i10",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "i11",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "i12",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i13",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i14",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "i15",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "l01",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "l02",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "l03",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "l04",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "l05",
+        "lang":  "en",
+        "who":  "nikol",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "l06",
+        "lang":  "en",
+        "who":  "andres",
+        "voice":  "piper bryce"
+    },
+    {
+        "id":  "l07",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "l08",
+        "lang":  "en",
+        "who":  "mario",
+        "voice":  "piper ljspeech"
+    },
+    {
+        "id":  "l09",
+        "lang":  "en",
+        "who":  "viajero",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "l10",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "l11",
+        "lang":  "en",
+        "who":  "killa",
+        "voice":  "piper kristin"
+    },
+    {
+        "id":  "l12",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "l13",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    },
+    {
+        "id":  "l14",
+        "lang":  "en",
+        "who":  "narrador",
+        "voice":  "piper john"
+    }
+]

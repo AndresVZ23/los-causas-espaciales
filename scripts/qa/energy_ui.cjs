@@ -38,7 +38,7 @@ async function run(viewport, tag) {
     const errors = [];
     page.on("console", (msg) => { if (msg.type() === "error") errors.push(msg.text()); });
     page.on("pageerror", (err) => errors.push(String(err)));
-    await page.goto(BASE, { waitUntil: "networkidle" });
+    await page.goto(`${BASE}/plataforma`, { waitUntil: "networkidle" });
     // Hidratación: el selector de tecnología responde solo cuando React ya montó. Energía es el módulo inicial.
     await page.waitForFunction(() => document.querySelectorAll('input[name="tecnologia"]').length === 3, null, { timeout: 60000 });
     await page.locator('input[name="tecnologia"]').nth(tech.radio).check();
