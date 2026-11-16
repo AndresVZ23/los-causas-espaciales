@@ -1,3 +1,26 @@
+# 🎮 How to play TERRA 2045 · The Last Journey (no commands needed)
+
+You only need to click. You don't have to type or run any command.
+
+**You need:** a Windows 10 or 11 computer and an internet connection (only the first time). The first setup takes about 10–20 minutes.
+
+1. **Install Node.js (once).** Go to [nodejs.org](https://nodejs.org/), click the green **LTS** download button, open the downloaded file and click **Next** until it says **Finish**. If you already have Node.js, skip this step.
+2. **Download the game.** At the top of this page, click the green **`<> Code`** button and then **Download ZIP**.
+3. **Unzip it.** Open your **Downloads** folder, right-click `los-causas-espaciales-main.zip` and choose **Extract All…** (*Extraer todo…*), then click **Extract** (*Extraer*).
+4. **Prepare it (only the first time).** Open the extracted folder `los-causas-espaciales-main` and double-click **`PREPARAR.bat`**.
+   - If Windows shows a blue box saying *"Windows protected your PC"*, click **More info** (*Más información*) and then **Run anyway** (*Ejecutar de todas formas*).
+   - If it asks *"Do you want to run this file?"*, click **Run** (*Ejecutar*).
+   - A black window shows the progress. Wait until it says **Listo** in green. Two more windows stay open (the game server) and the game is ready.
+5. **Play.** Double-click **`JUGAR.bat`**. Your browser opens the game at `http://localhost:3100`. Choose **Jugador** (player) and press play.
+6. **Next time**, just double-click **`JUGAR.bat`** again (step 4 is needed only once).
+7. **To stop**, close the windows named **TERRA 2045 - API** and **TERRA 2045 - Web**.
+
+**Controls in a mission:** move with **W A S D** or the arrow keys, look around with the mouse, talk to people and read the data panels by clicking on them.
+
+> **Cómo jugar (español):** instala Node.js desde nodejs.org (botón verde **LTS**, luego *Siguiente* hasta *Finalizar*). En esta página haz clic en el botón verde **`<> Code`** → **Download ZIP**. En *Descargas*, clic derecho sobre el ZIP → **Extraer todo…** → **Extraer**. Abre la carpeta y haz doble clic en **`PREPARAR.bat`** (solo la primera vez; si aparece «Windows protegió su PC», haz clic en **Más información** → **Ejecutar de todas formas**) y espera a que diga **Listo**. Para jugar, doble clic en **`JUGAR.bat`**: el navegador abre el juego. Para cerrarlo, cierra las ventanas «TERRA 2045 - API» y «TERRA 2045 - Web».
+
+---
+
 # Los Causas Espaciales
 
 **Portada: TERRA 2045 · El último viaje** (ADR-050). Un videojuego educativo 3D para público general: desde la colonia lunar de 2045, una persona viaja a 2026 y, misión por misión, lee datos reales de observación de la Tierra de NASA, decide con recursos limitados junto a la gente y avisa a tiempo. Tiene tres regresos y tres finales; el planeta cambia con cada decisión. Se juega en `http://localhost:3100`. El tráiler y las cinemáticas (español e inglés) se montan con `scripts/video/`.
